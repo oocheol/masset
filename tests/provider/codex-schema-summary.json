@@ -1,0 +1,119 @@
+{
+  "checkedAt": "2026-10-02T05:44:46.308Z",
+  "codexVersion": "codex-cli 0.147.0",
+  "experimentalSchema": true,
+  "relevantMethods": [
+    "model/list",
+    "modelProvider/capabilities/read",
+    "account/read"
+  ],
+  "capabilityFields": [
+    "imageGeneration",
+    "namespaceTools",
+    "webSearch"
+  ],
+  "nativeImageGenerationItem": {
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "result": {
+        "type": "string"
+      },
+      "revisedPrompt": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "savedPath": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/AbsolutePathBuf"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "status": {
+        "type": "string"
+      },
+      "transparentBackground": {
+        "default": null,
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "type": {
+        "enum": [
+          "imageGeneration"
+        ],
+        "title": "ImageGenerationThreadItemType",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "result",
+      "status",
+      "type"
+    ],
+    "title": "ImageGenerationThreadItem",
+    "type": "object"
+  },
+  "nativeImageModelSelectionField": null,
+  "nativeImageConfirmedModelField": null,
+  "threadStartFields": [
+    "allowProviderModelFallback",
+    "approvalPolicy",
+    "approvalsReviewer",
+    "baseInstructions",
+    "config",
+    "cwd",
+    "developerInstructions",
+    "dynamicTools",
+    "environments",
+    "ephemeral",
+    "experimentalRawEvents",
+    "historyMode",
+    "mockExperimentalField",
+    "model",
+    "modelProvider",
+    "multiAgentMode",
+    "permissions",
+    "personality",
+    "runtimeWorkspaceRoots",
+    "sandbox",
+    "selectedCapabilityRoots",
+    "serviceName",
+    "serviceTier",
+    "sessionStartSource",
+    "threadSource"
+  ],
+  "turnStartFields": [
+    "additionalContext",
+    "approvalPolicy",
+    "approvalsReviewer",
+    "clientUserMessageId",
+    "collaborationMode",
+    "cwd",
+    "effort",
+    "environments",
+    "input",
+    "model",
+    "multiAgentMode",
+    "outputSchema",
+    "permissions",
+    "personality",
+    "responsesapiClientMetadata",
+    "runtimeWorkspaceRoots",
+    "sandboxPolicy",
+    "serviceTier",
+    "summary",
+    "threadId"
+  ],
+  "sourceSchemaSha256": "babfd5c98cd978dd858b4762cdfbc9fba941e1a0e4053de0050e4082ae1f075a",
+  "limitation": "ImageGeneration item and boolean capability are observed. Neither proves GPT Image 2.5 selection or a successful image file round trip."
+}

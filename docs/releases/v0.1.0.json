@@ -1,0 +1,26 @@
+{
+  "product": "Asset Studio",
+  "version": "0.1.0",
+  "platform": "windows-x64",
+  "distribution": "portable",
+  "filename": "AssetStudio-windows-x64-portable.zip",
+  "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.0/AssetStudio-windows-x64-portable.zip",
+  "bytes": 6922222,
+  "sha256": "d21672dfcc0f3c65ca574d91bccdf7595db705ddc3d287644a6977575dc55b02",
+  "executableSha256": "53575158cc127d6a217d4b81ac230445cd3c2c148d508cde0b0b99b9871b8279",
+  "signed": false,
+  "checks": {
+    "windowsDevelopmentHost": true,
+    "nativeWindowAnd2D": true,
+    "nativeBlender3D": true,
+    "freshBlenderModelReopens": 4,
+    "cleanWindowsMachine": false,
+    "installerLifecycle": false,
+    "macOS": false,
+    "subscriptionImageReceipt": false
+  },
+  "requirements": [
+    "Windows x64 with Microsoft Edge WebView2 Runtime",
+    "Blender installed separately for procedural 3D; verified with Blender 5.2.1"
+  ]
+}

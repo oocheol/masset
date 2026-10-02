@@ -1,0 +1,11 @@
+# Windows Blender path boundary
+
+Rust `canonicalize` can pass `\\?\C:\...` even for short project roots. Blender 5.2.1's glTF exporter appends `/` to its directory; passing that verbatim namespace directly causes WinError 123. Removing every prefix is insufficient for genuinely long paths: embedded Python mkdir/read operations need it, and Windows current-directory changes have a separate MAX_PATH limit.
+
+The worker keeps normalized absolute verbatim paths for Python filesystem operations, input reads, directory guards, hashes and atomic promotion. Blender export/render/save calls receive ordinary absolute paths to the same output directory. When ordinary directory plus the longest fixed output basename would exceed MAX_PATH, the worker obtains an existing NTFS short alias with `GetShortPathNameW`, verifies directory identity using `os.path.samefile`, then passes absolute alias paths to Blender. This does not create junctions, relocate inputs/results, or enable 8.3 names on the volume. The populated-output guard runs before selecting a working path.
+
+Volumes without usable short aliases return an explicit request to choose a shorter project path. Broad long-path support is not claimed for untested filesystems or disabled alias creation. Device namespaces, unsupported verbatim namespaces, reserved device filenames and ambiguous trailing dot/space components are rejected when converting canonical names.
+
+`validation.json.ioInterop` records the filesystem syntax, Blender filename mode and working-directory mode without disclosing absolute user paths. This is a worker interoperability record, not a Tauri native integration result. Geometry, style schema and output basenames remain unchanged. The coordinator does not need to strip canonical prefixes from worker arguments.
+
+Focused real regression artifacts are created in a fresh `path-regression-*` directory beside this file. Explicit prefixed input/style/output and a 320-character Korean/spaced directory were generated with Blender 5.2.1, factory startup, disabled script auto-execution, two CPU threads and CPU Cycles. The adjacent verification metadata records actual GLB/.blend independent reopening and original-hash preservation. Prior failed/probe directories remain preserved; they are diagnostics and must not be bundled as production worker resources.

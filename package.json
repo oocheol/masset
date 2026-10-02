@@ -1,0 +1,35 @@
+{
+  "name": "local-asset-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/desktop",
+    "apps/site",
+    "packages/contracts",
+    "packages/ui"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @local-assets/desktop",
+    "build": "npm run build --workspace @local-assets/desktop",
+    "site:dev": "npm run dev --workspace @local-assets/site",
+    "site:build": "npm run build --workspace @local-assets/site",
+    "site:preview": "npm run preview --workspace @local-assets/site",
+    "desktop": "npm run tauri --workspace @local-assets/desktop -- dev",
+    "desktop:build": "npm run tauri --workspace @local-assets/desktop -- build",
+    "typecheck": "npm run typecheck --workspace @local-assets/desktop",
+    "test": "vitest run",
+    "test:native": "cargo test --workspace",
+    "verify:artifacts": "node scripts/verify-artifacts.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^24.0.0",
+    "pngjs": "^7.0.0",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

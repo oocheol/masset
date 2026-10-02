@@ -1,0 +1,20 @@
+[package]
+name = "asset-scheduler"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Persistent, resource-aware local job scheduling for Asset Studio"
+
+[lib]
+name = "asset_scheduler"
+path = "src/lib.rs"
+
+[dependencies]
+asset-core = { path = "../core" }
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }

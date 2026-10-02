@@ -1,0 +1,128 @@
+(async () => {
+  if (window.__ASSET_NATIVE_QA_RUNNING__) return;
+  window.__ASSET_NATIVE_QA_RUNNING__ = true;
+  const withModel = window.__ASSET_NATIVE_QA__?.withNativeModel === true;
+  const state = {domReady:false, decodedImages:0, title:document.title}, restores=[];
+  let providerCalls=0;
+  const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const invoke=request=>window.__TAURI__.core.invoke('workspace_command',{request});
+  const check=(condition,message)=>{if(!condition)throw new Error(message);};
+  const wait=async(label,predicate,timeout)=>{const deadline=Date.now()+timeout;while(Date.now()<deadline){const value=await predicate();if(value)return value;await sleep(150);}throw new Error(`${label} timed out`);};
+  const originalInvoke=window.__TAURI_INTERNALS__.invoke;
+  window.__TAURI_INTERNALS__.invoke=function(command,args,...rest){
+    if(command==='workspace_command'&&['provider_status','provider_login','generate'].includes(args?.request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
+    return Reflect.apply(originalInvoke,this,[command,args,...rest]);
+  };
+  restores.push(()=>{window.__TAURI_INTERNALS__.invoke=originalInvoke;});
+  const readGlb=data=>{
+    const view=new DataView(data);
+    check(data.byteLength>=20&&view.getUint32(0,true)===0x46546c67&&view.getUint32(4,true)===2&&view.getUint32(8,true)===data.byteLength,'Invalid GLB 2 header');
+    const size=view.getUint32(12,true);check(view.getUint32(16,true)===0x4e4f534a&&size>0&&20+size<=data.byteLength,'Invalid GLB JSON chunk');
+    const json=JSON.parse(new TextDecoder().decode(new Uint8Array(data,20,size)).trim());
+    const primitives=(json.meshes??[]).flatMap(mesh=>mesh.primitives??[]);
+    let vertices=0,triangles=0;
+    for(const primitive of primitives){const position=json.accessors[primitive.attributes.POSITION];vertices+=position.count;triangles+=(primitive.indices==null?position.count:json.accessors[primitive.indices].count)/3;}
+    const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+    const multiply=(a,b)=>Array.from({length:16},(_,i)=>[0,1,2,3].reduce((sum,k)=>sum+a[i%4+k*4]*b[k+Math.floor(i/4)*4],0));
+    const transform=node=>{
+      if(node.matrix)return node.matrix;
+      const [x,y,z,w]=node.rotation??[0,0,0,1],[sx,sy,sz]=node.scale??[1,1,1],p=node.translation??[0,0,0];
+      const xx=2*x*x,yy=2*y*y,zz=2*z*z,xy=2*x*y,xz=2*x*z,yz=2*y*z,wx=2*w*x,wy=2*w*y,wz=2*w*z;
+      return [(1-yy-zz)*sx,(xy+wz)*sx,(xz-wy)*sx,0,(xy-wz)*sy,(1-xx-zz)*sy,(yz+wx)*sy,0,(xz+wy)*sz,(yz-wx)*sz,(1-xx-yy)*sz,0,...p,1];
+    };
+    const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],visited=new Set();
+    const visit=(index,parent)=>{
+      check(!visited.has(index)&&json.nodes?.[index],'Invalid GLB scene graph');visited.add(index);
+      const node=json.nodes[index],matrix=multiply(parent,transform(node));
+      if(node.mesh!=null)for(const primitive of json.meshes[node.mesh].primitives){
+        const accessor=json.accessors[primitive.attributes.POSITION];check(accessor.min?.length===3&&accessor.max?.length===3,'GLB bounds missing');
+        for(let mask=0;mask<8;mask++){const point=[0,1,2].map(axis=>(mask>>axis)&1?accessor.max[axis]:accessor.min[axis]);for(let axis=0;axis<3;axis++){const value=matrix[axis]*point[0]+matrix[axis+4]*point[1]+matrix[axis+8]*point[2]+matrix[axis+12];min[axis]=Math.min(min[axis],value);max[axis]=Math.max(max[axis],value);}}
+      }
+      for(const child of node.children??[])visit(child,matrix);
+    };
+    for(const index of json.scenes?.[json.scene??0]?.nodes??[])visit(index,identity);
+    const dimensions=max.map((value,axis)=>value-min[axis]);check(vertices>0&&triangles>0&&dimensions.every(value=>Number.isFinite(value)&&value>0),'GLB scene geometry invalid');
+    return {headerValid:true,meshCount:json.meshes.length,primitiveCount:primitives.length,vertices,triangles,bounds:{min,max,dimensions}};
+  };
+  try{
+    const decoded=await wait('Native DOM/assets',()=>{
+      const images=[...document.querySelectorAll('img')];for(const image of images)image.loading='eager';
+      const decoded=images.filter(image=>image.complete&&image.naturalWidth>0&&/asset\.localhost|asset:/.test(image.src));
+      return document.querySelector('h1')&&document.querySelectorAll('[aria-label="에셋 목록"] img').length>=8&&decoded.length>=8?decoded:null;
+    },45000);
+    Object.assign(state,{domReady:true,decodedImages:decoded.length,ipcEnvironment:await invoke({action:'environment'}),protocols:[...new Set(decoded.map(image=>new URL(image.src).protocol))]});
+    if(withModel){
+      const report=state.native3D={requested:true,passed:false,stage:'initial snapshot',assetId:null,generator:'Blender',blenderUsed:false,modelJobSucceeded:false,parameters:null,glbFetch:null,webgl:{context:false,drawCalls:0,defaultFramebufferDrawCalls:0,pixelReadbacks:0,pixelColorVariation:false,pixels:[],visibilityState:document.visibilityState},externalProviderCalls:0,error:null};
+      const baseline=await invoke({action:'snapshot'}),oldAssetIds=new Set(baseline.project.assets.map(asset=>asset.id)),oldJobIds=new Set(baseline.project.jobs.map(job=>job.id));
+      check(baseline.project.assets.filter(asset=>asset.versions.some(version=>version.source==='fixture')).length===12,'Expected twelve fixture originals');
+      check(state.ipcEnvironment.native===true&&state.ipcEnvironment.blenderVersion,'Native Blender unavailable');
+      const originalFetch=window.fetch;
+      window.fetch=async function(...args){
+        const response=await Reflect.apply(originalFetch,this,args),url=typeof args[0]==='string'?args[0]:args[0]?.url??String(args[0]);
+        if(/\.glb(?:[?#]|$)/i.test(url)){
+          const record=report.glbFetch={url,ok:response.ok,bytes:0,sha256:null,headerValid:false};
+          response.clone().arrayBuffer().then(async data=>{record.bytes=data.byteLength;Object.assign(record,readGlb(data));record.sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',data))].map(value=>value.toString(16).padStart(2,'0')).join('');}).catch(error=>{record.error=String(error);});
+        }
+        return response;
+      };
+      restores.push(()=>{window.fetch=originalFetch;});
+      for(const Constructor of [window.WebGLRenderingContext,window.WebGL2RenderingContext]){
+        if(!Constructor)continue;
+        for(const method of ['drawElements','drawArrays','drawElementsInstanced','drawArraysInstanced']){
+          const descriptor=Object.getOwnPropertyDescriptor(Constructor.prototype,method);if(!descriptor?.value)continue;
+          Constructor.prototype[method]=function(...args){
+            const value=Reflect.apply(descriptor.value,this,args);
+            if(this.canvas?.getAttribute('aria-label')==='회전, 이동, 확대 가능한 3D 모델 뷰포트'&&!this.isContextLost()&&this.getParameter(this.FRAMEBUFFER_BINDING)===null&&document.querySelector('.model-viewport-help')){
+              const stats=report.webgl;stats.context=true;stats.drawCalls++;stats.defaultFramebufferDrawCalls++;
+              if(stats.drawCalls<=24){
+                const width=this.drawingBufferWidth,height=this.drawingBufferHeight;
+                const pixels=[[.5,.5],[.25,.25],[.75,.75],[.25,.75],[.75,.25]].map(([x,y])=>{const rgba=new Uint8Array(4);this.readPixels(Math.floor(width*x),Math.floor(height*y),1,1,this.RGBA,this.UNSIGNED_BYTE,rgba);return [...rgba];});
+                if(this.getError()===this.NO_ERROR){stats.pixelReadbacks++;stats.pixels=pixels;stats.width=width;stats.height=height;if(pixels.every(pixel=>pixel[3]>0)&&pixels.some(pixel=>pixel.slice(0,3).some((channel,axis)=>Math.abs(channel-pixels[0][axis])>8)))stats.pixelColorVariation=true;}
+              }
+            }
+            return value;
+          };
+          restores.push(()=>Object.defineProperty(Constructor.prototype,method,descriptor));
+        }
+      }
+      report.stage='open model dialog';
+      const button=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='3D 만들기');check(button&&!button.disabled,'3D create button unavailable');button.click();
+      const form=await wait('Model dialog',()=>document.querySelector('.dialog-model form'),5000);
+      const inputFor=text=>[...form.querySelectorAll('label')].find(label=>label.querySelector('span')?.textContent===text)?.querySelector('input');
+      const setInput=(input,value)=>{check(input,'Model field unavailable');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));};
+      setInput(inputFor('제작 수'),'1');setInput(inputFor('모델 이름'),'Native QA Crate');await sleep(100);check(form.checkValidity(),'Native model default form invalid');
+      report.parameters={template:'crate',name:'Native QA Crate',width:Number(inputFor('너비 (m)').value),depth:Number(inputFor('깊이 (m)').value),height:Number(inputFor('높이 (m)').value),bevel:Number(inputFor('모서리 베벨 (m)').value),count:1,unit:'m'};
+      check(['width','depth','height'].every(key=>report.parameters[key]===1),'Expected one-meter default dimensions');
+      const submit=form.querySelector('button[type="submit"]');check(submit&&!submit.disabled,'Model submit unavailable');submit.click();
+      report.stage='native Blender job';
+      const produced=await wait('Native Blender model',async()=>{
+        const snapshot=await invoke({action:'snapshot'}),jobs=snapshot.project.jobs.filter(job=>!oldJobIds.has(job.id));
+        check(!jobs.some(job=>job.resource==='external'),'Unexpected external job');
+        const failed=jobs.find(job=>['failed','cancelled','external_unknown'].includes(job.status));if(failed)throw new Error(`${failed.kind}: ${failed.error??failed.status}`);
+        const asset=snapshot.project.assets.find(asset=>!oldAssetIds.has(asset.id)&&asset.kind==='model'),job=jobs.find(job=>job.kind==='blender_model'&&job.resource==='blender'&&job.status==='succeeded');
+        return asset&&job?{asset,job}:null;
+      },180000);
+      report.assetId=produced.asset.id;report.jobId=produced.job.id;report.modelJobSucceeded=true;report.blenderVersion=state.ipcEnvironment.blenderVersion;
+      const version=produced.asset.versions.find(version=>version.id===produced.asset.activeVersionId),glb=version?.artifacts.find(artifact=>artifact.format.toLowerCase()==='glb');
+      report.blenderUsed=!!version?.artifacts.some(artifact=>artifact.format.toLowerCase()==='blend'&&artifact.bytes>0);
+      check(glb&&report.blenderUsed&&version.validation?.valid,'Native GLB, Blender source or validation missing');
+      report.stage='open actual model card';
+      const card=await wait('Generated model card',()=>[...document.querySelectorAll('[aria-label="에셋 목록"] [role="listitem"]')].find(card=>card.querySelector('strong')?.textContent===produced.asset.name),10000);
+      card.dispatchEvent(new MouseEvent('dblclick',{bubbles:true,cancelable:true}));report.stage='GLB load and native WebGL rendering';
+      await wait('Loaded GLB and WebGL pixels',()=>{
+        const failure=document.querySelector('.model-viewport-error');if(failure)throw new Error(failure.textContent.trim());
+        check(!report.glbFetch?.error,report.glbFetch?.error??'GLB fetch failed');
+        return document.querySelector('.model-viewport-help')&&report.glbFetch?.headerValid&&report.glbFetch?.sha256&&report.webgl.drawCalls>0&&report.webgl.pixelReadbacks>0&&report.webgl.pixelColorVariation;
+      },25000);
+      check(report.glbFetch.ok&&/asset\.localhost|^asset:/.test(report.glbFetch.url),'GLB did not use native asset protocol');
+      check(report.glbFetch.bytes===glb.bytes&&report.glbFetch.sha256===glb.sha256,'Viewport GLB differs from stored artifact');
+      check(report.glbFetch.bounds.dimensions.every(value=>Math.abs(value-1)<.0001),'Decoded GLB dimensions differ from one meter');
+      check(providerCalls===0,'External provider command attempted');report.externalProviderCalls=providerCalls;report.stage='complete';report.passed=true;
+    }
+  }catch(error){
+    state.error=error instanceof Error?error.message:String(error);state.imageCount=document.querySelectorAll('img').length;
+    state.images=[...document.querySelectorAll('img')].slice(0,3).map(image=>({src:image.src,complete:image.complete,width:image.naturalWidth}));state.alert=document.querySelector('[role="alert"]')?.textContent?.slice(0,500);
+    if(state.native3D){state.native3D.error=state.error;state.native3D.externalProviderCalls=providerCalls;}
+  }finally{state.externalProviderCalls=providerCalls;for(const restore of restores.reverse())restore();}
+  await window.__TAURI__.core.invoke('native_qa_complete',{report:state});
+})().catch(console.error);

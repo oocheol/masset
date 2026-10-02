@@ -1,0 +1,30 @@
+{
+  "sdkVersion": "1.0.3800.47",
+  "container": {
+    "name": "webview2-com-sys",
+    "version": "0.39.1"
+  },
+  "licenseExpression": "BSD-3-Clause",
+  "licenseUrl": "https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3800.47/License",
+  "licenseTextSha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55",
+  "nativeArtifacts": [
+    {
+      "path": "x64/WebView2LoaderStatic.lib",
+      "bytes": 10500472,
+      "sha256": "89c6b872783b8f6c3cedbff618adb42082d455c615453ae10cfc753f1e8f25d8"
+    },
+    {
+      "path": "x64/WebView2Loader.dll",
+      "bytes": 160880,
+      "sha256": "86545b66cdb0603bc26b626fb9ad610cb6e71f28d468f5ea66df23b03dda96d5"
+    }
+  ],
+  "versionEvidence": {
+    "installedLoaderDllFileVersion": "1.0.3800.47",
+    "pinnedBindingUpdateSource": "https://raw.githubusercontent.com/wravery/webview2-rs/edc2caf886175ccaebe86078c9cfe1ae2a187328/crates/update-bindings/src/main.rs",
+    "pinnedDeclaration": "const WEBVIEW2_VERSION: &str = \"1.0.3800.47\";",
+    "nugetCatalog": "https://api.nuget.org/v3/catalog0/data/2026.02.16.08.48.05/microsoft.web.webview2.1.0.3800.47.json",
+    "nugetLicenseFile": "LICENSE.txt"
+  },
+  "scope": "SDK loader bundled by the Cargo crate; the OS installed WebView2 Runtime is separately licensed and is not copied into this distribution"
+}

@@ -1,0 +1,178 @@
+[CmdletBinding()]
+param(
+    [switch]$SkipInstall,
+    [switch]$SkipChecks,
+    [ValidateSet('Portable', 'Nsis')][string]$Distribution = 'Portable',
+    [switch]$AllowBundlerDownload,
+    [string]$VcRuntimeDirectory,
+    [string]$CargoBin = "$env:USERPROFILE\.cargo\bin"
+)
+$ErrorActionPreference = 'Stop'
+if ($env:OS -ne 'Windows_NT') { throw 'This script builds Windows x64 distributions.' }
+$qaWorkspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
+$qaPreviousLocation = Get-Location
+$qaEnvironmentNames = @('Path', 'INCLUDE', 'LIB', 'LIBPATH', 'VCToolsInstallDir', 'WindowsSdkDir', 'WindowsSDKVersion', 'UniversalCRTSdkDir', 'UCRTVersion')
+$qaPreviousEnvironment = @{}
+foreach ($qaName in $qaEnvironmentNames) { $qaPreviousEnvironment[$qaName] = [Environment]::GetEnvironmentVariable($qaName, 'Process') }
+
+function Invoke-Checked([string]$Command, [string[]]$Arguments) {
+    & $Command @Arguments
+    if ($LASTEXITCODE -ne 0) { throw "$Command failed with exit code $LASTEXITCODE" }
+}
+function Get-FileEvidence([string]$Path) {
+    $qaFile = Get-Item -LiteralPath $Path
+    return [ordered]@{ path = $qaFile.FullName; bytes = $qaFile.Length; sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $qaFile.FullName).Hash.ToLowerInvariant() }
+}
+function Get-ExecutableEvidence([string]$Path, [switch]$RequireX64) {
+    $qaEvidence = Get-FileEvidence $Path
+    $qaStream = [IO.File]::OpenRead($Path)
+    $qaReader = [IO.BinaryReader]::new($qaStream)
+    try {
+        if ($qaReader.ReadUInt16() -ne 0x5a4d -or $qaStream.Length -lt 64) { throw "Invalid MZ executable: $Path" }
+        $qaStream.Position = 0x3c
+        $qaPeOffset = $qaReader.ReadUInt32()
+        if ($qaPeOffset -gt $qaStream.Length - 26) { throw "Invalid PE header offset: $Path" }
+        $qaStream.Position = $qaPeOffset
+        if ($qaReader.ReadUInt32() -ne 0x00004550) { throw "Invalid PE signature: $Path" }
+        $qaMachine = $qaReader.ReadUInt16()
+        if ($RequireX64 -and $qaMachine -ne 0x8664) { throw "App executable is not AMD64: $Path" }
+        $qaEvidence.machine = ('0x{0:x4}' -f $qaMachine)
+        $qaEvidence.architecture = switch ($qaMachine) { 0x8664 {'x64'} 0x014c {'x86'} 0xaa64 {'arm64'} default {'unknown'} }
+    } finally { $qaReader.Dispose(); $qaStream.Dispose() }
+    $qaSignature = Get-AuthenticodeSignature -LiteralPath $Path
+    $qaEvidence.signatureStatus = "$($qaSignature.Status)"
+    $qaEvidence.signer = if ($qaSignature.SignerCertificate) { $qaSignature.SignerCertificate.Subject } else { $null }
+    return $qaEvidence
+}
+
+try {
+    Set-Location -LiteralPath $qaWorkspace
+    . (Join-Path $qaWorkspace 'scripts\with-native-env.ps1')
+    $env:Path = "$CargoBin;$env:Path"
+    $qaSdkVersion = ([string]$env:WindowsSDKVersion).TrimEnd('\')
+    $qaUcrtVersion = ([string]$env:UCRTVersion).TrimEnd('\')
+    if (-not $env:WindowsSdkDir -or -not $qaSdkVersion -or -not $env:UniversalCRTSdkDir -or -not $qaUcrtVersion) {
+        throw 'Windows SDK/UCRT environment is missing. Install the approved Microsoft Windows SDK and reopen the compiler environment.'
+    }
+    $qaSdkFiles = @(
+        (Join-Path $env:WindowsSdkDir "Include\$qaSdkVersion\um\Windows.h"),
+        (Join-Path $env:WindowsSdkDir "Lib\$qaSdkVersion\um\x64\kernel32.lib"),
+        (Join-Path $env:WindowsSdkDir "Lib\$qaSdkVersion\um\x64\uuid.lib"),
+        (Join-Path $env:UniversalCRTSdkDir "Include\$qaUcrtVersion\ucrt\corecrt.h"),
+        (Join-Path $env:UniversalCRTSdkDir "Lib\$qaUcrtVersion\ucrt\x64\ucrt.lib")
+    )
+    foreach ($qaSdkFile in $qaSdkFiles) { if (-not (Test-Path -LiteralPath $qaSdkFile -PathType Leaf)) { throw "Windows SDK prerequisite is missing: $qaSdkFile" } }
+    $qaTools = [ordered]@{}
+    foreach ($qaTool in @('cl.exe', 'link.exe', 'rc.exe', 'cargo.exe', 'rustc.exe', 'node.exe', 'npm.cmd')) { $qaTools[$qaTool] = (Get-Command $qaTool -CommandType Application -ErrorAction Stop).Source }
+    $qaNsisCache = Join-Path $env:LOCALAPPDATA 'tauri\NSIS'
+    if ($Distribution -eq 'Nsis' -and -not $AllowBundlerDownload) {
+        $qaRequiredNsis = @('makensis.exe', 'Bin/makensis.exe', 'Stubs/lzma-x86-unicode', 'Stubs/lzma_solid-x86-unicode', 'Plugins/x86-unicode/additional/nsis_tauri_utils.dll', 'Include/MUI2.nsh', 'Include/FileFunc.nsh', 'Include/x64.nsh', 'Include/nsDialogs.nsh', 'Include/WinMessages.nsh', 'Include/Win/COM.nsh', 'Include/Win/Propkey.nsh', 'Include/Win/RestartManager.nsh')
+        $qaMissingNsis = @($qaRequiredNsis | Where-Object { -not (Test-Path -LiteralPath (Join-Path $qaNsisCache $_) -PathType Leaf) })
+        if ($qaMissingNsis.Count -gt 0) { throw 'NSIS tools are not cached. Use the portable build, or obtain consent for the documented NSIS downloads before passing -Distribution Nsis -AllowBundlerDownload.' }
+        $qaPluginHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $qaNsisCache 'Plugins\x86-unicode\additional\nsis_tauri_utils.dll')).Hash.ToLowerInvariant()
+        if ($qaPluginHash -ne '5ba143b5db4a87d32d6e7802e033330aae56cbceabe0d1e3ba41948385ad4709') { throw 'Cached NSIS plugin differs from the documented 0.5.3 hash. Do not silently replace/download executables.' }
+    }
+    if (-not $SkipInstall) { Invoke-Checked 'npm.cmd' @('ci') }
+    if (-not $SkipChecks) {
+        Invoke-Checked 'cargo.exe' @('test', '--workspace')
+        Invoke-Checked 'npm.cmd' @('run', 'typecheck')
+        Invoke-Checked 'npm.cmd' @('test')
+    }
+    $qaCliVersion = (Get-Content -Raw -LiteralPath (Join-Path $qaWorkspace 'node_modules\@tauri-apps\cli\package.json') | ConvertFrom-Json).version
+    if ($Distribution -eq 'Nsis' -and $qaCliVersion -ne '2.12.1') { throw 'The NSIS download inventory is pinned to Tauri CLI 2.12.1; update its source/version/hash record before using a different CLI.' }
+    Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-cli', '--release')
+    $qaRunId = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+    $qaReportDirectory = Join-Path $qaWorkspace ("output\release\$qaRunId")
+    $qaBundleDirectory = Join-Path $qaWorkspace 'target\release\bundle\nsis'
+    $qaBeforeBundles = @{}
+    if (Test-Path -LiteralPath $qaBundleDirectory) {
+        foreach ($qaOld in Get-ChildItem -LiteralPath $qaBundleDirectory -File -Filter '*.exe') { $qaBeforeBundles[$qaOld.FullName] = [ordered]@{ ticks = $qaOld.LastWriteTimeUtc.Ticks; sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $qaOld.FullName).Hash } }
+    }
+    if ($Distribution -eq 'Portable') { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--no-bundle') }
+    else { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--bundles', 'nsis') }
+    $qaBinaries = @(
+        (Get-ExecutableEvidence (Join-Path $qaWorkspace 'target\release\asset-desktop.exe') -RequireX64),
+        (Get-ExecutableEvidence (Join-Path $qaWorkspace 'target\release\asset-cli.exe') -RequireX64)
+    )
+    New-Item -ItemType Directory -Path $qaReportDirectory | Out-Null
+    $qaPortableFiles = @()
+    $qaPackages = @()
+    if ($Distribution -eq 'Portable') {
+        $qaPortableDirectory = Join-Path $qaReportDirectory 'AssetStudio-windows-x64'
+        New-Item -ItemType Directory -Path (Join-Path $qaPortableDirectory 'workers\blender'), (Join-Path $qaPortableDirectory 'examples'), (Join-Path $qaPortableDirectory 'docs') | Out-Null
+        Copy-Item -LiteralPath (Join-Path $qaWorkspace 'target\release\asset-desktop.exe') -Destination $qaPortableDirectory
+        foreach ($qaWorkerFile in @('worker.py', 'LICENSE')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace "workers\blender\$qaWorkerFile") -Destination (Join-Path $qaPortableDirectory 'workers\blender') }
+        Get-ChildItem -LiteralPath (Join-Path $qaWorkspace 'apps\desktop\public\examples') -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $qaPortableDirectory 'examples') }
+        foreach ($qaNotice in @('LICENSE', 'THIRD_PARTY_NOTICES.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace $qaNotice) -Destination $qaPortableDirectory }
+        $qaDependencyNotices = Join-Path $qaWorkspace 'docs\licenses'
+        if (-not (Test-Path -LiteralPath (Join-Path $qaDependencyNotices 'THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Third-party license texts are missing. Regenerate the notices before packaging a public release.' }
+        Copy-Item -LiteralPath $qaDependencyNotices -Destination (Join-Path $qaPortableDirectory 'docs') -Recurse
+        $qaCatalogNotices = @{
+            'NOTICE' = 'CODEX-CATALOG-NOTICE.txt'
+            'OPENAI-CODEX-NOTICE' = 'CODEX-UPSTREAM-NOTICE.txt'
+            'OPENAI-CODEX-LICENSE' = 'CODEX-CATALOG-LICENSE.txt'
+        }
+        foreach ($qaCatalogNotice in $qaCatalogNotices.GetEnumerator()) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('crates\providers\assets\' + $qaCatalogNotice.Key)) -Destination (Join-Path $qaPortableDirectory $qaCatalogNotice.Value) }
+        foreach ($qaDocument in @('windows-quickstart.md', 'platform-support.md', 'verification.md', 'provider-feasibility.md', 'architecture.md', 'module-contract.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('docs\' + $qaDocument)) -Destination (Join-Path $qaPortableDirectory 'docs') }
+        if ($VcRuntimeDirectory) {
+            $qaRuntimePath = (Resolve-Path -LiteralPath $VcRuntimeDirectory).Path
+            $qaRuntimeDlls = @(Get-ChildItem -LiteralPath $qaRuntimePath -File -Filter '*.dll')
+            if ($qaRuntimeDlls.Count -eq 0) { throw 'The supplied VC runtime directory contains no DLLs.' }
+            foreach ($qaRuntimeDll in $qaRuntimeDlls) { Get-ExecutableEvidence $qaRuntimeDll.FullName -RequireX64 | Out-Null; Copy-Item -LiteralPath $qaRuntimeDll.FullName -Destination $qaPortableDirectory }
+        }
+        @'
+Asset Studio Windows x64 portable
+Extract the entire folder and run asset-desktop.exe. Keep examples/ and workers/blender/ beside it.
+Read docs/windows-quickstart.md for the Korean usage guide; related provider/platform/verification documents are beside it.
+This unsigned build is not a completed clean-machine install/upgrade/uninstall certification.
+Microsoft WebView2 is required. Native DLL dependencies must be audited separately; no runtime is downloaded by this build path.
+Blender is optional and must be installed separately with consent. Its GPL worker source/license are included.
+Resolved dependency license texts and copyright notices are in docs/licenses/THIRD_PARTY_LICENSES.txt.
+The backend QA CLI remains a developer test binary and is not included in this portable application.
+'@ | Set-Content -LiteralPath (Join-Path $qaPortableDirectory 'PORTABLE-README.txt') -Encoding utf8
+        $qaPortableFiles = @(Get-ChildItem -LiteralPath $qaPortableDirectory -Recurse -File | ForEach-Object {
+            $qaFileRecord = Get-FileEvidence $_.FullName
+            $qaFileRecord.path = $_.FullName.Substring($qaPortableDirectory.Length + 1).Replace('\', '/')
+            $qaFileRecord
+        })
+        if (@($qaPortableFiles | Where-Object { $_.path -like 'examples/*.png' }).Count -ne 12) { throw 'Portable resource layout does not contain all 12 example PNGs.' }
+        $qaPortableZip = Join-Path $qaReportDirectory 'AssetStudio-windows-x64-portable.zip'
+        Compress-Archive -LiteralPath $qaPortableDirectory -DestinationPath $qaPortableZip
+        $qaPackages = @((Get-FileEvidence $qaPortableZip))
+    } else {
+        $qaBundles = @(Get-ChildItem -LiteralPath $qaBundleDirectory -File -Filter '*.exe' | Where-Object {
+            $qaOld = $qaBeforeBundles[$_.FullName]
+            -not $qaOld -or $_.LastWriteTimeUtc.Ticks -ne $qaOld.ticks -or (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash -ne $qaOld.sha256
+        })
+        if ($qaBundles.Count -eq 0) { throw 'Build exited successfully but no new or regenerated NSIS package was found.' }
+        $qaPackages = @($qaBundles | ForEach-Object { Get-ExecutableEvidence $_.FullName })
+    }
+    $qaReport = [ordered]@{
+        checkedAt = [DateTimeOffset]::UtcNow.ToString('o')
+        platform = 'windows-x64'
+        distribution = $Distribution.ToLowerInvariant()
+        tauriCliVersion = $qaCliVersion
+        windowsSdkVersion = $qaSdkVersion
+        compilerTools = $qaTools
+        sdkPrerequisiteFiles = $qaSdkFiles
+        checksSkipped = [bool]$SkipChecks
+        bundlerDownloadAllowed = [bool]$AllowBundlerDownload
+        binaries = $qaBinaries
+        packages = $qaPackages
+        portableFiles = $qaPortableFiles
+        vcRuntimeDirectory = $VcRuntimeDirectory
+        packageCreated = $true
+        nativeWindowTested = $false
+        cleanMachineRuntimeTested = $false
+        installerLifecycleTested = $false
+        note = 'Actual output bytes/digests and PE architecture are recorded. Launch, dependency resolution, installation, upgrade and uninstall require separate execution evidence.'
+    }
+    $qaReportText = $qaReport | ConvertTo-Json -Depth 8
+    $qaReportText | Set-Content -LiteralPath (Join-Path $qaReportDirectory 'windows-x64-build.json') -Encoding utf8
+    $qaReportText | Set-Content -LiteralPath (Join-Path $qaWorkspace 'output\release\windows-x64-build.json') -Encoding utf8
+    $qaReportText
+}
+finally {
+    foreach ($qaName in $qaEnvironmentNames) { [Environment]::SetEnvironmentVariable($qaName, $qaPreviousEnvironment[$qaName], 'Process') }
+    Set-Location -LiteralPath $qaPreviousLocation.Path
+}

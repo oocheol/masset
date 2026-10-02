@@ -1,0 +1,3 @@
+[build]
+# Development builds remain bounded on machines with many logical cores.
+jobs = 4

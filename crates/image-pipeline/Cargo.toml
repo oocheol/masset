@@ -1,0 +1,21 @@
+[package]
+name = "asset-image-pipeline"
+version = "0.1.0"
+edition = "2021"
+description = "Bounded, deterministic local raster processing for Asset Studio"
+license = "Apache-2.0"
+
+[lib]
+name = "asset_image_pipeline"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1"
+image = { version = "0.25.8", default-features = false, features = ["png", "jpeg", "webp"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
+
+[[test]]
+name = "image_artifacts"
+path = "../../tests/image/artifacts.rs"

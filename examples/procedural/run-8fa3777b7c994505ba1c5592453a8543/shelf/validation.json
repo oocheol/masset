@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "valid": true,
+  "createdAt": "2026-10-02T06:22:22.057410+00:00",
+  "checks": [
+    {
+      "code": "real-mesh",
+      "status": "pass",
+      "message": "Non-planar procedural vertices and indexed faces",
+      "measured": 392
+    },
+    {
+      "code": "triangle-budget",
+      "status": "pass",
+      "message": "Below the 10000-triangle worker ceiling",
+      "measured": 756
+    },
+    {
+      "code": "dimensions-m",
+      "status": "pass",
+      "message": "Requested meter dimensions within relative tolerance 1e-5"
+    },
+    {
+      "code": "closed-components",
+      "status": "pass",
+      "message": "Every component edge has two adjacent faces",
+      "measured": 0
+    },
+    {
+      "code": "uv-normals-materials",
+      "status": "pass",
+      "message": "GLB contains UV, normals and material references"
+    },
+    {
+      "code": "pivot-axis",
+      "status": "pass",
+      "message": "Bottom-center origin; .blend Z-up, GLB Y-up, meters"
+    },
+    {
+      "code": "assembly-not-cad",
+      "status": "warn",
+      "message": "Overlapping solid components form a visualization mesh, not a manufacturing CAD solid"
+    },
+    {
+      "code": "approved-style-render",
+      "status": "pass",
+      "message": "Approved style palette, supported camera and soft-studio lights applied; explicit primary color preserved"
+    },
+    {
+      "code": "style-scope",
+      "status": "warn",
+      "message": "Line weight, semantic detail and exact pixel margin are recorded but not applied; reference ids are provenance only"
+    }
+  ],
+  "parameters": {
+    "template": "shelf",
+    "name": "선반 · Display Shelf",
+    "width": 1.0,
+    "depth": 0.4,
+    "height": 1.8,
+    "color": "#7192bc",
+    "bevel": 0.006
+  },
+  "blenderVersion": "5.2.1 LTS",
+  "mesh": {
+    "vertices": 1512,
+    "triangles": 756,
+    "dimensions": [
+      1.0,
+      1.8,
+      0.4
+    ],
+    "unit": "m",
+    "axis": "Y-up",
+    "pivot": "bottom-center"
+  },
+  "sourceInspection": {
+    "vertices": 392,
+    "triangles": 756,
+    "sourceDimensions": [
+      1.0,
+      0.4000000059604645,
+      1.7999999523162842
+    ],
+    "boundsMin": [
+      -0.5,
+      -0.20000000298023224,
+      0.0
+    ],
+    "boundsMax": [
+      0.5,
+      0.20000000298023224,
+      1.7999999523162842
+    ],
+    "openEdges": 0,
+    "uvLayers": 1,
+    "uvLoops": 1512,
+    "materialSlots": 3,
+    "normalCount": 1512,
+    "finiteNormals": true,
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "gltfInspection": {
+    "version": 2,
+    "meshes": 1,
+    "primitives": 3,
+    "vertices": 1512,
+    "triangles": 756,
+    "materials": 3,
+    "uvNormalsMaterialReferences": true,
+    "generator": "Khronos glTF Blender I/O v5.2.40"
+  },
+  "componentCount": 7,
+  "elapsedSeconds": 20.081,
+  "roundTrip": {
+    "status": "not-run-in-worker",
+    "note": "Fresh-process round-trip is performed by tests/blender"
+  },
+  "styleGuide": {
+    "id": "default",
+    "name": "차분한 판타지",
+    "approved": true,
+    "requestedCamera": "orthographic 3/4",
+    "requestedLighting": "soft studio",
+    "referenceAssetIds": [],
+    "referenceUse": "provenance-only; no referenced files opened",
+    "requested": {
+      "id": "default",
+      "name": "차분한 판타지",
+      "palette": [
+        "#799993",
+        "#d4bd8a",
+        "#7192bc",
+        "#c78272"
+      ],
+      "lineWeight": 2,
+      "camera": "orthographic 3/4",
+      "lighting": "soft studio",
+      "detail": "clean readable silhouette",
+      "margin": 24,
+      "referenceAssetIds": [],
+      "approved": true
+    },
+    "actual": {
+      "camera": {
+        "preset": "orthographic 3/4",
+        "type": "ORTHO",
+        "locationMetersZUp": [
+          3.7799999713897705,
+          -4.860000133514404,
+          4.139999866485596
+        ],
+        "orthoScaleMeters": 3.4200000762939453
+      },
+      "lighting": {
+        "preset": "soft studio",
+        "worldStrength": 0.550000011920929,
+        "lights": [
+          {
+            "name": "Key",
+            "type": "AREA",
+            "energyWatts": 2754.0,
+            "sizeMeters": 4.5,
+            "locationMetersZUp": [
+              3.5999999046325684,
+              -5.400000095367432,
+              7.199999809265137
+            ]
+          },
+          {
+            "name": "Fill",
+            "type": "AREA",
+            "energyWatts": 1620.0,
+            "sizeMeters": 4.5,
+            "locationMetersZUp": [
+              -5.400000095367432,
+              -1.7999999523162842,
+              3.5999999046325684
+            ]
+          },
+          {
+            "name": "Rim",
+            "type": "AREA",
+            "energyWatts": 2430.0,
+            "sizeMeters": 4.5,
+            "locationMetersZUp": [
+              1.7999999523162842,
+              5.400000095367432,
+              5.400000095367432
+            ]
+          }
+        ]
+      },
+      "materials": [
+        {
+          "role": "primary",
+          "color": "#7192bc",
+          "source": "ModelParameters.color explicit override"
+        },
+        {
+          "role": "detail",
+          "color": "#d4bd8a",
+          "source": "StyleGuide.palette"
+        },
+        {
+          "role": "accent",
+          "color": "#7192bc",
+          "source": "StyleGuide.palette"
+        }
+      ],
+      "materialSlots": 3
+    },
+    "notApplied": [
+      {
+        "field": "lineWeight",
+        "value": 2,
+        "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+      },
+      {
+        "field": "detail",
+        "value": "clean readable silhouette",
+        "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+      },
+      {
+        "field": "margin",
+        "value": 24,
+        "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+      }
+    ],
+    "identityGuarantee": false,
+    "turntable": "Fixed four 90-degree viewpoints; requested camera applies to thumbnail and source scene"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "mode": "blend",
+  "blenderVersion": "5.2.1 LTS",
+  "scene": {
+    "vertices": 392,
+    "triangles": 756,
+    "dimensions": [
+      1.0,
+      0.4000000059604645,
+      1.7999999523162842
+    ],
+    "uvLayers": 1,
+    "materials": 3,
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "minimumZ": 0.0
+  },
+  "valid": true
+}

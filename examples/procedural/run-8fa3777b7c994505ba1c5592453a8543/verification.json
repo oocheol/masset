@@ -1,0 +1,549 @@
+{
+  "schemaVersion": 1,
+  "valid": true,
+  "verifiedAt": "2026-10-02T06:22:29.4567402Z",
+  "platform": "Windows x64",
+  "blenderVersion": "5.2.1 LTS",
+  "mode": "direct-blender-worker",
+  "nativeAppIntegrationVerified": false,
+  "note": "Real procedural worker outputs and independent reopen proof; Tauri app integration was not executed.",
+  "workerPath": "workers/blender/worker.py",
+  "workerSha256": "7854c079ec5b3e1b34f240e0b0756f711a85068efae8eba9938c92db21a94552",
+  "processPolicy": {
+    "maximumConcurrentWorkers": 1,
+    "blenderThreads": 2,
+    "renderer": "Cycles CPU",
+    "factoryStartup": true,
+    "scriptAutoExecution": false
+  },
+  "styleGuide": {
+    "path": "style-guide.json",
+    "sha256": "12db90f27402624fa4aa89ad9530509300690611122a9d8176bf3f986f69d134",
+    "id": "default",
+    "approved": true
+  },
+  "models": [
+    {
+      "template": "crate",
+      "directory": "crate",
+      "parameters": {
+        "template": "crate",
+        "name": "상자 · Oak Crate",
+        "width": 1.2,
+        "depth": 0.8,
+        "height": 0.9,
+        "color": "#799993",
+        "bevel": 0.012
+      },
+      "mesh": {
+        "vertices": 3240,
+        "triangles": 1620,
+        "dimensions": [
+          1.2,
+          0.9,
+          0.8
+        ],
+        "unit": "m",
+        "axis": "Y-up",
+        "pivot": "bottom-center"
+      },
+      "editableSourceVertices": 840,
+      "sourceDimensionsMetersZUp": [
+        1.1999999284744263,
+        0.7999999523162842,
+        0.8999999761581421
+      ],
+      "actualStyle": {
+        "camera": {
+          "preset": "orthographic 3/4",
+          "type": "ORTHO",
+          "locationMetersZUp": [
+            2.5199999809265137,
+            -3.240000009536743,
+            2.609999895095825
+          ],
+          "orthoScaleMeters": 2.2799999713897705
+        },
+        "lighting": {
+          "preset": "soft studio",
+          "worldStrength": 0.550000011920929,
+          "lights": [
+            {
+              "name": "Key",
+              "type": "AREA",
+              "energyWatts": 1224.0,
+              "sizeMeters": 3.0,
+              "locationMetersZUp": [
+                2.4000000953674316,
+                -3.5999999046325684,
+                4.800000190734863
+              ]
+            },
+            {
+              "name": "Fill",
+              "type": "AREA",
+              "energyWatts": 720.0,
+              "sizeMeters": 3.0,
+              "locationMetersZUp": [
+                -3.5999999046325684,
+                -1.2000000476837158,
+                2.4000000953674316
+              ]
+            },
+            {
+              "name": "Rim",
+              "type": "AREA",
+              "energyWatts": 1080.0,
+              "sizeMeters": 3.0,
+              "locationMetersZUp": [
+                1.2000000476837158,
+                3.5999999046325684,
+                3.5999999046325684
+              ]
+            }
+          ]
+        },
+        "materials": [
+          {
+            "role": "primary",
+            "color": "#799993",
+            "source": "ModelParameters.color explicit override"
+          },
+          {
+            "role": "detail",
+            "color": "#d4bd8a",
+            "source": "StyleGuide.palette"
+          },
+          {
+            "role": "accent",
+            "color": "#7192bc",
+            "source": "StyleGuide.palette"
+          }
+        ],
+        "materialSlots": 3
+      },
+      "referenceAssetIds": [],
+      "notApplied": [
+        {
+          "field": "lineWeight",
+          "value": 2,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "detail",
+          "value": "clean readable silhouette",
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "margin",
+          "value": 24,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        }
+      ],
+      "identityGuarantee": false,
+      "generationSeconds": 16.217,
+      "freshGlbReopen": true,
+      "freshBlendReopen": true,
+      "artifacts": [
+        {
+          "path": "crate/model.glb",
+          "bytes": 117024,
+          "sha256": "a46c29f7ec8ac5099a8c10c425089d51bd423c9e879c3eab98ea55abaf68d7b1"
+        },
+        {
+          "path": "crate/source.blend",
+          "bytes": 131338,
+          "sha256": "62b4fc3e1c11d5690311bc2f0a208b57abf2803f7ceb4910290bc3b16a8e730a"
+        },
+        {
+          "path": "crate/thumbnail.png",
+          "bytes": 290128,
+          "sha256": "02ad30692744cc63181fc6614d66da502a4da8bb41c3a09aec819507401410fc"
+        },
+        {
+          "path": "crate/turntable-00.png",
+          "bytes": 80238,
+          "sha256": "26e9e02f5ad00a9139df1c52306e807095c680fb084ee3e1549275168400c65d"
+        },
+        {
+          "path": "crate/turntable-01.png",
+          "bytes": 79713,
+          "sha256": "44f505f4cae3c23e79e0ca06923a346e2b8225dd3f722744ee4b06c8711b2564"
+        },
+        {
+          "path": "crate/turntable-02.png",
+          "bytes": 80377,
+          "sha256": "eebadac5ff1ad2543969f01e88ad4fc19523466378834fe332b9e5899462d9d8"
+        },
+        {
+          "path": "crate/turntable-03.png",
+          "bytes": 80017,
+          "sha256": "cd1624cf8a5e74f35da9553b53992ec18aea5554b554ccb825cbd68beae048ad"
+        },
+        {
+          "path": "crate/validation.json",
+          "bytes": 6372,
+          "sha256": "5090e0eb158e92afca0c40cf1edb0415206cbe1b551dca4686354bbb3d88c3c3"
+        },
+        {
+          "path": "crate/roundtrip-glb.json",
+          "bytes": 773,
+          "sha256": "e819a5030f1245845fe904736641cc17dc69b9f71b9478acfa2f4d24136b46a5"
+        },
+        {
+          "path": "crate/roundtrip-blend.json",
+          "bytes": 374,
+          "sha256": "c4272c4738a3a96e3b4a389f5ff9677626917dcf6dd90254f9e7a1ca7dc82766"
+        }
+      ]
+    },
+    {
+      "template": "table",
+      "directory": "table",
+      "parameters": {
+        "template": "table",
+        "name": "테이블 · Workshop Table",
+        "width": 1.6,
+        "depth": 0.8,
+        "height": 0.76,
+        "color": "#d4bd8a",
+        "bevel": 0.009
+      },
+      "mesh": {
+        "vertices": 1944,
+        "triangles": 972,
+        "dimensions": [
+          1.6,
+          0.76,
+          0.8
+        ],
+        "unit": "m",
+        "axis": "Y-up",
+        "pivot": "bottom-center"
+      },
+      "editableSourceVertices": 504,
+      "sourceDimensionsMetersZUp": [
+        1.600000023841858,
+        0.800000011920929,
+        0.7600000500679016
+      ],
+      "actualStyle": {
+        "camera": {
+          "preset": "orthographic 3/4",
+          "type": "ORTHO",
+          "locationMetersZUp": [
+            3.359999895095825,
+            -4.320000171661377,
+            3.259999990463257
+          ],
+          "orthoScaleMeters": 3.0399999618530273
+        },
+        "lighting": {
+          "preset": "soft studio",
+          "worldStrength": 0.550000011920929,
+          "lights": [
+            {
+              "name": "Key",
+              "type": "AREA",
+              "energyWatts": 2176.0,
+              "sizeMeters": 4.0,
+              "locationMetersZUp": [
+                3.200000047683716,
+                -4.800000190734863,
+                6.400000095367432
+              ]
+            },
+            {
+              "name": "Fill",
+              "type": "AREA",
+              "energyWatts": 1280.0,
+              "sizeMeters": 4.0,
+              "locationMetersZUp": [
+                -4.800000190734863,
+                -1.600000023841858,
+                3.200000047683716
+              ]
+            },
+            {
+              "name": "Rim",
+              "type": "AREA",
+              "energyWatts": 1920.0,
+              "sizeMeters": 4.0,
+              "locationMetersZUp": [
+                1.600000023841858,
+                4.800000190734863,
+                4.800000190734863
+              ]
+            }
+          ]
+        },
+        "materials": [
+          {
+            "role": "primary",
+            "color": "#d4bd8a",
+            "source": "ModelParameters.color explicit override"
+          },
+          {
+            "role": "detail",
+            "color": "#d4bd8a",
+            "source": "StyleGuide.palette"
+          },
+          {
+            "role": "accent",
+            "color": "#7192bc",
+            "source": "StyleGuide.palette"
+          }
+        ],
+        "materialSlots": 3
+      },
+      "referenceAssetIds": [],
+      "notApplied": [
+        {
+          "field": "lineWeight",
+          "value": 2,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "detail",
+          "value": "clean readable silhouette",
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "margin",
+          "value": 24,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        }
+      ],
+      "identityGuarantee": false,
+      "generationSeconds": 19.379,
+      "freshGlbReopen": true,
+      "freshBlendReopen": true,
+      "artifacts": [
+        {
+          "path": "table/model.glb",
+          "bytes": 71664,
+          "sha256": "64e219381c028551cacbf44bfeb1076194e34196ebc910dbf3044abbe49cc260"
+        },
+        {
+          "path": "table/source.blend",
+          "bytes": 120211,
+          "sha256": "68a2ff998a45d7026cdbe33da1aaf38db4bf65688de6d31fe6b63ea0fdc733a2"
+        },
+        {
+          "path": "table/thumbnail.png",
+          "bytes": 274364,
+          "sha256": "3c84f026561a97e368f3ecc72eeb37841bf1f668e22512632e18693d472c647e"
+        },
+        {
+          "path": "table/turntable-00.png",
+          "bytes": 74248,
+          "sha256": "62bdf82a3532216c0e936d502d83d2daa5773aa05b1321f23ca578e113963761"
+        },
+        {
+          "path": "table/turntable-01.png",
+          "bytes": 73834,
+          "sha256": "683db4bf7f852b6b55ae4da51d4d24f227dd6e5b7de934c94197e2d739c75ec2"
+        },
+        {
+          "path": "table/turntable-02.png",
+          "bytes": 75148,
+          "sha256": "8322fac03f2be2e34bdb40c3a80d07680b788e53bcffe51a955c5bef0fe0c100"
+        },
+        {
+          "path": "table/turntable-03.png",
+          "bytes": 74611,
+          "sha256": "fad91a056ea03c007c79119d875d273135a8648e3c6e20a85ffbe3f5f71d8c1a"
+        },
+        {
+          "path": "table/validation.json",
+          "bytes": 6365,
+          "sha256": "a3c0f088831682b42ecee6c55f382212e3ad47d8e84aca11860b2e58aa79aa98"
+        },
+        {
+          "path": "table/roundtrip-glb.json",
+          "bytes": 765,
+          "sha256": "f7e785ab9907efd7415bb210f3861024f15b90ce7c10bb42e3cae87d0aa4b0f1"
+        },
+        {
+          "path": "table/roundtrip-blend.json",
+          "bytes": 371,
+          "sha256": "d7cbdc656684ceef4a9717ab031c06b74ddf950d00919b764338cc15c4ffb989"
+        }
+      ]
+    },
+    {
+      "template": "shelf",
+      "directory": "shelf",
+      "parameters": {
+        "template": "shelf",
+        "name": "선반 · Display Shelf",
+        "width": 1.0,
+        "depth": 0.4,
+        "height": 1.8,
+        "color": "#7192bc",
+        "bevel": 0.006
+      },
+      "mesh": {
+        "vertices": 1512,
+        "triangles": 756,
+        "dimensions": [
+          1.0,
+          1.8,
+          0.4
+        ],
+        "unit": "m",
+        "axis": "Y-up",
+        "pivot": "bottom-center"
+      },
+      "editableSourceVertices": 392,
+      "sourceDimensionsMetersZUp": [
+        1.0,
+        0.4000000059604645,
+        1.7999999523162842
+      ],
+      "actualStyle": {
+        "camera": {
+          "preset": "orthographic 3/4",
+          "type": "ORTHO",
+          "locationMetersZUp": [
+            3.7799999713897705,
+            -4.860000133514404,
+            4.139999866485596
+          ],
+          "orthoScaleMeters": 3.4200000762939453
+        },
+        "lighting": {
+          "preset": "soft studio",
+          "worldStrength": 0.550000011920929,
+          "lights": [
+            {
+              "name": "Key",
+              "type": "AREA",
+              "energyWatts": 2754.0,
+              "sizeMeters": 4.5,
+              "locationMetersZUp": [
+                3.5999999046325684,
+                -5.400000095367432,
+                7.199999809265137
+              ]
+            },
+            {
+              "name": "Fill",
+              "type": "AREA",
+              "energyWatts": 1620.0,
+              "sizeMeters": 4.5,
+              "locationMetersZUp": [
+                -5.400000095367432,
+                -1.7999999523162842,
+                3.5999999046325684
+              ]
+            },
+            {
+              "name": "Rim",
+              "type": "AREA",
+              "energyWatts": 2430.0,
+              "sizeMeters": 4.5,
+              "locationMetersZUp": [
+                1.7999999523162842,
+                5.400000095367432,
+                5.400000095367432
+              ]
+            }
+          ]
+        },
+        "materials": [
+          {
+            "role": "primary",
+            "color": "#7192bc",
+            "source": "ModelParameters.color explicit override"
+          },
+          {
+            "role": "detail",
+            "color": "#d4bd8a",
+            "source": "StyleGuide.palette"
+          },
+          {
+            "role": "accent",
+            "color": "#7192bc",
+            "source": "StyleGuide.palette"
+          }
+        ],
+        "materialSlots": 3
+      },
+      "referenceAssetIds": [],
+      "notApplied": [
+        {
+          "field": "lineWeight",
+          "value": 2,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "detail",
+          "value": "clean readable silhouette",
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        },
+        {
+          "field": "margin",
+          "value": 24,
+          "reason": "No line drawing, silhouette inference or exact pixel-margin layout in this procedural 3D renderer"
+        }
+      ],
+      "identityGuarantee": false,
+      "generationSeconds": 20.081,
+      "freshGlbReopen": true,
+      "freshBlendReopen": true,
+      "artifacts": [
+        {
+          "path": "shelf/model.glb",
+          "bytes": 56488,
+          "sha256": "a30909e3f7079432e4b00d7198c67aaaadb8ea9bfa0ee6b97590115a9ed13c1f"
+        },
+        {
+          "path": "shelf/source.blend",
+          "bytes": 116308,
+          "sha256": "4dba64e816ba0e63f3e96401dbdae097d683fb537c85da1e1918cf5502b6b1e6"
+        },
+        {
+          "path": "shelf/thumbnail.png",
+          "bytes": 281971,
+          "sha256": "e3a331a85499d31ce901b230ccc169b7d14fffbd3aac58114baec612b8f096d4"
+        },
+        {
+          "path": "shelf/turntable-00.png",
+          "bytes": 76566,
+          "sha256": "cee6f5fa3eda8867e68544d1330e0bd526a3f9abe85a2106753d108fabe542da"
+        },
+        {
+          "path": "shelf/turntable-01.png",
+          "bytes": 69726,
+          "sha256": "77324c7c690e90e000d9ffd93efb20019788b4879e8e4df57055cb014dbabfb1"
+        },
+        {
+          "path": "shelf/turntable-02.png",
+          "bytes": 69876,
+          "sha256": "052be7092090a313f81dc221c2d344faf97fc151fca799a530a8d5accf6aa90d"
+        },
+        {
+          "path": "shelf/turntable-03.png",
+          "bytes": 76618,
+          "sha256": "b9cd3439e6f0aece1a942fd676234fe4260e61859cf8b9b277bf760d5f288519"
+        },
+        {
+          "path": "shelf/validation.json",
+          "bytes": 6325,
+          "sha256": "81f420864fa702cc2f3819623354b5cf51e6be5364381da30eb5992edee9b49b"
+        },
+        {
+          "path": "shelf/roundtrip-glb.json",
+          "bytes": 713,
+          "sha256": "c66ca76d6630e8703b4c0a73e192ceef92acecdda359d4bd91001cf3441766f3"
+        },
+        {
+          "path": "shelf/roundtrip-blend.json",
+          "bytes": 358,
+          "sha256": "e202163bc12e73ca615ecf8795600852bdfad5a8f542e66ba44bbf92a5f162a3"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "architecture": "x86_64",
+  "isolatedProcesses": true,
+  "measuredAt": "2026-10-02T07:42:49.257684400+00:00",
+  "measuredWallSpeedup": 1.7004469613532496,
+  "notes": [
+    "Real local CPU work; no provider or Blender performance claim.",
+    "Resource reservations are admission estimates, not an OS memory sandbox.",
+    "Fresh processes isolate serial and parallel peaks. Windows CPU time is kernel+user time during the workload; peak working set covers each child process lifetime.",
+    "Input-buffer allocation peaks count live Vec capacities; Windows working set also includes SQLite, thread stacks, executable pages and allocator overhead.",
+    "Null CPU or memory values mean the platform metric was not collected.",
+    "One measurement; no unverified fixed speedup claim."
+  ],
+  "parallel": {
+    "completedJobs": 6,
+    "confirmedOverlap": true,
+    "intervals": [
+      {
+        "finishedUs": 124789,
+        "id": "hash-0",
+        "outputSha256": "254bcc3fc4f27172636df4bf32de9f107f620d559b20d760197e452b97453917",
+        "startedUs": 16944
+      },
+      {
+        "finishedUs": 104402,
+        "id": "hash-1",
+        "outputSha256": "2ba775be30dff184503702b2b6f7d4ce7c516323ce37cfd6ae09e691c12a37d6",
+        "startedUs": 16949
+      },
+      {
+        "finishedUs": 256888,
+        "id": "hash-2",
+        "outputSha256": "74a5cbb110a5f1d13c5ec0565ff581122c4c5440d5094a4222c11d79bd28a6f7",
+        "startedUs": 161979
+      },
+      {
+        "finishedUs": 252032,
+        "id": "hash-3",
+        "outputSha256": "10076d04b1de39783a6eeae54951172b803e486e4947a5bd4696a6748cd5a74a",
+        "startedUs": 161972
+      },
+      {
+        "finishedUs": 424424,
+        "id": "hash-4",
+        "outputSha256": "1a15b78a7d58d8fedae00cb3e3a325c2956e2bb0b3cf8d148f5c84a87a4b1f26",
+        "startedUs": 292354
+      },
+      {
+        "finishedUs": 415436,
+        "id": "hash-5",
+        "outputSha256": "3f2e83b2b11f6bd10123bf3d82e1a545e3a75a6f926c951b391dd1e0896f4248",
+        "startedUs": 292357
+      }
+    ],
+    "peakActiveJobs": 2,
+    "peakActualInputBuffersBytes": 4194304,
+    "peakProcessWorkingSetBytes": 10657792,
+    "peakReservedRamMb": 32,
+    "processCpuSeconds": 0.53125,
+    "processId": 29484,
+    "wallMs": 447.5331
+  },
+  "platform": "windows",
+  "schemaVersion": 2,
+  "serial": {
+    "completedJobs": 6,
+    "confirmedOverlap": false,
+    "intervals": [
+      {
+        "finishedUs": 92310,
+        "id": "hash-0",
+        "outputSha256": "254bcc3fc4f27172636df4bf32de9f107f620d559b20d760197e452b97453917",
+        "startedUs": 517
+      },
+      {
+        "finishedUs": 216449,
+        "id": "hash-1",
+        "outputSha256": "2ba775be30dff184503702b2b6f7d4ce7c516323ce37cfd6ae09e691c12a37d6",
+        "startedUs": 103332
+      },
+      {
+        "finishedUs": 364042,
+        "id": "hash-2",
+        "outputSha256": "74a5cbb110a5f1d13c5ec0565ff581122c4c5440d5094a4222c11d79bd28a6f7",
+        "startedUs": 267585
+      },
+      {
+        "finishedUs": 495182,
+        "id": "hash-3",
+        "outputSha256": "10076d04b1de39783a6eeae54951172b803e486e4947a5bd4696a6748cd5a74a",
+        "startedUs": 408883
+      },
+      {
+        "finishedUs": 610936,
+        "id": "hash-4",
+        "outputSha256": "1a15b78a7d58d8fedae00cb3e3a325c2956e2bb0b3cf8d148f5c84a87a4b1f26",
+        "startedUs": 520350
+      },
+      {
+        "finishedUs": 748522,
+        "id": "hash-5",
+        "outputSha256": "3f2e83b2b11f6bd10123bf3d82e1a545e3a75a6f926c951b391dd1e0896f4248",
+        "startedUs": 651043
+      }
+    ],
+    "peakActiveJobs": 1,
+    "peakActualInputBuffersBytes": 2097152,
+    "peakProcessWorkingSetBytes": 8519680,
+    "peakReservedRamMb": 16,
+    "processCpuSeconds": 0.53125,
+    "processId": 14248,
+    "wallMs": 761.0063
+  },
+  "workload": {
+    "bufferBytesPerJob": 2097152,
+    "jobs": 6,
+    "operation": "sha256",
+    "passesPerJob": 64
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "clientDate": "2026-10-02",
+  "sources": [
+    {
+      "url": "https://learn.chatgpt.com/docs/image-generation.md",
+      "retrievedAt": "2026-10-02T05:42:28.640Z",
+      "sha256": "0eedfcaca1d6cb8ed0a39b6e1b0b2dedc06e2f9b9d2bcff5c5dfffa5f6360daa",
+      "excerpts": [
+        {
+          "topic": "Built-in image generation uses `gpt-image-2`",
+          "found": true,
+          "excerpt": "Built-in image generation uses `gpt-image-2` and counts toward your general\nCodex usage limits. Image generations use included limits 3–5x faster on\naverage than similar turns without image generation, depending on image quality\nand size. For larger batches, set `OPENAI_API_KEY` in your environment and ask\nChatGPT to generate images through the API so API pricing applies."
+        },
+        {
+          "topic": "Describe the image in an interactive session",
+          "found": true,
+          "excerpt": "Describe the image in an interactive session or include `$imagegen` to invoke\nthe image generation skill explicitly. Attach an existing image with `-i` or\n`--image` when it should guide the result."
+        },
+        {
+          "topic": "Attach an existing image",
+          "found": true,
+          "excerpt": "Attach an existing image with `-i` or\n`--image` when it should guide the result."
+        }
+      ]
+    },
+    {
+      "url": "https://developers.openai.com/codex/app-server.md",
+      "retrievedAt": "2026-10-02T05:42:29.323Z",
+      "sha256": "14c29f997cffff66125e710c1746425c53262eb4e636eb0bbcd5c8b4ec7e4464",
+      "excerpts": [
+        {
+          "topic": "You can generate a TypeScript schema",
+          "found": true,
+          "excerpt": "You can generate a TypeScript schema or a JSON Schema bundle from the CLI. Each output is specific to the Codex version you ran, so the generated artifacts match that version exactly:"
+        },
+        {
+          "topic": "`modelProvider/capabilities/read`",
+          "found": true,
+          "excerpt": "`modelProvider/capabilities/read` - read provider capability bounds for model/provider combinations.\n- `experimentalFeature/list` - list feature flags with lifecycle stage metadata and cursor pagination.\n- `experimentalFeature/enablement/set` - patch in-memory runtime settings for supported feature keys such as `apps` and `plugins`.\n- `environment/info` - experimental; connect to a configured execution environment and return its shell plus default working directory.\n- `permissionProfile/list` - list beta permission profiles and whether effective requirements allow them, with cursor pagination.\n- `collaborationMode/list` - list collaboration mode presets (experimental, no pagination).\n- `skills/list` - list skills for one or more `cwd` values (supports `forceReload` and optional `perCwdExtraUserRoots`).\n- `skills/extraRoots/set` - replace the process-level extra roots used to discover sta"
+        },
+        {
+          "topic": "**ChatGPT managed (`chatgpt`)**",
+          "found": true,
+          "excerpt": "**ChatGPT managed (`chatgpt`)** - Codex owns the ChatGPT OAuth flow, persists tokens, and refreshes them automatically. Start with `type: \"chatgpt\"` for the browser flow or `type: \"chatgptDeviceCode\"` for the device-code flow.\n- **ChatGPT external tokens (`chatgptAuthTokens`)** - experimental and intended for host apps that already own the user's ChatGPT auth lifecycle. The host app supplies an `accessToken`, `chatgptAccountId`, and optional `chatgptPlanType` directly, and must refresh the token when asked.\n- **Amazon Bedrock** - `account/read` reports Bedrock accounts as `type: \"amazonBedrock\"` and indicates whether credentials come from a Codex-managed Bedrock API key (`credentialSource: \"codexManaged\"`) or the external AWS credential chain (`credentialSource: \"awsManaged\"`). `account/updated.authMode` uses `bedrockApiKey` for Codex-managed Bedrock API keys."
+        },
+        {
+          "topic": "`turn/interrupt`",
+          "found": true,
+          "excerpt": "`turn/interrupt` cancellation."
+        }
+      ]
+    },
+    {
+      "url": "https://developers.openai.com/codex/auth.md",
+      "retrievedAt": "2026-10-02T05:42:29.568Z",
+      "sha256": "3d2f0ed91fa09de11cabe38cb37a76e0833f71205cae6589c46c7f5ae9ad62f0",
+      "excerpts": [
+        {
+          "topic": "Sign in with ChatGPT for subscription access",
+          "found": true,
+          "excerpt": "Sign in with ChatGPT for subscription access\n- Sign in with an API key for usage-based access"
+        },
+        {
+          "topic": "Sign in with an API key for usage-based access",
+          "found": true,
+          "excerpt": "Sign in with an API key for usage-based access"
+        }
+      ]
+    },
+    {
+      "url": "https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations.md",
+      "retrievedAt": "2026-10-02T05:42:29.588Z",
+      "sha256": "051ee06d537d746de9a5f1aa5019a44400fd9856b27ec37b4a9c9fec5874fa0c",
+      "excerpts": [
+        {
+          "topic": "**Unsupported tools:** Image generation",
+          "found": true,
+          "excerpt": "**Unsupported tools:** Image generation, file search, Code Interpreter, native computer use, hosted MCP/connectors, and Responses `tool_search`. Client-side execution does not make `tool_search` supported. `programmatic_tool_calling` is not accepted in top-level `tools` on this route.\n- **Inputs:** Text, images, and files are supported when the selected model accepts them. Audio/video input, the Files upload API, and the transcription API are not supported by this flow."
+        },
+        {
+          "topic": "These limits apply to ChatGPT plan usage",
+          "found": true,
+          "excerpt": "These limits apply to ChatGPT plan usage through Sign in with ChatGPT and `https://api.openai.com/v1`, both directly and through Codex app-server."
+        }
+      ]
+    },
+    {
+      "url": "https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference.md",
+      "retrievedAt": "2026-10-02T05:42:29.615Z",
+      "sha256": "4cd568e57168de134717e5ed611d15d3505b88d30d6a45bd234b2a0a1ea96370",
+      "excerpts": [
+        {
+          "topic": "bundled or cached catalog",
+          "found": true,
+          "excerpt": "bundled or cached catalog. Use the request above when your UI needs current account-specific model choices."
+        },
+        {
+          "topic": "**Supported endpoint:**",
+          "found": true,
+          "excerpt": "**Supported endpoint:** Use the public Responses API endpoint above for this ChatGPT plan usage flow; do not point it at ChatGPT's `backend-api` endpoints. Use a model available to the signed-in account."
+        },
+        {
+          "topic": "response.completed",
+          "found": true,
+          "excerpt": "response.completed\":\n            completed = True"
+        }
+      ]
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/image-generation.md",
+      "retrievedAt": "2026-10-02T05:42:29.635Z",
+      "sha256": "280e6c129fecf61a9e13e7e9173ca84e02f74ecfeacf1c7fbd6f9bed4989fd1d",
+      "excerpts": [
+        {
+          "topic": "The API lets you generate and edit images from text prompts using `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`.",
+          "found": true,
+          "excerpt": "The API lets you generate and edit images from text prompts using `gpt-image-2.5-sunburst` and `gpt-image-2.5-flare`. Choose Sunburst for workflows where editing precision matters most, and Flare for fast, high-quality everyday image generation. You can access image generation capabilities through two APIs:"
+        },
+        {
+          "topic": "### GPT Image 2.5 costs",
+          "found": true,
+          "excerpt": "### GPT Image 2.5 costs"
+        }
+      ]
+    }
+  ]
+}

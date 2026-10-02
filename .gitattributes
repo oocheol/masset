@@ -1,0 +1,6 @@
+docs/licenses/** linguist-vendored
+crates/providers/assets/** linguist-vendored
+*.png binary
+*.glb binary
+*.blend binary
+*.crate binary

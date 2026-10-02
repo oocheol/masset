@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Asset Studio",
+  "version": "0.1.0",
+  "identifier": "org.localassets.workbench",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Asset Studio",
+        "width": 1500,
+        "height": 960,
+        "minWidth": 1100,
+        "minHeight": 720,
+        "decorations": true,
+        "backgroundColor": "#171c24"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost blob: data:; connect-src ipc: http://ipc.localhost asset: http://asset.localhost 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; script-src 'self'",
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../../../workers/blender/worker.py": "workers/blender/worker.py",
+      "../../../workers/blender/LICENSE": "workers/blender/LICENSE",
+      "../public/examples/": "examples/",
+      "../../../crates/providers/assets/NOTICE": "licenses/CODEX-CATALOG-NOTICE.txt",
+      "../../../crates/providers/assets/OPENAI-CODEX-LICENSE": "licenses/OPENAI-CODEX-LICENSE.txt",
+      "../../../crates/providers/assets/OPENAI-CODEX-NOTICE": "licenses/OPENAI-CODEX-NOTICE.txt"
+    },
+    "shortDescription": "Local-first asset production workbench",
+    "category": "GraphicsAndDesign",
+    "macOS": {
+      "minimumSystemVersion": "12.0"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "languages": [
+          "Korean",
+          "English"
+        ]
+      }
+    }
+  }
+}

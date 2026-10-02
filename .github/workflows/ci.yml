@@ -1,0 +1,135 @@
+name: Local desktop checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      macos_checks:
+        description: 'Opt in to unverified macOS arm64/x64 builds'
+        type: boolean
+        default: false
+      native_window_smoke:
+        description: 'Opt in to actual Windows WebView startup on the runner'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Browser and artifact checks (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run site:build
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence-windows
+          path: output/playwright
+          if-no-files-found: ignore
+
+  native_windows:
+    name: Windows x64 native backend and portable package
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+      - run: npm ci
+      - name: Native Rust tests
+        shell: pwsh
+        run: |
+          . ./scripts/with-native-env.ps1
+          cargo test --workspace
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build without fetching NSIS tools
+        shell: pwsh
+        run: ./scripts/build-windows.ps1 -SkipInstall -SkipChecks
+      - name: Native backend and independent export verification
+        shell: pwsh
+        run: ./scripts/native-smoke.ps1
+      - name: Native WebView startup (explicit manual opt-in)
+        if: github.event_name == 'workflow_dispatch' && inputs.native_window_smoke
+        shell: pwsh
+        run: ./scripts/native-smoke.ps1 -NativeWindow
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-evidence-windows-x64
+          path: |
+            output/native-smoke/**
+            output/release/**/windows-x64-build.json
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-windows-x64-portable
+          path: output/release/**/AssetStudio-windows-x64-portable.zip
+          if-no-files-found: error
+
+  native_macos:
+    name: Opt-in native package ${{ matrix.platform }}
+    if: github.event_name == 'workflow_dispatch' && inputs.macos_checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+            bundles: app,dmg
+          - platform: macos-x64
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+            bundles: app,dmg
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+      - run: npm ci
+      - run: cargo test --workspace --target ${{ matrix.target }}
+      - run: npm run desktop:build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-${{ matrix.platform }}
+          path: |
+            target/${{ matrix.target }}/release/bundle/**
+          if-no-files-found: error
+
+# Package creation is not an install/launch certification. No release is published here.
+# Blender and live subscription generation are separate opt-in tests.
+# macOS builds and Windows WebView startup require explicit manual workflow inputs.

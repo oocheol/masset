@@ -1,0 +1,444 @@
+use super::*;
+use asset_providers::runtime::{
+    CodexRuntime, ProviderEvent, RuntimeError, RuntimeOptions, RuntimeStatus,
+};
+use asset_providers::{AuthStatus, ImageGenerationRequest, ImageProvenance, REQUESTED_IMAGE_MODEL};
+
+pub(super) fn unavailable_connection(reason: &str) -> Value {
+    json!({"available":false,"authenticated":false,"ready":false,"runtimeVersion":null,
+        "requestedModel":"gpt-image-2","confirmedModel":null,"reason":reason,"usage":[],"checkedAt":now()})
+}
+
+fn connection(status: &RuntimeStatus) -> Value {
+    let authenticated = status.authentication == AuthStatus::Chatgpt;
+    let ready = authenticated
+        && status.controls_verified
+        && status.official_provider_verified
+        && status.native_image_generation;
+    json!({"available":true,"authenticated":authenticated,"ready":ready,"runtimeVersion":status.version,
+        "requestedModel":status.requested_image_model,"confirmedModel":status.confirmed_image_model,
+        "reason":if ready {format!("공식 Codex 구독 연결 · 추론 모델 {}. 이미지 요청은 GPT Image 2이며 실제 사용 이미지 모델은 아직 확인되지 않았습니다.",status.reasoning_model.as_deref().unwrap_or("확인 필요"))}
+        else if !authenticated {"공식 Codex에서 ChatGPT 계정으로 로그인해 주세요.".to_owned()}
+        else {"공식 이미지 도구와 실행 제한을 확인하지 못해 생성을 차단했습니다.".to_owned()},
+        "usage":status.rate_limits,"checkedAt":now()})
+}
+
+fn executable() -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Some(path) = std::env::var_os("CODEX_EXECUTABLE") {
+        candidates.push(PathBuf::from(path));
+    }
+    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+        candidates.push(PathBuf::from(local).join("Programs/OpenAI/Codex/bin/codex.exe"));
+    }
+    #[cfg(target_os = "macos")]
+    candidates.push(PathBuf::from(
+        "/Applications/Codex.app/Contents/Resources/codex",
+    ));
+    candidates
+        .into_iter()
+        .find(|p| p.is_absolute() && p.is_file())
+}
+
+impl Backend {
+    pub(super) fn provider_status(&self) -> Result<Value> {
+        let result = (|| -> Result<Value> {
+            let path = executable().context("공식 Codex 실행 파일을 찾을 수 없습니다. Codex 설치 또는 CODEX_EXECUTABLE 설정을 확인해 주세요.")?;
+            let mut runtime = self.inner.provider_runtime.lock().unwrap();
+            if runtime.is_none() {
+                *runtime = Some(CodexRuntime::connect(RuntimeOptions::new(
+                    path,
+                    self.inner.data.join("provider-session"),
+                ))?);
+            }
+            let status = runtime.as_mut().unwrap().refresh_status()?;
+            Ok(connection(&status))
+        })();
+        let value = match result {
+            Ok(value) => value,
+            Err(error) => {
+                self.inner.provider_runtime.lock().unwrap().take();
+                unavailable_connection(&error.to_string())
+            }
+        };
+        *self.inner.provider_connection.lock().unwrap() = value.clone();
+        Ok(value)
+    }
+
+    pub(super) fn provider_login(&self) -> Result<Value> {
+        let status = self.provider_status()?;
+        if status["authenticated"] == true {
+            return Ok(status);
+        }
+        let mut runtime = self.inner.provider_runtime.lock().unwrap();
+        let actor = runtime
+            .as_mut()
+            .context("공식 Codex 런타임을 먼저 연결해 주세요.")?;
+        let login = actor.begin_login()?;
+        if let Err(error) = open_official_login(&login.auth_url) {
+            let _ = actor.cancel_login(&login.login_id);
+            return Err(error);
+        }
+        let mut status = connection(actor.status());
+        status["reason"] = json!("브라우저에서 공식 로그인을 완료한 후 연결 확인을 눌러 주세요.");
+        // Neither the login URL nor its ID crosses the frontend/project boundary.
+        *self.inner.provider_connection.lock().unwrap() = status.clone();
+        Ok(status)
+    }
+
+    pub(super) fn provider_capabilities(&self, project: &Project) -> Vec<ProviderCapability> {
+        let mut capabilities = asset_providers::capabilities();
+        if let Some(codex) = capabilities
+            .iter_mut()
+            .find(|p| p.id == "codex_subscription")
+        {
+            let status = self.inner.provider_connection.lock().unwrap();
+            let proven = project.assets.iter().flat_map(|a| &a.versions).any(|v| {
+                v.source == AssetSource::CodexSubscription
+                    && v.requested_model.as_deref() == Some("gpt-image-2")
+                    && v.validation.as_ref().is_some_and(|report| report.valid)
+            });
+            codex.requested_models = vec!["gpt-image-2".into()];
+            codex.confirmed_model = None;
+            codex.generation = proven;
+            codex.status = if proven {
+                ProviderStatus::Verified
+            } else if status["ready"] == true {
+                ProviderStatus::Unverified
+            } else {
+                ProviderStatus::Blocked
+            };
+            codex.reason = if proven {
+                "이 프로젝트에서 구독 이미지 파일 디코딩·저장을 검증했습니다. 실제 이미지 모델은 확인되지 않았습니다.".into()
+            } else {
+                status["reason"]
+                    .as_str()
+                    .unwrap_or("연결 확인이 필요합니다.")
+                    .into()
+            };
+            codex.name = "Codex · ChatGPT 구독".into();
+        }
+        capabilities
+    }
+
+    pub(super) fn enqueue_generation(&self, request: &Value) -> Result<()> {
+        let prompt = text_field(request, "prompt")?.trim();
+        if prompt.is_empty() || prompt.len() > 16000 {
+            bail!("이미지 설명은 1~16000바이트로 입력해 주세요.")
+        }
+        let count = request["count"].as_u64().unwrap_or(1);
+        if !(1..=20).contains(&count) {
+            bail!("이미지는 한 번에 1~20개까지 요청할 수 있습니다.")
+        }
+        let request_id = text_field(request, "requestId")?;
+        Uuid::parse_str(request_id).context("생성 요청 식별자가 올바르지 않습니다.")?;
+        let status = self.inner.provider_connection.lock().unwrap().clone();
+        if status["ready"] != true {
+            bail!(
+                "{}",
+                status["reason"]
+                    .as_str()
+                    .unwrap_or("구독 연결을 확인해 주세요.")
+            )
+        }
+        let root = self.root()?;
+        let project = Repository::open(&root)?.project()?;
+        if !project.style_guide.approved {
+            bail!("스타일 가이드를 승인한 뒤 생성해 주세요.")
+        }
+        let name = request["name"].as_str().unwrap_or("생성 이미지").trim();
+        if name.len() > 240 {
+            bail!("이미지 이름이 너무 깁니다.")
+        }
+        let tasks = (0..count).map(|index| job(&project,"image_generate",&format!("구독 이미지 · {}",index+1),None,JobResource::External,
+            json!({"prompt":prompt,"name":if count==1{name.to_owned()}else{format!("{name} {}",index+1)},
+                "variationIndex":index,"variationCount":count,"requestedModel":REQUESTED_IMAGE_MODEL,
+                "styleGuide":project.style_guide,"spec":project.spec,"toolVersion":status["runtimeVersion"],
+                "resources":{"ramMb":image_ram_mb(raster::MAX_PIXELS,16,384),"cpuThreads":1,"diskWeight":1}}))).collect::<Result<Vec<_>>>()?;
+        SchedulerStore::open(&root.join("scheduler.sqlite"))?
+            .enqueue_many_once(request_id, tasks)?;
+        Ok(())
+    }
+
+    pub(super) fn run_generation(
+        &self,
+        root: &Path,
+        task: &Job,
+        work: &Path,
+        cancel: &AtomicBool,
+    ) -> Result<()> {
+        let mut queue = SchedulerStore::open(&root.join("scheduler.sqlite"))?;
+        let options = RuntimeOptions::new(
+            executable().context("공식 Codex 런타임을 찾을 수 없습니다.")?,
+            work.join("received"),
+        );
+        queue.set_progress(&task.id, "공식 구독 연결 확인", None, None)?;
+        let mut runtime = match CodexRuntime::connect(options) {
+            Ok(runtime) => runtime,
+            Err(error) => {
+                queue.fail(&task.id, failure_kind(&error), &failure_message(&error))?;
+                return Err(error.into());
+            }
+        };
+        let payload = serde_json::to_value(&task.payload)?;
+        if payload["requestedModel"].as_str() != Some(REQUESTED_IMAGE_MODEL)
+            || payload["toolVersion"].as_str() != runtime.status().version.as_deref()
+        {
+            queue.fail(&task.id,FailureKind::Unsupported,"대기 중 공급자 모델 또는 런타임 버전이 바뀌었습니다. 현재 연결을 확인하고 새 요청을 만들어 주세요.")?;
+            bail!("대기 작업의 공급자 설정이 현재 런타임과 다릅니다.")
+        }
+        let request = ImageGenerationRequest {
+            prompt:format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Do not run commands or other tools. Return the generated image.",
+                text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"]),
+            requested_model:text_field(&payload,"requestedModel")?.into(),reference_paths:vec![],width:None,height:None,
+            transparent_background:None,mask_path:None,requires_confirmed_model:false,
+        };
+        // Persist intent before submission: a crash during turn/start cannot
+        // silently enqueue another subscription charge on restart.
+        queue.mark_external_submitted(&task.id)?;
+        let mut event_error = None;
+        let outcome = runtime.generate(&request,cancel,|event| {
+            let result = match event {
+                ProviderEvent::Started{thread_id,turn_id} => queue.set_external_identity(&task.id,&thread_id,&turn_id),
+                ProviderEvent::ImageGenerationStarted{..} => queue.set_progress(&task.id,"이미지 생성 중",None,None),
+                ProviderEvent::FileReady{receipt} => persist_receipt(work,task,&receipt).and_then(|_|queue.set_progress(&task.id,"이미지 파일 수신 · 검증 대기",None,None)),
+                ProviderEvent::Interrupted{thread_id,turn_id} => persist_event(work,"turn-interrupted",&json!({"jobId":task.id,"threadId":thread_id,"turnId":turn_id,"runtimeTurnInterrupted":true,"remoteImageCancellationConfirmed":null})).and_then(|_|queue.cancel(&task.id).map(|_|())),
+                ProviderEvent::InterruptAcknowledged{..} => Ok(()),
+                ProviderEvent::Failed{code,failure} => persist_event(work,"failed",&json!({"jobId":task.id,"attempt":task.attempts,"executionId":task.payload.get("executionId"),"code":code,"failure":failure,"automaticResubmission":false})),
+                _ => Ok(()),
+            };
+            if let Err(error) = result {if !cancel.load(Ordering::SeqCst) {event_error=Some(error.to_string());cancel.store(true,Ordering::SeqCst);}}
+        });
+        if let Some(error) = event_error {
+            let _ = queue.fail(
+                &task.id,
+                FailureKind::ExternalResultUnknown,
+                "공급자 진행 이력을 저장하지 못했습니다.",
+            );
+            bail!("공급자 진행 이력 저장 실패: {error}")
+        }
+        let outcome = match outcome {
+            Ok(outcome) => outcome,
+            Err(error) => {
+                if let RuntimeError::OutcomeUnknown {
+                    stage,
+                    thread_id,
+                    turn_id,
+                } = &error
+                {
+                    let _ = persist_event(
+                        work,
+                        "unknown",
+                        &json!({"jobId":task.id,"attempt":task.attempts,"stage":stage,"threadId":thread_id,"turnId":turn_id,"automaticResubmission":false}),
+                    );
+                }
+                if !matches!(error, RuntimeError::Interrupted) {
+                    let _ = queue.fail(&task.id, failure_kind(&error), &failure_message(&error));
+                }
+                return Err(error.into());
+            }
+        };
+        if cancel.load(Ordering::SeqCst) {
+            bail!("취소한 생성 결과는 자동으로 에셋에 반영하지 않았습니다.")
+        }
+        queue.set_progress(&task.id, "파일 디코딩 · 해시 · 프로젝트 저장", None, None)?;
+        for (index, receipt) in outcome.receipts.iter().enumerate() {
+            asset_providers::validate_receipt(&request, receipt)?;
+            if receipt.provenance != ImageProvenance::CodexSubscription {
+                bail!("구독 경로가 아닌 생성 결과를 거부했습니다.")
+            }
+            let info = raster::inspect(&receipt.image_path)?;
+            let _guard = self.inner.io.lock().unwrap();
+            if cancel.load(Ordering::SeqCst) {
+                bail!("이미지 작업이 취소되었습니다.")
+            }
+            let mut repo = Repository::open(root)?;
+            let format = image::ImageReader::open(&receipt.image_path)?
+                .with_guessed_format()?
+                .format()
+                .context("수신 이미지 형식을 확인할 수 없습니다.")?;
+            let extension = match format {
+                image::ImageFormat::Png => "png",
+                image::ImageFormat::Jpeg => "jpg",
+                image::ImageFormat::WebP => "webp",
+                _ => bail!("지원하지 않는 수신 이미지 형식입니다."),
+            };
+            let mut artifact = repo.copy_in(
+                &receipt.image_path,
+                "versions",
+                &format!("subscription-{}-{index}.{extension}", task.id),
+            )?;
+            artifact.role = ArtifactRole::Output;
+            let copied_info = raster::inspect(&repo.artifact_path(&artifact.path)?)?;
+            if copied_info.width != info.width || copied_info.height != info.height {
+                bail!("수신 파일의 검증 결과가 저장 파일과 다릅니다.")
+            }
+            repo.verify_artifact(&artifact)?;
+            let mut report = image_report(&artifact.id, &copied_info)?;
+            let requested_width = payload["spec"]["width"].as_u64().unwrap_or(0);
+            let requested_height = payload["spec"]["height"].as_u64().unwrap_or(0);
+            if u64::from(info.width) != requested_width
+                || u64::from(info.height) != requested_height
+            {
+                report.checks.push(ValidationCheck{code:"requested-size".into(),status:ValidationStatus::Warn,
+                    message:format!("수신 크기 {}×{}px, 프로젝트 목표 {}×{}px. 로컬 크기 조정으로 새 버전을 만들 수 있습니다.",info.width,info.height,requested_width,requested_height),measured:None});
+            }
+            let mut asset = new_asset(
+                payload["name"].as_str().unwrap_or("생성 이미지").into(),
+                AssetKind::Image,
+                AssetSource::CodexSubscription,
+                vec![artifact],
+                Some((info.width, info.height)),
+                None,
+                Some(report),
+                BTreeMap::from([
+                    ("styleGuide".into(), payload["styleGuide"].clone()),
+                    ("spec".into(), payload["spec"].clone()),
+                    ("providerThreadId".into(), json!(outcome.thread_id)),
+                    ("providerTurnId".into(), json!(outcome.turn_id)),
+                    (
+                        "plannerModel".into(),
+                        json!(runtime.status().reasoning_model),
+                    ),
+                    (
+                        "plannerCatalogCommit".into(),
+                        json!(runtime.status().reasoning_catalog_commit),
+                    ),
+                    ("submittedPrompt".into(), json!(request.prompt)),
+                    ("transport".into(), json!("official_codex_app_server")),
+                    (
+                        "modelEvidence".into(),
+                        json!(
+                            "requested only; actual image model absent from public runtime event"
+                        ),
+                    ),
+                ]),
+            );
+            asset.versions[0].requested_model = Some(receipt.requested_model.clone());
+            asset.versions[0].confirmed_model = receipt.confirmed_model.clone();
+            asset.versions[0].provider_version = runtime.status().version.clone();
+            record_generated(&mut repo, asset, task)?;
+        }
+        Ok(())
+    }
+}
+
+fn persist_event(work: &Path, label: &str, value: &Value) -> Result<()> {
+    use std::io::Write;
+    let path = work.join(format!("provider-{label}-{}.json", Uuid::new_v4()));
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)?;
+    file.write_all(&serde_json::to_vec_pretty(value)?)?;
+    file.sync_all()?;
+    Ok(())
+}
+
+fn persist_receipt(
+    work: &Path,
+    task: &Job,
+    receipt: &asset_providers::ImageGenerationReceipt,
+) -> Result<()> {
+    let canonical = receipt.image_path.canonicalize()?;
+    let owned = work.canonicalize()?;
+    let relative = canonical
+        .strip_prefix(&owned)
+        .context("공급자 파일이 이 작업의 수신 폴더 밖에 있습니다.")?;
+    let (sha256, bytes) = asset_core::sha256_file(&canonical)?;
+    persist_event(
+        work,
+        "receipt",
+        &json!({"jobId":task.id,"attempt":task.attempts,"executionId":task.payload.get("executionId"),"relativePath":relative,
+        "sha256":sha256,"bytes":bytes,"requestedModel":receipt.requested_model,"confirmedModel":receipt.confirmed_model,
+        "provenance":receipt.provenance,"providerJobId":receipt.provider_job_id,"receivedAt":now()}),
+    )
+}
+
+fn failure_kind(error: &RuntimeError) -> FailureKind {
+    match error {
+        RuntimeError::GenerationFailed { failure } if failure.hints.authentication_failure => {
+            FailureKind::Authentication
+        }
+        RuntimeError::GenerationFailed { failure }
+            if failure.hints.model_unavailable || failure.hints.tool_unavailable =>
+        {
+            FailureKind::Unsupported
+        }
+        RuntimeError::AuthenticationRequired | RuntimeError::PaidRouteRefused => {
+            FailureKind::Authentication
+        }
+        RuntimeError::UnsafeToolConfiguration => FailureKind::Permission,
+        RuntimeError::ImageGenerationUnavailable
+        | RuntimeError::ReasoningModelUnavailable
+        | RuntimeError::UnsupportedModel
+        | RuntimeError::ActualModelUnconfirmed
+        | RuntimeError::UnsupportedOption
+        | RuntimeError::Unavailable => FailureKind::Unsupported,
+        RuntimeError::InvalidInput => FailureKind::Input,
+        RuntimeError::OutcomeUnknown { .. } => FailureKind::ExternalResultUnknown,
+        _ => FailureKind::Worker,
+    }
+}
+
+fn failure_message(error: &RuntimeError) -> String {
+    if matches!(error, RuntimeError::ReasoningModelUnavailable) {
+        return "고정된 추론 모델이 공식 Codex 목록에 없습니다. Codex를 업데이트하고 연결을 다시 확인해 주세요. 다른 모델로 자동 변경하지 않았습니다.".into();
+    }
+    if let RuntimeError::GenerationFailed { failure } = error {
+        let reason = if failure.hints.authentication_failure {
+            "공식 Codex 인증이 거절되었습니다. Codex에서 다시 로그인한 뒤 연결을 확인해 주세요."
+        } else if failure.hints.quota_exceeded {
+            "공식 Codex 사용 한도에 도달했습니다. 연결 화면의 한도와 초기화 시각을 확인해 주세요."
+        } else if failure.hints.model_unavailable {
+            "공식 Codex가 추론 모델 요청을 거절했습니다. Codex 버전과 계정의 모델 이용 가능 여부를 확인해 주세요."
+        } else if failure.hints.tool_unavailable {
+            "현재 공식 Codex 연결에서 이미지 도구를 사용할 수 없습니다."
+        } else {
+            "공식 Codex 이미지 요청이 실패했습니다. 진단 기록을 확인한 후 다시 요청해 주세요."
+        };
+        return format!("{reason} 자동 재요청은 하지 않았습니다. ({})", error.code());
+    }
+    error.to_string()
+}
+
+fn open_official_login(value: &str) -> Result<()> {
+    let url = url::Url::parse(value).context("공식 로그인 주소를 확인할 수 없습니다.")?;
+    if url.scheme() != "https"
+        || !matches!(
+            url.host_str(),
+            Some("auth.openai.com" | "auth0.openai.com" | "chatgpt.com" | "openai.com")
+        )
+        || !url.username().is_empty()
+        || url.password().is_some()
+    {
+        bail!("공식 로그인 호스트가 아닌 주소는 열 수 없습니다.")
+    }
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::UI::Shell::ShellExecuteW;
+        let operation: Vec<u16> = "open\0".encode_utf16().collect();
+        let target: Vec<u16> = value.encode_utf16().chain(Some(0)).collect();
+        let result = unsafe {
+            ShellExecuteW(
+                std::ptr::null_mut(),
+                operation.as_ptr(),
+                target.as_ptr(),
+                std::ptr::null(),
+                std::ptr::null(),
+                1,
+            )
+        };
+        if result as isize <= 32 {
+            bail!("로그인 브라우저를 열지 못했습니다.")
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("/usr/bin/open")
+            .arg(value)
+            .spawn()
+            .context("로그인 브라우저를 열지 못했습니다.")?;
+    }
+    Ok(())
+}

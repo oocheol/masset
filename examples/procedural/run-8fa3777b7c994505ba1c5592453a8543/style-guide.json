@@ -1,0 +1,17 @@
+{
+  "id": "default",
+  "name": "차분한 판타지",
+  "palette": [
+    "#799993",
+    "#d4bd8a",
+    "#7192bc",
+    "#c78272"
+  ],
+  "lineWeight": 2,
+  "camera": "orthographic 3/4",
+  "lighting": "soft studio",
+  "detail": "clean readable silhouette",
+  "margin": 24,
+  "referenceAssetIds": [],
+  "approved": true
+}

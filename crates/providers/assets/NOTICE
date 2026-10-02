@@ -1,0 +1,17 @@
+This package embeds the OpenAI Codex model catalog as startup configuration
+for the official Codex runtime. The catalog is not an account-eligibility or
+live-inference proof. Its source and exact bytes are pinned; the runtime's
+public model/list response determines the visible default planner model.
+
+Source repository: https://github.com/openai/codex
+Source commit: b1e72963c3b71a9265a551e54beff078384efed9
+Source file: codex-rs/models-manager/models.json
+Source URL: https://raw.githubusercontent.com/openai/codex/b1e72963c3b71a9265a551e54beff078384efed9/codex-rs/models-manager/models.json
+Source bytes: 472512
+Source SHA-256: fd219bd9f061278275f528939f82f54d2eb97df4b25c23b022adbe48813d920b
+License: Apache License, Version 2.0 (OPENAI-CODEX-LICENSE accompanies this file)
+Original repository attribution: OPENAI-CODEX-NOTICE accompanies this file.
+
+Copyright and attribution notices from the source repository apply to the
+embedded catalog. No authentication material or private endpoint code is
+included in the catalog or this package.

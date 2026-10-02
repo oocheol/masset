@@ -1,0 +1,86 @@
+[
+  {
+    "name": "moon-crystal",
+    "path": "/examples/moon-crystal.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "forest-potion",
+    "path": "/examples/forest-potion.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "brass-key",
+    "path": "/examples/brass-key.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "ember-blade",
+    "path": "/examples/ember-blade.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "oak-shield",
+    "path": "/examples/oak-shield.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "wild-mushroom",
+    "path": "/examples/wild-mushroom.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "travel-satchel",
+    "path": "/examples/travel-satchel.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "star-compass",
+    "path": "/examples/star-compass.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "ancient-scroll",
+    "path": "/examples/ancient-scroll.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "river-stone",
+    "path": "/examples/river-stone.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "harvest-leaf",
+    "path": "/examples/harvest-leaf.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "name": "copper-lantern",
+    "path": "/examples/copper-lantern.png",
+    "source": "fixture",
+    "width": 512,
+    "height": 512
+  }
+]

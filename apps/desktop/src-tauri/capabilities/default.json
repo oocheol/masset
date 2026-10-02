@@ -1,0 +1,1 @@
+{"identifier":"default","description":"Local workbench window: scoped native commands and user-chosen dialogs","windows":["main"],"permissions":["core:default","dialog:allow-open","dialog:allow-save"]}
