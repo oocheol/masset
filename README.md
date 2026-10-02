@@ -1,5 +1,7 @@
 # Asset Studio
 
+[기능 소개 사이트](https://masset-nu.vercel.app/) · [Windows 다운로드](https://github.com/oocheol/masset/releases/download/v0.1.0/AssetStudio-windows-x64-portable.zip) · [공개 릴리스](https://github.com/oocheol/masset/releases/tag/v0.1.0)
+
 로컬에서 이미지와 절차적 3D 에셋 묶음을 제작·검사·버전 관리·내보내는 Windows/macOS용 오픈소스 데스크톱 도구입니다. Tauri 2, Rust, React/TypeScript, SQLite, Three.js를 사용합니다. 프로젝트 이름은 가칭이며 파일 계약은 브랜드와 분리되어 있습니다.
 
 **사용자가 선택한 GPT Image 2의 공식 구독 연결은 확인했지만, 실제 이미지 파일 수신은 아직 검증하지 못했습니다.** Codex 0.147.0의 구독 인증과 준비 상태를 확인한 뒤 명시적으로 제출한 요청에서 파일을 받지 못했습니다. 마지막 작업은 공급자 오류 후 사용자 확인 상태로 남겼습니다. 다른 모델이나 유료 API로 조용히 전환하지 않습니다. [공급자 실증 기록](docs/provider-feasibility.md)을 참고하세요.
