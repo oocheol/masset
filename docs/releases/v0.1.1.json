@@ -29,7 +29,7 @@
     "installationOnDevelopmentHost": true,
     "sameVersionNsisUpdateRestart": true,
     "ownQaUninstall": true,
-    "publicTauriDownload": false,
+    "publicTauriDownload": true,
     "crossVersionProductionPluginInstall": false,
     "cleanWindowsMachine": false,
     "macOS": false,
