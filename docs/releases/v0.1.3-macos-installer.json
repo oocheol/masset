@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.3",
+  "checkedOn": "2026-10-04",
+  "timeZone": "Asia/Seoul",
+  "distribution": "GitHub terminal trial installer",
+  "installer": {
+    "filename": "install-macos.sh",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.3/install-macos.sh",
+    "bytes": 6122,
+    "sha256": "b534fe293606524ba0adb1ca3b9b1b3b9d15fefc89180e0e3b42c41a5c8740fa",
+    "anonymousDownloadMatched": true
+  },
+  "package": {
+    "filename": "AssetStudio_0.1.3_macos-arm64.dmg",
+    "bytes": 16759756,
+    "sha256": "8f11741d57a73886d3520716bdcd63ac83748271695e8841b5a207975fc86d68",
+    "originalReleaseUnchanged": true,
+    "sourceCommit": "ff6cef843d4bceaf7116cee9fa227e358f54eedd"
+  },
+  "platform": {
+    "os": "macos",
+    "version": "27.0.1",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "publicInstallerAndDmgDownloadPassed": true,
+    "appVersionAndIdentifierVerified": true,
+    "nativeArm64Verified": true,
+    "appBundleSealVerified": true,
+    "launchServicesOpenPassed": true,
+    "installedCopyHasNoQuarantine": true,
+    "sourceDownloadQuarantinePreserved": true,
+    "existingAppReplacementRejected": true,
+    "invalidDownloadRejected": true,
+    "testsPassed": 28,
+    "actionlintPassed": true,
+    "desktopTypecheckAndBuildPassed": true,
+    "siteTypecheckAndBuildPassed": true
+  },
+  "nativeGui": {
+    "nativeWindow": true,
+    "platform": "macos",
+    "decodedImages": 12,
+    "nativeIpc": true,
+    "guideOpened": true,
+    "externalProviderCalls": 0,
+    "updateNetworkActions": 0
+  },
+  "boundaries": {
+    "appleDeveloperIdSigned": false,
+    "notarized": false,
+    "gatekeeperPolicyAcceptance": false,
+    "systemGatekeeperChanged": false,
+    "cleanMachineFirstLaunchVerified": false,
+    "applicationBinaryRebuilt": false,
+    "existingUserAppsOrProjectsChanged": false
+  }
+}

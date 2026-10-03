@@ -12,6 +12,9 @@ playwright-report/
 *.sqlite-shm
 .env*
 !.env.example
+*.p12
+*.p8
+certificate-base64*.txt
 tests/**/artifacts/
 *.log
 *.blend1

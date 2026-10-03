@@ -43,7 +43,7 @@ const faqs = [
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
-  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈(Apple Silicon) Mac용 DMG를 받으세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. Apple Developer 서명·공증이 없는 시험 빌드여서, 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
+  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈(Apple Silicon) Mac용 DMG를 받으세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. 현재 시험 빌드는 Apple 공증이 없어 확인 경고가 나타납니다. 경고를 닫고 시스템 설정 → 개인정보 보호 및 보안 → Asset Studio의 확인 없이 열기를 누른 뒤 열기를 선택하세요. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
   { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Mac 시험 배포는 처음에는 로컬 2D 기능 중심으로 사용해 주세요. Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
@@ -175,7 +175,7 @@ export default function App() {
           </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon용 DMG를 이곳에 공개합니다.</p>}
           <div className="mac-install-guide">
             <div><h4>Mac 설치 순서</h4><ol><li>내 Mac에 맞는 DMG를 엽니다.</li><li>Asset Studio를 Applications 폴더로 복사합니다.</li><li>Applications에서 앱을 실행합니다.</li></ol></div>
-            <div className="mac-install-notes"><p>Apple Developer 서명·공증이 없는 시험 빌드입니다. 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다.</p><p>macOS 12 이상은 설정상 최소값입니다. {hasMacRelease ? '실행 확인은 macOS 15에서 진행했습니다.' : '실행 검증은 macOS 15 환경에서 진행합니다.'}</p><p>Mac의 Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. 새 버전은 DMG를 직접 설치해 주세요.</p></div>
+            <div className="mac-install-notes"><p>Apple 개발자 계정 없이 설치할 수 있습니다. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md#apple-계정-없이-터미널로-설치`}>GitHub 터미널 설치 안내</a>에서 파일 검증 후 설치하는 명령을 확인하세요.</p><p>브라우저로 받은 현재 시험 빌드는 Apple 공증이 없어 확인 경고가 나타납니다. 경고를 닫은 뒤 시스템 설정 → 개인정보 보호 및 보안 → Asset Studio의 확인 없이 열기 → 열기를 선택하세요.</p><p>공식 릴리스와 아래 SHA-256을 확인하고 진행하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md#기존-시험-빌드의-실행-경고`}>자세한 실행 안내</a></p><p>macOS 12 이상은 설정상 최소값입니다. {hasMacRelease ? '실행 확인은 macOS 15에서 진행했습니다.' : '실행 검증은 macOS 15 환경에서 진행합니다.'}</p><p>Mac의 Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. 새 버전은 DMG를 직접 설치해 주세요.</p></div>
           </div>
         </section>
       </section>

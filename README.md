@@ -28,6 +28,8 @@ Codex가 없는 사용자도 상단 **구독 연결**에서 **Codex 준비 → �
 
 Apple Silicon의 실제 macOS 15.7.9에서 Rust 138개, DMG 마운트·복사, 앱 번들 봉인, 실제 WebView·12개 이미지·가이드·IPC, 별도 네이티브 Backend의 2D 작업 6개와 PNG 16개 독립 검사를 통과했습니다. 공개 다운로드의 용량·해시도 일치했습니다. macOS 12.0은 설정상 최소값입니다. 로컬 ad-hoc 서명만 적용하며 Apple Developer ID 서명·공증과 Gatekeeper 최초 다운로드는 미검증입니다. Mac 구독 연결·Codex 자동 준비·앱 내부 업데이트는 지원하지 않으며 Blender 3D는 Mac 실행 검증 전입니다.
 
+Apple 개발자 계정 없이 설치하려면 [GitHub 터미널 설치](docs/macos-quickstart.md#apple-계정-없이-터미널로-설치)를 이용하세요. 공식 DMG의 용량·SHA-256·앱 서명을 확인한 새 사본을 사용자 Applications에 설치하며 기존 앱을 덮어쓰지 않습니다. 브라우저 다운로드의 Apple 확인 경고는 [기존 시험 빌드 실행 절차](docs/macos-quickstart.md#기존-시험-빌드의-실행-경고)를 참고하세요. 선택 사항인 [Developer ID 서명·공증 배포](docs/macos-signing.md)는 인증 정보와 Gatekeeper 검증을 모두 요구합니다.
+
 | 영역 | 현재 범위 | 검증 상태 |
 | --- | --- | --- |
 | 로컬 프로젝트 | SQLite, 원본 보존, 버전, 독립 manifest 내보내기 | 네이티브 통합 결과는 [검증 기록](docs/verification.md) 참조 |

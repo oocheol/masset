@@ -3,7 +3,8 @@
     "targets": ["app", "dmg"],
     "createUpdaterArtifacts": false,
     "macOS": {
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "hardenedRuntime": true
     },
     "resources": {
       "../../../docs/macos-quickstart.md": "docs/macos-quickstart.md"

@@ -1,0 +1,10 @@
+{
+  "build": {
+    "beforeBundleCommand": "node ../../scripts/macos-signing.mjs check"
+  },
+  "bundle": {
+    "macOS": {
+      "signingIdentity": null
+    }
+  }
+}
