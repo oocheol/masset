@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.3",
+  "distribution": "macOS trial DMG",
+  "createdAt": "2026-10-03T16:03:33.018Z",
+  "sourceCommit": "ff6cef843d4bceaf7116cee9fa227e358f54eedd",
+  "sourceUrl": "https://github.com/oocheol/masset/tree/ff6cef843d4bceaf7116cee9fa227e358f54eedd",
+  "workflowRun": "https://github.com/oocheol/masset/actions/runs/37133673261",
+  "workflowStatus": "completed",
+  "workflowConclusion": "cancelled",
+  "workflowCancellationReason": "Intel build stopped at explicit user request after successful Apple Silicon verification",
+  "supportedArchitectures": [
+    "arm64"
+  ],
+  "intelBuildIncluded": false,
+  "minimumSystemVersionConfigured": "12.0",
+  "appleDeveloperIdSigned": false,
+  "notarized": false,
+  "subscriptionGenerationSupported": false,
+  "managedCodexSupported": false,
+  "inAppUpdatesSupported": false,
+  "blenderVerified": false,
+  "publicationVerified": true,
+  "dependencyLocks": {
+    "cargoLock": {
+      "bytes": 130993,
+      "sha256": "f0f7e554238ba1ca61e83791f30aed183a91cf688d0825d0f1849b154398840f"
+    },
+    "packageLock": {
+      "bytes": 105077,
+      "sha256": "ccf7fd326faa57507c49de0891557ecda64a7a8fab91b88487fa6a0b5c44da01"
+    }
+  },
+  "packages": [
+    {
+      "architecture": "arm64",
+      "label": "Apple Silicon",
+      "target": "aarch64-apple-darwin",
+      "filename": "AssetStudio_0.1.3_macos-arm64.dmg",
+      "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_macos-arm64.dmg",
+      "bytes": 16759756,
+      "sha256": "8f11741d57a73886d3520716bdcd63ac83748271695e8841b5a207975fc86d68",
+      "testedPlatform": {
+        "os": "macos",
+        "uname": "arm64",
+        "nodeArchitecture": "arm64",
+        "nodeVersion": "v24.15.0",
+        "translated": false,
+        "osVersion": "ProductName:\tmacOS\nProductVersion:\t15.7.9\nBuildVersion:\t24G830"
+      },
+      "appArchitectures": [
+        "arm64"
+      ],
+      "appExecutableBytes": 17853680,
+      "appExecutableSha256": "5995f5dd06b60191ac8b349ef0b52af45c5846627d4830b8a68b55b712fa4fbd",
+      "rustTests": {
+        "passed": 138,
+        "failed": 0,
+        "ignored": 0
+      },
+      "nativeGui": {
+        "decodedImages": 12,
+        "externalProviderActions": 0,
+        "updaterNetworkActions": 0,
+        "readability": {
+          "minimumButtonFont": 14,
+          "guideFont": 16,
+          "guideOpened": true,
+          "escapeRestoredFocus": true,
+          "horizontalOverflow": false
+        },
+        "codexOnboarding": {
+          "visibleEntry": true,
+          "entryFont": 14,
+          "guideSequence": true,
+          "installerInvoked": false,
+          "loginInvoked": false
+        }
+      },
+      "nativeBackend": {
+        "productionBackend": true,
+        "copiedAppResourcesUsedByCli": false,
+        "equivalentBundledInputHashesVerified": true,
+        "jobs": 6,
+        "pngs": 16,
+        "reopened": true,
+        "leaseScope": "same-process independent handles"
+      },
+      "checks": {
+        "copiedAppMatchesDmg": true,
+        "bundledRepositoryInputsEqual": true,
+        "copiedAppGuiVerified": true,
+        "nativeBackend2DVerified": true,
+        "macTargetLicensesVerified": true,
+        "repositoryOriginalsPreserved": true,
+        "ownDmgDetached": true
+      },
+      "boundaries": {
+        "liveProviderVerified": false,
+        "blenderVerified": false,
+        "appUpdaterVerified": false,
+        "copiedAppUi2DProcessingVerified": false,
+        "cliUsesRepositoryFixtures": true,
+        "gatekeeperVerified": false,
+        "notarizationVerified": false,
+        "cleanMachineVerified": false
+      },
+      "signing": {
+        "codesignVerificationExitCode": 0,
+        "appBundleSealVerified": true,
+        "signature": "adhoc",
+        "notarization": "unverified",
+        "gatekeeper": "unverified"
+      },
+      "licenses": {
+        "strict": true,
+        "target": "aarch64-apple-darwin",
+        "counts": {
+          "npm": 20,
+          "cargo": 311,
+          "licenseTexts": 253,
+          "missing": 0,
+          "mplSourceArchives": 5
+        },
+        "inventorySha256": "603163f502f73e4591818cb2a8c61431ecffc00fed380283ebcd16885cdc4c38",
+        "textIndexSha256": "a4ea1513e0d66dd269fc90a6cd7e877740a48b0437a658d385b2af66901d2233",
+        "dependencyLockHashesVerified": true
+      },
+      "anonymousDownloadVerified": true
+    }
+  ],
+  "anonymousDownloadsVerifiedAt": "2026-10-03T16:07:13.972Z"
+}

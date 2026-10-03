@@ -1,0 +1,57 @@
+{
+  "product": "Asset Studio",
+  "version": "0.1.3",
+  "platform": "windows-x64",
+  "distribution": "nsis",
+  "sourceCommit": "ff6cef843d4bceaf7116cee9fa227e358f54eedd",
+  "filename": "AssetStudio_0.1.3_x64-setup.exe",
+  "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe",
+  "bytes": 20417597,
+  "sha256": "09bea559a57b4128174282687c60ee77d1da2eaba232d3c3733774b9db6a6241",
+  "windowsAuthenticodeSigned": false,
+  "updaterSignature": true,
+  "updaterManifestUrl": "https://github.com/oocheol/masset/releases/latest/download/latest.json",
+  "portable": {
+    "filename": "AssetStudio-windows-x64-portable.zip",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip",
+    "bytes": 9563536,
+    "sha256": "1599f9194f2928808031e38e8ba9826d23967ce49445336e7a4b101bb08531f5",
+    "executableSha256": "a68028cff8041c352b95fc0fe851c37ca6954a308048f4729a162f9af918bdf1",
+    "filesIndependentlyVerified": 321
+  },
+  "publicDownloadsVerifiedAt": "2026-10-03T16:07:13.972Z",
+  "checks": {
+    "windowsDevelopmentHost": true,
+    "copiedNativeWindow": true,
+    "decodedFixtureImages": 12,
+    "minimumButtonFont": 14,
+    "guideFont": 16,
+    "guideKeyboardFocus": true,
+    "nativeBackend2D": true,
+    "nativeBlender3DViewport": true,
+    "browserAcceptanceWorkflows": 6,
+    "payloadSignatureVerified": true,
+    "signedVersionVerified": true,
+    "tamperedPayloadRejected": true,
+    "versionReplayRejected": true,
+    "officialTauriPublicDownload": true,
+    "userInstalledAppModified": false,
+    "crossVersionInstallerExecuted": false,
+    "cleanMachineVerified": false,
+    "liveProviderGenerationRequested": false
+  },
+  "boundaries": {
+    "installedUserAppPreserved": true,
+    "installerLifecycleVerified": false,
+    "providerProofThisVersion": false
+  },
+  "historicalProviderEvidence": {
+    "version": "0.1.2",
+    "reasoningModel": "gpt-6.1-sol",
+    "requestedImageModel": "gpt-image-2",
+    "confirmedImageModel": null,
+    "newRequestsThisVersion": 0,
+    "record": "docs/provider-feasibility.md"
+  },
+  "legacyUpdate": "Existing 0.1.1/0.1.2 Windows installations use the app update panel; 0.1.0 portable users install once manually. Mac Apple Silicon users install the new DMG manually."
+}

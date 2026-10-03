@@ -1,6 +1,6 @@
 # Mac 시험 배포 사용 안내
 
-Asset Studio 0.1.2의 Mac 패키지는 로컬 이미지 편집·스프라이트·아틀라스 기능 중심의 시험 배포입니다. Apple Silicon과 Intel을 구분해 다운로드하세요. macOS 12.0은 설정상 최소 버전이며, 각 패키지의 실제 검증 OS·아키텍처·SHA-256은 릴리스 기록을 확인하세요.
+현재 Mac 공개 배포는 Apple Silicon(M 시리즈)용이며, 로컬 이미지 편집·스프라이트·아틀라스 기능 중심의 시험 배포입니다. Intel 빌드와 다운로드 선택지는 제외했습니다. macOS 12.0은 설정상 최소 버전이며, 패키지의 실제 검증 OS·아키텍처·SHA-256은 릴리스 기록을 확인하세요.
 
 1. `.dmg`를 열고 **Asset Studio.app**을 **Applications** 폴더로 복사합니다.
 2. Applications에서 앱을 실행합니다. 기존 프로젝트나 원본 파일은 지우지 마세요.
@@ -21,7 +21,7 @@ node scripts/collect-third-party-notices.mjs --target aarch64-apple-darwin --out
 npm run desktop:build -- --target aarch64-apple-darwin --config "$PWD/apps/desktop/src-tauri/tauri.macos.conf.json" --bundles app,dmg
 ```
 
-마지막 명령의 `--config`는 실제 CLI 작업 디렉터리에 맞는 절대 경로를 사용하는 편이 안전합니다. Intel은 `x86_64-apple-darwin`을 사용합니다. GitHub의 **Verified macOS packages** 수동 workflow는 패키지를 만들고 실제 DMG를 마운트해 복사한 앱의 WebView/IPC와 별도 네이티브 Backend 산출물을 확인합니다. 통과한 패키지만 별도 단계에서 공개합니다.
+마지막 명령의 `--config`는 실제 CLI 작업 디렉터리에 맞는 절대 경로를 사용하는 편이 안전합니다. GitHub의 **Verified macOS packages** 수동 workflow는 Apple Silicon 패키지만 만들고 실제 DMG를 마운트해 복사한 앱의 WebView/IPC와 별도 네이티브 Backend 산출물을 확인합니다. 통과한 패키지만 별도 단계에서 공개합니다.
 
 Mac 패키지에 들어가는 라이선스 원문은 해당 아키텍처의 Cargo 의존성을 기준으로 빌드 서버에서 수집합니다. Windows 라이선스 인벤토리로 대체하지 않습니다.
 

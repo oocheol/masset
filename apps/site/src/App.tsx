@@ -43,7 +43,7 @@ const faqs = [
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
-  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈 Mac은 Apple Silicon, Intel Mac은 Intel용 DMG를 고르세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. Apple Developer 서명·공증이 없는 시험 빌드여서, 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
+  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈(Apple Silicon) Mac용 DMG를 받으세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. Apple Developer 서명·공증이 없는 시험 빌드여서, 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
   { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Mac 시험 배포는 처음에는 로컬 2D 기능 중심으로 사용해 주세요. Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
@@ -95,7 +95,7 @@ export default function App() {
           <p className="hero-purpose">이미지와 3D 소품을<br />만들고 다듬는 작업실.</p>
           <p className="hero-description">원본을 남기고, 버전을 쌓고,<br />게임과 앱에 쓸 파일로 꺼내세요.</p>
           <div className="hero-actions"><DownloadLink /><a className="text-link" href="#workbench">작업대 살펴보기 <ArrowDownToLine size={16} aria-hidden="true" /></a></div>
-          <p className="download-hint">Windows x64 설치 파일 <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D 제작은 Blender 별도 설치</a></p>
+          <p className="download-hint">Windows x64 설치 파일 <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D는 Blender 별도 설치</a></p>
           <a className="text-link mac-hero-link" href="#download-mac">Mac 시험 배포 안내 <ArrowDownToLine size={16} aria-hidden="true" /></a>
         </div>
         <figure className="hero-specimens">
@@ -169,10 +169,10 @@ export default function App() {
           <div className="mac-download-heading"><h3 id="mac-download-title">Mac 시험 배포</h3><span className="mac-trial-label">로컬 2D부터</span></div>
           <p className="mac-download-intro">처음에는 로컬 2D 기능 중심의 시험 배포입니다. 구독 연결·앱 업데이트는 지원하지 않으며, 3D는 Mac 검증 전입니다.</p>
           {hasMacRelease ? <div className="mac-release-grid">{macReleases.map(item => <article className="mac-release" key={item.architecture} aria-label={`${item.label} 다운로드`}>
-            <h4>{item.label}</h4><p>{item.architecture === 'arm64' ? 'M 시리즈 Mac용' : 'Intel 프로세서 Mac용'}</p>
+            <h4>{item.label}</h4><p>M 시리즈 Mac용</p>
             <a className="button button-primary" href={item.downloadUrl} aria-label={`${item.label} DMG 다운로드`}><ArrowDownToLine size={18} aria-hidden="true" />DMG 다운로드</a>
             <dl><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>
-          </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon·Intel용 DMG를 이곳에 공개합니다.</p>}
+          </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon용 DMG를 이곳에 공개합니다.</p>}
           <div className="mac-install-guide">
             <div><h4>Mac 설치 순서</h4><ol><li>내 Mac에 맞는 DMG를 엽니다.</li><li>Asset Studio를 Applications 폴더로 복사합니다.</li><li>Applications에서 앱을 실행합니다.</li></ol></div>
             <div className="mac-install-notes"><p>Apple Developer 서명·공증이 없는 시험 빌드입니다. 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다.</p><p>macOS 12 이상은 설정상 최소값입니다. {hasMacRelease ? '실행 확인은 macOS 15에서 진행했습니다.' : '실행 검증은 macOS 15 환경에서 진행합니다.'}</p><p>Mac의 Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. 새 버전은 DMG를 직접 설치해 주세요.</p></div>

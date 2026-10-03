@@ -177,3 +177,10 @@ Windows SDK 10.0.28000.2957 installation completed with exit 0 after explicit co
 ## Release evidence requirements
 
 Record actual package paths/bytes/SHA-256, Authenticode or Apple signature/notarization status, tested OS/architecture, launch evidence, generated fixture/procedural artifact locations and independent reports. Do not publish automatically. Tests must preserve imported files, use new version/output directories, and clearly distinguish completed local work from uncertain remote generation.
+
+
+## 0.1.3 visual release
+
+The production site and desktop share the asset-workbench visual system. Browser checks passed at 1440/390/320 (site) and 1500x960/1100x720 (desktop), including real-image switching, hash clipboard, keyboard focus, local edit/reload/export/atlas and provider boundaries. Six existing browser workflows passed. The Windows ZIP-extracted EXE separately passed actual WebView/IPC/readability and Blender GLB/WebGL checks; the production CLI passed 2D artifact/export checks. Installer payload and authenticated version 0.1.3 passed independent and actual official Tauri public-download signature verification. Three anonymous package downloads matched, and all 321 portable files matched their byte/digest inventory. No installer was executed and the existing user installation was preserved.
+
+Only the successful Apple Silicon job from run 37133673261 is accepted. The Intel job and overall run are cancelled at the user's request. Actual DMG/copied-app/ad-hoc seal/readability/IPC, separate 2D Backend and 138 native Rust tests passed on macOS 15.7.9; its public DMG hash matched. Mac subscription/updater/Blender/Developer ID/notarization/Gatekeeper/clean-hardware/minimum-OS/lifecycle boundaries remain unchanged. No new live-provider image request was made. [Release evidence](releases/v0.1.3.md) contains the exact package metadata.

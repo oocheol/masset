@@ -39,7 +39,7 @@ h1{font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:clamp(50px,6.1vw,88px
 .text-link{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:550;line-height:1.6;text-decoration:underline;text-decoration-color:var(--edge);text-underline-offset:6px}
 .text-link:hover{text-decoration-color:var(--cyan);color:var(--cyan)}
 .hero-actions>.text-link{font-size:14px}
-.download-hint{margin-top:20px;font-size:14px;line-height:1.85;color:var(--muted)}
+.download-hint{margin-top:20px;font-size:14px;line-height:1.85;color:var(--muted);word-break:keep-all}
 .download-hint span{margin-left:8px;font-variant-numeric:tabular-nums}
 .download-hint a{text-decoration:underline;text-decoration-color:var(--edge);text-underline-offset:4px}
 .mac-hero-link{font-size:14px;margin-top:12px;color:var(--muted)}
@@ -156,7 +156,7 @@ h1{font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:clamp(50px,6.1vw,88px
 .mac-download-heading h3{font-size:28px;font-weight:550;letter-spacing:-.7px;line-height:1.5}
 .mac-trial-label{border:1px solid var(--edge);padding:4px 9px;font-size:12px;line-height:1.6;color:var(--muted)}
 .mac-download-intro{font-size:16px;line-height:1.85;color:var(--muted);word-break:keep-all;max-width:800px;margin-top:14px}
-.mac-release-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:26px}
+.mac-release-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;margin-top:26px}
 .mac-release{min-width:0;padding:24px 28px;border:1px solid var(--edge);background:var(--rail)}
 .mac-release h4{font-size:21px;font-weight:550;line-height:1.5;overflow-wrap:anywhere}
 .mac-release>p{font-size:14px;line-height:1.7;color:var(--muted);margin-top:5px}
