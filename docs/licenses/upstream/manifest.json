@@ -147,6 +147,589 @@
           "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55"
         }
       ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "block2",
+      "version": "0.6.2",
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+      "upstreamSubdirectory": "crates/block2",
+      "files": [
+        {
+          "path": "objc2-b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
+          "commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "dispatch2",
+      "version": "0.3.1",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+      "upstreamSubdirectory": "crates/dispatch2",
+      "files": [
+        {
+          "path": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-app-kit",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-app-kit",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-core-foundation",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-core-foundation",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-core-graphics",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-core-graphics",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-encode",
+      "version": "4.1.0",
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+      "upstreamSubdirectory": "crates/objc2-encode",
+      "files": [
+        {
+          "path": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+          "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-exception-helper",
+      "version": "0.1.1",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+      "upstreamSubdirectory": "crates/objc2-exception-helper",
+      "files": [
+        {
+          "path": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
+          "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-foundation",
+      "version": "0.3.2",
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-foundation",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-io-surface",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-io-surface",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-osa-kit",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-osa-kit",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-quartz-core",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-quartz-core",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2-web-kit",
+      "version": "0.3.2",
+      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "upstreamSubdirectory": "framework-crates/objc2-web-kit",
+      "files": [
+        {
+          "path": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-APACHE-2.0.txt",
+          "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-Zlib.txt",
+          "upstreamUrl": "https://zlib.net/zlib_license.html",
+          "commit": null,
+          "declarationCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1110,
+          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280"
+        }
+      ]
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "objc2",
+      "version": "0.6.4",
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/madsmtm/objc2",
+      "upstreamCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+      "upstreamSubdirectory": "crates/objc2",
+      "files": [
+        {
+          "path": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
+          "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "gitBlobSha1": "540ae4c81adb5f64a9f61e222b688880da24300e",
+          "kind": "pinned-upstream-license",
+          "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them.",
+          "bytes": 1339,
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54"
+        },
+        {
+          "path": "objc2-canonical/LICENSE-MIT.txt",
+          "upstreamUrl": "https://opensource.org/license/MIT",
+          "commit": null,
+          "declarationCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
+          "kind": "canonical-license-supplement",
+          "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance.",
+          "bytes": 1068,
+          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265"
+        }
+      ]
     }
   ]
 }

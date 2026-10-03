@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "fetchedAtUtc": "2026-10-03T09:15:43.072Z",
+  "purpose": "Full canonical license-text supplements for the exact-commit objc2 LICENSE.md declarations. These files are separately fetched canonical texts, not full license files extracted from crates or from their pinned Git commits. Original package SPDX expressions and pinned upstream LICENSE.md are preserved. Attribution collection is not a legal clearance determination.",
+  "documents": [
+    {
+      "license": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "sourceUrl": "https://opensource.org/license/MIT",
+      "finalUrl": "https://opensource.org/license/MIT",
+      "sourceContentType": "text/html; charset=UTF-8",
+      "sourceBodyBytes": 185484,
+      "sourceBodySha256": "d47bb81a702b2adc87a3e83a14305a227728e4bd60a9b8928c53b7307910e7bd",
+      "bytes": 1068,
+      "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
+      "extraction": "Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution.",
+      "kind": "canonical-license-supplement"
+    },
+    {
+      "license": "Apache-2.0",
+      "file": "LICENSE-APACHE-2.0.txt",
+      "sourceUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "finalUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "sourceContentType": "text/plain",
+      "sourceBodyBytes": 11358,
+      "sourceBodySha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "extraction": "Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders.",
+      "kind": "canonical-license-supplement"
+    },
+    {
+      "license": "Zlib",
+      "file": "LICENSE-Zlib.txt",
+      "sourceUrl": "https://zlib.net/zlib_license.html",
+      "finalUrl": "https://zlib.net/zlib_license.html",
+      "sourceContentType": "text/html",
+      "sourceBodyBytes": 2899,
+      "sourceBodySha256": "d16e1e49584a44abccebc8fc9eda5378ce0e08d25d8fb00d99f7e4c40a84e594",
+      "bytes": 1110,
+      "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
+      "extraction": "The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors.",
+      "kind": "canonical-license-supplement"
+    }
+  ]
+}
