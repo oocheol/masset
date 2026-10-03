@@ -2,6 +2,9 @@
   "bundle": {
     "targets": ["app", "dmg"],
     "createUpdaterArtifacts": false,
+    "macOS": {
+      "signingIdentity": "-"
+    },
     "resources": {
       "../../../docs/macos-quickstart.md": "docs/macos-quickstart.md"
     }

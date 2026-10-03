@@ -24,3 +24,5 @@ npm run desktop:build -- --target aarch64-apple-darwin --config "$PWD/apps/deskt
 마지막 명령의 `--config`는 실제 CLI 작업 디렉터리에 맞는 절대 경로를 사용하는 편이 안전합니다. Intel은 `x86_64-apple-darwin`을 사용합니다. GitHub의 **Verified macOS packages** 수동 workflow는 패키지를 만들고 실제 DMG를 마운트해 복사한 앱의 WebView/IPC와 별도 네이티브 Backend 산출물을 확인합니다. 통과한 패키지만 별도 단계에서 공개합니다.
 
 Mac 패키지에 들어가는 라이선스 원문은 해당 아키텍처의 Cargo 의존성을 기준으로 빌드 서버에서 수집합니다. Windows 라이선스 인벤토리로 대체하지 않습니다.
+
+Mac 설정은 로컬 ad-hoc 서명으로 앱 번들의 파일을 봉인합니다. 검증 workflow는 복사한 앱에 `codesign --verify --deep --strict`를 실행해 파일 봉인을 확인합니다. Apple Developer ID 신원 서명과 공증, Gatekeeper 최초 다운로드 허용 여부는 별도 미검증 항목입니다.

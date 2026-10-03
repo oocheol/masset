@@ -87,4 +87,5 @@ jobs:
 
 # No login, Codex download, image generation, Blender installation, updater
 # installation, Developer ID signing or notarization is performed by this job.
+# The application bundle receives a local ad-hoc seal, verified with codesign.
 # Release assets are published separately only after these checks pass.

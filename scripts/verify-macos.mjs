@@ -168,9 +168,9 @@ async function verify(options) {
     check(appArch.length === 1 && appArch[0] === expected.macho, 'App Mach-O must match the native target');
     report.appArchitectures = appArch;
     // Signing results are observations. This is not Gatekeeper/notarization acceptance.
-    const signature = await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', copiedApp], 'codesign-verify', { required: false });
+    const signature = await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', copiedApp], 'codesign-verify');
     await run('/usr/bin/codesign', ['-dv', '--verbose=4', copiedApp], 'codesign-description', { required: false });
-    report.signing = { codesignVerificationExitCode: signature.exitCode, notarization: 'unverified', gatekeeper: 'unverified' };
+    report.signing = { codesignVerificationExitCode: signature.exitCode, appBundleSealVerified: true, notarization: 'unverified', gatekeeper: 'unverified' };
     report.stage = 'bundled resources and licenses';
     const examplesSource = join(REPO, 'apps/desktop/public/examples'), sourceExamples = await inventory(examplesSource), bundledExamples = await inventory(join(resources, 'examples'));
     assert.deepEqual(bundledExamples, sourceExamples, 'Bundled examples differ from the checkout examples used by asset-cli');
