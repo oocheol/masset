@@ -96,11 +96,11 @@ UI, 제작 도구, 저장소와 검증을 모듈로 나눴습니다. 네이티�
 
 ```mermaid
 flowchart TD
-  UI["React 작업대<br/>라이브러리 · 캔버스 · 뷰포트"] -->|"Tauri IPC"| B["Rust Backend<br/>제작 실행 · 검증 · 커밋"]
+  UI["React 작업대<br/>2D · 3D · 버전"] -->|"Tauri IPC"| B["Rust Backend<br/>제작 실행 · 검증 · 커밋"]
   C["TypeScript contracts"] -. "UI 타입 계약" .-> UI
   CLI["asset-cli"] -. "동일 Backend" .-> B
-  B <--> Q["scheduler<br/>작업 상태 · 의존성 · 자원 예약"]
-  B <--> P["core<br/>프로젝트 · 원본 · 버전 · SQLite"]
+  B <--> Q["scheduler<br/>작업 상태 · 의존성<br/>자원 예약"]
+  B <--> P["core<br/>프로젝트 · 버전<br/>SQLite + 원본 파일"]
   B --> I["image-pipeline<br/>로컬 2D 처리"]
   B -. "Windows 선택 기능" .-> R["providers<br/>공식 Codex RPC"]
   B -. "선택적 3D 도구" .-> W["Blender 작업자<br/>고정 템플릿 + 매개변수"]
@@ -108,7 +108,7 @@ flowchart TD
   R --> F
   W --> F
   F --> P
-  P --> E["독립 내보내기 폴더<br/>manifest.json + 선택 에셋의 버전"]
+  P --> E["독립 내보내기 폴더<br/>파일 + manifest.json"]
   classDef accent fill:#101d29,stroke:#68e0e2,color:#e5edf4,stroke-width:2px;
   classDef module fill:#172a38,stroke:#334c60,color:#e5edf4;
   classDef optional fill:#19252c,stroke:#d8af64,color:#e5edf4,stroke-dasharray:5 3;
