@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="360" viewBox="0 0 1440 360" role="img" aria-labelledby="title description">
+  <title id="title">Asset Studio — Local Asset Workbench</title>
+  <desc id="description">A dark blue asset workbench banner with cyan inspection frames and a wireframe cube. Create, inspect, version and export real asset files.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#334c60" stroke-width="1" opacity=".22"/>
+    </pattern>
+  </defs>
+  <path d="M0 0H1408L1440 32V360H0Z" fill="#080f17"/>
+  <path d="M0 0H1408L1440 32V360H0Z" fill="url(#grid)"/>
+  <path d="M0 0H1408L1440 32V360H0Z" fill="none" stroke="#334c60" stroke-width="2"/>
+  <path d="M48 74V42H80M1360 42H1392V74M48 286V318H80M1360 318H1392V286" fill="none" stroke="#68e0e2" stroke-width="2"/>
+  <rect x="80" y="64" width="174" height="28" fill="#172a38" stroke="#334c60"/>
+  <circle cx="94" cy="78" r="3" fill="#68e0e2"/>
+  <text x="106" y="83" fill="#a9c1d4" font-family="Consolas, monospace" font-size="13" letter-spacing="1">LOCAL WORKBENCH</text>
+  <text x="76" y="179" fill="#e5edf4" font-family="Bahnschrift, Segoe UI, Arial, sans-serif" font-size="79" font-weight="700" letter-spacing="2">ASSET STUDIO</text>
+  <text x="80" y="225" fill="#a9c1d4" font-family="Segoe UI, Arial, sans-serif" font-size="24">Create. Inspect. Version. Export.</text>
+  <path d="M80 263H700" stroke="#334c60"/>
+  <text x="80" y="291" fill="#68e0e2" font-family="Consolas, monospace" font-size="13" letter-spacing="1.4">TAURI 2 / RUST / REACT</text>
+  <text x="413" y="291" fill="#a9c1d4" font-family="Consolas, monospace" font-size="13" letter-spacing="1">WINDOWS + APPLE SILICON</text>
+  <path d="M832 72H1304L1320 88V284H832Z" fill="#101d29" stroke="#334c60"/>
+  <path d="M832 72H1304L1320 88" fill="none" stroke="#68e0e2" stroke-width="2"/>
+  <text x="850" y="97" fill="#a9c1d4" font-family="Consolas, monospace" font-size="11" letter-spacing="1">ASSET INSPECTION</text>
+  <text x="1299" y="97" text-anchor="end" fill="#68e0e2" font-family="Consolas, monospace" font-size="11">XYZ</text>
+  <path d="M865 122H891M865 122V148M1287 122H1261M1287 122V148M865 252H891M865 252V226M1287 252H1261M1287 252V226" fill="none" stroke="#334c60"/>
+  <path d="M948 155L1076 115L1204 155L1076 195Z" fill="#172a38" stroke="#68e0e2" stroke-width="2"/>
+  <path d="M948 155V229L1076 269V195Z" fill="#101d29" stroke="#68e0e2" stroke-width="2"/>
+  <path d="M1076 195L1204 155V229L1076 269Z" fill="#172a38" stroke="#68e0e2" stroke-width="2"/>
+  <path d="M1076 115V188M951 158L1076 229L1201 158M948 229L1076 189L1204 229" fill="none" stroke="#334c60" stroke-dasharray="5 5"/>
+  <path d="M1076 269V295M1076 295H1228" fill="none" stroke="#334c60"/>
+  <circle cx="1228" cy="295" r="3" fill="#68e0e2"/>
+  <text x="850" y="311" fill="#a9c1d4" font-family="Consolas, monospace" font-size="11" letter-spacing="1">SOURCE → VERSION → BUNDLE</text>
+</svg>

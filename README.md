@@ -1,105 +1,205 @@
-# Asset Studio
+<p align="center">
+  <img src="docs/media/readme/asset-studio-banner.svg" alt="Asset Studio — 로컬 에셋 제작 작업대" width="100%">
+</p>
 
-[기능 소개 사이트](https://masset-nu.vercel.app/) · [Windows 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe) · [공개 릴리스](https://github.com/oocheol/masset/releases/tag/v0.1.3)
+<h1 align="center">Asset Studio</h1>
 
-로컬에서 이미지와 절차적 3D 에셋 묶음을 제작·검사·버전 관리·내보내는 Windows/macOS용 오픈소스 데스크톱 도구입니다. Tauri 2, Rust, React/TypeScript, SQLite, Three.js를 사용합니다. 프로젝트 이름은 가칭이며 파일 계약은 브랜드와 분리되어 있습니다.
+<p align="center">
+  <strong>이미지와 3D 소품을 만들고 다듬는 로컬 작업실.</strong><br>
+  원본을 남기고, 버전을 쌓고, 게임과 앱에 쓸 실제 파일을 꺼내세요.
+</p>
 
-**0.1.3은 소개 사이트와 앱의 미래적인 작업대 디자인을 적용했습니다.** [디자인과 새 배포 기록](docs/releases/v0.1.3.md)을 참고하세요. Mac은 Apple Silicon용만 배포합니다.
+<p align="center">
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.3"><img src="https://img.shields.io/badge/release-0.1.3-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.3"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon_trial-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon 시험 배포"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-334c60?style=flat-square&amp;labelColor=101d29" alt="Core license Apache-2.0"></a>
+</p>
 
-**0.1.2는 GPT-6.1 Sol (`gpt-6.1-sol`)의 이미지 도구 설정 충돌을 수정했습니다.** 이미지 목표는 GPT Image 2입니다. 수정된 Windows Backend에서 새 요청 한 번으로 PNG 수신·디코딩·저장·재열기·독립 내보내기 검사를 통과했습니다. 공개 이벤트에 실제 이미지 모델 ID가 없어 `confirmedModel=null`은 유지합니다. 계정 인증·로컬 준비 상태와 계정별 모델 권한을 구분하며 기존 실패 작업을 자동 재전송하지 않습니다. 다른 모델이나 유료 API로 조용히 전환하지 않습니다. [공급자 실증 기록](docs/provider-feasibility.md)과 [ima2-gen 구조 비교](docs/ima2-gen-comparison.md)를 참고하세요.
+<p align="center">
+  <a href="https://masset-nu.vercel.app/"><strong>기능 소개 사이트</strong></a> ·
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.3"><strong>다운로드</strong></a> ·
+  <a href="#project-structure">프로젝트 구조</a> ·
+  <a href="docs/windows-quickstart.md">사용 가이드</a>
+</p>
 
-앱 소스가 오픈소스인 것과 외부 AI 모델·서비스가 무료 또는 오픈소스인 것은 다릅니다. 입력·출력 에셋의 권리는 소스코드 라이선스와 별도로 확인해야 합니다.
+Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입니다. 이미지 편집, 스프라이트·아틀라스, 절차적 3D, 버전 관리와 독립 파일 내보내기를 한 작업대에서 다룹니다. **0.1.3은 짙은 남색 패널·청록색 선택 표시·각진 검사 프레임을 적용한 디자인 릴리스**입니다.
 
-구현·검증·실험·차단·계획 항목은 [현재 완료 범위](docs/completion-status.md)에 정리했습니다.
+## 작업대 미리보기
 
-## Windows 다운로드
+[![Asset Studio 0.1.3 에셋 라이브러리 — 실제 브라우저 미리보기](apps/site/public/media/workstation-browser-013.png)](apps/site/public/media/workstation-browser-013.png)
 
-[Asset Studio 0.1.3 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe)을 실행하세요. 기존 0.1.1/0.1.2 설치 사용자는 앱 내부 업데이트를 이용하고, 0.1.0 포터블 사용자는 한 번 직접 설치하면 이후부터 앱 안에서 업데이트할 수 있습니다. 시작 시와 10분마다 새 버전을 확인하고, 승인한 파일의 서명·버전·크기·SHA-256을 검사한 뒤 제작 작업이 끝났을 때 설치·재시작합니다.
+라이브러리 → 2D 캔버스 → 3D 뷰포트 → 버전 비교를 오가며, 오른쪽 검사 패널에서 에셋을 다듬고 아래 작업 큐에서 진행 상태를 확인합니다. 위 이미지는 **실제 0.1.3 브라우저 미리보기**이며 네이티브 실행 증거와 구분합니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.
 
-주요 버튼·입력 글씨는 14px 이상, 가이드는 16px로 키웠고 긴 설명은 접었습니다. 상단 **사용 가이드**에서 단계별 이용 방법을 확인하세요. [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip)도 제공하며 전체를 새 폴더에 풀어 실행합니다. WebView2와 3D용 Blender는 별도 필요합니다. Node.js·Rust 개발 도구는 이용자에게 필요하지 않습니다. 업데이트 파일 서명과 별개로 Windows Authenticode 코드 서명은 없습니다.
+<details>
+<summary><strong>앱 안의 사용 가이드 보기</strong></summary>
 
-Codex가 없는 사용자도 상단 **구독 연결**에서 **Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작할 수 있습니다. 공식 Windows x64 패키지의 출처·버전·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. 파일 해시와 OpenAI 실행 파일 서명을 검사하며 진행 확인·취소를 지원합니다. 기존의 검증 가능한 Codex는 재사용하고 로그인은 공식 페이지에서 진행합니다. [다운로드 정보와 안내](docs/windows-quickstart.md#chatgpt-구독-이미지)를 확인하세요.
+[![원본 가져오기부터 내보내기와 구독 연결까지 안내하는 실제 사용 가이드](docs/media/readme/workbench-guide-013.png)](docs/media/readme/workbench-guide-013.png)
 
-[처음 사용하기](docs/windows-quickstart.md) · [릴리스 안내와 SHA-256](docs/releases/v0.1.3.md) · [공개 배포 메타데이터](docs/releases/v0.1.3.json)
+주요 버튼·입력 글씨는 14px 이상, 가이드는 16px입니다. 단계별 안내, 접을 수 있는 설명, Esc 닫기와 키보드 포커스를 지원합니다. 이 화면도 브라우저 UI 검사에서 캡처했습니다.
 
-## Mac 다운로드
+</details>
 
-0.1.3 Mac은 Apple Silicon(M 시리즈)용 로컬 2D 시험 배포입니다. [Apple Silicon DMG](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_macos-arm64.dmg)를 받으세요. Intel 빌드와 다운로드 선택지는 제외했습니다. DMG를 열고 **Asset Studio.app**을 **Applications**로 복사합니다. [Mac 설치 안내](docs/macos-quickstart.md)와 [용량·SHA-256·실제 검증 기록](docs/releases/v0.1.3-macos.json)을 확인하세요.
+## 실제 제작 결과
 
-Apple Silicon의 실제 macOS 15.7.9에서 Rust 138개, DMG 마운트·복사, 앱 번들 봉인, 실제 WebView·12개 이미지·가이드·IPC, 별도 네이티브 Backend의 2D 작업 6개와 PNG 16개 독립 검사를 통과했습니다. 공개 다운로드의 용량·해시도 일치했습니다. macOS 12.0은 설정상 최소값입니다. 로컬 ad-hoc 서명만 적용하며 Apple Developer ID 서명·공증과 Gatekeeper 최초 다운로드는 미검증입니다. Mac 구독 연결·Codex 자동 준비·앱 내부 업데이트는 지원하지 않으며 Blender 3D는 Mac 실행 검증 전입니다.
+| 상자 · Crate | 테이블 · Table | 선반 · Shelf |
+| :---: | :---: | :---: |
+| [<img src="apps/site/public/media/crate.png" alt="실제 Blender 상자 렌더" width="280">](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/crate/model.glb) | [<img src="apps/site/public/media/table.png" alt="실제 Blender 테이블 렌더" width="280">](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/table/model.glb) | [<img src="apps/site/public/media/shelf.png" alt="실제 Blender 선반 렌더" width="280">](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/shelf/model.glb) |
+| 1.2 × 0.9 × 0.8 m | 1.6 × 0.76 × 0.8 m | 1.0 × 1.8 × 0.4 m |
+| [GLB](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/crate/model.glb) · [Blender 원본](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/crate/source.blend) | [GLB](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/table/model.glb) · [Blender 원본](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/table/source.blend) | [GLB](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/shelf/model.glb) · [Blender 원본](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/shelf/source.blend) |
 
-| 영역 | 현재 범위 | 검증 상태 |
+세 이미지는 저장소의 **고정 Blender 작업자가 실제 메시에서 렌더한 512px 썸네일**입니다. GLB, 편집 가능한 `.blend`, 턴테이블 PNG와 [파일별 검증 기록](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/verification.json)이 함께 있습니다. 치수는 GLB의 X × Y × Z이며 미터/Y-up 기준입니다. 작업자 직접 실행 결과로, AI 이미지 생성이나 앱 전체 흐름의 성공 증거로 표시하지 않습니다.
+
+[로컬 아이콘 12종과 모델 예제 더 보기 →](examples/README.md)
+
+## 무엇을 할 수 있나요?
+
+| 기능 | 작업대에서 하는 일 | 남는 결과 |
 | --- | --- | --- |
-| 로컬 프로젝트 | SQLite, 원본 보존, 버전, 독립 manifest 내보내기 | 네이티브 통합 결과는 [검증 기록](docs/verification.md) 참조 |
-| 2D | 가져오기, 결정론적 변환, 마스크, 스프라이트·아틀라스, PNG/WebP/JPEG | Rust 이미지 검사 15개·독립 검사 9개 통과; 실제 네이티브 가져오기·변환·아틀라스·내보내기·재열기 검증 |
-| 절차적 3D | 상자·테이블·선반, GLB, 편집 가능한 `.blend`, 썸네일·턴테이블 | Windows 워커 3종 검증; release 백엔드 상자·테이블 재열기와 포터블 앱의 실제 상자 GLB 로딩·WebGL 픽셀 검증 통과; 선반 앱 흐름은 별도 |
-| 기본 재질 처리 | Base Color·PBR 상수, 밝기 기반 노멀맵 계산 | 실험적 노멀맵의 Rust 검사·네이티브 파일 출력 통과; 물성 측정 또는 AO/고급 재질 복원 지원을 주장하지 않음 |
-| 작업 큐 | 자원 한도, 의존 관계, 취소·복구·부분 재실행 | 스케줄러 33개·프로세스 충돌 검사 2개 통과; 로컬 해시 6개 작업의 1회 실측은 761→448ms(1.70배), AI/Blender 성능으로 일반화하지 않음 |
-| 결과 캐시 | 입력 SHA·도구 버전 키, 저장 결과 복사본 검사·명시적 재사용 | 네이티브 백엔드의 선택 결과 재사용·버전 보존·재열기 확인 |
-| 구독 이미지 생성 | GPT-6.1 Sol 추론·GPT Image 2 목표·공식 Codex 연결·명시 요청 | 수정된 Windows Backend의 새 요청 1회 수신·저장·재열기 검증. 실제 이미지 모델 ID와 모든 계정 권한은 미확인 |
-| macOS 패키지 | Apple Silicon DMG, 로컬 2D 시험 배포 | macOS 15.7.9 실제 창·IPC·번들 봉인·별도 Backend 출력·공개 다운로드 검증; 구독/앱 업데이트 미지원, 공증/설치 수명주기/3D 별도 |
-| 이미지 기반 3D·CAD | 추후 독립 어댑터 | 계획됨, 지원하지 않음 |
+| 이미지 편집 | PNG/WebP/JPEG 가져오기, 크기·색상·배경·마스크 처리 | 원본과 구분된 새 이미지 버전 |
+| 스프라이트·아틀라스 | 프레임을 나누고 여러 이미지를 묶어 패킹 | 실제 이미지와 프레임 메타데이터 |
+| 절차적 3D | 상자·테이블·선반의 치수와 색상 지정 | GLB, 편집 가능한 `.blend`, 렌더 |
+| 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
+| 작업 큐 | 의존 관계, 자원 한도, 취소·복구·부분 재실행 | SQLite에 저장되는 작업 상태 |
+| 독립 내보내기 | 선택한 에셋과 버전을 새 묶음으로 저장 | 실제 파일 + 상대 경로·SHA-256이 있는 `manifest.json` |
+| 구독 이미지 연결 | Windows에서 공식 Codex 준비·로그인·명시적 생성 요청 | 검증 후 저장한 파일과 요청·확인 모델 정보 |
 
-## 실행 및 빌드
+기본 아이콘은 로컬 SVG/PNG 예제입니다. GPT-6.1 Sol(`gpt-6.1-sol`) 추론과 GPT Image 2(`gpt-image-2`) 목표의 구독 경로는 **Windows 0.1.2에서 새 요청 한 번의 수신·저장·재열기·독립 내보내기를 실증**했습니다. 실제 이미지 모델 ID는 응답에서 제공되지 않아 `confirmedModel=null`이며, 모든 계정의 모델 권한을 보장하지 않습니다. 0.1.3 디자인 릴리스에서 새 외부 생성 요청은 하지 않았습니다.
 
-개발 시 Node.js 24와 Rust 1.99.0 stable을 사용합니다. Windows에서는 Visual Studio C++ 도구와 Windows SDK, WebView2가 필요합니다. macOS에서는 Xcode Command Line Tools가 필요합니다. 설치 패키지 이용자는 Node/Rust 개발 도구가 필요하지 않습니다. 3D 작업에는 별도로 동의하여 설치한 Blender가 필요하며 앱은 이를 자동 다운로드하지 않습니다.
+[공급자 실증](docs/provider-feasibility.md) · [ima2-gen 구조 비교](docs/ima2-gen-comparison.md) · [현재 구현 범위](docs/completion-status.md)
+
+## 다운로드와 시작하기
+
+| 플랫폼 | 0.1.3 다운로드 | 현재 범위 |
+| --- | --- | --- |
+| Windows x64 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip) | 로컬 2D·절차적 3D·구독 연결·앱 내부 업데이트 |
+| Mac Apple Silicon | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_macos-arm64.dmg) | M 시리즈용 로컬 2D 시험 배포. Intel 빌드는 제외 |
+
+**Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 0.1.1/0.1.2 설치 사용자는 앱의 업데이트 패널에서 새 버전을 확인할 수 있습니다. WebView2와 3D용 Blender는 별도 필요하며, 이용자에게 Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 앱 전용 Codex 다운로드는 출처·라이선스·해시를 안내하고 동의 후 진행합니다.
+
+**Mac:** DMG를 열어 `Asset Studio.app`을 `Applications`로 복사합니다. 실제 실행 검증 OS는 macOS 15.7.9입니다. 구독 생성·Codex 자동 준비·앱 내부 업데이트는 미지원이고, Blender 3D는 Mac 실행 검증 전입니다. Apple Developer ID 서명·공증은 없으며 Gatekeeper 최초 다운로드와 설치 수명주기는 미검증입니다. Windows 역시 Authenticode 코드 서명이 없으며, 업데이트 파일의 서명 검증과 구분합니다.
+
+[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치 안내](docs/macos-quickstart.md) · [릴리스·해시·검증 범위](docs/releases/v0.1.3.md)
+
+## 원본에서 결과 묶음까지
+
+1. **가져오기** — 새 프로젝트에 원본 이미지를 넣고 규격·스타일을 정합니다.
+2. **다듬기** — 이미지를 변환하거나 Blender 소품을 만들고 새 버전으로 저장합니다.
+3. **확인하기** — 버전 비교·2D/3D 미리보기·작업 큐로 결과와 상태를 확인합니다.
+4. **내보내기** — 실제 파일과 `manifest.json`이 담긴 새 폴더를 꺼냅니다. 내보낸 결과는 앱 DB 없이도 검사할 수 있습니다.
+
+<a id="project-structure"></a>
+
+## 프로젝트 구조
+
+UI, 제작 도구, 저장소와 검증을 모듈로 나눴습니다. 네이티브 앱에서는 **Rust Backend가 작업자를 실행**하고, Scheduler가 영속 작업 상태·의존 관계·자원 예약을 관리합니다.
+
+```mermaid
+flowchart TD
+  UI["React 작업대<br/>라이브러리 · 캔버스 · 뷰포트"] -->|"Tauri IPC"| B["Rust Backend<br/>제작 실행 · 검증 · 커밋"]
+  C["TypeScript contracts"] -. "UI 타입 계약" .-> UI
+  CLI["asset-cli"] -. "동일 Backend" .-> B
+  B <--> Q["scheduler<br/>작업 상태 · 의존성 · 자원 예약"]
+  B <--> P["core<br/>프로젝트 · 원본 · 버전 · SQLite"]
+  B --> I["image-pipeline<br/>로컬 2D 처리"]
+  B -. "Windows 선택 기능" .-> R["providers<br/>공식 Codex RPC"]
+  B -. "선택적 3D 도구" .-> W["Blender 작업자<br/>고정 템플릿 + 매개변수"]
+  I --> F["실제 출력 파일<br/>SHA-256 · 검증 결과"]
+  R --> F
+  W --> F
+  F --> P
+  P --> E["독립 내보내기 폴더<br/>manifest.json + 선택 에셋의 버전"]
+  classDef accent fill:#101d29,stroke:#68e0e2,color:#e5edf4,stroke-width:2px;
+  classDef module fill:#172a38,stroke:#334c60,color:#e5edf4;
+  classDef optional fill:#19252c,stroke:#d8af64,color:#e5edf4,stroke-dasharray:5 3;
+  class UI,B,F,E accent;
+  class C,CLI,Q,P,I module;
+  class R,W optional;
+```
+
+### 저장소 지도
+
+```text
+masset/
+├─ apps/
+│  ├─ desktop/
+│  │  ├─ src/                 React 작업대·편집 UI·Three.js
+│  │  ├─ public/examples/     로컬 SVG/PNG 아이콘 12종
+│  │  └─ src-tauri/           Tauri 명령·Rust Backend·네이티브 CLI
+│  └─ site/                   Vercel 소개·다운로드 사이트
+├─ crates/
+│  ├─ core/                   SQLite 프로젝트·버전·해시·내보내기
+│  ├─ scheduler/              영속 큐·의존성·자원 예약·복구
+│  ├─ image-pipeline/         이미지 변환·분할·아틀라스·검사
+│  └─ providers/              공식 Codex RPC·Windows 런타임 준비
+├─ packages/
+│  ├─ contracts/              TypeScript 데이터·명령 계약
+│  └─ ui/                     공용 색상 토큰
+├─ workers/blender/           고정 Python 절차형 모델 작업자
+├─ examples/procedural/       실제 GLB·blend·렌더·검증 기록
+├─ scripts/                   빌드·패키징·라이선스·독립 파일 검사
+├─ tests/                     저장소·이미지·공급자·Blender·E2E
+├─ docs/                      설계·검증·플랫폼·릴리스 기록
+├─ .github/workflows/         Windows CI·수동 ARM64 Mac 검증
+├─ Cargo.toml / Cargo.lock    Rust workspace·의존성 잠금
+└─ package.json / package-lock.json
+                             npm workspace·의존성 잠금
+```
+
+CPU 이미지 처리, Blender와 외부 공급자는 별도의 자원 한도를 사용합니다. 입력 해시·도구 버전을 캐시 키에 넣고 저장 결과를 확인한 뒤 명시적으로 재사용합니다. 결과가 불명확한 외부 요청은 자동 재전송하지 않으며 유료 API로 조용히 전환하지 않습니다.
+
+원본과 새 버전을 구분해 저장하고, 내보내기에는 상대 경로와 파일별 SHA-256을 기록합니다. Blender는 선택적 로컬 의존성으로 `--factory-startup --disable-autoexec`를 적용하며 에셋 입력을 코드로 실행하지 않습니다.
+
+[아키텍처](docs/architecture.md) · [모듈 계약](docs/module-contract.md) · [보안 설계](docs/security-design.md) · [디자인 규칙](docs/design-system.md)
+
+## 개발과 검증
+
+개발 환경은 Node.js 24, Rust 1.99.0 stable입니다. Windows는 Visual Studio C++ 도구·Windows SDK·WebView2, Mac은 Xcode Command Line Tools가 필요합니다.
 
 ```powershell
 npm ci
-# Rust 설치 위치가 PATH에 없다면 이 PowerShell 프로세스에만 추가합니다.
 $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
 . .\scripts\with-native-env.ps1
-cargo test --workspace
+cargo test --workspace --locked
 npm run typecheck
 npm test
 npm run desktop
 ```
 
-Windows 포터블 빌드가 기본 경로입니다. EXE와 `examples`, `workers/blender`, 라이선스를 새 폴더와 ZIP으로 묶고 파일별 SHA-256을 기록합니다. NSIS 도구 다운로드는 이 경로에 포함되지 않습니다.
+<details>
+<summary><strong>사이트·배포·독립 파일 검사 명령</strong></summary>
 
 ```powershell
+# 소개 사이트
+npm run site:dev
+npm run site:build
+
+# 새 폴더·ZIP으로 Windows 포터블 빌드
 .\scripts\build-windows.ps1
-# 개발 도구/의존성이 준비되어 있다면 -SkipInstall을 사용할 수 있습니다.
-# 승인·해시 검증한 NSIS 캐시와 저장소 밖의 비공개 서명 키가 준비된 경우:
-# .\scripts\build-windows.ps1 -Distribution Nsis -SigningKeyPath 'C:\private\updater.key'
-# .\scripts\package-windows-release.ps1 -BuildReportPath output/release/windows-x64-build.json
-```
 
-Windows를 먼저 검증하며 macOS CI는 명시적인 수동 선택으로만 실행합니다. 포터블 폴더도 다른 PC의 런타임·DLL 확인이 필요합니다. 네이티브 빌드 명령과 아키텍처별 상태, NSIS 추가 도구의 출처·크기·해시는 [플랫폼 표](docs/platform-support.md)에 있습니다. 서명·공증·설치/업그레이드/제거 검증은 별도 항목입니다.
-
-0.1.0의 Windows 개발 호스트 검사에서는 Rust 110개 통과·4개 fixture 제외, release 백엔드 8개 작업과 출력 33개, 포터블 앱의 화면·12개 이미지·네이티브 IPC·실제 Blender 3D 렌더를 확인했습니다. 0.1.1과 0.1.2의 별도 검사 범위는 [검증 기록](docs/verification.md)에 표시하며 이전 기록은 보존합니다. 현재 공개 배포 파일의 해시는 [0.1.3 릴리스 메타데이터](docs/releases/v0.1.3.json)에서 확인합니다. 다른 PC·설치 수명주기는 별도 검증 상태입니다.
-
-## 에셋 제작 흐름
-
-1. 새 프로젝트를 만들고 규격·스타일 프리셋을 선택합니다.
-2. 기존 PNG/WebP/JPEG를 가져옵니다. 예제 아이콘은 로컬에서 만든 fixture이며 AI 생성의 증거가 아닙니다.
-3. 크기·색상·배경·마스크 등을 변환하여 새 버전을 저장합니다. 선택한 이미지 묶음을 아틀라스로 패킹할 수 있습니다.
-4. Blender가 감지되면 치수와 색상을 지정해 절차적 상자·테이블·선반을 만듭니다. GLB와 `.blend`를 저장합니다.
-5. 실제 파일과 `manifest.json`이 포함된 새 폴더로 내보냅니다. 원본 프로젝트 파일을 덮어쓰지 않습니다.
-
-```powershell
-# 앱 DB 없이 실제 내보내기 파일을 검사합니다.
+# 앱 DB 없이 실제 내보낸 파일을 검사
 npm run verify:artifacts -- 'C:\exports\내보낸 에셋'
-# 네이티브 백엔드 + 파일 검사. WebView/설치 검증과 별개입니다.
+
+# 네이티브 Backend 검사. 창·설치 검증과 구분
 cargo build -p asset-desktop --bin asset-cli
 .\scripts\native-smoke.ps1
-# 실제 Blender 모델도 포함하려면 -WithBlender를 추가합니다.
-# 포터블 앱의 실제 GLB 로딩·WebGL 픽셀까지 검사하려면:
+
+# 실제 배포 EXE의 Blender GLB 로딩·WebGL 픽셀 검사
 .\scripts\native-smoke.ps1 -Native3D -Executable 'C:\배포폴더\asset-desktop.exe'
 ```
 
-PNG는 실제 디코딩·CRC·알파·픽셀·해상도, GLB는 별도 Three.js 로더의 기하·인덱스·노멀·UV·재질·치수를 검사합니다. `.blend`는 별도의 새 Blender 프로세스에서 열어 확인합니다. [재현 절차와 결과](docs/verification.md)를 보세요.
+NSIS 설치 파일은 승인·해시 검증한 캐시 도구와 저장소 밖의 서명 키를 사용합니다. Mac 패키지 검증은 수동 선택한 Apple Silicon CI에서 수행합니다. [플랫폼별 빌드 안내](docs/platform-support.md)를 참고하세요.
 
-실제 절차적 [상자·테이블·선반 예제](examples/procedural/run-8fa3777b7c994505ba1c5592453a8543/verification.json)에는 GLB, 편집 가능한 `.blend`, 썸네일과 턴테이블 PNG가 있습니다. Blender 작업자를 직접 실행해 만든 결과이며 Tauri 앱 통합 결과로 표시하지 않습니다.
+</details>
 
-아이콘과 모델의 파일별 링크·치수·재생성 안내는 [실제 에셋 예제](examples/README.md)에 있습니다.
+**0.1.3 검증:** Windows ZIP 복사본의 실제 WebView·12개 이미지·IPC·가이드와 Blender GLB/WebGL을 확인했습니다. 별도 네이티브 CLI 2D 검사, 브라우저 회귀 6개, 공개 다운로드 해시와 포터블 321개 파일 대조가 통과했습니다. Apple Silicon은 실제 DMG 복사 앱의 WebView·IPC와 별도 Backend 2D 검사를 통과했습니다. 브라우저 결과를 네이티브 지원 증거로, 다운로드 서명 검사를 실제 버전 교체 설치 증거로 확대하지 않습니다.
 
-브라우저 미리보기(`npm run dev`)는 개발용 UI 검사입니다. IndexedDB 저장과 ZIP 다운로드를 검증하지만, Rust 저장소·Tauri 네이티브 명령 실행의 증거가 아닙니다. 외부 생성 테스트는 일반 fixture 테스트와 분리되어 있으며 명시적으로 실행해야 합니다. 브라우저 검사는 기존 Google Chrome을 사용하고 실행 파일을 자동 다운로드하지 않습니다.
+[전체 검증 기록](docs/verification.md) · [Windows 배포 메타데이터](docs/releases/v0.1.3.json) · [Mac 배포 메타데이터](docs/releases/v0.1.3-macos.json)
 
-## 구조 및 기여
+## 기여와 라이선스
 
-기능 소개 사이트의 소스는 `apps/site`에 있습니다. `npm run site:dev`로 로컬에서 열고, `npm run site:build`로 정적 사이트를 만듭니다. 루트 `vercel.json`은 사이트만 빌드·배포합니다. Windows 설치 파일·ZIP과 Mac DMG는 GitHub Release에서 제공합니다.
+[CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md) · [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
-모듈 경계는 [아키텍처](docs/architecture.md), 신뢰 경계는 [보안 설계](docs/security-design.md)에 있습니다. [CONTRIBUTING](CONTRIBUTING.md)과 [SECURITY](SECURITY.md)를 먼저 읽어 주세요.
+코어 소스는 [Apache-2.0](LICENSE), Blender 작업자 코드는 별도 [GPL-3.0-or-later](workers/blender/LICENSE)입니다. Blender 실행 파일은 앱에 포함되지 않습니다. 예제 에셋의 권리와 외부 서비스 생성물·사용자 입력의 권리는 별도로 다룹니다. 외부 AI 서비스가 무료 또는 오픈소스라는 의미는 아닙니다.
 
-코어 소스는 [Apache-2.0](LICENSE), Blender 작업자 코드는 별도 GPL-3.0-or-later 라이선스입니다. Blender 실행 파일은 앱에 포함되지 않습니다. [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)에 의존성과 재배포 경계를 기록합니다. 에셋이 제조용 CAD나 공학적 안전 검토를 통과했다는 의미는 없습니다.
+이미지 기반 3D·제조용 CAD·임의 코드 플러그인 실행은 현재 지원 범위에 포함되지 않습니다.
