@@ -35,13 +35,15 @@
     "tamperedPayloadRejected": true,
     "versionReplayRejected": true,
     "officialTauriPublicDownload": true,
-    "userInstalledAppModified": false,
+    "userInstalledAppModifiedByThisTask": false,
+    "installerExecutedByThisTask": false,
     "crossVersionInstallerExecuted": false,
     "cleanMachineVerified": false,
     "liveProviderGenerationRequested": false
   },
   "boundaries": {
-    "installedUserAppPreserved": true,
+    "userInstallationStateVerified": false,
+    "userInstallationScope": "Controlled checks used isolated copies and download-only updater verification. A separately observed installed-version change was outside these checks; its cause and initiator were not determined.",
     "installerLifecycleVerified": false,
     "providerProofThisVersion": false
   },
