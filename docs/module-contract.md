@@ -26,8 +26,13 @@ One Tauri command `workspace_command({request})` takes a discriminated JSON acti
 | provider_status / provider_login | none | ProviderConnection without auth URLs or credentials |
 | generate | requestId UUID, prompt, name?, count 1..20 | ProjectSnapshot with explicit subscription jobs |
 | job_events | cursor?, limit 1..256 | Durable small event page |
+| update_status | none | AppUpdateStatus; no network |
+| update_check | none | AppUpdateStatus; official GitHub release metadata only |
+| update_install | expectedVersion, expectedSha256 | AppUpdateStatus until installer/restart; explicit reviewed values required |
 
 The frontend polls `snapshot` while jobs are active. Image transforms, sprite processing, normal-map calculation and Blender invocation use the Rust resource queue; independent local CPU tasks can overlap. Explicit GPT Image 2 requests require official runtime/auth/tool restrictions; live file proof is a separate capability status.
+
+In 0.1.1, `ProviderConnection` reports the selected `reasoningModel` (`gpt-6.1-sol`), `catalogSource` (`application_pinned_catalog` or `unknown`) and `inferenceAccess` (`unknown`). Local readiness and catalog membership do not establish account model entitlement. Each explicit image job pins its planner, image target and runtime version; a changed or missing planner fails before submission and requires a new explicit request.
 
 The backend acquires an OS file lease before recovery. Another backend cannot recover a live backend's jobs. Reopening the selected project skips recovery. Shutdown stops admission; the lease is released only after registered workers exit. The empty `.workbench.lock` marker stays, while a crash releases the actual OS lock. Windows native tests verified competing-open rejection and reopen.
 
@@ -36,5 +41,7 @@ Local jobs record cache identities from the prompt, ordered input SHA-256 values
 Sprite jobs pin the normalized project pivot and requested frame rate (default 12fps) at enqueue time. Atlas coordinates preserve the input order; sheet splitting is row-major. Later specification edits do not change already-queued metadata.
 
 Queue RAM reservations estimate simultaneous buffers from input/output dimensions. They are admission estimates, not OS allocation ceilings. Jobs exceeding the default 2GiB budget visibly block. The scheduler hash-fixture benchmark records actual overlap/memory/timing, separately from full-app workloads. Import/export are serialized foreground commands admitted only while workers are idle; queued export and OS memory enforcement remain further work.
+
+The Windows update channel uses the official Tauri updater, a pinned public key, signed installer/version and an exact repository/version URL. Only reviewed stable upgrades with matching bytes/SHA-256 may install. A second idle check holds backend admission locks before shutdown and leaves queued work/project data intact. The frontend checks on startup and every ten minutes, and downloads only after user approval. Native QA and browser modes make no update requests. Missing QA output arguments fail initialization instead of entering normal app mode. The 256MiB metadata ceiling and cooperative download cancellation are validation/admission guards, not a hard OS memory ceiling.
 
 Ownership: coordinator owns shared contracts/root config/native glue. `core` agent owns persistence; `scheduler` owns queue; `image` owns deterministic raster processing; `blender` owns fixed Python templates; `provider` owns feasibility/capabilities; `ui` owns desktop frontend. QA owns test harnesses/release documentation, but cannot claim macOS verification on a Windows host.

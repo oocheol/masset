@@ -49,7 +49,15 @@ export interface ProjectSnapshot {root: string; project: Project; providers: Pro
 export interface EnvironmentInfo {blenderPath: string | null; blenderVersion: string | null; platform: string; native: boolean;}
 export interface ProviderConnection {
   available: boolean; authenticated: boolean; ready: boolean; runtimeVersion: string | null;
+  /** Selected planner and catalog membership never establish account inference access. */
+  reasoningModel: string | null; catalogSource: 'application_pinned_catalog' | 'unknown'; inferenceAccess: 'unknown';
   requestedModel: string; confirmedModel: string | null; reason: string; usage: unknown; checkedAt: string;
+}
+export interface AppUpdateStatus {
+  supported: boolean; currentVersion: string; latestVersion: string | null;
+  state: 'idle' | 'checking' | 'up_to_date' | 'available' | 'downloading' | 'installing' | 'error' | 'unsupported';
+  downloadedBytes: number; totalBytes: number | null; sha256: string | null;
+  releaseUrl: string | null; message: string; checkedAt: string | null;
 }
 export type ImageOperation =
   | {type: 'resize'; width: number; height: number; pixelArt: boolean}

@@ -1,11 +1,13 @@
 use super::*;
 use asset_providers::runtime::{
     CodexRuntime, ProviderEvent, RuntimeError, RuntimeOptions, RuntimeStatus,
+    DEFAULT_REASONING_MODEL,
 };
 use asset_providers::{AuthStatus, ImageGenerationRequest, ImageProvenance, REQUESTED_IMAGE_MODEL};
 
 pub(super) fn unavailable_connection(reason: &str) -> Value {
     json!({"available":false,"authenticated":false,"ready":false,"runtimeVersion":null,
+        "reasoningModel":DEFAULT_REASONING_MODEL,"catalogSource":"unknown","inferenceAccess":"unknown",
         "requestedModel":"gpt-image-2","confirmedModel":null,"reason":reason,"usage":[],"checkedAt":now()})
 }
 
@@ -16,20 +18,34 @@ fn connection(status: &RuntimeStatus) -> Value {
         && status.official_provider_verified
         && status.native_image_generation;
     json!({"available":true,"authenticated":authenticated,"ready":ready,"runtimeVersion":status.version,
+        "reasoningModel":status.reasoning_model,"catalogSource":"application_pinned_catalog","inferenceAccess":"unknown",
         "requestedModel":status.requested_image_model,"confirmedModel":status.confirmed_image_model,
-        "reason":if ready {format!("공식 Codex 구독 연결 · 추론 모델 {}. 이미지 요청은 GPT Image 2이며 실제 사용 이미지 모델은 아직 확인되지 않았습니다.",status.reasoning_model.as_deref().unwrap_or("확인 필요"))}
+        "reason":if ready {format!("공식 Codex 구독 인증과 이미지 도구를 확인했습니다. 추론 모델은 {}이며 이미지 목표는 GPT Image 2입니다. 앱 고정 목록의 모델 이름은 계정 이용 권한을 증명하지 않으며, 실제 이미지 수신은 아직 확인되지 않았습니다.",status.reasoning_model.as_deref().unwrap_or("확인 필요"))}
         else if !authenticated {"공식 Codex에서 ChatGPT 계정으로 로그인해 주세요.".to_owned()}
         else {"공식 이미지 도구와 실행 제한을 확인하지 못해 생성을 차단했습니다.".to_owned()},
         "usage":status.rate_limits,"checkedAt":now()})
 }
 
 fn executable() -> Option<PathBuf> {
-    let mut candidates = Vec::new();
+    // An explicit runtime selection is preserved; it cannot silently fall back.
     if let Some(path) = std::env::var_os("CODEX_EXECUTABLE") {
-        candidates.push(PathBuf::from(path));
+        let path = PathBuf::from(path);
+        return (path.is_absolute() && path.is_file() && official_runtime_file(&path))
+            .then_some(path);
     }
+    let mut candidates = Vec::new();
     if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-        candidates.push(PathBuf::from(local).join("Programs/OpenAI/Codex/bin/codex.exe"));
+        let local = PathBuf::from(local);
+        candidates.push(local.join("Programs/OpenAI/Codex/bin/codex.exe"));
+        if let Ok(entries) = fs::read_dir(local.join("OpenAI/Codex/bin")) {
+            let mut versioned: Vec<_> = entries
+                .filter_map(|entry| entry.ok())
+                .map(|entry| entry.path().join("codex.exe"))
+                .filter(|path| path.is_file())
+                .collect();
+            versioned.sort();
+            candidates.extend(versioned.into_iter().take(32));
+        }
     }
     #[cfg(target_os = "macos")]
     candidates.push(PathBuf::from(
@@ -37,7 +53,86 @@ fn executable() -> Option<PathBuf> {
     ));
     candidates
         .into_iter()
-        .find(|p| p.is_absolute() && p.is_file())
+        .filter(|path| path.is_absolute() && path.is_file() && official_runtime_file(path))
+        .filter_map(|path| {
+            let version = asset_providers::probe_codex(&path).ok()?.version?;
+            Some((runtime_version_rank(&version)?, path))
+        })
+        .max_by(|left, right| {
+            left.0
+                .cmp_precedence(&right.0)
+                .then_with(|| left.1.cmp(&right.1))
+        })
+        .map(|(_, path)| path)
+}
+
+fn runtime_version_rank(value: &str) -> Option<semver::Version> {
+    let safe = asset_providers::safe_codex_version(value.as_bytes())?;
+    let version = safe.strip_prefix("codex-cli ")?;
+    semver::Version::parse(version).ok()
+}
+
+#[cfg(windows)]
+fn official_runtime_file(path: &Path) -> bool {
+    use base64::Engine as _;
+    use std::io::Read;
+    let Some(system_root) = std::env::var_os("SystemRoot") else {
+        return false;
+    };
+    let windows_power_shell = PathBuf::from(system_root).join("System32/WindowsPowerShell/v1.0");
+    // The path is passed through a dedicated environment variable, never
+    // interpolated into PowerShell code. Only a fixed success marker is read.
+    let script = "$ErrorActionPreference='Stop'; $assetSignature=Get-AuthenticodeSignature -LiteralPath $env:ASSET_CODEX_SIGNATURE_PATH; if ($assetSignature.Status -eq 'Valid' -and $assetSignature.SignerCertificate.Subject.Contains('O=\"OpenAI OpCo, LLC\"')) { [Console]::Write('verified') }";
+    // PowerShell's -Command parsing does not preserve CRT-escaped embedded
+    // double quotes. Encode this constant script as UTF-16LE instead.
+    let script_bytes: Vec<u8> = script.encode_utf16().flat_map(u16::to_le_bytes).collect();
+    let encoded_script = base64::engine::general_purpose::STANDARD.encode(script_bytes);
+    let mut child = match Command::new(windows_power_shell.join("powershell.exe"))
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-EncodedCommand",
+            &encoded_script,
+        ])
+        .env("ASSET_CODEX_SIGNATURE_PATH", path)
+        // A parent PowerShell 7 module path cannot load its .NET modules in 5.1.
+        // Resolve this security cmdlet only from the OS's own module directory.
+        .env("PSModulePath", windows_power_shell.join("Modules"))
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .creation_flags(0x08000000)
+        .spawn()
+    {
+        Ok(child) => child,
+        Err(_) => return false,
+    };
+    let started = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                let mut bytes = Vec::new();
+                let read = child
+                    .stdout
+                    .take()
+                    .is_some_and(|out| out.take(4096).read_to_end(&mut bytes).is_ok());
+                return status.success() && read && bytes == b"verified";
+            }
+            Ok(None) if started.elapsed() < Duration::from_secs(15) => {
+                thread::sleep(Duration::from_millis(25))
+            }
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return false;
+            }
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn official_runtime_file(_: &Path) -> bool {
+    true
 }
 
 impl Backend {
@@ -152,7 +247,7 @@ impl Backend {
         }
         let tasks = (0..count).map(|index| job(&project,"image_generate",&format!("구독 이미지 · {}",index+1),None,JobResource::External,
             json!({"prompt":prompt,"name":if count==1{name.to_owned()}else{format!("{name} {}",index+1)},
-                "variationIndex":index,"variationCount":count,"requestedModel":REQUESTED_IMAGE_MODEL,
+                "variationIndex":index,"variationCount":count,"requestedModel":REQUESTED_IMAGE_MODEL,"reasoningModel":status["reasoningModel"],
                 "styleGuide":project.style_guide,"spec":project.spec,"toolVersion":status["runtimeVersion"],
                 "resources":{"ramMb":image_ram_mb(raster::MAX_PIXELS,16,384),"cpuThreads":1,"diskWeight":1}}))).collect::<Result<Vec<_>>>()?;
         SchedulerStore::open(&root.join("scheduler.sqlite"))?
@@ -182,6 +277,7 @@ impl Backend {
         };
         let payload = serde_json::to_value(&task.payload)?;
         if payload["requestedModel"].as_str() != Some(REQUESTED_IMAGE_MODEL)
+            || payload["reasoningModel"].as_str() != runtime.status().reasoning_model.as_deref()
             || payload["toolVersion"].as_str() != runtime.status().version.as_deref()
         {
             queue.fail(&task.id,FailureKind::Unsupported,"대기 중 공급자 모델 또는 런타임 버전이 바뀌었습니다. 현재 연결을 확인하고 새 요청을 만들어 주세요.")?;
@@ -383,7 +479,7 @@ fn failure_kind(error: &RuntimeError) -> FailureKind {
 
 fn failure_message(error: &RuntimeError) -> String {
     if matches!(error, RuntimeError::ReasoningModelUnavailable) {
-        return "고정된 추론 모델이 공식 Codex 목록에 없습니다. Codex를 업데이트하고 연결을 다시 확인해 주세요. 다른 모델로 자동 변경하지 않았습니다.".into();
+        return format!("선택된 추론 모델 {DEFAULT_REASONING_MODEL}이 현재 모델 목록에 없습니다. 계정 이용 권한은 별도로 확인해야 합니다. 다른 모델로 자동 변경하지 않았습니다.");
     }
     if let RuntimeError::GenerationFailed { failure } = error {
         let reason = if failure.hints.authentication_failure {
@@ -441,4 +537,60 @@ fn open_official_login(value: &str) -> Result<()> {
             .context("로그인 브라우저를 열지 못했습니다.")?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn runtime_selection_ranks_newer_alpha_above_older_stable() {
+        let older = runtime_version_rank("codex-cli 0.147.0").unwrap();
+        let alpha = runtime_version_rank("codex-cli 0.159.0-alpha.12.1").unwrap();
+        let stable = runtime_version_rank("codex-cli 0.159.0").unwrap();
+        assert!(alpha > older);
+        assert!(stable > alpha);
+        assert!(runtime_version_rank("codex-cli 0.159.0\nhttps://example.invalid").is_none());
+    }
+
+    #[test]
+    fn runtime_selection_follows_semver_prerelease_precedence() {
+        let alpha9 = runtime_version_rank("codex-cli 0.159.0-alpha.9").unwrap();
+        let alpha12 = runtime_version_rank("codex-cli 0.159.0-alpha.12").unwrap();
+        let beta = runtime_version_rank("codex-cli 0.159.0-beta.1").unwrap();
+        let stable = runtime_version_rank("codex-cli 0.159.0").unwrap();
+        assert!(alpha12.cmp_precedence(&alpha9).is_gt());
+        assert!(beta.cmp_precedence(&alpha12).is_gt());
+        assert!(stable.cmp_precedence(&beta).is_gt());
+        let with_build = runtime_version_rank("codex-cli 0.159.0+build.2").unwrap();
+        assert!(stable.cmp_precedence(&with_build).is_eq());
+    }
+
+    #[test]
+    fn connection_preflight_does_not_promote_catalog_membership_to_account_access() {
+        let status = RuntimeStatus {
+            version: Some("codex-cli 0.159.0-alpha.12.1".into()),
+            authentication: AuthStatus::Chatgpt,
+            plan_type: Some("pro".into()),
+            model_provider: "openai".into(),
+            reasoning_model: Some(DEFAULT_REASONING_MODEL.into()),
+            reasoning_catalog_commit: asset_providers::runtime::OFFICIAL_CATALOG_COMMIT.into(),
+            official_provider_verified: true,
+            native_image_generation: true,
+            controls_verified: true,
+            requested_image_model: REQUESTED_IMAGE_MODEL.into(),
+            confirmed_image_model: None,
+            live_generation_proven: false,
+            rate_limits: vec![],
+        };
+        let result = connection(&status);
+        assert_eq!(result["reasoningModel"], "gpt-6.1-sol");
+        assert_eq!(result["catalogSource"], "application_pinned_catalog");
+        assert_eq!(result["inferenceAccess"], "unknown");
+        assert!(result["confirmedModel"].is_null());
+        assert!(result["reason"]
+            .as_str()
+            .unwrap()
+            .contains("계정 이용 권한을 증명하지"));
+    }
 }

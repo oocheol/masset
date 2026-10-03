@@ -288,19 +288,59 @@ pub fn probe_codex(executable: &Path) -> Result<ProbeStatus, ProviderError> {
     })
 }
 
-fn safe_codex_version(output: &[u8]) -> Option<String> {
+/// Extracts only bounded ASCII Codex CLI SemVer metadata from version output.
+/// This function neither logs nor retains raw output or credentials. Callers
+/// should persist only the returned version and discard unrecognized output.
+pub fn safe_codex_version(output: &[u8]) -> Option<String> {
     let raw = std::str::from_utf8(output).ok()?.trim();
     let version = raw.strip_prefix("codex-cli ")?;
-    let parts: Vec<&str> = version.split('.').collect();
-    if version.len() > 30
-        || parts.len() != 3
-        || parts
-            .iter()
-            .any(|part| part.is_empty() || !part.bytes().all(|byte| byte.is_ascii_digit()))
+    // Accept official alpha/beta/rc versions while retaining a bounded, single
+    // ASCII SemVer value. Unrecognized text, extra lines and addresses cannot
+    // become persisted runtime-version metadata.
+    if version.len() > 64 || !version.is_ascii() {
+        return None;
+    }
+    let (without_build, build) = match version.split_once('+') {
+        Some((base, build)) => (base, Some(build)),
+        None => (version, None),
+    };
+    if build.is_some_and(|value| !valid_semver_identifiers(value, false)) {
+        return None;
+    }
+    let (core, prerelease) = match without_build.split_once('-') {
+        Some((core, prerelease)) => (core, Some(prerelease)),
+        None => (without_build, None),
+    };
+    let mut core_parts = core.split('.');
+    for _ in 0..3 {
+        let part = core_parts.next()?;
+        if part.is_empty()
+            || (part.len() > 1 && part.starts_with('0'))
+            || !part.bytes().all(|byte| byte.is_ascii_digit())
+            || part.parse::<u64>().is_err()
+        {
+            return None;
+        }
+    }
+    if core_parts.next().is_some()
+        || prerelease.is_some_and(|value| !valid_semver_identifiers(value, true))
     {
         return None;
     }
     Some(format!("codex-cli {version}"))
+}
+
+fn valid_semver_identifiers(value: &str, reject_numeric_leading_zero: bool) -> bool {
+    value.split('.').all(|part| {
+        !part.is_empty()
+            && part
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+            && !(reject_numeric_leading_zero
+                && part.len() > 1
+                && part.starts_with('0')
+                && part.bytes().all(|byte| byte.is_ascii_digit()))
+    })
 }
 
 fn parse_auth_status(output: &Output) -> AuthStatus {
@@ -592,6 +632,62 @@ mod tests {
         );
         assert_eq!(safe_codex_version(b"codex-cli private-token"), None);
         assert_eq!(safe_codex_version(b"secret token"), None);
+    }
+
+    #[test]
+    fn version_parser_accepts_bounded_semver_prerelease_and_build_metadata() {
+        for version in [
+            "0.159.0-alpha.12.1",
+            "0.159.0-beta.2",
+            "0.159.0-rc.1+build.001",
+            "0.0.0",
+        ] {
+            let output = format!("codex-cli {version}\r\n");
+            assert_eq!(
+                safe_codex_version(output.as_bytes()),
+                Some(format!("codex-cli {version}"))
+            );
+        }
+        let bounded_version = format!("0.1.0-{}", "a".repeat(58));
+        assert_eq!(bounded_version.len(), 64);
+        assert_eq!(
+            safe_codex_version(format!("codex-cli {bounded_version}").as_bytes()),
+            Some(format!("codex-cli {bounded_version}"))
+        );
+    }
+
+    #[test]
+    fn version_parser_rejects_malformed_semver_and_unbounded_output() {
+        for version in [
+            "0.159",
+            "0.159.0.1",
+            "00.159.0",
+            "0.0159.0",
+            "0.159.00",
+            "0.159.0-",
+            "0.159.0-alpha..12",
+            "0.159.0-alpha.01",
+            "0.159.0-alpha_12",
+            "0.159.0+",
+            "0.159.0+build..1",
+            "0.159.0+build+extra",
+            "0.159.0-alpha/12",
+            "0.159.0-alpha:12",
+            "0.159.0-alpha\n12",
+            "0.159.0-alpha 12",
+            "0.159.0-한글",
+            "18446744073709551616.1.0",
+        ] {
+            let output = format!("codex-cli {version}");
+            assert_eq!(safe_codex_version(output.as_bytes()), None);
+        }
+        let unbounded_version = format!("0.1.0-{}", "a".repeat(59));
+        assert_eq!(unbounded_version.len(), 65);
+        assert_eq!(
+            safe_codex_version(format!("codex-cli {unbounded_version}").as_bytes()),
+            None
+        );
+        assert_eq!(safe_codex_version(b"codex-cli 0.159.0-\xff"), None);
     }
 
     #[test]

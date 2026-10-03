@@ -7,8 +7,9 @@ import {
   DEFAULT_SPEC, DEFAULT_STYLE, EXPORT_PRESETS, SCHEMA_VERSION,
   type Artifact, type Asset, type AssetVersion, type AtlasOptions, type EnvironmentInfo,
   type ImageOperation, type Job, type ModelParameters, type ProjectSnapshot, type ProviderConnection,
-  type ValidationReport,
+  type ValidationReport, type AppUpdateStatus,
 } from '@local-assets/contracts';
+import {unsupportedUpdateStatus} from './appUpdate';
 
 /** Browser preview uses local files and IndexedDB. Native production jobs use the Rust bridge. */
 type Session = { snapshot: ProjectSnapshot };
@@ -63,11 +64,13 @@ export function bootstrapBrowser(): Promise<ProjectSnapshot> {
   return initialization.then(() => snapshot());
 }
 
-export async function browserCommand(request: Record<string, unknown>): Promise<ProjectSnapshot | EnvironmentInfo | ProviderConnection | { path: string }> {
+export async function browserCommand(request: Record<string, unknown>): Promise<ProjectSnapshot | EnvironmentInfo | ProviderConnection | AppUpdateStatus | { path: string }> {
+  if (['update_status','update_check','update_install'].includes(String(request.action))) return unsupportedUpdateStatus();
   // Provider checks never initialize or mutate a browser project, or open an auth URL.
   if (request.action === 'provider_status' || request.action === 'provider_login') return {
     available: false, authenticated: false, ready: false, runtimeVersion: null,
     requestedModel: 'gpt-image-2', confirmedModel: null, usage: null,
+    reasoningModel: null, catalogSource: 'unknown', inferenceAccess: 'unknown',
     reason: '데스크톱 전용: GPT Image2 연결과 생성은 Tauri 앱의 공식 런타임에서 확인하세요.', checkedAt: now(),
   };
   if (request.action === 'generate') throw new Error('데스크톱 전용: 브라우저에서는 GPT Image2 생성 요청을 제출할 수 없습니다.');

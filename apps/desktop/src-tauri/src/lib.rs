@@ -1,5 +1,6 @@
 mod process_guard;
 mod project_lease;
+pub mod updater;
 pub mod workbench;
 
 use tauri::Manager;
@@ -60,7 +61,13 @@ fn native_qa_complete(
     backend.shutdown();
     app.exit(
         if report["domReady"] == true
+            && report["error"].is_null()
             && report["decodedImages"].as_u64().unwrap_or(0) >= 8
+            && report["readability"]["guideOpened"] == true
+            && report["readability"]["escapeRestoredFocus"] == true
+            && report["appUpdater"]["supported"] == false
+            && report["appUpdater"]["networkActions"] == 0
+            && report["updateNetworkActions"] == 0
             && report["externalProviderCalls"].as_u64().unwrap_or(1) == 0
             && external_jobs == 0
             && (!qa.inner().1
@@ -82,6 +89,36 @@ async fn workspace_command(
     backend: tauri::State<'_, Backend>,
     request: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
+    if let Some(action) = request["action"]
+        .as_str()
+        .filter(|value| value.starts_with("update_"))
+    {
+        let updates = app.state::<updater::AppUpdater>().inner().clone();
+        let result = match action {
+            "update_status" => Ok(updates.status()),
+            "update_check" => updates.check(&app).await,
+            "update_install" => {
+                updates
+                    .install(
+                        &app,
+                        backend.inner(),
+                        request["expectedVersion"]
+                            .as_str()
+                            .ok_or("업데이트 버전을 확인해 주세요.")?,
+                        request["expectedSha256"]
+                            .as_str()
+                            .ok_or("업데이트 파일을 확인해 주세요.")?,
+                    )
+                    .await
+            }
+            _ => return Err("지원하지 않는 업데이트 명령입니다.".into()),
+        };
+        return result
+            .map_err(|error| error.to_string())
+            .and_then(|status| {
+                serde_json::to_value(status).map_err(|_| "업데이트 상태를 읽지 못했습니다.".into())
+            });
+    }
     let backend = backend.inner().clone();
     let backend_for_scope = backend.clone();
     let result = tauri::async_runtime::spawn_blocking(move || backend.request(request))
@@ -101,9 +138,53 @@ async fn workspace_command(
     Ok(result)
 }
 
+fn native_qa_directory(args: &[String]) -> anyhow::Result<Option<std::path::PathBuf>> {
+    let flags: Vec<_> = args
+        .iter()
+        .enumerate()
+        .filter(|(_, arg)| arg.as_str() == "--ui-smoke" || arg.as_str() == "--ui-smoke-3d")
+        .map(|(index, _)| index)
+        .collect();
+    anyhow::ensure!(flags.len() <= 1, "Use only one native UI QA mode");
+    let Some(index) = flags.first() else {
+        return Ok(None);
+    };
+    let directory = args
+        .get(index + 1)
+        .filter(|value| !value.is_empty() && !value.starts_with("--"))
+        .ok_or_else(|| anyhow::anyhow!("Native UI QA requires a new output directory"))?;
+    Ok(Some(directory.into()))
+}
+
+#[cfg(test)]
+mod qa_arguments_tests {
+    use super::native_qa_directory;
+    #[test]
+    fn incomplete_qa_mode_cannot_become_normal_app_mode() {
+        for args in [
+            vec!["app", "--ui-smoke"],
+            vec!["app", "--ui-smoke-3d", "--with-native-model"],
+            vec!["app", "--ui-smoke", ""],
+            vec!["app", "--ui-smoke", "new", "--ui-smoke-3d", "other"],
+        ] {
+            assert!(
+                native_qa_directory(&args.into_iter().map(String::from).collect::<Vec<_>>())
+                    .is_err()
+            );
+        }
+        assert!(native_qa_directory(&["app".into()]).unwrap().is_none());
+        assert!(
+            native_qa_directory(&["app".into(), "--ui-smoke".into(), "new".into()])
+                .unwrap()
+                .is_some()
+        );
+    }
+}
+
 pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let resources = app.path().resource_dir()?;
             let examples = if resources.join("examples").is_dir() {
@@ -118,11 +199,7 @@ pub fn run() {
                     .join("../../../workers/blender/worker.py")
             };
             let args: Vec<String> = std::env::args().collect();
-            let qa_directory = args
-                .iter()
-                .position(|arg| arg == "--ui-smoke" || arg == "--ui-smoke-3d")
-                .and_then(|index| args.get(index + 1))
-                .map(std::path::PathBuf::from);
+            let qa_directory = native_qa_directory(&args)?;
             let data = if let Some(directory) = &qa_directory {
                 if directory.exists() {
                     return Err("Native UI QA directory must be new".into());
@@ -133,6 +210,7 @@ pub fn run() {
                 app.path().app_data_dir()?
             };
             let with_native_model = qa_directory.is_some() && args.iter().any(|arg| arg == "--ui-smoke-3d" || arg == "--with-native-model");
+            app.manage(updater::AppUpdater::new(app.package_info().version.to_string(), qa_directory.is_some()));
             app.manage(NativeQa(qa_directory, with_native_model));
             let backend = Backend::new(data, examples, worker);
             backend.start();

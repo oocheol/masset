@@ -1,6 +1,33 @@
 # Verification record
 
-Date: 2026-10-02 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results will be updated only from executed checks.
+Latest update: 2026-10-03 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
+
+## 0.1.1 Windows checks
+
+| Check | Executed result | Scope |
+| --- | --- | --- |
+| Rust workspace | 119 passed / 4 fixture helpers ignored | Includes provider model pinning, SemVer selection, update metadata guards and incomplete native QA argument rejection. Final native library regression also passed 28 / 4 ignored. |
+| TypeScript, frontend production build, local artifact tests | Passed; 9 artifact tests | Latest desktop UI and contracts; browser results do not certify native support. |
+| Workstation browser regression | 6/6 passed | Local assets, actual exports, atlas, dialogs, m/cm GLB and browser provider gate. |
+| Copied portable native WebView | Passed, 12 images + actual IPC | `output/native-smoke/20261003-031957-289a9693`; minimum visible text button 14px, guide 16px, guide open/Esc/focus return, no horizontal overflow, final provider/update action counters 0. |
+| Copied portable native Blender → GLB → WebGL | Passed | `output/native-smoke/20261003-032043-1ebb9174`; actual generated/stored model hash, one-meter scene, native asset fetch, draw and pixel readback. |
+| Final backend + independent export | 8 successful jobs, 33 verified files | `output/native-smoke/20261003-032332-783d608d`; preserved inputs, versions, cache reuse and project reopen. No provider generation. |
+| Actual NSIS installation and installed WebView/3D | Passed on development host | 297 installed files; 12 example PNGs and 6 worker/license resources match; actual installed app font/guide/IPC/Blender/GLB/WebGL checks pass. |
+| Installer authenticity | Passed against actual installer bytes | Payload and authenticated version, tampered bytes and version replay checked independently with minisign-verify 0.2.5. Public plugin download proof is recorded separately after release. |
+| Same-version NSIS update/restart and removal | Passed on isolated current-user installation | `/UPDATE` + `/R` restarted actual app with fresh QA app-data; 38 existing isolated project/artifact files and original user portable process preserved. Own QA uninstall passed without app-data removal. **Different-version production plugin installation and clean Windows machine remain unverified.** |
+| Read-only official Codex probe | Authenticated / locally ready | `codex-cli 0.159.0-alpha.12.1`, planner `gpt-6.1-sol`, pinned catalog, inference access `unknown`; generation requested `false`, received images 0. No account model entitlement or image generation success inferred. |
+
+Portable executable SHA-256: `229b4008cf748c8081b7601804d3a1838a5b9a0ded0c56260e0231cd475ebff5`.
+Installed NSIS executable SHA-256: `542fc97b82ef0ecb6b3f9b9cd8ce2c4ac5de25774d810af061556e0d7d1dd604`.
+CLI SHA-256: `f9ed8ad2d99a66f64414c44429c3246bb5530b1db927639e6d0c2b6a68d28444`.
+
+The installed/portable hash difference is exactly Tauri's official bundle-type stamp (`__TAURI_BUNDLE_TYPE_VAR_UNK` → `NSS`), not a code/content difference beyond that marker. `scripts/verify-windows-bundle-marker.mjs` compares all bytes with only that exact replacement. The initial literal SHA comparison failure is retained; the stamp check, actual installed execution and current per-version metadata supersede it. The updater's metadata ceiling/cooperative cancellation are not an OS memory ceiling. Windows Authenticode and macOS signing/notarization are not claimed.
+
+Download bytes/SHA-256 and the current support boundaries are in [0.1.1 public metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.1.json). Original 0.1.0 release files and execution reports are retained.
+
+## 0.1.0 historical verification
+
+The following tables describe the original 2026-10-02 checks, not a new execution of each check on every later build.
 
 | Requirement | Status | Evidence / remaining gate |
 | --- | --- | --- |

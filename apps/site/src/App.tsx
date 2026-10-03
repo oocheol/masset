@@ -1,16 +1,12 @@
 import { useRef, useState } from 'react';
-import { ArrowDownToLine, ArrowUpRight, Box, Check, Copy, Expand, Github, Image, Layers, PackageOpen, X } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpRight, BookOpen, Box, Check, Copy, Expand, Github, Image, Layers, PackageOpen, RefreshCw, X } from 'lucide-react';
+
+import { release } from './release';
 
 const sourceUrl = 'https://github.com/oocheol/masset';
-const release = {
-  version: '0.1.0',
-  filename: 'AssetStudio-windows-x64-portable.zip',
-  executable: 'asset-desktop.exe',
-  bytes: 6_922_222,
-  sha256: 'd21672dfcc0f3c65ca574d91bccdf7595db705ddc3d287644a6977575dc55b02',
-};
 const releaseUrl = `${sourceUrl}/releases/tag/v${release.version}`;
 const downloadUrl = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
+const portableUrl = `${sourceUrl}/releases/download/v${release.version}/${release.portableFilename}`;
 const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 
 function Mark() {
@@ -28,6 +24,8 @@ const features = [
   { icon: Layers, title: '스프라이트를 한 장에', text: '이미지를 프레임으로 분할하고, 여러 애셋을 아틀라스로 묶습니다. 좌표·피벗·재생 속도를 기록한 JSON을 함께 내보냅니다.' },
   { icon: Box, title: '치수로 만드는 3D 소품', text: '상자·테이블·선반의 치수와 색을 정하면 Blender가 실제 모델을 만듭니다. GLB와 편집 가능한 .blend 파일이 함께 남습니다.' },
   { icon: PackageOpen, title: '다음 작업까지 이어지는 기록', text: '프로젝트와 작업 큐를 로컬에 저장합니다. 이미지와 3D 작업을 자원별로 처리하고 취소·복구·캐시로 반복 작업을 관리합니다.' },
+  { icon: BookOpen, title: '큰 글씨와 단계별 가이드', text: '주요 버튼과 입력란의 글씨를 키우고 긴 설명을 접었습니다. 상단 사용 가이드에서 가져오기부터 내보내기까지 순서대로 확인하세요.' },
+  { icon: RefreshCw, title: '새 버전은 앱에서 바로', text: '시작할 때와 10분마다 새 버전을 확인합니다. 파일 정보를 검토하고 업데이트를 누르면 서명 검사 후 설치합니다. 진행 중인 제작은 완료를 기다립니다.' },
 ];
 
 const models = [
@@ -40,16 +38,17 @@ const statuses = [
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
   { feature: '밝기 기반 노멀맵', status: '실험 기능', tone: 'experimental', detail: '이미지 밝기에서 표면 방향을 근사합니다. 실제 표면 구조를 복원하는 기능은 아닙니다.' },
-  { feature: 'GPT Image2 구독 계정 연결·생성 요청', status: '생성 실증 미완료', tone: 'pending', detail: '연결과 요청 경로는 구현했습니다. 실제 생성 요청 4회에서 받은 이미지가 0장이므로, 이미지 생성 동작을 보장하지 않습니다.' },
+  { feature: 'GPT-6.1 Sol 추론·GPT Image2 구독 요청', status: '생성 실증 미완료', tone: 'pending', detail: '공식 Codex 연결과 고정 모델을 표시합니다. 계정의 모델 이용 권한과 이미지 수신은 미확인입니다. 기존 오류 후 자동 재요청이나 유료 API 전환은 하지 않습니다.' },
   { feature: 'macOS 배포 패키지', status: '준비 중', tone: 'pending', detail: '현재 다운로드는 Windows x64용입니다. macOS 패키지와 실행 검증은 아직 제공하지 않습니다.' },
 ];
 
 const faqs = [
-  { question: '개발 도구를 설치해야 하나요?', answer: `아니요. 다운로드한 ZIP을 풀고 ${release.executable}를 실행하면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows의 WebView2 Runtime은 필요하며, 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.` },
+  { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
+  { question: '기존 버전은 어떻게 업데이트하나요?', answer: '기존 0.1.0 포터블 사용자는 이번 설치 파일을 한 번 설치하세요. 이후부터 앱의 업데이트 버튼으로 새 버전을 받을 수 있습니다. 버전·출처·용량·SHA-256을 검토하고 동의하면 서명 검사 후 설치하며, 프로젝트와 원본은 보존합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 실제 이미지 생성은 아직 검증되지 않았습니다. 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
-  { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: '0.1.0은 서명되지 않은 초기 공개 빌드여서 Windows SmartScreen 경고가 나타날 수 있습니다. GitHub 공식 릴리스에서 받았는지 확인하고, 다운로드 섹션의 SHA-256과 파일 해시가 일치하는지 확인해 주세요.' },
+  { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
@@ -97,7 +96,7 @@ export default function App() {
           <h1 id="hero-title">이미지와 3D 소품을,<br />내 컴퓨터에서.</h1>
           <p className="hero-description">게임과 앱에 쓸 애셋을 만들고 다듬는 작은 작업대.<br className="desktop-break" /> 원본을 남기고, 버전을 쌓고, 필요한 파일로 꺼내세요.</p>
           <div className="hero-actions"><DownloadLink /><a className="text-link" href="#workbench">작업대 살펴보기 <ArrowDownToLine size={16} aria-hidden="true" /></a></div>
-          <p className="download-hint">Windows x64용 ZIP <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D 제작은 Blender 별도 설치</a></p>
+          <p className="download-hint">Windows x64 설치 파일 <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D 제작은 Blender 별도 설치</a></p>
         </div>
         <figure className="hero-specimens">
           <div className="specimen-board">
@@ -153,10 +152,10 @@ export default function App() {
 
       <section id="download" className="download-section section-space page-width" aria-labelledby="download-title">
         <div className="download-card">
-          <div className="download-main"><Mark /><h2 id="download-title">작업대를 열어 보세요.</h2><p>ZIP을 풀고 {release.executable}를 실행하세요.<br />개발 도구를 설치할 필요는 없습니다.</p><DownloadLink secondary /><a className="release-link" href={releaseUrl}>v{release.version} 릴리스 기록 <ArrowUpRight size={14} aria-hidden="true" /></a></div>
-          <div id="requirements" className="download-requirements"><h3>받기 전에 확인해 주세요</h3><dl><div><dt>운영체제</dt><dd>Windows x64</dd></div><div><dt>앱 실행</dt><dd>Microsoft WebView2 Runtime</dd></div><div><dt>3D 제작</dt><dd>Blender 5.2.1 별도 설치</dd></div><div><dt>배포 형태</dt><dd>설치 없는 portable ZIP</dd></div><div><dt>파일 크기</dt><dd>{release.bytes.toLocaleString('en-US')} bytes <span>(약 {sizeMiB} MiB)</span></dd></div></dl><p className="unsigned-note">서명되지 않은 초기 공개 빌드입니다. Windows 실행 경고가 나타날 수 있으므로 공식 릴리스와 파일 해시를 확인해 주세요.</p></div>
+          <div className="download-main"><Mark /><h2 id="download-title">작업대를 열어 보세요.</h2><p>설치 파일을 실행하고 안내를 따르세요.<br />앱 안의 사용 가이드로 시작할 수 있습니다.</p><DownloadLink secondary /><a className="portable-link" href={portableUrl}>설치 없이 쓰는 포터블 ZIP</a><a className="release-link" href={releaseUrl}>v{release.version} 릴리스 기록 <ArrowUpRight size={14} aria-hidden="true" /></a></div>
+          <div id="requirements" className="download-requirements"><h3>받기 전에 확인해 주세요</h3><dl><div><dt>운영체제</dt><dd>Windows x64</dd></div><div><dt>앱 실행</dt><dd>Microsoft WebView2 Runtime</dd></div><div><dt>3D 제작</dt><dd>Blender 5.2.1 별도 설치</dd></div><div><dt>배포 형태</dt><dd>설치형 · 앱 내부 업데이트</dd></div><div><dt>파일 크기</dt><dd>{release.bytes.toLocaleString('en-US')} bytes <span>(약 {sizeMiB} MiB)</span></dd></div></dl><p className="unsigned-note">업데이트 파일에는 암호학적 서명이 있습니다. Windows 코드 서명은 없어 실행 경고가 나타날 수 있습니다. 공식 릴리스와 파일 해시를 확인해 주세요.</p></div>
         </div>
-        <div className="checksum-row"><div className="checksum-heading"><span>다운로드 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
+        <div className="checksum-row"><div className="checksum-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
       </section>
 
       <section className="faq-section section-space page-width" aria-labelledby="faq-title"><h2 id="faq-title">처음 열기 전에 궁금한 것.</h2><div className="faq-list">{faqs.map(faq => <details key={faq.question}><summary>{faq.question}<span className="faq-indicator" aria-hidden="true" /></summary><div className="faq-answer"><p>{faq.answer}</p>{faq.link && <a className="text-link" href={faq.link}>{faq.label}<ArrowUpRight size={15} aria-hidden="true" /></a>}</div></details>)}</div></section>

@@ -66,7 +66,7 @@ pub const OFFICIAL_CATALOG_SHA256: &str =
 const OFFICIAL_CATALOG: &[u8] = include_bytes!("../assets/openai-models.json");
 /// Fixed outer planner selection. Catalog default changes never select a model.
 /// This is separate from REQUESTED_IMAGE_MODEL and never changes billing lanes.
-pub const DEFAULT_REASONING_MODEL: &str = "gpt-5.5";
+pub const DEFAULT_REASONING_MODEL: &str = "gpt-6.1-sol";
 // The official builtin AuthMode::Chatgpt default, passed only through the
 // documented public CLI override. This crate never issues HTTP to this URL.
 const OFFICIAL_NATIVE_CODEX_BASE: &str = "https://chatgpt.com/backend-api/codex";
@@ -77,7 +77,8 @@ pub struct RuntimeOptions {
     /// A dedicated app-owned artifact directory, not a project source root.
     pub output_root: PathBuf,
     /// Outer agent model; None means DEFAULT_REASONING_MODEL, never the catalog
-    /// default. A caller-selected model must be in the verified official list.
+    /// default. A caller-selected model must match the configured catalog;
+    /// catalog membership does not establish account inference eligibility.
     pub reasoning_model: Option<String>,
     pub rpc_timeout: Duration,
     pub generation_timeout: Duration,
@@ -121,9 +122,13 @@ pub struct RuntimeStatus {
     pub authentication: AuthStatus,
     pub plan_type: Option<String>,
     pub model_provider: String,
+    /// Selected outer planner, not proof that account inference will succeed.
     pub reasoning_model: Option<String>,
+    /// Revision of the application-injected static catalog, not account data.
     pub reasoning_catalog_commit: String,
+    /// Verifies the configured native provider route only, not model access.
     pub official_provider_verified: bool,
+    /// Runtime feature exposure; the account may still reject actual inference.
     pub native_image_generation: bool,
     pub controls_verified: bool,
     pub requested_image_model: String,
@@ -160,7 +165,7 @@ pub enum RuntimeError {
     ImageGenerationUnavailable,
     #[error("The requested native image model must be gpt-image-2")]
     UnsupportedModel,
-    #[error("The pinned reasoning model is unavailable in the verified official runtime list; no automatic fallback was made")]
+    #[error("The selected reasoning model is absent from the runtime's configured catalog; account inference eligibility remains unknown and no automatic fallback was made")]
     ReasoningModelUnavailable,
     #[error("The actual image model is not included in the public image event")]
     ActualModelUnconfirmed,
@@ -452,7 +457,7 @@ pub struct CodexRuntime {
     status: RuntimeStatus,
     active_turn: Option<(String, String)>,
     poisoned: bool,
-    allowed_reasoning_models: HashSet<String>,
+    catalog_reasoning_models: HashSet<String>,
 }
 
 impl CodexRuntime {
@@ -478,7 +483,7 @@ impl CodexRuntime {
         // stdout (which may include configuration secrets) is never exposed.
         let mcp_names = public_mcp_inventory(&options)?;
         let mut process = RuntimeProcess::spawn(&options, &mcp_names)?;
-        process.rpc("initialize", json!({"clientInfo":{"name":"asset_image_provider","title":"Asset Image Provider","version":"0.1.0"},"capabilities":{"experimentalApi":true}}), options.rpc_timeout)?;
+        process.rpc("initialize", json!({"clientInfo":{"name":"asset_image_provider","title":"Asset Image Provider","version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true}}), options.rpc_timeout)?;
         process.notify("initialized", json!({}))?;
         let config = process.rpc(
             "config/read",
@@ -513,10 +518,11 @@ impl CodexRuntime {
         if authentication == AuthStatus::ApiKey {
             return Err(RuntimeError::PaidRouteRefused);
         }
-        let allowed_reasoning_models = read_official_models(&mut process, options.rpc_timeout)?;
+        let catalog_reasoning_models =
+            read_configured_catalog_models(&mut process, options.rpc_timeout)?;
         let selected = select_reasoning_model(
             options.reasoning_model.as_deref(),
-            &allowed_reasoning_models,
+            &catalog_reasoning_models,
         )?;
         options.reasoning_model = Some(selected.clone());
         let version = crate::probe_codex(&options.executable)
@@ -543,7 +549,7 @@ impl CodexRuntime {
             },
             active_turn: None,
             poisoned: false,
-            allowed_reasoning_models,
+            catalog_reasoning_models,
         };
         // Rate-limit read failure does not mean zero usage or consume credits.
         let _ = runtime.refresh_usage();
@@ -661,7 +667,7 @@ impl CodexRuntime {
                 .get("model")
                 .and_then(Value::as_str)
                 .is_some_and(|model| {
-                    self.allowed_reasoning_models.contains(model)
+                    self.catalog_reasoning_models.contains(model)
                         && Some(model) == self.options.reasoning_model.as_deref()
                 })
         {
@@ -1414,7 +1420,10 @@ fn prepare_official_catalog(root: &Path) -> Result<PathBuf, RuntimeError> {
     Ok(path)
 }
 
-fn read_official_models(
+/// Confirms runtime configuration matches the application's static catalog.
+/// This is deliberately not called an account-availability or entitlement
+/// check: model_catalog_json selects a static manager with no server refresh.
+fn read_configured_catalog_models(
     process: &mut RuntimeProcess,
     timeout: Duration,
 ) -> Result<HashSet<String>, RuntimeError> {
@@ -1426,7 +1435,7 @@ fn read_official_models(
         .iter()
         .filter_map(|m| identifier_at(m, "slug"))
         .collect();
-    let mut allowed = HashSet::new();
+    let mut catalog_models = HashSet::new();
     let mut cursor: Option<String> = None;
     for _ in 0..10 {
         let response = process.rpc(
@@ -1443,14 +1452,14 @@ fn read_official_models(
             if !source_ids.contains(&id) {
                 return Err(RuntimeError::UnsafeToolConfiguration);
             }
-            allowed.insert(id);
+            catalog_models.insert(id);
         }
         cursor = response
             .get("nextCursor")
             .and_then(Value::as_str)
             .map(str::to_owned);
         if cursor.is_none() {
-            return Ok(allowed);
+            return Ok(catalog_models);
         }
     }
     Err(RuntimeError::Protocol)
@@ -1458,10 +1467,10 @@ fn read_official_models(
 
 fn select_reasoning_model(
     requested: Option<&str>,
-    allowed: &HashSet<String>,
+    catalog_models: &HashSet<String>,
 ) -> Result<String, RuntimeError> {
     let selected = requested.unwrap_or(DEFAULT_REASONING_MODEL);
-    if allowed.contains(selected) {
+    if catalog_models.contains(selected) {
         Ok(selected.into())
     } else {
         Err(RuntimeError::ReasoningModelUnavailable)
@@ -1752,7 +1761,7 @@ mod runtime_tests {
             },
             active_turn: None,
             poisoned: false,
-            allowed_reasoning_models: HashSet::from([DEFAULT_REASONING_MODEL.into()]),
+            catalog_reasoning_models: HashSet::from([DEFAULT_REASONING_MODEL.into()]),
         };
         (actor, sent, root)
     }
@@ -1924,19 +1933,21 @@ mod runtime_tests {
 
     #[test]
     fn catalog_default_never_upgrades_the_pinned_planner_and_missing_model_has_no_fallback() {
-        assert_eq!(DEFAULT_REASONING_MODEL, "gpt-5.5");
+        assert_eq!(DEFAULT_REASONING_MODEL, "gpt-6.1-sol");
+        assert_eq!(REQUESTED_IMAGE_MODEL, "gpt-image-2");
         let (mut actor, sent, root) = fixture_actor(vec![]);
         let (tx, rx) = mpsc::sync_channel(1);
         tx.send(Ok(json!({"id":1,"result":{"data":[
-            {"model":"gpt-6.1-sol","isDefault":true},
+            {"model":"gpt-6-luna","isDefault":true},
             {"model":DEFAULT_REASONING_MODEL,"isDefault":false}
         ],"nextCursor":null}})))
             .unwrap();
         drop(tx);
         actor.process.messages = rx;
-        let allowed = read_official_models(&mut actor.process, Duration::from_secs(1)).unwrap();
+        let catalog_models =
+            read_configured_catalog_models(&mut actor.process, Duration::from_secs(1)).unwrap();
         assert_eq!(
-            select_reasoning_model(None, &allowed).unwrap(),
+            select_reasoning_model(None, &catalog_models).unwrap(),
             DEFAULT_REASONING_MODEL
         );
         assert_eq!(
@@ -1945,13 +1956,13 @@ mod runtime_tests {
                 .as_deref(),
             Some(DEFAULT_REASONING_MODEL)
         );
-        let only_other = HashSet::from(["gpt-6.1-sol".into()]);
+        let only_other = HashSet::from(["gpt-6-luna".into()]);
         assert!(matches!(
             select_reasoning_model(None, &only_other),
             Err(RuntimeError::ReasoningModelUnavailable)
         ));
         assert!(matches!(
-            select_reasoning_model(Some("main/gpt-6.1-sol"), &allowed),
+            select_reasoning_model(Some("main/gpt-6.1-sol"), &catalog_models),
             Err(RuntimeError::ReasoningModelUnavailable)
         ));
         assert_eq!(
@@ -2236,6 +2247,9 @@ fn apply_controls(command: &mut Command, options: &RuntimeOptions) {
     }
     command.args(["-c", "features.multi_agent_v2.enabled=false"]);
     let catalog = options.catalog_path.to_string_lossy().replace('\\', "/");
+    // Pins local model configuration to known source bytes. This override also
+    // makes model/list static; its contents must never be presented as verified
+    // account permissions or successful upstream inference.
     command.args([
         "-c",
         &format!(

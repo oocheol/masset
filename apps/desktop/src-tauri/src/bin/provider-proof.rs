@@ -296,6 +296,9 @@ fn sanitized_status(raw: &Value) -> Value {
     }
     for key in [
         "runtimeVersion",
+        "reasoningModel",
+        "catalogSource",
+        "inferenceAccess",
         "requestedModel",
         "confirmedModel",
         "reason",
@@ -322,13 +325,11 @@ fn sanitized_status(raw: &Value) -> Value {
             })
             .filter(|text| match key {
                 "runtimeVersion" => {
-                    let version = text.strip_prefix("codex-cli ").unwrap_or(text);
-                    version.len() <= 32
-                        && version.split('.').count() == 3
-                        && version.split('.').all(|part| {
-                            !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit())
-                        })
+                    asset_providers::safe_codex_version(text.as_bytes()).as_deref() == Some(*text)
                 }
+                "reasoningModel" => *text == asset_providers::runtime::DEFAULT_REASONING_MODEL,
+                "catalogSource" => matches!(*text, "application_pinned_catalog" | "unknown"),
+                "inferenceAccess" => *text == "unknown",
                 "requestedModel" | "confirmedModel" => {
                     text.starts_with("gpt-image-")
                         && text.len() <= 128
@@ -559,7 +560,7 @@ mod tests {
             "account":{"email":"fixture@example.invalid"},"authUrl":"https://example.invalid/fixture",
             "usage":[{"limitId":"codex","account":"fixture-only","primary":{"usedPercent":12,"windowDurationMins":300,"resetsAt":123,"extra":"fixture-only"},"secondary":null}],
         }));
-        assert_eq!(status.as_object().unwrap().len(), 9);
+        assert_eq!(status.as_object().unwrap().len(), 12);
         assert!(status.get("account").is_none());
         assert!(status.get("authUrl").is_none());
         assert!(status["usage"][0].get("account").is_none());
@@ -576,5 +577,26 @@ mod tests {
         assert!(status["ready"].is_null());
         assert!(status["reason"].is_null());
         assert_eq!(status["usage"], json!([]));
+    }
+
+    #[test]
+    fn planner_probe_retains_alpha_version_and_does_not_assert_account_access() {
+        let status = sanitized_status(&json!({
+            "runtimeVersion":"codex-cli 0.159.0-alpha.12.1",
+            "reasoningModel":asset_providers::runtime::DEFAULT_REASONING_MODEL,
+            "catalogSource":"application_pinned_catalog","inferenceAccess":"unknown",
+            "requestedModel":"gpt-image-2","confirmedModel":null
+        }));
+        assert_eq!(status["runtimeVersion"], "codex-cli 0.159.0-alpha.12.1");
+        assert_eq!(status["reasoningModel"], "gpt-6.1-sol");
+        assert_eq!(status["inferenceAccess"], "unknown");
+        assert!(status["confirmedModel"].is_null());
+        let unsafe_status = sanitized_status(&json!({
+            "reasoningModel":"https://example.invalid/credential",
+            "catalogSource":"server_account_entitlement","inferenceAccess":"verified"
+        }));
+        assert!(unsafe_status["reasoningModel"].is_null());
+        assert!(unsafe_status["catalogSource"].is_null());
+        assert!(unsafe_status["inferenceAccess"].is_null());
     }
 }

@@ -1,0 +1,184 @@
+:root{font-family:"Segoe UI","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",sans-serif;font-size:14px}
+body{font-size:14px;line-height:1.6}
+.workbench{grid-template-columns:236px minmax(360px,1fr) 308px;grid-template-rows:68px minmax(0,1fr) 225px 30px;min-width:1000px}
+.workbench:has(.queue-panel.collapsed){grid-template-rows:68px minmax(0,1fr) 45px 30px}
+.workbench .titlebar{gap:16px;padding-inline:18px}
+.workbench .brand{width:182px;flex:none}
+.workbench .brand>span:last-child{font-size:17px}
+.workbench .brand small{font-size:12px;letter-spacing:0;margin-top:0}
+.workbench .project-breadcrumb{flex:1;min-width:0;gap:8px}
+.workbench .project-breadcrumb button{font-size:14px;min-width:0}
+.workbench .titlebar-actions{gap:8px;flex:none;margin-left:0}
+.workbench .runtime-badge{font-size:12px;margin-right:0;padding:5px 7px}
+.workbench .button{font-size:14px;min-height:38px;padding:8px 12px;line-height:1.4}
+.workbench .button.small{font-size:14px;min-height:36px;padding:6px 9px}
+.workbench .button kbd{font-size:12px;margin-left:6px}
+.workbench .icon-button{width:34px;height:34px}
+.workbench .guide-button{font-size:14px}
+.workbench .export-top{height:auto}
+.workbench .sidebar{padding:14px 12px 0}
+.workbench .sidebar-heading{font-size:13px;min-height:30px}
+.workbench .project-entry{padding:10px 8px}
+.workbench .project-entry strong{font-size:14px;max-width:145px;line-height:1.5}
+.workbench .project-entry small{font-size:12px;line-height:1.6}
+.workbench .sidebar-action{font-size:14px;line-height:1.5;gap:7px}
+.workbench .sidebar-action kbd{font-size:12px}
+.workbench .recent summary,.workbench .recent button{font-size:14px;line-height:1.6}
+.workbench .small-count{font-size:12px;min-width:21px;height:21px}
+.workbench .nav-item{font-size:14px;line-height:1.5;padding:10px 9px;gap:8px}
+.workbench .nav-item>span{font-size:12px}
+.workbench .folder-item{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.workbench .folder-item span{font-size:12px}
+.workbench .sidebar-empty{font-size:12px;line-height:1.7}
+.workbench .tag-list{padding-inline:4px;gap:7px}
+.workbench .tag-list button{font-size:14px;line-height:1.5;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.workbench .preset-entry{font-size:14px;line-height:1.5;padding:8px 9px}
+.workbench .sidebar-footer{font-size:12px;line-height:1.6}
+.workbench .sidebar-footer button{font-size:14px;line-height:1.5}
+.workbench .workspace-tabs{height:48px;min-height:48px;padding-left:10px;gap:4px}
+.workbench .workspace-tabs>button{height:48px;font-size:14px;padding-inline:10px;gap:7px}
+.workbench .tab-trailing{font-size:12px}
+.workbench .library-heading{padding-top:22px;padding-bottom:18px;gap:14px}
+.workbench .location{font-size:12px;line-height:1.6}
+.workbench .library-heading h1{font-size:27px;line-height:1.4;margin-top:8px}
+.workbench .library-heading p{font-size:14px;line-height:1.6;margin-top:6px}
+.workbench .plan-bar{padding:13px;gap:10px;flex-wrap:wrap}
+.workbench .plan-bar span:not(.plan-symbol){font-size:14px;line-height:1.5;white-space:normal}
+.workbench .plan-bar .plan-symbol{flex:none}
+.workbench .library-toolbar{gap:12px;flex-wrap:wrap}
+.workbench .search-input{min-height:38px;min-width:150px;flex:1}
+.workbench .search-input input{font-size:14px}
+.workbench .kind-filter,.workbench .kind-filter select{font-size:14px}
+.workbench .kind-filter select{min-height:36px;width:auto;max-width:100px}
+.workbench .toolbar-actions{gap:6px;flex-wrap:wrap}
+.workbench .selection-count,.workbench .result-count{font-size:12px;line-height:1.5}
+.workbench .asset-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px 15px}
+.workbench .asset-card-info{padding:11px}
+.workbench .asset-card-info strong{font-size:14px;line-height:1.5}
+.workbench .asset-card-info small{font-size:12px;line-height:1.7}
+.workbench .asset-version,.workbench .asset-type{font-size:12px}
+.workbench .library-status{font-size:12px;min-height:30px;gap:10px;line-height:1.5}
+.workbench .library-status span:last-child{font-size:12px}
+.workbench .empty-library h2{font-size:21px;line-height:1.5}
+.workbench .empty-library p{font-size:14px;line-height:1.7}
+.workbench .canvas-toolbar,.workbench .canvas-toolbar select,.workbench .canvas-toolbar button,.workbench .canvas-status,.workbench .compare-controls,.workbench .compare-controls select{font-size:14px}
+.workbench .canvas-toolbar{gap:8px;flex-wrap:wrap;min-height:42px;height:auto;padding-block:6px}
+.workbench .canvas-status{line-height:1.6}
+.workbench .brush-bar{font-size:13px;gap:10px;flex-wrap:wrap;height:auto;padding-block:8px}
+.workbench .brush-bar label{font-size:13px}
+.workbench .compare-label{font-size:13px;line-height:1.5}
+.workbench .inspector-tabs{height:48px;gap:24px}
+.workbench .inspector-tabs button{font-size:14px;height:48px}
+.workbench .inspector-content{padding-inline:18px}
+.workbench .inspector-title strong,.workbench .inspector-label strong{font-size:16px;line-height:1.5}
+.workbench .inspector-title small,.workbench .inspector-label small{font-size:12px;line-height:1.6}
+.workbench .inspector-section{padding-block:20px}
+.workbench .inspector-section h2{font-size:15px;line-height:1.5;margin-bottom:15px}
+.workbench .inspector-section h2 span{font-size:12px}
+.workbench .field{gap:8px;margin-bottom:15px}
+.workbench .field>span,.workbench .field-label{font-size:14px;line-height:1.5}
+.workbench .field input,.workbench .field select,.workbench .field textarea{font-size:14px;line-height:1.5;min-height:38px}
+.workbench .field textarea{height:auto;min-height:84px;padding:10px}
+.workbench .field small{font-size:12px;line-height:1.7}
+.workbench .field-pair,.workbench .field-triple{gap:10px}
+.workbench .property-list{font-size:13px;gap:12px;line-height:1.6}
+.workbench .property-list dt{max-width:44%;white-space:normal;word-break:keep-all}
+.workbench .property-list dd{max-width:58%;line-height:1.6}
+.workbench .check-row{font-size:14px;line-height:1.6;align-items:flex-start;gap:9px;white-space:normal}
+.workbench .check-row input{flex:none;margin-top:4px}
+.workbench .range-field,.workbench .range-field>span{font-size:14px;line-height:1.5}
+.workbench .range-field em{font-size:13px}
+.workbench .color-control{font-size:13px;line-height:1.5;gap:8px;flex-wrap:wrap}
+.workbench .color-control>span:last-child{font-size:12px}
+.workbench .text-button{font-size:14px;line-height:1.6;white-space:normal}
+.workbench .muted-help{font-size:13px;line-height:1.75;word-break:keep-all}
+.workbench .style-palette{gap:8px;flex-wrap:wrap}
+.workbench .style-palette label{min-width:45px}
+.workbench .style-palette span{font-size:12px}
+.workbench .reference-block>span{font-size:14px}
+.workbench .reference-block p{font-size:13px;line-height:1.7}
+.workbench .queue-heading{height:45px;min-height:45px}
+.workbench .queue-heading button{font-size:14px;min-height:32px}
+.workbench .queue-toggle{font-size:14px}
+.workbench .queue-summary{font-size:12px}
+.workbench .queue-heading select{font-size:14px}
+.workbench .queue-table th{font-size:12px;line-height:1.5}
+.workbench .queue-table td{font-size:14px;height:42px;line-height:1.5}
+.workbench .queue-table td small,.workbench .job-status{font-size:12px;line-height:1.5}
+.workbench .queue-empty{font-size:13px;line-height:1.7}
+.workbench .queue-empty strong,.workbench .queue-empty span{font-size:14px;line-height:1.7}
+.workbench .statusbar{font-size:12px;line-height:1.5}
+.workbench .statusbar button{font-size:14px;line-height:1.4}
+.workbench .version-row{font-size:14px;line-height:1.6}
+.workbench .version-row strong{font-size:14px}
+.workbench .version-row small{font-size:12px;line-height:1.6}
+.workbench .toast,.workbench .error-toast{font-size:14px;line-height:1.6;max-width:min(700px,calc(100vw - 50px));white-space:normal}
+.workbench .dialog{width:610px;padding:24px 26px;line-height:1.6}
+.workbench .dialog-guide{width:720px}
+.workbench .dialog-header h2{font-size:21px;line-height:1.4}
+.workbench .dialog-header p{font-size:14px;line-height:1.6;word-break:keep-all}
+.workbench .dialog-copy{font-size:15px;line-height:1.7}
+.workbench .dialog-actions{flex-wrap:wrap;gap:10px}
+.workbench .dialog-actions .button{font-size:14px}
+.workbench .inline-note{font-size:14px;line-height:1.7;gap:10px;word-break:keep-all}
+.workbench .inline-note>svg{flex:none}
+.workbench .model-template-list strong{font-size:14px;line-height:1.5}
+.workbench .model-template-list small{font-size:12px;line-height:1.6}
+.workbench .model-template-list button{padding:12px 10px}
+.workbench .export-summary strong{font-size:17px}
+.workbench .export-summary span,.workbench .export-includes>div{font-size:14px;line-height:1.6}
+.workbench .plan-preview-heading strong,.workbench .plan-preview strong{font-size:15px;line-height:1.5}
+.workbench .plan-preview-heading span,.workbench .plan-preview small{font-size:12px;line-height:1.7}
+.workbench .plan-preview>p,.workbench .plan-spec-line{font-size:14px;line-height:1.6;flex-wrap:wrap}
+.workbench .status-tag{font-size:12px;line-height:1.5;white-space:normal}
+.workbench .provider-card strong{font-size:16px;line-height:1.5}
+.workbench .provider-card p{font-size:14px;line-height:1.75;word-break:keep-all}
+.workbench .provider-card .property-list{font-size:13px}
+.workbench .provider-card .provider-proof-brief{font-size:13px;color:#d3bc92}
+.provider-details{margin-top:15px;border-top:1px solid #506988;padding-top:10px}
+.provider-details summary{cursor:pointer;font-size:14px;color:#c2d7f2;line-height:1.6;padding-block:5px}
+.provider-details .property-list dd{overflow-wrap:anywhere}
+.workbench .provider-controls .button{font-size:14px}
+.workbench .environment-mark h3{font-size:21px}
+.workbench .environment-mark p,.workbench .keyboard-help,.workbench .keyboard-help em{font-size:13px;line-height:1.6}
+.workbench .environment-list{font-size:14px}
+.workbench .breakable{max-width:58%}
+.workbench .job-detail-title strong{font-size:16px;line-height:1.5}
+.workbench .job-error-detail,.workbench .job-parameters summary,.workbench .job-parameters pre{font-size:14px;line-height:1.7}
+.workbench .model-viewport-state strong{font-size:18px;line-height:1.5}
+.workbench .model-viewport-state p{font-size:14px;line-height:1.8;max-width:430px}
+.workbench .app-update-heading strong{font-size:17px}
+.workbench .app-update-message,.workbench .app-update-help{font-size:14px;line-height:1.75}
+.workbench .app-update-properties{font-size:14px}
+.workbench .app-update-sha{font-size:12px}
+.workbench .app-update-progress,.workbench .app-update-progress span{font-size:13px;line-height:1.6}
+.workbench .property-list dt,.workbench .field small,.workbench .muted-help,.workbench .asset-card-info small,.workbench .library-heading p{color:#a8b8d0}
+.usage-guide{font-size:16px;line-height:1.8;word-break:keep-all}
+.usage-guide .guide-intro{color:#bfd2ec;margin-bottom:20px}
+.usage-guide ol{padding-left:26px;margin:0;display:grid;gap:22px}
+.usage-guide li{padding-left:5px}
+.usage-guide li::marker{color:#91b6e9;font-size:15px}
+.usage-guide h3{font-size:17px;line-height:1.5;color:#d0e1f7;margin-bottom:7px}
+.usage-guide p{margin:0;color:#aebfd6}
+.usage-guide strong{font-weight:650;color:#d0e1f7}
+.usage-guide code{font-family:inherit;color:#c5d9f3;overflow-wrap:anywhere}
+.usage-guide .guide-shortcuts{font-size:14px;margin-top:24px;padding-top:17px;border-top:1px solid #466185}
+@media(max-width:1200px){
+ .workbench{grid-template-columns:214px minmax(360px,1fr) 286px}
+ .workbench .brand{width:164px}
+ .workbench .brand>span:last-child{font-size:16px}
+ .workbench .titlebar{gap:12px;padding-inline:14px}
+ .workbench .titlebar-actions{gap:6px}
+ .workbench .project-breadcrumb button{max-width:155px}
+ .workbench .runtime-badge{font-size:12px;padding-inline:5px}
+ .workbench .titlebar .button{padding-inline:9px}
+ .workbench .project-entry strong{max-width:125px}
+ .workbench .workspace-tabs>button{font-size:14px;padding-inline:8px;gap:5px}
+ .workbench .tab-trailing{display:none}
+ .workbench .asset-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 12px}
+ .workbench .library-heading{align-items:flex-start;flex-wrap:wrap}
+ .workbench .plan-bar{margin-inline:20px}
+ .workbench .inspector-content{padding-inline:16px}
+ .workbench .statusbar{gap:8px;overflow:hidden}
+}
+@media(prefers-reduced-motion:reduce){.workbench .spin{animation:none}}

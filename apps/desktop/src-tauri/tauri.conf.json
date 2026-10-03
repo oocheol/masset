@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Asset Studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "org.localassets.workbench",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -45,7 +45,15 @@
       "../public/examples/": "examples/",
       "../../../crates/providers/assets/NOTICE": "licenses/CODEX-CATALOG-NOTICE.txt",
       "../../../crates/providers/assets/OPENAI-CODEX-LICENSE": "licenses/OPENAI-CODEX-LICENSE.txt",
-      "../../../crates/providers/assets/OPENAI-CODEX-NOTICE": "licenses/OPENAI-CODEX-NOTICE.txt"
+      "../../../crates/providers/assets/OPENAI-CODEX-NOTICE": "licenses/OPENAI-CODEX-NOTICE.txt",
+      "../../../LICENSE": "LICENSE",
+      "../../../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md",
+      "../../../docs/licenses/": "docs/licenses/",
+      "../../../docs/windows-quickstart.md": "docs/windows-quickstart.md",
+      "../../../docs/platform-support.md": "docs/platform-support.md",
+      "../../../docs/verification.md": "docs/verification.md",
+      "../../../docs/provider-feasibility.md": "docs/provider-feasibility.md",
+      "../../../docs/ima2-gen-comparison.md": "docs/ima2-gen-comparison.md"
     },
     "shortDescription": "Local-first asset production workbench",
     "category": "GraphicsAndDesign",
@@ -53,6 +61,7 @@
       "minimumSystemVersion": "12.0"
     },
     "windows": {
+      "webviewInstallMode": { "type": "skip" },
       "nsis": {
         "installMode": "currentUser",
         "displayLanguageSelector": false,
@@ -60,6 +69,19 @@
           "Korean",
           "English"
         ]
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDAwQ0I0MkVGMUExMzBFQjEKUldTeERoTWE3MExMQUFpcDQyL1NEaG9WQnZFWU0wMlIvOTJ2SzF6WHUwOGtZemZ2RlRvdWM0cFIK",
+      "endpoints": [
+        "https://github.com/oocheol/masset/releases/latest/download/latest.json"
+      ],
+      "requireSignedVersion": true,
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

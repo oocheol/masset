@@ -355,7 +355,7 @@ export function ModelViewport({ url, wireframe, onInfo }: ModelViewportProps) {
         </div>
       )}
       {status === 'ready' && (
-        <div className="model-viewport-help" style={{ position: 'absolute', bottom: 14, left: 16, right: 16, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', color: '#88a4a7', fontSize: 11 }}>
+        <div className="model-viewport-help" style={{ position: 'absolute', bottom: 14, left: 16, right: 16, pointerEvents: 'none', display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', color: '#a9c0c4', fontSize: 13 }}>
           <span>왼쪽 드래그 회전 · 오른쪽 드래그 이동 · 휠 확대</span>
           <span>Y ↑ · X 빨강 · Y 초록 · Z 파랑</span>
         </div>

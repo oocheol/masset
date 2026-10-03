@@ -1,0 +1,16 @@
+.app-update-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.app-update-heading strong{font-size:13px;color:#c4d8f2;font-weight:550}
+.app-update-message{font-size:11px;color:#a6bada;line-height:1.8;overflow-wrap:anywhere;margin-bottom:18px}
+.app-update-properties{font-size:10px}
+.app-update-properties dt{max-width:38%}
+.app-update-properties dd{max-width:60%;text-align:right;line-height:1.7;overflow-wrap:anywhere}
+.app-update-properties a{display:inline-flex;align-items:center;gap:5px;color:#b8d4f7;text-decoration:underline;text-underline-offset:3px}
+.app-update-properties a:focus-visible{outline:2px solid #a4c8f4;outline-offset:4px}
+.app-update-sha{font-size:9px;user-select:all}
+.app-update-help{font-size:10px;line-height:1.8;color:#8fa6c7;margin-top:16px;word-break:keep-all}
+.app-update-progress{display:grid;gap:9px;margin-top:20px;font-size:10px;color:#b8cdec}
+.app-update-progress progress{width:100%;height:8px;accent-color:#91b6e9}
+.app-update-progress span{color:#8fa6c7;overflow-wrap:anywhere}
+.app-update-panel .approval{align-items:flex-start;margin-top:20px;line-height:1.7}
+.app-update-panel .approval input{flex:none;margin-top:3px}
+.app-update-alert{color:#c7e1ce;border-color:#5b7c6b;background:#2b413b}

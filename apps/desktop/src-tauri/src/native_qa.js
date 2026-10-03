@@ -3,7 +3,7 @@
   window.__ASSET_NATIVE_QA_RUNNING__ = true;
   const withModel = window.__ASSET_NATIVE_QA__?.withNativeModel === true;
   const state = {domReady:false, decodedImages:0, title:document.title}, restores=[];
-  let providerCalls=0;
+  let providerCalls=0,updateNetworkActions=0;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const invoke=request=>window.__TAURI__.core.invoke('workspace_command',{request});
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
@@ -11,6 +11,7 @@
   const originalInvoke=window.__TAURI_INTERNALS__.invoke;
   window.__TAURI_INTERNALS__.invoke=function(command,args,...rest){
     if(command==='workspace_command'&&['provider_status','provider_login','generate'].includes(args?.request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
+    if(command==='workspace_command'&&['update_check','update_install'].includes(args?.request?.action)){updateNetworkActions++;return Promise.reject(new Error('Local native QA refuses update network actions'));}
     return Reflect.apply(originalInvoke,this,[command,args,...rest]);
   };
   restores.push(()=>{window.__TAURI_INTERNALS__.invoke=originalInvoke;});
@@ -51,6 +52,19 @@
       return document.querySelector('h1')&&document.querySelectorAll('[aria-label="에셋 목록"] img').length>=8&&decoded.length>=8?decoded:null;
     },45000);
     Object.assign(state,{domReady:true,decodedImages:decoded.length,ipcEnvironment:await invoke({action:'environment'}),protocols:[...new Set(decoded.map(image=>new URL(image.src).protocol))]});
+    await document.fonts.ready;
+    const visibleButtons=[...document.querySelectorAll('button')].filter(button=>button.offsetWidth>0&&button.offsetHeight>0&&button.textContent.trim().length>1);
+    const smallButtons=visibleButtons.filter(button=>parseFloat(getComputedStyle(button).fontSize)<14).map(button=>({text:button.textContent.trim().slice(0,60),fontSize:getComputedStyle(button).fontSize}));
+    const guide=document.querySelector('.guide-button');check(guide&&!guide.disabled,'Usage guide button unavailable');guide.focus();guide.click();
+    await wait('Usage guide',()=>document.querySelector('.dialog-guide .usage-guide'),5000);
+    const guideSize=parseFloat(getComputedStyle(document.querySelector('.guide-intro')).fontSize);
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await wait('Usage guide focus return',()=>!document.querySelector('[role="dialog"]')&&document.activeElement===guide,5000);
+    const updateStatus=await invoke({action:'update_status'});
+    state.readability={smallButtons,minimumButtonFont:Math.min(...visibleButtons.map(button=>parseFloat(getComputedStyle(button).fontSize))),guideFont:guideSize,guideOpened:true,escapeRestoredFocus:true,horizontalOverflow:document.documentElement.scrollWidth>innerWidth};
+    state.appUpdater={supported:updateStatus.supported,state:updateStatus.state,networkActions:updateNetworkActions};
+    check(!smallButtons.length&&!state.readability.horizontalOverflow&&guideSize>=16,'Native readability checks failed');
+    check(updateStatus.supported===false&&updateStatus.state==='unsupported'&&updateNetworkActions===0,'Native QA update gate failed');
     if(withModel){
       const report=state.native3D={requested:true,passed:false,stage:'initial snapshot',assetId:null,generator:'Blender',blenderUsed:false,modelJobSucceeded:false,parameters:null,glbFetch:null,webgl:{context:false,drawCalls:0,defaultFramebufferDrawCalls:0,pixelReadbacks:0,pixelColorVariation:false,pixels:[],visibilityState:document.visibilityState},externalProviderCalls:0,error:null};
       const baseline=await invoke({action:'snapshot'}),oldAssetIds=new Set(baseline.project.assets.map(asset=>asset.id)),oldJobIds=new Set(baseline.project.jobs.map(job=>job.id));
@@ -123,6 +137,6 @@
     state.error=error instanceof Error?error.message:String(error);state.imageCount=document.querySelectorAll('img').length;
     state.images=[...document.querySelectorAll('img')].slice(0,3).map(image=>({src:image.src,complete:image.complete,width:image.naturalWidth}));state.alert=document.querySelector('[role="alert"]')?.textContent?.slice(0,500);
     if(state.native3D){state.native3D.error=state.error;state.native3D.externalProviderCalls=providerCalls;}
-  }finally{state.externalProviderCalls=providerCalls;for(const restore of restores.reverse())restore();}
+  }finally{state.externalProviderCalls=providerCalls;state.updateNetworkActions=updateNetworkActions;if(state.appUpdater)state.appUpdater.networkActions=updateNetworkActions;if(updateNetworkActions>0)state.error='Native QA attempted an update network action';for(const restore of restores.reverse())restore();}
   await window.__TAURI__.core.invoke('native_qa_complete',{report:state});
 })().catch(console.error);

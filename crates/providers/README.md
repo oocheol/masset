@@ -1,26 +1,30 @@
 # Official Codex subscription provider
 
-The final compatibility build pins its outer planner to `gpt-5.5` through
+The current build pins its outer planner to `gpt-6.1-sol` through
 `runtime::DEFAULT_REASONING_MODEL`. The image request remains `gpt-image-2`.
 These are separate selections: changing the planner does not authorize a
 different image model, provider, billing lane, or API-key route.
+
+This selection follows the user's latest instruction. No generation or login
+RPC was made for this revision; account inference eligibility and a successful
+image round trip remain unverified.
 
 The live attempts with `gpt-6.1-sol` and `gpt-6-luna` both reached confirmed failed
 terminal turns before any image-generation item was observed. Their safe diagnostics
 reported `codexErrorInfo=other`, no HTTP status, and model-unavailable and
 invalid-request text hints. Those hints identify a rejection to investigate;
 they do not prove general model availability or recover the discarded raw
-message. The fixed `gpt-5.5` selection was the last explicit compatibility
-attempt from the pinned official list. Its account/runtime handshake passed,
+message. The historical fixed `gpt-5.5` selection was the last explicit
+compatibility attempt from the pinned static catalog. Its account/runtime handshake passed,
 but the native turn also ended in failure without an observed image item.
 The safe diagnostic retained `upstreamErrorType=invalid_request_error`, no
 upstream error code or HTTP status, and the same broad model/invalid-request
 hints. The exact ChatGPT-account model-restriction hint was false. The specific
 upstream cause remains unknown; no raw error text was retained.
 
-All four explicit native generation attempts failed and produced zero
+All four native generation attempts recorded in the 2026-10-02 summary failed and produced zero
 subscription image assets. Image receipt, decode, generated-image project save
-and reopen were not reached. Further guessed-model attempts have stopped.
+and reopen were not reached. No further generation was performed for this revision.
 The provider transport and its failure handling are implemented, but external
 image generation remains blocked and the live image round trip is unproven.
 See `tests/provider/runtime-final-summary.json` and the actual root reports
@@ -36,14 +40,22 @@ the official Codex runtime would accept the model for this account. All account,
 image and interruption operations use the official public Codex app-server
 stdio protocol; the reference repository's direct HTTP transport is not used.
 
-Before submission, the selected `gpt-5.5` must be present in both the pinned
+Before submission, the selected `gpt-6.1-sol` must be present in both the pinned
 [official catalog](https://github.com/openai/codex/blob/b1e72963c3b71a9265a551e54beff078384efed9/codex-rs/models-manager/models.json)
-and the official runtime's public `model/list`. The catalog source/hash/license
-are recorded in `assets/NOTICE`. `model/list.isDefault` never chooses a planner.
+and the official runtime's configured public `model/list`. The application
+injects this static catalog through `model_catalog_json`, so matching results
+verify local catalog consistency; they do not query the account's current
+inference permissions. The catalog source/hash/license are recorded in
+`assets/NOTICE`. `model/list.isDefault` never chooses a planner.
 If the fixed or explicitly requested planner is absent, connection returns
 `provider.reasoning_model_unavailable`. There is no automatic upgrade, model
 fallback or retry. Catalog membership and a successful account handshake do
 not prove that the account will accept actual inference or produce an image.
+
+Runtime version metadata accepts a bounded ASCII SemVer value, including
+`codex-cli 0.159.0-alpha.12.1`. Recognizing a prerelease version does not certify
+that all runtime features are compatible. The app-server client version follows
+the provider package's inherited workspace version.
 
 `generate` checks cancellation on entry and again after preflight RPCs and
 input construction, immediately before `turn/start`. A cancellation observed
@@ -66,6 +78,6 @@ inside the bounded public native error message. Unknown values are discarded.
 the broader model-unavailable text hint. No raw error message, response body,
 token, header or URL is retained.
 
-The final root workspace suite passed 110 tests with 4 ignored, including all
+The earlier root workspace suite passed 110 tests with 4 ignored, including all
 24 provider tests (20 unit and 4 contract). These local tests validate provider
 protocol/error controls; they do not establish live generation success.

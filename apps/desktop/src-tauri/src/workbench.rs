@@ -195,6 +195,20 @@ impl Backend {
     pub fn current_root(&self) -> Option<PathBuf> {
         self.inner.current.lock().unwrap().clone()
     }
+    pub fn ensure_update_idle(&self) -> Result<()> {
+        let _request = self.inner.requests.lock().unwrap();
+        let _dispatch = self.inner.dispatch.lock().unwrap();
+        self.ensure_workers_idle()
+            .map_err(|_| anyhow!("제작 작업을 완료하거나 취소한 다음 업데이트해 주세요."))
+    }
+    pub fn prepare_update_shutdown(&self) -> Result<()> {
+        let _request = self.inner.requests.lock().unwrap();
+        let _dispatch = self.inner.dispatch.lock().unwrap();
+        self.ensure_workers_idle()?;
+        self.inner.stop.store(true, Ordering::SeqCst);
+        self.release_lease_if_stopped_locked();
+        Ok(())
+    }
     fn root(&self) -> Result<PathBuf> {
         self.current_root()
             .ok_or_else(|| anyhow!("프로젝트를 먼저 열어 주세요."))

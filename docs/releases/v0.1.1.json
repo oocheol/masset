@@ -1,0 +1,47 @@
+{
+  "product": "Asset Studio",
+  "version": "0.1.1",
+  "platform": "windows-x64",
+  "distribution": "nsis",
+  "filename": "AssetStudio_0.1.1_x64-setup.exe",
+  "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.1/AssetStudio_0.1.1_x64-setup.exe",
+  "bytes": 8328173,
+  "sha256": "de5b5d70fb6dbe758d6e569bf725d02707c45dc23b0f8fc760503c90e20f38fa",
+  "windowsAuthenticodeSigned": false,
+  "updaterSignature": true,
+  "updaterManifestUrl": "https://github.com/oocheol/masset/releases/latest/download/latest.json",
+  "portable": {
+    "filename": "AssetStudio-windows-x64-portable.zip",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.1/AssetStudio-windows-x64-portable.zip",
+    "bytes": 8552562,
+    "sha256": "d0667ba10eee735c3f0fe4e7375e51c62d857395289d126d7e054dd6589d2c93",
+    "executableSha256": "229b4008cf748c8081b7601804d3a1838a5b9a0ded0c56260e0231cd475ebff5"
+  },
+  "installedExecutableSha256": "542fc97b82ef0ecb6b3f9b9cd8ce2c4ac5de25774d810af061556e0d7d1dd604",
+  "installedStampDifference": "Only the official Tauri __TAURI_BUNDLE_TYPE_VAR_UNK -> NSS stamp differs from portable bytes",
+  "checks": {
+    "windowsDevelopmentHost": true,
+    "nativeWindowAnd2D": true,
+    "nativeFontsAndGuide": true,
+    "nativeBlender3D": true,
+    "freshBlenderModelReopens": 4,
+    "signedInstallerVerified": true,
+    "installationOnDevelopmentHost": true,
+    "sameVersionNsisUpdateRestart": true,
+    "ownQaUninstall": true,
+    "publicTauriDownload": false,
+    "crossVersionProductionPluginInstall": false,
+    "cleanWindowsMachine": false,
+    "macOS": false,
+    "subscriptionImageReceipt": false
+  },
+  "reasoningModel": "gpt-6.1-sol",
+  "requestedImageModel": "gpt-image-2",
+  "confirmedImageModel": null,
+  "inferenceAccess": "unknown",
+  "requirements": [
+    "Windows x64 with Microsoft WebView2 already installed; installer downloads no runtime",
+    "Blender installed separately for procedural 3D; verified with Blender 5.2.1"
+  ],
+  "legacyUpdate": "0.1.0 users install 0.1.1 once manually, then approve in-app signed updates"
+}

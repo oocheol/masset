@@ -1,8 +1,20 @@
-# 구독 이미지 생성 실증 — 2026-10-02
+# 구독 이미지 생성 실증 — 2026-10-03
 
 사용자가 이미지 목표를 **GPT Image 2**로 변경했다. 종전 2.5 선택 검증은 현재 출시 조건이 아니다. Windows를 먼저 검증하며 macOS 실행은 이후 별도로 검증한다.
 
-## 실제 확인한 범위
+## 0.1.1 추론 모델 변경
+
+최종 사용자 지시로 추론 모델을 **GPT-6.1 Sol (`gpt-6.1-sol`)**로 변경했다. 이미지 목표는 `gpt-image-2`다. 새 요청에는 추론 모델도 저장하며, 기존 요청의 모델이나 런타임 버전이 달라졌으면 자동으로 실행하지 않는다.
+
+Windows에서는 명시적으로 지정된 실행 파일을 우선하며 검증 실패 시 다른 실행 파일로 넘어가지 않는다. 자동 탐색은 기존 Programs 설치와 Local/OpenAI의 버전별 설치 최대 32개를 확인하고, 유효한 OpenAI 서명과 안전한 버전 문자열을 확인한 후보 중 SemVer 우선순위가 가장 높은 것을 선택한다. 범위 밖에 있는 설치본은 `CODEX_EXECUTABLE`로 명시할 수 있다. alpha 버전 문자열은 보존하지만 그 버전의 실제 이미지 생성 성공을 보장하지 않는다. macOS 실행 검증은 아직 없다.
+
+앱 화면과 읽기 전용 진단에는 `reasoningModel`, `catalogSource=application_pinned_catalog`, `inferenceAccess=unknown`을 구분해 표시한다. 정적 모델 목록의 일치 검사는 계정 이용 권한 증거가 아니다. 사용자 설정과 인증 파일을 바꾸지 않았으며 이 수정에서 외부 생성 요청은 제출하지 않았다. 계정 모델 권한과 실제 이미지 수신은 계속 미검증이다.
+
+현재 ima2-gen은 자체 OAuth transport로 GPT-6 계획과 GPT Image 2 렌더를 분리한다. 그 방식과 공식 Codex RPC 방식의 차이는 [소스 비교](ima2-gen-comparison.md)에 기록했다. 사용자 요구사항의 비공개 엔드포인트 금지 경계를 유지한다.
+
+최종 빌드의 읽기 전용 검사에서는 유효한 OpenAI 서명의 `codex-cli 0.159.0-alpha.12.1`을 선택했고 `authenticated=true`, `ready=true`, `reasoningModel=gpt-6.1-sol`을 확인했다. `inferenceAccess=unknown`, `catalogSource=application_pinned_catalog`이며 `probe_only`, `generationRequested=false`다. 새 요청·수신 이미지 없이 진단을 마쳤으므로 모델 이용 권한과 실제 생성은 여전히 확인되지 않았다.
+
+## 0.1.0 당시 실제 확인한 범위
 
 계정 상태를 담은 `tests/provider/codex-probe.json`, `tests/provider/runtime-*.json`과 `output/**`의 실행 기록은 로컬에서 보존하며 공개 저장소에는 포함하지 않습니다. 이 문서는 그 기록의 결과를 요약합니다. 공개 소스에는 재현용 진단 코드, 공식 문서 근거와 스키마 요약을 제공합니다.
 
@@ -21,7 +33,7 @@
 
 실패의 불리언 단서는 원문에서 추출한 진단이며 계정 권한 부족을 확정하지 않는다. HTTP 상태는 반환되지 않았다. 원문 메시지·토큰·헤더·인증 URL은 저장하지 않는다. 이전 ephemeral thread의 공개 thread/read도 -32600으로 거절되어 첫 실패 원인은 unknown이다 (`tests/provider/runtime-prior-failure-read.json`).
 
-최종 빌드의 추론 모델은 공개 목록에 있는 `gpt-5.5`로 고정했으며 이미지 목표는 계속 GPT Image 2다. 런타임의 자동 모델 대체가 아니라 각 소스 변경 후 명시적으로 새 검증 요청을 실행했다. 최종 오류의 코드·HTTP 상태는 null, 오류 유형은 `invalid_request_error`, 모델 불가 단서는 true, 계정별 미지원의 정확한 문구는 false다. 따라서 현재 공식 런타임/계정 조합의 요청 거절을 확인했지만 서버의 세부 원인까지 확정하지 못했다. 4개 실행 요청은 각각 1회 제출 후 종료됐고 받은 이미지는 0개다. 더 많은 모델을 추측해 호출하지 않는다.
+0.1.0 빌드의 추론 모델은 공개 목록에 있는 `gpt-5.5`로 고정했으며 이미지 목표는 계속 GPT Image 2다. 런타임의 자동 모델 대체가 아니라 각 소스 변경 후 명시적으로 새 검증 요청을 실행했다. 최종 오류의 코드·HTTP 상태는 null, 오류 유형은 `invalid_request_error`, 모델 불가 단서는 true, 계정별 미지원의 정확한 문구는 false다. 따라서 현재 공식 런타임/계정 조합의 요청 거절을 확인했지만 서버의 세부 원인까지 확정하지 못했다. 4개 실행 요청은 각각 1회 제출 후 종료됐고 받은 이미지는 0개다. 더 많은 모델을 추측해 호출하지 않는다.
 
 최종 Rust 전체 검사는 110개 통과·4개 subprocess fixture 제외이며 이 중 공급자 검사는 24개다 (`output/native/workspace-tests-final.log`). 이것은 실제 외부 생성 실패를 성공으로 바꾸지 않는다.
 

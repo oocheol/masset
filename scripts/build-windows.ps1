@@ -4,6 +4,7 @@ param(
     [switch]$SkipChecks,
     [ValidateSet('Portable', 'Nsis')][string]$Distribution = 'Portable',
     [switch]$AllowBundlerDownload,
+    [string]$SigningKeyPath,
     [string]$VcRuntimeDirectory,
     [string]$CargoBin = "$env:USERPROFILE\.cargo\bin"
 )
@@ -11,7 +12,7 @@ $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') { throw 'This script builds Windows x64 distributions.' }
 $qaWorkspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $qaPreviousLocation = Get-Location
-$qaEnvironmentNames = @('Path', 'INCLUDE', 'LIB', 'LIBPATH', 'VCToolsInstallDir', 'WindowsSdkDir', 'WindowsSDKVersion', 'UniversalCRTSdkDir', 'UCRTVersion')
+$qaEnvironmentNames = @('Path', 'INCLUDE', 'LIB', 'LIBPATH', 'VCToolsInstallDir', 'WindowsSdkDir', 'WindowsSDKVersion', 'UniversalCRTSdkDir', 'UCRTVersion', 'TAURI_SIGNING_PRIVATE_KEY', 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD')
 $qaPreviousEnvironment = @{}
 foreach ($qaName in $qaEnvironmentNames) { $qaPreviousEnvironment[$qaName] = [Environment]::GetEnvironmentVariable($qaName, 'Process') }
 
@@ -88,6 +89,14 @@ try {
     if (Test-Path -LiteralPath $qaBundleDirectory) {
         foreach ($qaOld in Get-ChildItem -LiteralPath $qaBundleDirectory -File -Filter '*.exe') { $qaBeforeBundles[$qaOld.FullName] = [ordered]@{ ticks = $qaOld.LastWriteTimeUtc.Ticks; sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $qaOld.FullName).Hash } }
     }
+    if ($SigningKeyPath) {
+        if (-not (Test-Path -LiteralPath $SigningKeyPath -PathType Leaf)) { throw 'The private signing key must exist outside the repository.' }
+        $qaSigningPath = (Resolve-Path -LiteralPath $SigningKeyPath).Path
+        if ($qaSigningPath.StartsWith($qaWorkspace.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Keep the private signing key outside the source workspace.' }
+        $env:TAURI_SIGNING_PRIVATE_KEY = [IO.File]::ReadAllText($qaSigningPath).Trim()
+        $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
+    }
+    if ($Distribution -eq 'Nsis' -and -not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'A private updater signing key is required for an update-enabled NSIS release.' }
     if ($Distribution -eq 'Portable') { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--no-bundle') }
     else { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--bundles', 'nsis') }
     $qaBinaries = @(
@@ -113,7 +122,7 @@ try {
             'OPENAI-CODEX-LICENSE' = 'CODEX-CATALOG-LICENSE.txt'
         }
         foreach ($qaCatalogNotice in $qaCatalogNotices.GetEnumerator()) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('crates\providers\assets\' + $qaCatalogNotice.Key)) -Destination (Join-Path $qaPortableDirectory $qaCatalogNotice.Value) }
-        foreach ($qaDocument in @('windows-quickstart.md', 'platform-support.md', 'verification.md', 'provider-feasibility.md', 'architecture.md', 'module-contract.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('docs\' + $qaDocument)) -Destination (Join-Path $qaPortableDirectory 'docs') }
+        foreach ($qaDocument in @('windows-quickstart.md', 'platform-support.md', 'verification.md', 'provider-feasibility.md', 'ima2-gen-comparison.md', 'architecture.md', 'module-contract.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('docs\' + $qaDocument)) -Destination (Join-Path $qaPortableDirectory 'docs') }
         if ($VcRuntimeDirectory) {
             $qaRuntimePath = (Resolve-Path -LiteralPath $VcRuntimeDirectory).Path
             $qaRuntimeDlls = @(Get-ChildItem -LiteralPath $qaRuntimePath -File -Filter '*.dll')
@@ -145,7 +154,15 @@ The backend QA CLI remains a developer test binary and is not included in this p
             -not $qaOld -or $_.LastWriteTimeUtc.Ticks -ne $qaOld.ticks -or (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash -ne $qaOld.sha256
         })
         if ($qaBundles.Count -eq 0) { throw 'Build exited successfully but no new or regenerated NSIS package was found.' }
-        $qaPackages = @($qaBundles | ForEach-Object { Get-ExecutableEvidence $_.FullName })
+        foreach ($qaSignedBundle in $qaBundles) {
+            if (-not (Test-Path -LiteralPath ($qaSignedBundle.FullName + '.sig') -PathType Leaf)) { throw 'The installer updater signature was not created.' }
+        }
+        $qaPackages = @($qaBundles | ForEach-Object {
+            $qaSavedBundle = Join-Path $qaReportDirectory $_.Name
+            Copy-Item -LiteralPath $_.FullName -Destination $qaSavedBundle
+            Copy-Item -LiteralPath ($_.FullName + '.sig') -Destination ($qaSavedBundle + '.sig')
+            Get-ExecutableEvidence $qaSavedBundle
+        })
     }
     $qaReport = [ordered]@{
         checkedAt = [DateTimeOffset]::UtcNow.ToString('o')

@@ -4,11 +4,11 @@ Core application source is Apache-2.0; see [LICENSE](LICENSE). The resolved Wind
 
 | Component | Purpose | License / source |
 | --- | --- | --- |
-| Tauri 2, tauri-build, tauri-plugin-dialog | Native shell/build/dialogs | MIT OR Apache-2.0; https://github.com/tauri-apps/tauri |
+| Tauri 2, tauri-build, tauri-plugin-dialog, tauri-plugin-updater 2.13.1 | Native shell/build/dialogs and signed updates | MIT OR Apache-2.0; https://github.com/tauri-apps/tauri |
 | Tauri CLI 2.12.1 | Installed developer packaging tool | MIT OR Apache-2.0; https://github.com/tauri-apps/tauri/tree/tauri-cli-v2.12.1 |
 | Microsoft Edge WebView2 SDK loader 1.0.3800.47 | Native WebView loader linked by webview2-com-sys | Microsoft SDK/vendor terms, distinct from the Rust wrapper license; exact upstream notice and terms in `docs/licenses/` |
-| NSIS 3.11 (not downloaded yet) | Optional Windows installer compiler | zlib/libpng core, bzip2 module, LZMA CPL-1.0; https://github.com/kichik/nsis/blob/v311/COPYING |
-| nsis_tauri_utils 0.5.3 (not downloaded yet) | Optional Tauri NSIS installer plugin | MIT OR Apache-2.0; https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3 |
+| NSIS 3.11 | Windows installer compiler and incorporated installer stub | zlib/libpng core, bzip2 module, LZMA CPL-1.0; full terms in `docs/licenses/NSIS-COPYING.txt`; unmodified source: https://github.com/kichik/nsis/tree/v311 |
+| nsis_tauri_utils 0.5.3 | Incorporated Tauri NSIS installer plugin | MIT OR Apache-2.0; full terms in `docs/licenses/NSIS-TAURI-UTILS-LICENSE-*`; unmodified source: https://github.com/tauri-apps/nsis-tauri-utils/tree/nsis_tauri_utils-v0.5.3 |
 | React, React DOM | Workstation UI | MIT; https://github.com/facebook/react |
 | TypeScript | Compile-time tooling | Apache-2.0; https://github.com/microsoft/TypeScript |
 | Vite | Frontend development/build | MIT; https://github.com/vitejs/vite |

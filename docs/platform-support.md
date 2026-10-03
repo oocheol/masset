@@ -1,10 +1,10 @@
 # Platform support and packaging
 
-Checked on 2026-10-02 (Asia/Seoul). A build command or CI configuration is not evidence that a package ran on that OS.
+0.1.1 packaging configuration updated on 2026-10-03 (Asia/Seoul). Per-version execution evidence is in [verification.md](verification.md) and [release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.1.json). The table and native execution history below describe 0.1.0; current installer evidence is recorded separately. A build command or CI configuration is not evidence that a package ran on that OS.
 
 | Platform | Declared minimum | Source/build tooling | Native build | Installation and launch |
 | --- | --- | --- | --- | --- |
-| Windows x64 | Windows 10 1809+, WebView2 required | Node 24.15.0, Rust 1.99.0 MSVC, VS 18 C++; SDK 10.0.28000.2957 installed after consent | Release portable built; Rust 110 passed / 4 fixture helpers ignored; final release backend and copied GUI/3D passed | 12 native images + IPC, actual Blender GLB/WebGL and 33-file backend export verified on this host; unsigned; clean-machine checks pending; NSIS download not approved |
+| Windows x64 | Windows 10 1809+, WebView2 required | Node 24.15.0, Rust 1.99.0 MSVC, VS 18 C++; SDK 10.0.28000.2957 installed after consent | 0.1.0 release portable built; Rust 110 passed / 4 fixture helpers ignored; copied GUI/3D passed | 0.1.0: 12 native images + IPC, actual Blender GLB/WebGL and 33-file backend export verified on this host; unsigned; clean-machine checks pending |
 | macOS arm64 | macOS 12.0 configured | Node 24, Rust aarch64-apple-darwin, Xcode CLI tools | Automatic CI held; manual opt-in prepared, not run | Unverified; no signing/notarization credentials |
 | macOS x64 | macOS 12.0 configured | Node 24, Rust x86_64-apple-darwin, Xcode CLI tools | Automatic CI held; manual opt-in prepared, not run | Unverified; no signing/notarization credentials |
 
@@ -43,7 +43,7 @@ The previously absent Windows SDK was installed from [Microsoft's Windows SDK do
 
 ## Optional NSIS packaging tools
 
-NSIS is not yet approved or downloaded in this session. The installed npm Tauri CLI is 2.12.1 (MIT OR Apache-2.0). Its [exact version's bundler source](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.12.1/crates/tauri-bundler/src/bundle/windows/nsis/mod.rs) pins these two build-time downloads. The sizes and SHA-256 values below come from official release metadata; they are expected values, not successful local download checks.
+The user approved both NSIS tool downloads. The installed npm Tauri CLI is 2.12.1 (MIT OR Apache-2.0). Its [exact version's bundler source](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.12.1/crates/tauri-bundler/src/bundle/windows/nsis/mod.rs) pins these two build-time downloads. Both downloaded files matched the exact bytes and SHA-256 below before extraction/use; the DLL and compiler are Authenticode `NotSigned`, rather than validly code-signed. The verified cache is `%LOCALAPPDATA%/tauri/NSIS`. Full NSIS/plugin terms and original source links accompany the installer.
 
 | Download | Version / bytes | Expected SHA-256 | License |
 | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ NSIS is not yet approved or downloaded in this session. The installed npm Tauri 
 
 Obtain consent for those files before building with `-Distribution Nsis -AllowBundlerDownload`. Prefer downloading and comparing their measured bytes/SHA-256 before extraction or execution, and record actual executable/DLL Authenticode results rather than assuming a signature. Tauri independently pins SHA-1 `EF7FF767E5CBD9EDD22ADD3A32C9B8F4500BB10D` for the ZIP and `75197FEE3C6A814FE035788D1C34EAD39349B860` for the plugin. Its default Windows cache is `%LOCALAPPDATA%/tauri/NSIS`; it may recreate an incomplete tool cache. The build script prevents uncached downloads unless explicitly allowed and verifies the known cached plugin hash. Do not reuse this inventory after changing the CLI version without checking its new source.
 
-The current NSIS WebView mode embeds download instructions rather than a full runtime: at installation time, a missing runtime triggers the [official Microsoft bootstrapper](https://go.microsoft.com/fwlink/p/?LinkId=2124703). The existing development runtime needs no additional download. A clean-machine runtime download, version/size/digest/signature and install behavior need a separate record. WiX/VBScript and offline WebView packages are unnecessary for the current portable/NSIS paths.
+The 0.1.1 NSIS configuration uses `webviewInstallMode: skip` and downloads no Microsoft bootstrapper. WebView2 must already be installed or separately obtained from Microsoft. The development runtime needs no additional download. A clean-machine runtime installation and its version/size/digest/signature need a separate record. WiX/VBScript and offline WebView packages are unnecessary for these portable/NSIS paths.
 
 After a successful native build, run backend smoke and independently decode its export, run the actual WebView smoke, audit PE imports and required copied DLLs/resources, launch the portable copy, and only then test an approved NSIS package on installation/upgrade/uninstall. A successful package hash alone does not pass that sequence.
 

@@ -321,3 +321,12 @@ h2 { font-size: clamp(29px, 3.1vw, 42px); font-weight: 700; letter-spacing: -1.8
   .screenshot-dialog > p { padding: 12px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+.download-hint,.release-link{font-size:14px;line-height:1.7}
+.faq-list summary{font-size:16px;line-height:1.7}
+.faq-answer{font-size:15px;line-height:1.9}
+.download-main p{font-size:15px;line-height:1.8}
+.download-requirements dl>div{font-size:14px;line-height:1.7}
+.screenshot-dialog>p{font-size:14px;line-height:1.8}
+.portable-link{display:block;font-size:14px;margin-top:14px;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:640px){.download-requirements dl>div{grid-template-columns:82px minmax(0,1fr)}.checksum-row code{font-size:12px}.faq-list summary{font-size:16px}.faq-answer{font-size:15px}}
