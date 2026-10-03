@@ -176,7 +176,10 @@ fn official_runtime_file(path: &Path) -> bool {
 
 #[cfg(not(windows))]
 fn official_runtime_file(_: &Path) -> bool {
-    true
+    // A Mac package is not evidence of the CLI/helper's OpenAI identity.
+    // Keep subscription execution closed until the official signing identity
+    // and helper layout have been verified on that platform.
+    false
 }
 
 impl Backend {
@@ -218,6 +221,9 @@ impl Backend {
                 let url = match request["page"].as_str() {
                     Some("source") => "https://github.com/openai/codex/releases/tag/rust-v0.160.0",
                     Some("license") => "https://github.com/openai/codex/blob/rust-v0.160.0/LICENSE",
+                    Some("guide") if cfg!(target_os = "macos") => {
+                        "https://developers.openai.com/codex/app/"
+                    }
                     Some("guide") => "https://developers.openai.com/codex/app/windows/",
                     _ => bail!("지원하지 않는 Codex 안내 페이지입니다."),
                 };
@@ -240,12 +246,20 @@ impl Backend {
             status["supported"] = json!(false);
             status["message"] = json!("CODEX_EXECUTABLE로 지정한 실행 경로를 확인해 주세요. 지정한 경로를 자동 변경하지 않습니다.");
         }
+        if cfg!(target_os = "macos") {
+            status["supported"] = json!(false);
+            status["message"] = json!("Mac 시험 배포는 로컬 2D 기능을 제공합니다. 공식 Codex 서명과 이미지 호스트 검증 전까지 구독 연결은 지원하지 않습니다.");
+        }
         Ok(status)
     }
 
     pub(super) fn provider_status(&self) -> Result<Value> {
         let result = (|| -> Result<Value> {
-            let path = self.provider_executable().context("공식 Codex 실행 파일과 코드 모드 호스트가 없습니다. 연결 화면의 Codex 준비에서 설치하거나 공식 Codex 설치를 확인해 주세요.")?;
+            let path = self.provider_executable().context(if cfg!(target_os = "macos") {
+                "Mac 시험 배포는 공식 Codex 서명과 이미지 호스트 검증 전까지 구독 연결을 지원하지 않습니다. 로컬 이미지 편집·스프라이트·아틀라스 기능을 이용해 주세요."
+            } else {
+                "공식 Codex 실행 파일과 코드 모드 호스트가 없습니다. 연결 화면의 Codex 준비에서 설치하거나 공식 Codex 설치를 확인해 주세요."
+            })?;
             let mut runtime = self.inner.provider_runtime.lock().unwrap();
             if runtime.is_none() {
                 *runtime = Some(CodexRuntime::connect(RuntimeOptions::new(

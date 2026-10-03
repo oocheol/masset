@@ -308,10 +308,13 @@ fn stale_snapshot_cannot_overwrite_another_connection() {
 #[test]
 fn long_korean_space_paths_preserve_copies_restart_and_export_hashes() {
     let temporary = TempDir::new().unwrap();
-    let mut nested = temporary.path().join("긴 경로 한글 공백");
-    for index in 0..10 {
-        nested = nested.join(format!("한국어 공백 구간 {index:02} abcdefghijklmnopqrst"));
-    }
+    #[cfg(target_os = "macos")]
+    let nested = long_path_fixture(
+        &temporary.path().canonicalize().unwrap(),
+        Some(sqlite_vfs_path_limit()),
+    );
+    #[cfg(not(target_os = "macos"))]
+    let nested = long_path_fixture(temporary.path(), None);
     #[cfg(windows)]
     let path_units = {
         use std::os::windows::ffi::OsStrExt;
@@ -319,7 +322,10 @@ fn long_korean_space_paths_preserve_copies_restart_and_export_hashes() {
     };
     #[cfg(not(windows))]
     let path_units = nested.to_string_lossy().chars().count();
-    assert!(path_units > 260, "fixture must exceed Windows MAX_PATH in actual character units");
+    assert!(
+        path_units > 260,
+        "fixture must exceed Windows MAX_PATH in actual character units"
+    );
     let outcome = (|| -> anyhow::Result<()> {
         fs::create_dir_all(&nested)?;
         let input = nested.join("서울 원본.PNG");
@@ -328,25 +334,154 @@ fn long_korean_space_paths_preserve_copies_restart_and_export_hashes() {
         let root = nested.join("프로젝트 한글 공백");
         let mut repository = Repository::create(&root, "긴 경로 프로젝트")?;
         let copied = repository.copy_in(&input, "sources", "서울 원본.PNG")?;
-        repository.add_asset(asset("long-asset", version("long-version", 1, copied.clone())))?;
+        repository.add_asset(asset(
+            "long-asset",
+            version("long-version", 1, copied.clone()),
+        ))?;
         drop(repository);
         let reopened = Repository::open(&root)?;
         reopened.verify_artifact(&copied)?;
-        let bundle = reopened.export_bundle(&temporary.path().join("portable"), &[])?;
+        #[cfg(target_os = "macos")]
+        let destination = nested.join("내보내기 한글 공백");
+        #[cfg(not(target_os = "macos"))]
+        let destination = temporary.path().join("portable");
+        let bundle = reopened.export_bundle(&destination, &[])?;
         assert_eq!(sha256_file(&bundle.join(&copied.path))?, before);
         assert_eq!(sha256_file(&input)?, before);
         assert_eq!(reopened.project()?.assets[0].versions[0].id, "long-version");
+        #[cfg(target_os = "macos")]
+        {
+            use std::os::unix::ffi::OsStrExt;
+            let database_bytes = reopened
+                .root()
+                .join("project.sqlite")
+                .as_os_str()
+                .as_bytes()
+                .len();
+            let scheduler_bytes = reopened
+                .root()
+                .join("scheduler.sqlite")
+                .as_os_str()
+                .as_bytes()
+                .len();
+            let limit = sqlite_vfs_path_limit();
+            assert!(database_bytes + 8 <= limit);
+            assert!(scheduler_bytes + 8 <= limit);
+            assert!(bundle.to_string_lossy().chars().count() > 260);
+            eprintln!("MACOS_SQLITE_PATH_VERIFIED: {path_units} character units; canonical database {database_bytes} UTF-8 bytes, VFS limit {limit}, 8-byte journal reserve; long export path and original SHA-256 matched");
+        }
         Ok(())
     })();
     if let Err(error) = outcome {
         #[cfg(windows)]
-        if error.chain().any(|cause| cause.downcast_ref::<std::io::Error>().is_some_and(|io| io.raw_os_error() == Some(206))) {
+        if error.chain().any(|cause| {
+            cause
+                .downcast_ref::<std::io::Error>()
+                .is_some_and(|io| io.raw_os_error() == Some(206))
+        }) {
             eprintln!("SKIPPED long-path verification: Windows environment rejected a {path_units}-unit path with ERROR_FILENAME_EXCED_RANGE (206): {error:#}");
             return;
         }
         panic!("long-path operation failed: {error:#}");
     }
     eprintln!("LONG_PATH_VERIFIED: {path_units} character units; Korean names, spaces, restart and exported SHA-256 matched");
+}
+
+fn long_path_fixture(base: &Path, vfs_limit: Option<usize>) -> PathBuf {
+    let mut nested = base.join("긴 경로 한글 공백");
+    for index in 0..10 {
+        let candidate = nested.join(format!("한국어 공백 구간 {index:02} abcdefghijklmnopqrst"));
+        if let Some(limit) = vfs_limit {
+            // The macOS canonical temp prefix is included in the byte budget.
+            // Leave room for the longer application queue filename too. This
+            // changes no Windows fixture: None retains all ten original levels.
+            let database_bytes = candidate
+                .join("프로젝트 한글 공백")
+                .join("scheduler.sqlite")
+                .as_os_str()
+                .as_encoded_bytes()
+                .len();
+            if database_bytes.saturating_add(8) > limit {
+                break;
+            }
+        }
+        nested = candidate;
+    }
+    nested
+}
+
+#[test]
+fn macos_long_path_profile_keeps_over_260_characters_within_sqlite_byte_budget() {
+    let base = Path::new("/private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/.tmpJIEc3s");
+    let nested = long_path_fixture(base, Some(512));
+    assert!(nested.to_string_lossy().chars().count() > 260);
+    let database = nested.join("프로젝트 한글 공백").join("scheduler.sqlite");
+    assert!(database.as_os_str().as_encoded_bytes().len() + 8 <= 512);
+    let original_fixture = long_path_fixture(base, None)
+        .join("프로젝트 한글 공백")
+        .join("project.sqlite");
+    assert!(original_fixture.as_os_str().as_encoded_bytes().len() + 8 > 512);
+    // This checks fixture construction on every host. Only the native macOS
+    // long-path integration test establishes actual macOS filesystem/SQLite I/O.
+}
+
+#[cfg(target_os = "macos")]
+fn sqlite_vfs_path_limit() -> usize {
+    unsafe {
+        assert_eq!(
+            rusqlite::ffi::sqlite3_initialize(),
+            rusqlite::ffi::SQLITE_OK
+        );
+        let vfs = rusqlite::ffi::sqlite3_vfs_find(std::ptr::null());
+        assert!(!vfs.is_null(), "SQLite default VFS must be available");
+        // Built-in VFS metadata remains allocated for SQLite's lifetime.
+        usize::try_from((*vfs).mxPathname).unwrap()
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn macos_over_limit_database_path_is_rejected_without_reserving_or_changing_files() {
+    use std::os::unix::ffi::OsStrExt;
+
+    let temporary = TempDir::new().unwrap();
+    let input = original(&temporary);
+    let before = sha256_file(&input).unwrap();
+    let root = long_path_fixture(&temporary.path().canonicalize().unwrap(), None)
+        .join("프로젝트 한글 공백");
+    let database = root.join("project.sqlite");
+    assert!(database.as_os_str().as_bytes().len() + 8 > sqlite_vfs_path_limit());
+    let error = match Repository::create(&root, "지원 범위 밖 경로") {
+        Ok(_) => panic!("SQLite-over-limit project must be rejected"),
+        Err(error) => error,
+    };
+    assert!(
+        error.to_string().contains("macOS SQLite database path"),
+        "{error:#}"
+    );
+    assert!(error.to_string().contains("UTF-8 bytes"), "{error:#}");
+    assert!(
+        !database.exists(),
+        "path rejection must not leave an empty reserved database"
+    );
+    assert!(!root.join("project.json").exists());
+    assert_eq!(sha256_file(&input).unwrap(), before);
+    fs::write(
+        &database,
+        b"existing user database bytes must remain intact",
+    )
+    .unwrap();
+    let database_before = sha256_file(&database).unwrap();
+    let error = match Repository::open(&root) {
+        Ok(_) => panic!("SQLite-over-limit reopen must be rejected"),
+        Err(error) => error,
+    };
+    assert!(
+        error.to_string().contains("macOS SQLite database path"),
+        "{error:#}"
+    );
+    assert_eq!(sha256_file(&database).unwrap(), database_before);
+    assert_eq!(sha256_file(&input).unwrap(), before);
 }
 
 #[test]

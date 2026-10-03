@@ -34,6 +34,7 @@ impl Repository {
         let root = absolute.canonicalize().context("cannot resolve project directory")?;
         ensure!(root.is_dir(), "project root must be a directory");
         let database = root.join(DATABASE_NAME);
+        validate_database_path(&database)?;
         ensure!(
             !root.join(SNAPSHOT_NAME).try_exists()?,
             "a project snapshot already exists in this directory"
@@ -65,6 +66,7 @@ impl Repository {
         let root = absolute.canonicalize().context("project directory does not exist")?;
         ensure!(root.is_dir(), "project root must be a directory");
         let database = root.join(DATABASE_NAME);
+        validate_database_path(&database)?;
         reject_link_ancestors(&database)?;
         ensure!(
             fs::symlink_metadata(&database)
@@ -407,6 +409,46 @@ impl Repository {
         transaction.commit()?;
         Ok(())
     }
+}
+
+#[cfg(target_os = "macos")]
+fn validate_database_path(database: &Path) -> Result<()> {
+    use std::os::unix::ffi::OsStrExt;
+
+    // The bundled Unix VFS uses MAX_PATHNAME=512, and sqlite3PagerOpen
+    // additionally requires eight bytes for "-journal". Query this build's
+    // actual default VFS instead of treating character count as byte count.
+    let limit = unsafe {
+        ensure!(
+            rusqlite::ffi::sqlite3_initialize() == rusqlite::ffi::SQLITE_OK,
+            "cannot initialize SQLite to check its path limit"
+        );
+        let vfs = rusqlite::ffi::sqlite3_vfs_find(std::ptr::null());
+        ensure!(!vfs.is_null(), "SQLite default VFS is unavailable");
+        // Built-in VFS metadata lives for the initialized library's lifetime;
+        // this application never unregisters or replaces the default VFS.
+        usize::try_from((*vfs).mxPathname).context("SQLite VFS path limit is invalid")?
+    };
+    validate_sqlite_path_bytes(database.as_os_str().as_bytes().len(), limit)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn validate_database_path(_database: &Path) -> Result<()> {
+    // Windows uses its own UTF-16/long-path VFS; the Unix byte bound does not
+    // apply and must not narrow the existing Windows long-path behavior.
+    Ok(())
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn validate_sqlite_path_bytes(database_bytes: usize, vfs_limit: usize) -> Result<()> {
+    const JOURNAL_SUFFIX_BYTES: usize = 8;
+    ensure!(
+        vfs_limit >= JOURNAL_SUFFIX_BYTES
+            && database_bytes <= vfs_limit - JOURNAL_SUFFIX_BYTES,
+        "macOS SQLite database path is {database_bytes} UTF-8 bytes; this VFS allows at most {} bytes after reserving 8 bytes for -journal (VFS limit {vfs_limit}). Choose a shorter project directory; existing files were not replaced",
+        vfs_limit.saturating_sub(JOURNAL_SUFFIX_BYTES)
+    );
+    Ok(())
 }
 
 fn configure_and_migrate(connection: &mut Connection) -> Result<()> {
@@ -763,5 +805,26 @@ fn cleanup_owned_export(bundle: &Path, destination: &Path) {
     };
     if resolved.parent() == Some(destination) && is_within(&resolved, destination) {
         let _ = fs::remove_dir_all(&resolved);
+    }
+}
+
+#[cfg(test)]
+mod sqlite_path_tests {
+    use super::validate_sqlite_path_bytes;
+
+    #[test]
+    fn database_path_reserves_the_sqlite_journal_suffix() {
+        assert!(validate_sqlite_path_bytes(504, 512).is_ok());
+        assert!(validate_sqlite_path_bytes(505, 512).is_err());
+        assert!(validate_sqlite_path_bytes(0, 7).is_err());
+    }
+
+    #[test]
+    fn korean_database_paths_are_counted_in_utf8_bytes() {
+        let database = format!("/{} project.sqlite", "한".repeat(165));
+        assert!(database.chars().count() < 260);
+        assert!(database.len() > 504);
+        assert!(validate_sqlite_path_bytes(database.len(), 512).is_err());
+        assert!(validate_sqlite_path_bytes(database.len(), 1024).is_ok());
     }
 }

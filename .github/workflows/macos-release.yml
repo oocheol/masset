@@ -1,0 +1,90 @@
+name: Verified macOS packages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  macos:
+    name: Verified ${{ matrix.architecture }} DMG
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+          - architecture: x64
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    env:
+      TARGET: ${{ matrix.target }}
+      CARGO_BUILD_JOBS: '2'
+      MACOSX_DEPLOYMENT_TARGET: '12.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+          targets: ${{ matrix.target }}
+          components: rust-docs
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+          cache-on-failure: true
+      - run: npm ci
+      - name: Native Rust tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "output/macos/${TARGET}"
+          cargo test --workspace --target "${TARGET}" 2>&1 | tee "output/macos/${TARGET}/rust-tests.log"
+      - name: Preserve platform license originals
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/collect-third-party-notices.mjs --target "${TARGET}" --out docs/licenses --strict | tee "output/macos/${TARGET}/license-collection.json"
+      - name: Build application and DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run desktop:build -- --target "${TARGET}" --config "${GITHUB_WORKSPACE}/apps/desktop/src-tauri/tauri.macos.conf.json" --bundles app,dmg 2>&1 | tee "output/macos/${TARGET}/build.log"
+          cargo build -p asset-desktop --release --target "${TARGET}" --bin asset-cli
+      - name: Verify actual DMG, copied native app and backend outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          DMG_FILES=("target/${TARGET}/release/bundle/dmg/"*.dmg)
+          test "${#DMG_FILES[@]}" -eq 1
+          bash scripts/verify-macos.sh "${DMG_FILES[0]}" "target/${TARGET}/release/asset-cli" "output/macos/${TARGET}/verification" --target "${TARGET}" --expected-version 0.1.2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-${{ matrix.architecture }}-evidence
+          path: |
+            output/macos/${{ matrix.target }}/**
+            docs/licenses/dependency-inventory.json
+            docs/licenses/license-text-index.json
+            docs/licenses/missing-license-texts.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.architecture }}-verified-package
+          path: target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+# No login, Codex download, image generation, Blender installation, updater
+# installation, Developer ID signing or notarization is performed by this job.
+# Release assets are published separately only after these checks pass.

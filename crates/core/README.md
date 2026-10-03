@@ -45,6 +45,34 @@ message if the Windows environment reports filename-range error 206. A skip is
 not evidence of long-path support. macOS-specific checks require a native macOS
 test run before support can be reported as verified.
 
+On macOS, the bundled `libsqlite3-sys 0.30.1` Unix VFS sets
+`MAX_PATHNAME=512` and uses that value as `sqlite3_vfs.mxPathname`.
+`sqlite3PagerOpen` rejects a canonical database pathname when its UTF-8 byte
+length plus eight bytes for `-journal` exceeds that VFS limit. For this build,
+`project.sqlite` therefore needs a canonical absolute pathname of at most
+504 UTF-8 bytes. Character count differs from byte count for Korean names;
+the initial ARM64 CI fixture had 444 characters but 614 UTF-8 bytes and could
+not open SQLite. This is a SQLite VFS limit, separate from filesystem limits.
+See the versioned bundled [sqlite3.c](https://docs.rs/crate/libsqlite3-sys/0.30.1/source/sqlite3/sqlite3.c)
+(`MAX_PATHNAME`, `UNIXVFS`, `sqlite3PagerOpen`) and
+[build.rs](https://docs.rs/crate/libsqlite3-sys/0.30.1/source/build.rs).
+The source defines `MAX_PATHNAME` unconditionally; an additional compiler
+`-DMAX_PATHNAME=...` does not safely replace it. No SQLite compile flags changed.
+
+The macOS repository checks the actual default VFS limit before reserving a
+new database or opening an existing one, and reports an actionable byte-limit
+error without replacing existing files. `/var` and `/tmp` normalization to
+`/private` is included in the length. The macOS test still requires over
+260 characters with Korean names and spaces, and verifies original/copy hashes,
+database reopen, and an actual export under a long sibling directory. Its
+fixture stays within the VFS byte budget and also allows for the two-byte-longer
+`scheduler.sqlite` filename. Applications using that queue must keep its
+canonical database pathname within the same 504-byte limit. Windows retains
+the original ten-level fixture and its UTF-16 length assertion.
+`MACOS_SQLITE_PATH_VERIFIED` records the native byte/character counts with
+`-- --nocapture`; the fixture-profile test on Windows is only a construction
+check and does not establish macOS I/O support.
+
 To retain inspectable native fixture outputs, run
 `cargo run -p asset-core --example bundle_smoke -- <proof directory>`. It creates
 a fresh UUID directory containing original PNG input, SQLite project, all

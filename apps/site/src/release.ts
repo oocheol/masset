@@ -8,3 +8,15 @@ export const release = {
   "portableBytes": 9547193,
   "portableSha256": "f56a1013d97b2541897fd3ff6c632e47fd587e1158c29c69b88015873149e505"
 } as const;
+
+export type MacRelease = {
+  architecture: 'arm64' | 'x64';
+  label: string;
+  filename: string;
+  downloadUrl: string;
+  bytes: number;
+  sha256: string;
+};
+
+// Populated only after the actual macOS package and public download are verified.
+export const macReleases: MacRelease[] = [];

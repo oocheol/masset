@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react';
 import { ArrowDownToLine, ArrowUpRight, BookOpen, Box, Check, Copy, Expand, Github, Image, Layers, PackageOpen, RefreshCw, X } from 'lucide-react';
 
-import { release } from './release';
+import { macReleases, release } from './release';
 
 const sourceUrl = 'https://github.com/oocheol/masset';
 const releaseUrl = `${sourceUrl}/releases/tag/v${release.version}`;
 const downloadUrl = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
 const portableUrl = `${sourceUrl}/releases/download/v${release.version}/${release.portableFilename}`;
 const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
+const hasMacRelease = macReleases.length > 0;
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -24,8 +25,8 @@ const features = [
   { icon: Layers, title: '스프라이트를 한 장에', text: '이미지를 프레임으로 분할하고, 여러 애셋을 아틀라스로 묶습니다. 좌표·피벗·재생 속도를 기록한 JSON을 함께 내보냅니다.' },
   { icon: Box, title: '치수로 만드는 3D 소품', text: '상자·테이블·선반의 치수와 색을 정하면 Blender가 실제 모델을 만듭니다. GLB와 편집 가능한 .blend 파일이 함께 남습니다.' },
   { icon: PackageOpen, title: '다음 작업까지 이어지는 기록', text: '프로젝트와 작업 큐를 로컬에 저장합니다. 이미지와 3D 작업을 자원별로 처리하고 취소·복구·캐시로 반복 작업을 관리합니다.' },
-  { icon: BookOpen, title: '안내를 따라 처음부터', text: '큰 글씨와 사용 가이드로 시작하세요. Codex가 없어도 앱에서 준비하고 공식 로그인과 연결 확인으로 이어집니다. Node.js·Rust 설치는 필요 없습니다.' },
-  { icon: RefreshCw, title: '새 버전은 앱에서 바로', text: '시작할 때와 10분마다 새 버전을 확인합니다. 파일 정보를 검토하고 업데이트를 누르면 서명 검사 후 설치합니다. 진행 중인 제작은 완료를 기다립니다.' },
+  { icon: BookOpen, title: '안내를 따라 처음부터', text: '큰 글씨와 사용 가이드로 시작하세요. Windows에서는 Codex가 없어도 앱에서 준비하고 공식 로그인과 연결 확인으로 이어집니다. Node.js·Rust 설치는 필요 없습니다.' },
+  { icon: RefreshCw, title: '새 버전은 앱에서 바로', text: 'Windows 설치형은 시작할 때와 10분마다 새 버전을 확인합니다. 파일 정보를 검토하고 업데이트를 누르면 서명 검사 후 설치합니다. 진행 중인 제작은 완료를 기다립니다.' },
 ];
 
 const models = [
@@ -40,17 +41,19 @@ const statuses = [
   { feature: '밝기 기반 노멀맵', status: '실험 기능', tone: 'experimental', detail: '이미지 밝기에서 표면 방향을 근사합니다. 실제 표면 구조를 복원하는 기능은 아닙니다.' },
   { feature: 'GPT-6.1 Sol 추론·GPT Image2 구독 요청', status: 'Windows 새 요청 1회 확인', tone: 'verified', detail: '0.1.2에서 도구 설정 충돌을 수정했습니다. 새 PNG 수신·저장·재열기·독립 내보내기를 확인했습니다. 실제 이미지 모델 ID와 모든 계정의 권한은 미확인입니다.' },
   { feature: 'Codex가 없는 PC의 관리형 준비', status: '구현·오프라인 검사', tone: 'pending', detail: '다운로드 동의·해시·압축 경로·등록·취소 검사를 통과했습니다. 새 공식 패키지의 실제 다운로드·준비는 별도 미검증 항목입니다.' },
-  { feature: 'macOS 배포 패키지', status: '준비 중', tone: 'pending', detail: '현재 다운로드는 Windows x64용입니다. macOS 패키지와 실행 검증은 아직 제공하지 않습니다.' },
+  { feature: 'macOS 로컬 2D 시험 배포', status: 'Mac 시험 배포', tone: 'pending', detail: hasMacRelease ? 'macOS 15에서 앱 실행과 PNG 처리를 확인했습니다. 구독 연결·앱 업데이트는 미지원이며, 3D는 Mac 검증 전입니다.' : '앱 실행과 로컬 2D 기능을 확인한 뒤 다운로드를 공개합니다. 구독 연결·앱 업데이트는 미지원이며, 3D는 Mac 검증 전입니다.' },
 ];
 
 const faqs = [
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
-  { question: '기존 버전은 어떻게 업데이트하나요?', answer: '기존 0.1.0 포터블 사용자는 이번 설치 파일을 한 번 설치하세요. 이후부터 앱의 업데이트 버튼으로 새 버전을 받을 수 있습니다. 버전·출처·용량·SHA-256을 검토하고 동의하면 서명 검사 후 설치하며, 프로젝트와 원본은 보존합니다.' },
+  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows의 기존 0.1.0 포터블 사용자는 이번 설치 파일을 한 번 설치하세요. 이후부터 앱의 업데이트 버튼으로 새 버전을 받을 수 있습니다. 버전·출처·용량·SHA-256을 검토하고 동의하면 서명 검사 후 설치하며, 프로젝트와 원본은 보존합니다. Mac 시험 배포는 새 버전 DMG를 직접 설치하세요.' },
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64 앱의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 공식 Codex 0.160.0 배포본의 출처·150.15 MiB 용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
+  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈 Mac은 Apple Silicon, Intel Mac은 Intel용 DMG를 고르세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. Apple Developer 서명·공증이 없는 시험 빌드여서, 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
+  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Mac 시험 배포는 처음에는 로컬 2D 기능 중심으로 사용해 주세요. Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
@@ -99,6 +102,7 @@ export default function App() {
           <p className="hero-description">게임과 앱에 쓸 애셋을 만들고 다듬는 작은 작업대.<br className="desktop-break" /> 원본을 남기고, 버전을 쌓고, 필요한 파일로 꺼내세요.</p>
           <div className="hero-actions"><DownloadLink /><a className="text-link" href="#workbench">작업대 살펴보기 <ArrowDownToLine size={16} aria-hidden="true" /></a></div>
           <p className="download-hint">Windows x64 설치 파일 <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D 제작은 Blender 별도 설치</a></p>
+          <a className="text-link mac-hero-link" href="#download-mac">Mac 시험 배포 안내 <ArrowDownToLine size={16} aria-hidden="true" /></a>
         </div>
         <figure className="hero-specimens">
           <div className="specimen-board">
@@ -147,17 +151,31 @@ export default function App() {
 
       <section className="status-section section-space" aria-labelledby="status-title">
         <div className="page-width status-layout">
-          <div className="status-intro"><h2 id="status-title">확인한 기능을<br />분명히 적습니다.</h2><p>{release.version}은 초기 공개 버전입니다.<br />검증 범위는 현재 Windows 호스트이며,<br />미확인 기능을 완성된 기능처럼 소개하지 않습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+          <div className="status-intro"><h2 id="status-title">확인한 기능을<br />분명히 적습니다.</h2><p>{release.version}은 초기 공개 버전입니다.<br />Windows와 Mac의 확인 범위를 기능별로 적었습니다.<br />미확인 기능을 완성된 기능처럼 소개하지 않습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           <dl className="status-list">{statuses.map(item => <div key={item.feature} className="status-item"><dt>{item.feature}<span className={`status-label ${item.tone}`}>{item.tone === 'verified' && <Check size={13} aria-hidden="true" />}{item.status}</span></dt><dd>{item.detail}</dd></div>)}</dl>
         </div>
       </section>
 
       <section id="download" className="download-section section-space page-width" aria-labelledby="download-title">
-        <div className="download-card">
+        <nav className="platform-picker" aria-label="운영체제별 다운로드"><a href="#download-windows">Windows x64</a><a href="#download-mac">Mac 시험 배포</a></nav>
+        <div id="download-windows" className="download-card">
           <div className="download-main"><Mark /><h2 id="download-title">작업대를 열어 보세요.</h2><p>설치 파일을 실행하고 안내를 따르세요.<br />앱 안의 사용 가이드로 시작할 수 있습니다.</p><DownloadLink secondary /><a className="portable-link" href={portableUrl}>설치 없이 쓰는 포터블 ZIP</a><a className="release-link" href={releaseUrl}>v{release.version} 릴리스 기록 <ArrowUpRight size={14} aria-hidden="true" /></a></div>
           <div id="requirements" className="download-requirements"><h3>받기 전에 확인해 주세요</h3><dl><div><dt>운영체제</dt><dd>Windows x64</dd></div><div><dt>앱 실행</dt><dd>Microsoft WebView2 Runtime</dd></div><div><dt>3D 제작</dt><dd>Blender 5.2.1 별도 설치</dd></div><div><dt>배포 형태</dt><dd>설치형 · 앱 내부 업데이트</dd></div><div><dt>파일 크기</dt><dd>{release.bytes.toLocaleString('en-US')} bytes <span>(약 {sizeMiB} MiB)</span></dd></div></dl><p className="unsigned-note">업데이트 파일에는 암호학적 서명이 있습니다. Windows 코드 서명은 없어 실행 경고가 나타날 수 있습니다. 공식 릴리스와 파일 해시를 확인해 주세요.</p></div>
         </div>
         <div className="checksum-row"><div className="checksum-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
+        <section id="download-mac" className="mac-download" aria-labelledby="mac-download-title">
+          <div className="mac-download-heading"><h3 id="mac-download-title">Mac 시험 배포</h3><span className="mac-trial-label">로컬 2D부터</span></div>
+          <p className="mac-download-intro">처음에는 로컬 2D 기능 중심의 시험 배포입니다. 구독 연결·앱 업데이트는 지원하지 않으며, 3D는 Mac 검증 전입니다.</p>
+          {hasMacRelease ? <div className="mac-release-grid">{macReleases.map(item => <article className="mac-release" key={item.architecture} aria-label={`${item.label} 다운로드`}>
+            <h4>{item.label}</h4><p>{item.architecture === 'arm64' ? 'M 시리즈 Mac용' : 'Intel 프로세서 Mac용'}</p>
+            <a className="button button-primary" href={item.downloadUrl}><ArrowDownToLine size={18} aria-hidden="true" />{item.architecture === 'arm64' ? 'Apple Silicon DMG 다운로드' : 'Intel DMG 다운로드'}</a>
+            <dl><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>
+          </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon·Intel용 DMG를 이곳에 공개합니다.</p>}
+          <div className="mac-install-guide">
+            <div><h4>Mac 설치 순서</h4><ol><li>내 Mac에 맞는 DMG를 엽니다.</li><li>Asset Studio를 Applications 폴더로 복사합니다.</li><li>Applications에서 앱을 실행합니다.</li></ol></div>
+            <div className="mac-install-notes"><p>Apple Developer 서명·공증이 없는 시험 빌드입니다. 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다.</p><p>macOS 12 이상은 설정상 최소값입니다. {hasMacRelease ? '실행 확인은 macOS 15에서 진행했습니다.' : '실행 검증은 macOS 15 환경에서 진행합니다.'}</p><p>Mac의 Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. 새 버전은 DMG를 직접 설치해 주세요.</p></div>
+          </div>
+        </section>
       </section>
 
       <section className="faq-section section-space page-width" aria-labelledby="faq-title"><h2 id="faq-title">처음 열기 전에 궁금한 것.</h2><div className="faq-list">{faqs.map(faq => <details key={faq.question}><summary>{faq.question}<span className="faq-indicator" aria-hidden="true" /></summary><div className="faq-answer"><p>{faq.answer}</p>{faq.link && <a className="text-link" href={faq.link}>{faq.label}<ArrowUpRight size={15} aria-hidden="true" /></a>}</div></details>)}</div></section>
