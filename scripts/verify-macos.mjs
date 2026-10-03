@@ -14,7 +14,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGETS = { 'aarch64-apple-darwin': { uname: 'arm64', node: 'arm64', macho: 'arm64' }, 'x86_64-apple-darwin': { uname: 'x86_64', node: 'x64', macho: 'x86_64' } };
-const usage = 'Usage: bash scripts/verify-macos.sh <one.dmg> <asset-cli> <fresh-output-directory> [--target aarch64-apple-darwin|x86_64-apple-darwin] [--expected-version 0.1.2] [--timeout-seconds 900]';
+const usage = 'Usage: bash scripts/verify-macos.sh <one.dmg> <asset-cli> <fresh-output-directory> [--target aarch64-apple-darwin|x86_64-apple-darwin] [--expected-version <semver>] [--timeout-seconds 900]';
 const check = (value, message) => { if (!value) throw new Error(message); };
 const slash = value => value.split(sep).join('/');
 const json = async path => JSON.parse((await readFile(path, 'utf8')).replace(/^\uFEFF/, ''));

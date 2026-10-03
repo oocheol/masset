@@ -134,9 +134,9 @@ body{font-size:14px;line-height:1.6}
 .workbench .provider-card strong{font-size:16px;line-height:1.5}
 .workbench .provider-card p{font-size:14px;line-height:1.75;word-break:keep-all}
 .workbench .provider-card .property-list{font-size:13px}
-.workbench .provider-card .provider-proof-brief{font-size:13px;color:#d3bc92}
-.provider-details{margin-top:15px;border-top:1px solid #506988;padding-top:10px}
-.provider-details summary{cursor:pointer;font-size:14px;color:#c2d7f2;line-height:1.6;padding-block:5px}
+.workbench .provider-card .provider-proof-brief{font-size:13px;color:var(--warning)}
+.provider-details{margin-top:15px;border-top:1px solid var(--edge);padding-top:10px}
+.provider-details summary{cursor:pointer;font-size:14px;color:var(--paper);line-height:1.6;padding-block:5px}
 .provider-details .property-list dd{overflow-wrap:anywhere}
 .workbench .provider-controls .button{font-size:14px}
 .workbench .environment-mark h3{font-size:21px}
@@ -152,33 +152,133 @@ body{font-size:14px;line-height:1.6}
 .workbench .app-update-properties{font-size:14px}
 .workbench .app-update-sha{font-size:12px}
 .workbench .app-update-progress,.workbench .app-update-progress span{font-size:13px;line-height:1.6}
-.workbench .property-list dt,.workbench .field small,.workbench .muted-help,.workbench .asset-card-info small,.workbench .library-heading p{color:#a8b8d0}
+.workbench .property-list dt,.workbench .field small,.workbench .muted-help,.workbench .asset-card-info small,.workbench .library-heading p{color:var(--muted)}
 .usage-guide{font-size:16px;line-height:1.8;word-break:keep-all}
-.usage-guide .guide-intro{color:#bfd2ec;margin-bottom:20px}
+.usage-guide .guide-intro{color:var(--paper);margin-bottom:20px}
 .usage-guide ol{padding-left:26px;margin:0;display:grid;gap:22px}
 .usage-guide li{padding-left:5px}
-.usage-guide li::marker{color:#91b6e9;font-size:15px}
-.usage-guide h3{font-size:17px;line-height:1.5;color:#d0e1f7;margin-bottom:7px}
-.usage-guide p{margin:0;color:#aebfd6}
-.usage-guide strong{font-weight:650;color:#d0e1f7}
-.usage-guide code{font-family:inherit;color:#c5d9f3;overflow-wrap:anywhere}
-.usage-guide .guide-shortcuts{font-size:14px;margin-top:24px;padding-top:17px;border-top:1px solid #466185}
+.usage-guide li::marker{color:var(--cyan);font-size:15px}
+.usage-guide h3{font-size:17px;line-height:1.5;color:var(--paper);margin-bottom:7px}
+.usage-guide p{margin:0;color:var(--paper)}
+.usage-guide strong{font-weight:650;color:var(--paper)}
+.usage-guide code{font-family:inherit;color:var(--paper);overflow-wrap:anywhere}
+.usage-guide .guide-shortcuts{font-size:14px;margin-top:24px;padding-top:17px;border-top:1px solid var(--edge)}
 @media(max-width:1200px){
  .workbench{grid-template-columns:214px minmax(360px,1fr) 286px}
- .workbench .brand{width:164px}
- .workbench .brand>span:last-child{font-size:16px}
- .workbench .titlebar{gap:12px;padding-inline:14px}
- .workbench .titlebar-actions{gap:6px}
- .workbench .project-breadcrumb button{max-width:155px}
- .workbench .runtime-badge{font-size:12px;padding-inline:5px}
- .workbench .titlebar .button{padding-inline:9px}
- .workbench .project-entry strong{max-width:125px}
- .workbench .workspace-tabs>button{font-size:14px;padding-inline:8px;gap:5px}
- .workbench .tab-trailing{display:none}
- .workbench .asset-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 12px}
- .workbench .library-heading{align-items:flex-start;flex-wrap:wrap}
- .workbench .plan-bar{margin-inline:20px}
- .workbench .inspector-content{padding-inline:16px}
- .workbench .statusbar{gap:8px;overflow:hidden}
+.workbench .brand{width:164px}
+.workbench .brand>span:last-child{font-size:16px}
+.workbench .titlebar{gap:12px;padding-inline:14px}
+.workbench .titlebar-actions{gap:6px}
+.workbench .project-breadcrumb button{max-width:155px}
+.workbench .runtime-badge{font-size:12px;padding-inline:5px}
+.workbench .titlebar .button{padding-inline:9px}
+.workbench .project-entry strong{max-width:125px}
+.workbench .workspace-tabs>button{font-size:14px;padding-inline:8px;gap:5px}
+.workbench .tab-trailing{display:none}
+.workbench .asset-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 12px}
+.workbench .library-heading{align-items:flex-start;flex-wrap:wrap}
+.workbench .plan-bar{margin-inline:20px}
+.workbench .inspector-content{padding-inline:16px}
+.workbench .statusbar{gap:8px;overflow:hidden}
 }
 @media(prefers-reduced-motion:reduce){.workbench .spin{animation:none}}
+
+/* Keep text and hit areas readable while the dock geometry adapts. */
+.workbench button { font-size: 14px; }
+.workbench { grid-template-columns: 230px minmax(360px, 1fr) 308px; grid-template-rows: 68px minmax(0, 1fr) 208px 30px; }
+.workbench:has(.queue-panel.collapsed) { grid-template-rows: 68px minmax(0, 1fr) 45px 30px; }
+.workbench .queue-panel.collapsed { height: 45px; align-self: stretch; }
+.workbench .titlebar { padding-inline: 18px; gap: 16px; }
+.workbench .brand { width: 182px; }
+.workbench .brand>span:last-child { font-size: 18px; }
+.workbench .brand small { font-size: 12px; }
+.workbench .sidebar { padding-inline: 12px; }
+.workbench .sidebar-heading { font-size: 13px; font-weight: 550; }
+.workbench .project-entry small { word-break: keep-all; overflow-wrap: normal; }
+.workbench .nav-item { padding-block: 9px; }
+.workbench .library-heading { padding: 20px 24px 16px; }
+.workbench .library-heading h1 { font-size: 28px; line-height: 1.3; margin-top: 5px; }
+.workbench .library-heading p { font-size: 14px; margin-top: 7px; }
+.workbench .plan-bar { margin: 0 24px 16px; padding: 11px 12px; }
+.workbench .plan-bar strong { font-size: 14px; line-height: 1.5; }
+.workbench .plan-bar span:not(.plan-symbol) { font-size: 14px; }
+.workbench .plan-bar>div { flex: 1; }
+.workbench .plan-bar .button { font-size: 14px; min-height: 36px; }
+.workbench .library-toolbar { padding-inline: 24px; padding-bottom: 16px; gap: 10px; }
+.workbench .search-input { height: 38px; }
+.workbench .search-input input { height: 36px !important; }
+.workbench .asset-grid-wrap { padding: 0 24px 22px; }
+.workbench .asset-grid { grid-template-columns: repeat(auto-fill, minmax(162px, 1fr)); gap: 16px; }
+.workbench .asset-card-info { padding: 11px 10px 10px; }
+.workbench .asset-card-info strong { font-size: 14px; }
+.workbench .fixture-label, .workbench .asset-format, .workbench .version-label, .workbench .asset-card-info small>span { font-size: 12px; }
+.workbench .asset-format { padding: 2px 5px; }
+.workbench .fixture-label { padding: 3px 6px; }
+.workbench .library-status { padding-inline: 24px; min-height: 32px; }
+.workbench .inspector-title strong, .workbench .inspector-label strong { font-size: 16px; }
+.workbench .inspector-section { padding-block: 18px; }
+.workbench .inspector-section .button { height: auto; min-height: 38px; font-size: 14px; }
+.workbench .validation-check { font-size: 12px; line-height: 1.7; }
+.workbench .range-field { gap: 14px; }
+.workbench .queue-toggle .small-count { font-size: 12px; height: 21px; min-width: 21px; }
+.workbench .job-name { font-size: 14px; min-height: 34px; }
+.workbench .job-actions .icon-button { height: 32px; width: 32px; }
+.workbench .canvas-toolbar .toolbar-muted, .workbench .viewport-stats { font-size: 12px; }
+.workbench .canvas-status { min-height: 32px; }
+.workbench .compare-notes strong { font-size: 14px; }
+.workbench .compare-notes span { font-size: 12px; }
+.workbench .empty-state h2 { font-size: 21px; }
+.workbench .empty-state p, .workbench .inspector-empty p { font-size: 14px; }
+.workbench .inspector-empty strong { font-size: 16px; }
+.workbench .notification { font-size: 14px; line-height: 1.7; max-width: min(680px, calc(100vw - 48px)); }
+.workbench .drop-overlay span { font-size: 14px; }
+.workbench .dialog { padding: 24px 26px; max-height: calc(100dvh - 48px); }
+.workbench .dialog-header { margin-bottom: 22px; }
+.workbench .dialog-header h2 { font-size: 22px; }
+.workbench .dialog .field input, .workbench .dialog .field select { height: 40px; font-size: 14px; }
+.workbench .dialog-actions .button { height: auto; min-height: 40px; }
+.workbench .property-list dt, .workbench .field small, .workbench .muted-help, .workbench .asset-card-info small, .workbench .library-heading p { color: var(--muted); }
+.provider-details { border-color: var(--edge); }
+.provider-details summary { color: var(--paper); }
+.workbench .provider-card .provider-proof-brief { color: var(--warning); }
+.usage-guide { font-size: 16px; line-height: 1.8; }
+.usage-guide .guide-intro { font-size: 16px; color: var(--paper); padding-bottom: 18px; border-bottom: 1px solid var(--edge); }
+.usage-guide ol { padding-left: 26px; gap: 22px; }
+.usage-guide li::marker { color: var(--cyan); font-size: 16px; font-weight: 550; }
+.usage-guide h3 { font-size: 18px; color: var(--paper); }
+.usage-guide p { color: var(--muted); }
+.usage-guide strong { color: var(--paper); }
+.usage-guide code { color: var(--paper); }
+.usage-guide .guide-shortcuts { border-color: var(--edge); color: var(--muted); font-size: 14px; }
+@media (max-width: 1200px) {
+  .workbench { grid-template-columns: 214px minmax(360px, 1fr) 286px; }
+  .workbench .brand { width: 164px; }
+  .workbench .brand>span:last-child { font-size: 17px; }
+  .workbench .titlebar { gap: 12px; padding-inline: 14px; }
+  .workbench .library-heading, .workbench .library-toolbar { padding-inline: 20px; }
+  .workbench .plan-bar { margin-inline: 20px; }
+  .workbench .asset-grid-wrap { padding-inline: 20px; }
+  .workbench .asset-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
+  .workbench .library-status { padding-inline: 20px; flex-wrap: wrap; height: auto; padding-block: 5px; gap: 5px 12px; }
+  .workbench .search-input { max-width: none; }
+  .workbench .library-toolbar .toolbar-actions { flex-wrap: wrap; }
+}
+@media (max-height: 800px) {
+  .workbench { grid-template-rows: 64px minmax(0, 1fr) 140px 30px; }
+  .workbench:has(.queue-panel:not(.collapsed) .queue-empty) { grid-template-rows: 64px minmax(0, 1fr) 120px 30px; }
+  .workbench:has(.queue-panel.collapsed) { grid-template-rows: 64px minmax(0, 1fr) 45px 30px; }
+  .workbench .library-heading { padding-top: 15px; padding-bottom: 13px; }
+  .workbench .library-heading h1 { font-size: 26px; }
+  .workbench .plan-bar { margin-bottom: 13px; padding-block: 9px; }
+  .workbench .library-toolbar { padding-bottom: 13px; }
+  .workbench .sidebar { padding-top: 10px; }
+  .workbench .queue-empty { padding: 11px 20px; }
+}
+@media (max-width: 1200px) and (max-height: 800px) {
+  .workbench .library-heading .location { display: none; }
+  .workbench .library-heading h1 { margin-top: 0; }
+  .workbench .plan-bar>div { flex-direction: row; align-items: center; }
+  .workbench .plan-bar>div>span { display: none; }
+  .workbench .plan-bar .plan-symbol { width: 30px; height: 30px; }
+  .workbench .asset-thumbnail { padding-top: 62%; }
+}

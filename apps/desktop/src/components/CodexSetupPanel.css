@@ -1,44 +1,49 @@
-.workbench .provider-card .codex-setup-panel{min-width:0;color:#c8d7ec;font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+.workbench .provider-card .codex-setup-panel{min-width:0;color:var(--paper);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
 .workbench .provider-card .codex-setup-panel .codex-setup-header{display:block;margin-bottom:24px}
-.workbench .provider-card .codex-setup-panel .codex-setup-header h2{margin:0 0 8px;font-size:20px;line-height:1.4;font-weight:650;color:#e4edf9}
-.workbench .provider-card .codex-setup-panel p{margin:8px 0 16px;font-size:16px;line-height:1.7;color:#b5c7df}
-.workbench .provider-card .codex-setup-panel .codex-setup-browser-note{padding:14px 16px;border:1px solid #506075;border-radius:7px;background:#27303d;color:#c9d8ec}
+.workbench .provider-card .codex-setup-panel .codex-setup-header h2{margin:0 0 8px;font-size:20px;line-height:1.4;font-weight:650;color:var(--paper)}
+.workbench .provider-card .codex-setup-panel p{margin:8px 0 16px;font-size:16px;line-height:1.7;color:var(--muted)}
+.workbench .provider-card .codex-setup-panel .codex-setup-browser-note{padding:14px 16px;border:1px solid var(--edge);border-left:2px solid var(--edge);border-radius:2px;background:var(--rail);color:var(--muted)}
 .workbench .provider-card .codex-setup-panel .codex-setup-steps{display:grid;gap:0;margin:0;padding:0;list-style:none}
-.workbench .provider-card .codex-setup-panel .codex-setup-steps>li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:14px;padding:20px 0;border-top:1px solid #394555}
-.workbench .provider-card .codex-setup-panel .codex-setup-number{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin-top:1px;border:1px solid #617b9f;border-radius:50%;color:#b9d6fc;font-size:16px;font-weight:650;line-height:1}
-.workbench .provider-card .codex-setup-panel .codex-setup-number.complete{color:#acd4b9;border-color:#5d8c70;background:#253b31}
+.workbench .provider-card .codex-setup-panel .codex-setup-steps>li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:14px;padding:20px 0;border-top:1px solid var(--edge)}
+.workbench .provider-card .codex-setup-panel .codex-setup-number{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin-top:1px;border:1px solid var(--edge);border-radius:2px;background:var(--rail);color:var(--paper);font-size:16px;font-weight:650;line-height:1}
+.workbench .provider-card .codex-setup-panel .codex-setup-number.complete{color:var(--cyan);border-color:var(--cyan);background:var(--panel)}
 .workbench .provider-card .codex-setup-panel .codex-setup-step-body{min-width:0}
 .workbench .provider-card .codex-setup-panel .codex-setup-step-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px}
-.workbench .provider-card .codex-setup-panel .codex-setup-step-title h3{margin:0;color:#e0eafa;font-size:17px;font-weight:650;line-height:1.5}
-.workbench .provider-card .codex-setup-panel .codex-setup-state{display:inline-flex;border:1px solid #536781;border-radius:4px;padding:2px 8px;color:#c0d5f0;font-size:14px;line-height:1.6}
-.workbench .provider-card .codex-setup-panel button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;max-width:100%;padding:9px 13px;border:1px solid #526884;border-radius:5px;background:#2b3543;color:#d6e4f7;font:inherit;font-size:15px;line-height:1.5;cursor:pointer;white-space:normal;text-align:center}
-.workbench .provider-card .codex-setup-panel button:hover:not(:disabled){background:#35465a;border-color:#93b8e8;color:#f3f7fe}
+.workbench .provider-card .codex-setup-panel .codex-setup-step-title h3{margin:0;color:var(--paper);font-size:17px;font-weight:650;line-height:1.5}
+.workbench .provider-card .codex-setup-panel .codex-setup-state{display:inline-flex;border:1px solid var(--edge);border-radius:2px;padding:2px 8px;color:var(--paper);font-size:14px;line-height:1.6}
+.workbench .provider-card .codex-setup-panel button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;max-width:100%;padding:9px 13px;border:1px solid var(--edge);border-radius:2px;background:var(--rail);color:var(--paper);font:inherit;font-size:15px;line-height:1.5;cursor:pointer;white-space:normal;text-align:center}
+.workbench .provider-card .codex-setup-panel button:hover:not(:disabled){background:var(--edge);border-color:var(--muted);color:var(--paper)}
 .workbench .provider-card .codex-setup-panel button:disabled{opacity:.55;cursor:not-allowed}
 .workbench .provider-card .codex-setup-panel button svg{flex:none}
-.workbench .provider-card .codex-setup-panel button:focus-visible,.workbench .provider-card .codex-setup-panel summary:focus-visible,.workbench .provider-card .codex-setup-panel input:focus-visible{outline:2px solid #acd0ff;outline-offset:3px}
-.workbench .provider-card .codex-setup-panel .codex-setup-primary{background:#91b6e9;border-color:#91b6e9;color:#162438;font-weight:650}
-.workbench .provider-card .codex-setup-panel .codex-setup-primary:hover:not(:disabled){background:#b2cff5;border-color:#b2cff5;color:#112034}
+.workbench .provider-card .codex-setup-panel button:focus-visible,.workbench .provider-card .codex-setup-panel summary:focus-visible,.workbench .provider-card .codex-setup-panel input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.workbench .provider-card .codex-setup-panel .codex-setup-primary{background:var(--cyan);border-color:var(--cyan);color:var(--ink);font-weight:650}
+.workbench .provider-card .codex-setup-panel .codex-setup-primary:hover:not(:disabled){background:var(--paper);border-color:var(--paper);color:var(--ink)}
 .workbench .provider-card .codex-setup-panel .codex-setup-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-.workbench .provider-card .codex-setup-panel .codex-setup-details{padding:12px 14px;margin:16px 0;border:1px solid #485a73;border-radius:6px;background:#202936}
-.workbench .provider-card .codex-setup-panel .codex-setup-details summary{width:fit-content;max-width:100%;font-size:15px;color:#c8dffc;cursor:pointer;line-height:1.6}
+.workbench .provider-card .codex-setup-panel .codex-setup-details{padding:12px 14px;margin:16px 0;border:1px solid var(--edge);border-radius:2px;background:var(--rail)}
+.workbench .provider-card .codex-setup-panel .codex-setup-details summary{width:fit-content;max-width:100%;font-size:15px;color:var(--paper);cursor:pointer;line-height:1.6}
 .workbench .provider-card .codex-setup-panel .codex-setup-details dl{display:grid;gap:12px;margin:16px 0;font-size:14px}
 .workbench .provider-card .codex-setup-panel .codex-setup-details dl>div{display:grid;grid-template-columns:minmax(88px,auto) minmax(0,1fr);gap:8px 16px}
-.workbench .provider-card .codex-setup-panel .codex-setup-details dt{color:#a8bedb}
-.workbench .provider-card .codex-setup-panel .codex-setup-details dd{min-width:0;margin:0;line-height:1.7;color:#d2e0f3;overflow-wrap:anywhere}
+.workbench .provider-card .codex-setup-panel .codex-setup-details dt{color:var(--muted)}
+.workbench .provider-card .codex-setup-panel .codex-setup-details dd{min-width:0;margin:0;line-height:1.7;color:var(--paper);overflow-wrap:anywhere}
 .workbench .provider-card .codex-setup-panel .codex-setup-details code{font-family:Consolas,"SFMono-Regular",monospace;font-size:14px;word-break:break-all;user-select:all}
 .workbench .provider-card .codex-setup-panel .codex-setup-details p{font-size:16px;margin:14px 0 0}
-.workbench .provider-card .codex-setup-panel .codex-setup-consent{display:flex;align-items:flex-start;gap:10px;margin:18px 0 14px;font-size:16px;line-height:1.7;color:#c8d7ec;cursor:pointer}
-.workbench .provider-card .codex-setup-panel .codex-setup-consent input{flex:none;width:18px;height:18px;margin:4px 0 0;accent-color:#91b6e9}
-.workbench .provider-card .codex-setup-panel .codex-setup-consent:has(input:disabled){cursor:not-allowed;color:#9eafc6}
-.workbench .provider-card .codex-setup-panel .codex-setup-progress{display:grid;gap:10px;margin:18px 0;padding:14px;border:1px solid #55789d;border-radius:6px;background:#233145;font-size:15px}
-.workbench .provider-card .codex-setup-panel .codex-setup-progress label,.workbench .provider-card .codex-setup-panel .codex-setup-progress>strong{color:#d4e5fd;font-size:16px;font-weight:550}
-.workbench .provider-card .codex-setup-panel .codex-setup-progress progress{width:100%;height:12px;accent-color:#91b6e9}
-.workbench .provider-card .codex-setup-panel .codex-setup-progress>span{font-size:14px;font-variant-numeric:tabular-nums;color:#bdcfe8}
+.workbench .provider-card .codex-setup-panel .codex-setup-consent{display:flex;align-items:flex-start;gap:10px;margin:18px 0 14px;font-size:16px;line-height:1.7;color:var(--paper);cursor:pointer}
+.workbench .provider-card .codex-setup-panel .codex-setup-consent input{flex:none;width:18px;height:18px;margin:4px 0 0;accent-color:var(--cyan)}
+.workbench .provider-card .codex-setup-panel .codex-setup-consent:has(input:disabled){cursor:not-allowed;color:var(--muted)}
+.workbench .provider-card .codex-setup-panel .codex-setup-progress{display:grid;gap:10px;margin:18px 0;padding:14px;border:1px solid var(--edge);border-radius:2px;background:var(--panel);font-size:15px}
+.workbench .provider-card .codex-setup-panel .codex-setup-progress label,.workbench .provider-card .codex-setup-panel .codex-setup-progress>strong{color:var(--paper);font-size:16px;font-weight:550}
+.workbench .provider-card .codex-setup-panel .codex-setup-progress progress{width:100%;height:12px;accent-color:var(--cyan)}
+.workbench .provider-card .codex-setup-panel .codex-setup-progress>span{font-size:14px;font-variant-numeric:tabular-nums;color:var(--paper)}
 .workbench .provider-card .codex-setup-panel .codex-setup-progress>button{justify-self:start}
-.workbench .provider-card .codex-setup-panel .codex-setup-working{display:flex;align-items:center;gap:9px;color:#c6dbf8}
-.workbench .provider-card .codex-setup-panel .codex-setup-note{font-size:16px;color:#aebfd7;line-height:1.7;margin-top:16px}
-.workbench .provider-card .codex-setup-panel .codex-setup-status{color:#c7defa;font-size:16px}
-.workbench .provider-card .codex-setup-panel .codex-setup-error{padding:13px 15px;border:1px solid #aa7c58;border-radius:6px;background:#3e322c;color:#f2d4b6;font-size:16px}
+.workbench .provider-card .codex-setup-panel .codex-setup-working{display:flex;align-items:center;gap:9px;color:var(--paper)}
+.workbench .provider-card .codex-setup-panel .codex-setup-note{font-size:16px;color:var(--muted);line-height:1.7;margin-top:16px}
+.workbench .provider-card .codex-setup-panel .codex-setup-status{color:var(--paper);font-size:16px}
+.workbench .provider-card .codex-setup-panel .codex-setup-error{padding:13px 15px;border:1px solid var(--warning);border-radius:2px;background:var(--rail);color:var(--warning);font-size:16px}
 .workbench .provider-card .codex-setup-panel .codex-setup-guide{margin-top:6px;background:transparent}
-@media(max-width:640px){.workbench .provider-card .codex-setup-panel .codex-setup-steps>li{grid-template-columns:30px minmax(0,1fr);gap:10px}.workbench .provider-card .codex-setup-panel .codex-setup-number{width:29px;height:29px}.workbench .provider-card .codex-setup-panel .codex-setup-details{padding:11px}.workbench .provider-card .codex-setup-panel .codex-setup-details dl>div{grid-template-columns:1fr;gap:3px}.workbench .provider-card .codex-setup-panel .codex-setup-step-title{align-items:flex-start;flex-direction:column}.workbench .provider-card .codex-setup-panel .codex-setup-actions{gap:8px}}
+@media(max-width:640px){.workbench .provider-card .codex-setup-panel .codex-setup-steps>li{grid-template-columns:30px minmax(0,1fr);gap:10px}
+.workbench .provider-card .codex-setup-panel .codex-setup-number{width:29px;height:29px}
+.workbench .provider-card .codex-setup-panel .codex-setup-details{padding:11px}
+.workbench .provider-card .codex-setup-panel .codex-setup-details dl>div{grid-template-columns:1fr;gap:3px}
+.workbench .provider-card .codex-setup-panel .codex-setup-step-title{align-items:flex-start;flex-direction:column}
+.workbench .provider-card .codex-setup-panel .codex-setup-actions{gap:8px}}
 @media(prefers-reduced-motion:reduce){.workbench .provider-card .codex-setup-panel .spin{animation:none}}

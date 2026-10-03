@@ -260,7 +260,7 @@ export default function App() {
 
     <aside className="sidebar" aria-label="프로젝트와 에셋 탐색">
       <div className="sidebar-heading"><span>{t.projects}</span><IconButton title="새 프로젝트" onClick={()=>setDialog('project')}><Plus size={15}/></IconButton></div>
-      <button className="project-entry" onClick={()=>{setView('library');setFolder('all');setKind('all');setTag('');}}><span className="project-folder"><FolderOpen size={20}/></span><span><strong>{project?.name??'로컬 작업 공간'}</strong><small>{isNative?'프로젝트 폴더': '이 기기에 저장된 미리보기'}</small></span><MoreHorizontal size={15}/></button>
+      <button className="project-entry" onClick={()=>{setView('library');setFolder('all');setKind('all');setTag('');}}><span className="project-folder"><FolderOpen size={20}/></span><span><strong>{project?.name??'로컬 작업 공간'}</strong><small>{isNative?'프로젝트 폴더': '브라우저 로컬 저장'}</small></span><MoreHorizontal size={15}/></button>
       <button className="sidebar-action" onClick={()=>void openProject()}><FolderOpen size={14}/>프로젝트 열기<kbd>{isNative?'폴더':'복원'}</kbd></button>
       {recent.length>1&&<details className="recent"><summary>{t.recent}</summary>{recent.slice(1).map(item=><button key={item.root} title={item.root} onClick={()=>void openProject(item.root)}><Folder size={12}/>{item.name}</button>)}</details>}
       <div className="sidebar-separator"/>
