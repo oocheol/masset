@@ -28,7 +28,8 @@
     "installationOnDevelopmentHost": false,
     "sameVersionNsisUpdateRestart": false,
     "ownQaUninstall": false,
-    "publicTauriDownload": false,
+    "publicTauriDownload": true,
+    "publicPortableDownload": true,
     "crossVersionProductionPluginInstall": false,
     "cleanWindowsMachine": false,
     "macOS": false,
@@ -59,7 +60,8 @@
     "Blender installed separately for procedural 3D; verified with Blender 5.2.1"
   ],
   "legacyUpdate": "0.1.1 installed users approve the in-app update; 0.1.0 portable users install 0.1.2 once manually",
-  "installationScope": "Current 0.1.2 installer was cryptographically verified without modifying the existing user installation; 0.1.1 installation/update/uninstall history is recorded separately",
+  "installationScope": "Current 0.1.2 installer was cryptographically verified and downloaded through the actual official Tauri updater without modifying the existing user installation; the same-version comparator was overridden for download verification only, and 0.1.1 installation/update/uninstall history is recorded separately",
+  "publicDownloadsVerifiedAt": "2026-10-03T05:47:52.473Z",
   "codexSetup": {
     "version": "0.160.0",
     "bytes": 157444460,
