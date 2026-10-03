@@ -2,6 +2,29 @@
 
 Latest update: 2026-10-03 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
 
+## 0.1.2 Windows image-provider repair
+
+The pinned `gpt-6.1-sol` catalog requires code mode. The 0.1.1 application disabled its official host and received no image-tool start or accepted image file in the user's two failed requests. 0.1.2 enables the signed isolated host, verifies empty environments/read-only network-disabled thread state, and keeps execution/file/browser/MCP/skill/agent tools disabled. User projects, installed application and old failed jobs were preserved.
+
+| Check | Executed result | Scope |
+| --- | --- | --- |
+| Rust workspace | 140 passed / 4 fixture helpers ignored | `output/private/workspace-tests-onboarding-0.1.2-retry.log`; provider suite: 46 passed, including 12 new installer fixtures. Includes consent/manifest, bounded size/hash/redirect/tar/PAX/link checks, atomic publication, cancellation, host/registry controls, thread safety, quota ordering and legacy serde. An earlier Windows compiler process launch was denied; the complete retry passed with two build jobs. |
+| TypeScript, production desktop build, local artifact tests | Passed; 9 artifact tests | The current frontend/contracts; browser checks do not certify native support. |
+| Browser acceptance workflows | 6 passed | `output/private/e2e-onboarding-0.1.2.log`; fixture rendering, desktop-only provider/setup buttons, edit/new version/reload/export, atlas, keyboard focus and model unit/GLB checks. No external provider request. |
+| Codex onboarding UI | Passed at 1440 and 800px; 16px body, no panel overflow | `output/onboarding-ui-1791004484889/report.json`; native IPC fixtures, consent/download/cancel/worker-completion/retry/ready/explicit-login/check and existing-runtime reuse. No actual download, authentication, generation or native window inferred from this fixture. |
+| Native Codex setup admission | Passed; no-consent and unreviewed hash rejected without installer files | `output/native/codex-setup-probe-c9bca965f96a499c851dd52628f1b1ce/codex-setup-proof.json`; fresh QA app-data and process-only Codex home, no download/login/generation or user installation changes. Actual official package preparation remains separately unverified pending download consent. |
+| Signed 0.1.2 installation payload | Independent signature, authenticated version, size/hash and tamper/replay rejection passed | `output/release/20261003-053859-public-5f0b9e5a/local-signature-proof/update-proof.json`; 20,412,586 bytes, SHA-256 `fe042a70b9ac5dbb3b4a67355d6d6fe9bb9b72ff63e28d7b694f6823a4180a85`. Installer was not executed against the existing user installation. |
+| ZIP roundtrip and actual copied native window | 313 files matched; 12 decoded example images, native IPC, 16px guide, visible onboarding entry | `output/native-smoke/onboarding-0.1.2-20261003-0539.qa.json`; exact extracted executable SHA-256 `9e9a545c35d1f3fc4bd8075a5dd408bd5b42a555b2d6973dc8536a6731fe7ad7`. No provider or updater network commands from this local GUI proof. |
+| Copied native Blender GLB → WebGL | Passed; generated/stored/fetched digest matched, 1m³ bounds and 24 default framebuffer draws | Actual generated GLB SHA-256 `415a6583adc4387667be9ac52f3861ea29e4753391e32eaee0014dd894da1be5`; original examples and user data preserved. |
+| Final release read-only Codex probe | Signed 0.160.0; authenticated/locally ready, fixed Sol model | `output/native/provider-0.1.2-release-probe-20261003-0539/provider-proof.json`; generation requested false, account inference access remains unknown, no actual image model ID inferred. |
+| Read-only official Codex probe | Authenticated / locally ready | Signed `codex-cli 0.160.0` and code-mode host; `gpt-6.1-sol`, pinned catalog; generation requested false. |
+| Fresh explicit subscription generation | One request, attempts 1, succeeded | Modified native Backend proof executable, distinct QA app-data. No old job or automatic retry. |
+| Actual received image | Decoded PNG 1254×1254, 767,840 bytes | SHA-256 `b5fdcf0954e6fe2672ebb47c2d14f931e228b644985b996df03488cbf9250ffb`; base64 from native image-generation item. |
+| Save → Backend restart → reopen → independent export | Passed | `output/native/provider-0.1.2-live-1791002512012/provider-proof.json`; identical saved artifact/version/digest and independent manifest/PNG verification. |
+| Confirmed image model | Unknown / null | The official public item supplies no actual image-model ID. `requestedModelProven=false` is retained; successful artifact proof does not invent a model field. |
+
+The actual request used the fixed nonprivate QA description. This establishes one successful Windows native Backend generation and durable artifact roundtrip. It does not certify every account entitlement, precise image size/alpha control, remote cancellation or macOS. Historical failures below remain historical. See [provider details](provider-feasibility.md).
+
 ## 0.1.1 Windows checks
 
 | Check | Executed result | Scope |

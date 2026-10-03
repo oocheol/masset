@@ -2,6 +2,33 @@
 
 사용자가 이미지 목표를 **GPT Image 2**로 변경했다. 종전 2.5 선택 검증은 현재 출시 조건이 아니다. Windows를 먼저 검증하며 macOS 실행은 이후 별도로 검증한다.
 
+## 0.1.2 이미지 도구 호출 수정
+
+0.1.1에서 `native turn completed without an image artifact`가 발생한 두 작업은 이미지 도구 시작 이벤트와 수신 파일이 없었다. 기존 실패 작업은 재전송하지 않았다. 공개된 공식 Codex 소스와 실제 설치된 0.160.0 스키마를 확인한 결과, 앱 고정 카탈로그의 `gpt-6.1-sol`은 `tool_mode=code_mode_only`인데 앱이 `code_mode_host`를 꺼 두고 있었다. 공식 구현은 이 경우 직접 도구 호출로 대체하지 않으며 이미지 도구의 직접 표면도 숨긴다. 이전 ephemeral 응답의 원문은 남아 있지 않으므로 당시 모델의 설명까지 추정하지 않는다.
+
+0.1.2는 공식 코드 모드 호스트를 켜고 실행 파일과 고정 설치 경로의 호스트 후보마다 OpenAI 서명을 확인한다. 호스트는 격리된 V8에서 이미지 도구를 호출하는 중개 역할만 한다. `environments=[]`, 읽기 전용 샌드박스와 네트워크 차단을 응답에서도 확인한다. 셸·패치·파일 조회·브라우저·MCP·플러그인·클라우드 스킬·번들 스킬·하위 에이전트는 계속 차단한다. 생성된 에셋 코드는 실행하지 않는다. 공개 API에 없는 설정이나 이미지 파일 경로 필드는 추가하지 않았다.
+
+이미지 도구가 반환한 사용 한도 실패는 계획 응답이 정상 완료됐더라도 실패로 보존한다. 빈 응답에는 이미지 도구 관찰 여부와 요청/응답 식별자만 진단으로 남긴다. 원문 응답·계정 인증·토큰을 저장하지 않으며 자동 재요청하지 않는다. 이미지의 base64 본문을 우선 디코딩하고, 경로만 전달될 경우에는 승인된 작업 수신 폴더 밖의 파일을 계속 거부한다.
+
+근거: [실제 설치 버전의 도구 모드 결정](https://github.com/openai/codex/blob/rust-v0.160.0/codex-rs/core/src/tools/mod.rs), [호스트 세션 선택](https://github.com/openai/codex/blob/rust-v0.160.0/codex-rs/core/src/thread_manager.rs), [고정 카탈로그와 호스트 설치 경로](https://github.com/openai/codex/blob/b1e72963c3b71a9265a551e54beff078384efed9/codex-rs/install-context/src/lib.rs), [공식 Codex 이미지 생성 안내](https://developers.openai.com/codex/image-generation/).
+
+### 실제 새 이미지 요청 결과
+
+2026-10-03에 수정된 Windows 네이티브 Backend 검증 실행 파일에서 **새 검증 요청 한 번**을 제출했다. 기존 사용자 프로젝트와 실패 작업은 바꾸지 않았다. OpenAI 서명을 확인한 `codex-cli 0.160.0`, 추론 모델 `gpt-6.1-sol`, 이미지 목표 `gpt-image-2`로 다음을 통과했다.
+
+| 검사 | 실제 결과 |
+| --- | --- |
+| 공식 런타임·구독·격리 호스트 설정 | 읽기 전용 준비 검사 통과 |
+| 새 외부 작업 | 1회 제출, attempts=1, succeeded, 재요청 없음 |
+| 수신 파일 | PNG 1254×1254, 767,840 bytes |
+| 실제 디코딩·프로젝트 저장 | 통과; 빈 fixture를 성공으로 세지 않음 |
+| Backend 종료 후 재열기 | 저장된 동일 에셋·버전·해시 복원 |
+| 독립 export manifest·PNG 검사 | 통과 |
+| 실제 이미지 모델 필드 | null; 공개 이미지 이벤트가 제공하지 않음 |
+
+PNG SHA-256: `b5fdcf0954e6fe2672ebb47c2d14f931e228b644985b996df03488cbf9250ffb`.
+로컬 증거: `output/native/provider-0.1.2-probe-2db6a0fb4d714add8534b54c8cc2eee3/provider-proof.json`, `output/native/provider-0.1.2-live-1791002512012/provider-proof.json`과 export 검사. 이 결과는 수정된 Windows Backend의 한 요청에 대한 실증이며 모든 계정의 모델 권한, macOS 실행, 정확한 출력 크기 제어를 보장하지 않는다. 공개 모델 ID가 없으므로 `confirmedModel`과 `requestedModelProven`은 각각 null과 false로 남긴다. 새 검증 결과를 과거 0.1.0/0.1.1 실패의 성공으로 소급하지 않는다.
+
 ## 0.1.1 추론 모델 변경
 
 최종 사용자 지시로 추론 모델을 **GPT-6.1 Sol (`gpt-6.1-sol`)**로 변경했다. 이미지 목표는 `gpt-image-2`다. 새 요청에는 추론 모델도 저장하며, 기존 요청의 모델이나 런타임 버전이 달라졌으면 자동으로 실행하지 않는다.
@@ -45,7 +72,7 @@ Windows에서는 명시적으로 지정된 실행 파일을 우선하며 검증 
 
 추론 카탈로그는 공식 [openai/codex 커밋 b1e72963](https://github.com/openai/codex/tree/b1e72963c3b71a9265a551e54beff078384efed9)의 `codex-rs/models-manager/models.json` 복사본이다. SHA-256: `fd219bd9f061278275f528939f82f54d2eb97df4b25c23b022adbe48813d920b`. Apache-2.0 원문·upstream NOTICE를 동봉한다. 목록은 계정의 실제 실행 권한 증거가 아니다. 추론 모델과 이미지 모델은 서로 다른 값이다.
 
-셸·코드 실행·패치·브라우저·앱·플러그인·MCP·하위 에이전트 도구를 제한하고 서버발 도구/승인 요청을 거부한다. 연결 시 적용된 제한을 다시 확인한다. analytics/feedback/OTel은 끈다. 생성 요청에는 사용자가 제출한 설명과 승인한 스타일/규격이 들어간다.
+공식 코드 모드의 이미지 도구 중개를 허용하며 셸·에셋 코드 실행·패치·브라우저·앱·플러그인·MCP·하위 에이전트 도구를 제한하고 서버발 도구/승인 요청을 거부한다. 연결 시 적용된 제한을 다시 확인한다. analytics/feedback/OTel은 끈다. 생성 요청에는 사용자가 제출한 설명과 승인한 스타일/규격이 들어간다.
 
 ## 영속 작업과 수신
 
@@ -71,7 +98,7 @@ Windows에서는 명시적으로 지정된 실행 파일을 우선하며 검증 
 
 원문 URL·해시·핵심 문장은 `tests/provider/official-doc-evidence.json`, 버전별 스키마는 `tests/provider/codex-schema-summary.json`에 기록했다.
 
-- [Codex 이미지 생성](https://learn.chatgpt.com/docs/image-generation): 기본 GPT Image 2 및 일반 Codex 한도.
+- [Codex 이미지 생성](https://developers.openai.com/codex/image-generation/): 기본 GPT Image 2 및 일반 Codex 한도.
 - [Codex 인증](https://developers.openai.com/codex/auth), [app-server](https://developers.openai.com/codex/app-server): 공식 관리형 인증과 공개 통합.
 - [외부 Sign in with ChatGPT 제한](https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations): 외부 token-sharing 경로와 Codex 자체 관리형 런타임을 구분한다.
 - [이미지 API](https://developers.openai.com/api/docs/guides/image-generation): 별도 결제 경로이며 본 앱의 대체 수단으로 호출하지 않는다.

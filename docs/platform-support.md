@@ -1,6 +1,6 @@
 # Platform support and packaging
 
-0.1.1 packaging configuration updated on 2026-10-03 (Asia/Seoul). Per-version execution evidence is in [verification.md](verification.md) and [release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.1.json). The table and native execution history below describe 0.1.0; current installer evidence is recorded separately. A build command or CI configuration is not evidence that a package ran on that OS.
+0.1.2 packaging configuration updated on 2026-10-03 (Asia/Seoul). Per-version execution evidence is in [verification.md](verification.md) and [release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2.json). The table and native execution history below describe 0.1.0; current installer evidence is recorded separately. A build command or CI configuration is not evidence that a package ran on that OS.
 
 | Platform | Declared minimum | Source/build tooling | Native build | Installation and launch |
 | --- | --- | --- | --- | --- |
@@ -41,6 +41,12 @@ Packaged 2D use does not need Node, Rust or Visual Studio. The development host 
 
 The previously absent Windows SDK was installed from [Microsoft's Windows SDK downloads](https://learn.microsoft.com/en-us/windows/apps/windows-sdk/downloads), version 10.0.28000.2957, under the Microsoft Windows SDK license. Its signed installer and installation exit 0 are recorded in `output/native/sdk-installation.json`. Authenticode was verified as valid Microsoft Corporation; the recorded SHA-256 is locally measured, not compared with a separately published Microsoft digest. The installed x64 C++ headers/libraries and resource compiler are checked before building. No full Visual Studio reinstall is required.
 
+## Optional managed Codex preparation
+
+The Windows x64 app offers Codex preparation → official account login → connection check. It reads the pinned package manifest without downloading; a user must approve the displayed version/hash/license before preparation starts. Existing verified runtimes are reused. App-owned UUID installation directories and a final receipt are used; no PATH or existing Codex installation changes are made.
+
+Source: [official rust-v0.160.0 release](https://github.com/openai/codex/releases/tag/rust-v0.160.0), package `codex-package-x86_64-pc-windows-msvc.tar.gz`, 157,444,460 bytes (150.15 MiB), SHA-256 `7f7fbbc8d6fd4ea2f3b13855ef47ea59663ba7e61fb2e9821df37163b8030891`. License: [Apache-2.0](https://github.com/openai/codex/blob/rust-v0.160.0/LICENSE) and included third-party notices. Archive size/hash/path/link/expansion checks precede extraction and OpenAI Authenticode/version verification precedes registration. HTTPS redirect hosts are fixed. This metadata is confirmed from the official release; execution proof is recorded separately in [verification.md](verification.md).
+
 ## Optional NSIS packaging tools
 
 The user approved both NSIS tool downloads. The installed npm Tauri CLI is 2.12.1 (MIT OR Apache-2.0). Its [exact version's bundler source](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.12.1/crates/tauri-bundler/src/bundle/windows/nsis/mod.rs) pins these two build-time downloads. Both downloaded files matched the exact bytes and SHA-256 below before extraction/use; the DLL and compiler are Authenticode `NotSigned`, rather than validly code-signed. The verified cache is `%LOCALAPPDATA%/tauri/NSIS`. Full NSIS/plugin terms and original source links accompany the installer.
@@ -52,7 +58,7 @@ The user approved both NSIS tool downloads. The installed npm Tauri CLI is 2.12.
 
 Obtain consent for those files before building with `-Distribution Nsis -AllowBundlerDownload`. Prefer downloading and comparing their measured bytes/SHA-256 before extraction or execution, and record actual executable/DLL Authenticode results rather than assuming a signature. Tauri independently pins SHA-1 `EF7FF767E5CBD9EDD22ADD3A32C9B8F4500BB10D` for the ZIP and `75197FEE3C6A814FE035788D1C34EAD39349B860` for the plugin. Its default Windows cache is `%LOCALAPPDATA%/tauri/NSIS`; it may recreate an incomplete tool cache. The build script prevents uncached downloads unless explicitly allowed and verifies the known cached plugin hash. Do not reuse this inventory after changing the CLI version without checking its new source.
 
-The 0.1.1 NSIS configuration uses `webviewInstallMode: skip` and downloads no Microsoft bootstrapper. WebView2 must already be installed or separately obtained from Microsoft. The development runtime needs no additional download. A clean-machine runtime installation and its version/size/digest/signature need a separate record. WiX/VBScript and offline WebView packages are unnecessary for these portable/NSIS paths.
+The 0.1.1 and 0.1.2 NSIS configurations use `webviewInstallMode: skip` and download no Microsoft bootstrapper. WebView2 must already be installed or separately obtained from Microsoft. The development runtime needs no additional download. A clean-machine runtime installation and its version/size/digest/signature need a separate record. WiX/VBScript and offline WebView packages are unnecessary for these portable/NSIS paths.
 
 After a successful native build, run backend smoke and independently decode its export, run the actual WebView smoke, audit PE imports and required copied DLLs/resources, launch the portable copy, and only then test an approved NSIS package on installation/upgrade/uninstall. A successful package hash alone does not pass that sequence.
 

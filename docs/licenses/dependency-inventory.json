@@ -3,8 +3,8 @@
   "target": "x86_64-pc-windows-msvc",
   "includeTools": false,
   "inputs": {
-    "packageLockSha256": "462a5ab99ecb0e5a4990b5773e95e9c1364c9ddaadc5ef999e305c75b7a688f6",
-    "cargoLockSha256": "be013977c9edfe28badcd5aecae1a46cd942623b22e9d67f814350c971f710a6"
+    "packageLockSha256": "429c51f50e74cf69c101401a0b011aacae2c1b2e268c9d02bf4c961215acaab9",
+    "cargoLockSha256": "a51b889172788e22b985c9496b037f770fc04901d897c2ef01923189e462b39c"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",
@@ -298,6 +298,88 @@
             "ecosystem": "cargo",
             "package": "atomic-waker@1.1.2",
             "file": "LICENSE-THIRD-PARTY"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "aws-lc-rs",
+      "version": "1.18.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "ISC AND (Apache-2.0 OR ISC)",
+      "upstream": "https://github.com/aws/aws-lc-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/aws-lc-rs/1.18.1/download",
+      "lockSha256": "b281d307588d634de920874890732659e2e7672f72b5e10e81badc1a8a83621e",
+      "upstreamCommit": "22e629d5c46276497a24ee3e575be4315940e7cb",
+      "upstreamSubdirectory": "aws-lc-rs",
+      "documents": [
+        {
+          "path": "texts/b50b376e7d24a0598488b730c3034ffcd0b58dd36c0913a24b9903a3cfd04bf7.txt",
+          "bytes": 11085,
+          "sha256": "b50b376e7d24a0598488b730c3034ffcd0b58dd36c0913a24b9903a3cfd04bf7",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "aws-lc-rs@1.18.1",
+            "file": "LICENSE"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "aws-lc-sys",
+      "version": "0.45.0",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "ISC AND (Apache-2.0 OR ISC) AND Apache-2.0 AND MIT AND BSD-3-Clause AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR ISC OR MIT-0)",
+      "upstream": "https://github.com/aws/aws-lc-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/aws-lc-sys/0.45.0/download",
+      "lockSha256": "9bff6c3b54fad79a2e60b8102caf565819711497c1f5f092f49508e2f5c31b27",
+      "upstreamCommit": "7943223c99d909bc399bdf1b856821bb04f1f3c5",
+      "upstreamSubdirectory": "aws-lc-sys",
+      "documents": [
+        {
+          "path": "texts/977c541bd25ffe36975dde25c028c0cd15ddf3d08243983b58e8a6a3d9447523.txt",
+          "bytes": 20338,
+          "sha256": "977c541bd25ffe36975dde25c028c0cd15ddf3d08243983b58e8a6a3d9447523",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "aws-lc-sys@0.45.0",
+            "file": "aws-lc/LICENSE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/43e358d7b6eb109d0f51f7b3a090fd82607965767c25fadee39e922475de2061.txt",
+          "bytes": 1161,
+          "sha256": "43e358d7b6eb109d0f51f7b3a090fd82607965767c25fadee39e922475de2061",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "aws-lc-sys@0.45.0",
+            "file": "aws-lc/third_party/fiat/LICENSE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/728536b4160e051f86d7c9c388f704866b3d512cd7df97ac3516c65279523c4e.txt",
+          "bytes": 20337,
+          "sha256": "728536b4160e051f86d7c9c388f704866b3d512cd7df97ac3516c65279523c4e",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "aws-lc-sys@0.45.0",
+            "file": "LICENSE"
           },
           "fullLicenseBody": true
         }
@@ -1053,6 +1135,47 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "chacha20",
+      "version": "0.10.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/RustCrypto/stream-ciphers",
+      "crateDownload": "https://crates.io/api/v1/crates/chacha20/0.10.2/download",
+      "lockSha256": "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06",
+      "upstreamCommit": "6b236b758a0279f64d777797514813b2cb572c8b",
+      "upstreamSubdirectory": "chacha20",
+      "documents": [
+        {
+          "path": "texts/a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5.txt",
+          "bytes": 10849,
+          "sha256": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "chacha20@0.10.2",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/b8c6939380a400f53e11923d50fcc4dd2fa1ba8339fd9d04cda38a0251b6c9b0.txt",
+          "bytes": 1082,
+          "sha256": "b8c6939380a400f53e11923d50fcc4dd2fa1ba8339fd9d04cda38a0251b6c9b0",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "chacha20@0.10.2",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "chrono",
       "version": "0.4.45",
       "scope": [
@@ -1157,6 +1280,47 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "cpufeatures@0.2.17",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "cpufeatures",
+      "version": "0.3.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/RustCrypto/utils",
+      "crateDownload": "https://crates.io/api/v1/crates/cpufeatures/0.3.1/download",
+      "lockSha256": "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566",
+      "upstreamCommit": "e3ac92bfd33051e146025baa2d0ce79891b7fc73",
+      "upstreamSubdirectory": "cpufeatures",
+      "documents": [
+        {
+          "path": "texts/a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5.txt",
+          "bytes": 10849,
+          "sha256": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "cpufeatures@0.3.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa.txt",
+          "bytes": 1082,
+          "sha256": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "cpufeatures@0.3.1",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -2402,6 +2566,47 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "fdeflate@0.3.7",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "filetime",
+      "version": "0.2.29",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT/Apache-2.0",
+      "upstream": "https://github.com/alexcrichton/filetime",
+      "crateDownload": "https://crates.io/api/v1/crates/filetime/0.2.29/download",
+      "lockSha256": "5c287a33c7f0a620c38e641e7f60827713987b3c0f26e8ddc9462cc69cf75759",
+      "upstreamCommit": "ab5ee65b5e4fe2de19dbe7d4fe08bc31e945949c",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "bytes": 10847,
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "filetime@0.2.29",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "bytes": 1057,
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "filetime@0.2.29",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -4743,6 +4948,59 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "lru-slab",
+      "version": "0.1.3",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0 OR Zlib",
+      "upstream": "https://github.com/Ralith/lru-slab",
+      "crateDownload": "https://crates.io/api/v1/crates/lru-slab/0.1.3/download",
+      "lockSha256": "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f",
+      "upstreamCommit": null,
+      "upstreamSubdirectory": null,
+      "documents": [
+        {
+          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "lru-slab@0.1.3",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/1466d9b4f3a59bb8997fc8d5fa977ce3f6a24bb2358793c09bfdf007039f6486.txt",
+          "bytes": 1067,
+          "sha256": "1466d9b4f3a59bb8997fc8d5fa977ce3f6a24bb2358793c09bfdf007039f6486",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "lru-slab@0.1.3",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/09785877275ffada6c371b652a30e95c26b435126fc0fc62f1bc2d72171f80a4.txt",
+          "bytes": 864,
+          "sha256": "09785877275ffada6c371b652a30e95c26b435126fc0fc62f1bc2d72171f80a4",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "lru-slab@0.1.3",
+            "file": "LICENSE-ZLIB"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "markup5ever",
       "version": "0.39.0",
       "scope": [
@@ -5996,6 +6254,129 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "quinn-proto",
+      "version": "0.11.19",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/quinn-rs/quinn",
+      "crateDownload": "https://crates.io/api/v1/crates/quinn-proto/0.11.19/download",
+      "lockSha256": "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe",
+      "upstreamCommit": "8192ed399a26a6e8f0aba43d10ec8badaa5b905e",
+      "upstreamSubdirectory": "quinn-proto",
+      "documents": [
+        {
+          "path": "texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn-proto@0.11.19",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04.txt",
+          "bytes": 1064,
+          "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn-proto@0.11.19",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "quinn-udp",
+      "version": "0.5.16",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/quinn-rs/quinn",
+      "crateDownload": "https://crates.io/api/v1/crates/quinn-udp/0.5.16/download",
+      "lockSha256": "af66907df18639dcf4db56ca65490cabc4b27a97dbadd96f2926cca73298f016",
+      "upstreamCommit": "8192ed399a26a6e8f0aba43d10ec8badaa5b905e",
+      "upstreamSubdirectory": "quinn-udp",
+      "documents": [
+        {
+          "path": "texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn-udp@0.5.16",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04.txt",
+          "bytes": 1064,
+          "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn-udp@0.5.16",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "quinn",
+      "version": "0.11.12",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/quinn-rs/quinn",
+      "crateDownload": "https://crates.io/api/v1/crates/quinn/0.11.12/download",
+      "lockSha256": "4051e23e9185c255a7e33ef59cdbca87a22d359052eecd22fc6b901fb37d9d11",
+      "upstreamCommit": "eaec0db4bcb698f76df736d89938743c88a2ad5f",
+      "upstreamSubdirectory": "quinn",
+      "documents": [
+        {
+          "path": "texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "bytes": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn@0.11.12",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04.txt",
+          "bytes": 1064,
+          "sha256": "4b2d0aca6789fa39e03d6738e869ea0988cceba210ca34ebb59c15c463e93a04",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "quinn@0.11.12",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "quote",
       "version": "1.0.47",
       "scope": [
@@ -6029,6 +6410,166 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "quote@1.0.47",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "rand_core",
+      "version": "0.10.1",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/rust-random/rand_core",
+      "crateDownload": "https://crates.io/api/v1/crates/rand_core/0.10.1/download",
+      "lockSha256": "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69",
+      "upstreamCommit": "5cd7df496d0bff1d95534ac8b66a2610f5bf7808",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/92b81db30f7ab6d693e0af5661a40d273ca1947e891123ed823924192c10cbc7.txt",
+          "bytes": 478,
+          "sha256": "92b81db30f7ab6d693e0af5661a40d273ca1947e891123ed823924192c10cbc7",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_core@0.10.1",
+            "file": "COPYRIGHT"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51.txt",
+          "bytes": 10282,
+          "sha256": "6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_core@0.10.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/8b6e9feec03e7c9a5facb26855cecd31662bf989b636bcfe79521bdf8ac863f0.txt",
+          "bytes": 1076,
+          "sha256": "8b6e9feec03e7c9a5facb26855cecd31662bf989b636bcfe79521bdf8ac863f0",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_core@0.10.1",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "rand_pcg",
+      "version": "0.10.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/rust-random/rngs",
+      "crateDownload": "https://crates.io/api/v1/crates/rand_pcg/0.10.2/download",
+      "lockSha256": "caa0f4137e1c0a72f4c651489402276c8e8e1cf081f3b0ba156d2cbeef09e86a",
+      "upstreamCommit": "cc285e994b4dc236f138fafe2a59377ef63cdcfa",
+      "upstreamSubdirectory": "rand_pcg",
+      "documents": [
+        {
+          "path": "texts/90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5.txt",
+          "bytes": 569,
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_pcg@0.10.2",
+            "file": "COPYRIGHT"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51.txt",
+          "bytes": 10282,
+          "sha256": "6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_pcg@0.10.2",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/2234e3cefee876aeb686ad89e978bdb07bf118a1186ab1cf161bcdf69d4b4f57.txt",
+          "bytes": 1139,
+          "sha256": "2234e3cefee876aeb686ad89e978bdb07bf118a1186ab1cf161bcdf69d4b4f57",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand_pcg@0.10.2",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "rand",
+      "version": "0.10.3",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/rust-random/rand",
+      "crateDownload": "https://crates.io/api/v1/crates/rand/0.10.3/download",
+      "lockSha256": "65c9fb96cbc91e3478eaae79a69fcd3f1ae4ad052e471fe6732fff548984b4af",
+      "upstreamCommit": "9e7d328f60d6372ae22927f37d1a816fc980f25e",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5.txt",
+          "bytes": 569,
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand@0.10.3",
+            "file": "COPYRIGHT"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab.txt",
+          "bytes": 9724,
+          "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand@0.10.3",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b.txt",
+          "bytes": 1117,
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "rand@0.10.3",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -8132,6 +8673,47 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "tar",
+      "version": "0.4.46",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/composefs/tar-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/tar/0.4.46/download",
+      "lockSha256": "3f6221d9a6003c78398e3b239969f352578258df48c8eb051caadae0015bc840",
+      "upstreamCommit": "fc459c149f83bf4daceaa52e17d351989002e1a9",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "bytes": 10847,
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "tar@0.4.46",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/8ca6b96cea9e67c6c5c63f452c31bd396db8bd2406231fdea5d48ef462b48077.txt",
+          "bytes": 1070,
+          "sha256": "8ca6b96cea9e67c6c5c63f452c31bd396db8bd2406231fdea5d48ef462b48077",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "tar@0.4.46",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "tauri-codegen",
       "version": "2.7.1",
       "scope": [
@@ -10195,6 +10777,47 @@
     {
       "ecosystem": "cargo",
       "name": "windows_x86_64_msvc",
+      "version": "0.52.6",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows_x86_64_msvc/0.52.6/download",
+      "lockSha256": "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec",
+      "upstreamCommit": "db06b51c2ebb743efb544d40e3064efa49f28d38",
+      "upstreamSubdirectory": "crates/targets/x86_64_msvc",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows_x86_64_msvc@0.52.6",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows_x86_64_msvc@0.52.6",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows_x86_64_msvc",
       "version": "0.53.1",
       "scope": [
         "native-runtime-dependency"
@@ -10647,6 +11270,47 @@
     {
       "ecosystem": "cargo",
       "name": "windows-sys",
+      "version": "0.52.0",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-sys/0.52.0/download",
+      "lockSha256": "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d",
+      "upstreamCommit": "3a605cba064b26f2a198ac58085f8c8836f47c38",
+      "upstreamSubdirectory": "crates/libs/sys",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.52.0",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.52.0",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-sys",
       "version": "0.60.2",
       "scope": [
         "native-runtime-dependency"
@@ -10720,6 +11384,47 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "windows-sys@0.61.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-targets",
+      "version": "0.52.6",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-targets/0.52.6/download",
+      "lockSha256": "9b724f72796e036ab90c1021d4780d4d3d648aca59e491e6b98e725b84e99973",
+      "upstreamCommit": "db06b51c2ebb743efb544d40e3064efa49f28d38",
+      "upstreamSubdirectory": "crates/libs/targets",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-targets@0.52.6",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-targets@0.52.6",
             "file": "license-mit"
           },
           "fullLicenseBody": true
@@ -12226,7 +12931,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-desktop",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "licenseExpression": "Apache-2.0",
       "path": "apps/desktop/src-tauri/Cargo.toml"
     },
@@ -12247,7 +12952,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-providers",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "licenseExpression": "Apache-2.0",
       "path": "crates/providers/Cargo.toml"
     },
@@ -12261,8 +12966,8 @@
   ],
   "counts": {
     "npm": 20,
-    "cargo": 292,
-    "licenseTexts": 228,
+    "cargo": 308,
+    "licenseTexts": 245,
     "missing": 0,
     "mplSourceArchives": 5
   },

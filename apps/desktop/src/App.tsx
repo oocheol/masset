@@ -10,6 +10,7 @@ import ModelViewport from './components/ModelViewport';
 import {BookOpen} from 'lucide-react';
 import AppUpdatePanel from './components/AppUpdatePanel';
 import UsageGuide from './components/UsageGuide';
+import CodexSetupPanel from './components/CodexSetupPanel';
 import {useAppUpdater} from './lib/useAppUpdater';
 
 type View = 'library' | 'canvas' | 'model' | 'compare';
@@ -48,13 +49,14 @@ function ProviderPanel({connection,checking,busy,onCheck,onLogin,receivedCount,v
   return <section className="provider-card provider-connection" aria-label="GPT Image2 연결 정보">
     <div><strong>GPT Image2 · 공식 런타임</strong><span className={`status-tag ${isNative&&connection?.ready?'ready':'blocked'}`}>{!isNative?'데스크톱 전용':connection?.ready?'연결 준비':connection?'연결 확인 필요':'미확인'}</span></div>
     <p>{!isNative?'이미지 생성 연동은 데스크톱에서 확인하세요.':connection?.ready?'연결이 준비됐습니다. 생성 성공은 수신 이미지에서 확인합니다.':'계정 연결과 실행 상태를 먼저 확인하세요.'}</p>
+    <CodexSetupPanel connection={connection} checking={checking} busy={busy} onCheck={onCheck} onLogin={onLogin}/>
     <dl className="property-list">
       <div><dt>추론 모델</dt><dd>{connection?.reasoningModel??'확인되지 않음'}</dd></div>
       <div><dt>모델 이용 권한</dt><dd>확인되지 않음</dd></div>
       <div><dt>요청 모델</dt><dd>{connection?.requestedModel??'gpt-image-2'}</dd></div>
       <div><dt>이 프로젝트의 수신 파일</dt><dd>{receivedCount}개 / 파일 검증 {validatedCount}개</dd></div>
     </dl>
-    <p className="provider-proof-brief">{receivedCount?'수신 파일 검증과 응답 모델 확인을 따로 기록합니다.':'이미지 생성 실증 미완료 · 수신 이미지 없음'}</p>
+    <p className="provider-proof-brief">{receivedCount?'수신 파일 검증과 응답 모델 확인을 따로 기록합니다.':'이 프로젝트에 수신된 이미지가 없습니다.'}</p>
     <details className="provider-details"><summary>연결·검증 상세</summary>
       <p>{connection?.reason??(isNative?'공식 런타임과 구독 인증을 확인한 뒤 요청을 제출할 수 있습니다.':'브라우저에서는 공식 생성 요청과 인증을 실행할 수 없습니다.')}</p>
       <dl className="property-list">
@@ -66,7 +68,6 @@ function ProviderPanel({connection,checking,busy,onCheck,onLogin,receivedCount,v
       </dl>
       <p className="provider-proof-note">{connection?.catalogSource==='application_pinned_catalog'?'추론 모델 이름은 앱에 고정된 모델 목록 기준입니다. ':''}연결 준비는 모델 이용 권한이나 실제 생성 성공을 확인한 상태가 아닙니다. 실제 생성 지원은 이미지 수신 후 확인하며, 파일 검증과 응답 모델 확인은 별도로 기록합니다.</p>
     </details>
-    <div className="provider-controls"><button type="button" className="button small" onClick={onCheck} disabled={busy||checking!==null}>{checking==='status'?<LoaderCircle className="spin" size={13}/>:<RefreshCw size={13}/>}연결 확인</button><button type="button" className="button small" onClick={onLogin} disabled={busy||!isNative||checking!==null}>{checking==='login'?<LoaderCircle className="spin" size={13}/>:<Link2 size={13}/>}공식 계정 연결</button></div>
   </section>;
 }
 
@@ -254,7 +255,7 @@ export default function App() {
     <header className="titlebar">
       <div className="brand"><span className="brand-symbol"><Layers size={21} strokeWidth={1.7}/></span><span>Asset Studio<small>local asset workbench</small></span></div>
       <div className="project-breadcrumb"><Folder size={14}/><button onClick={()=>void openProject()}>{project?.name??'프로젝트 준비 중'}</button><ChevronDown size={12}/><span className="saved-dot" title="프로젝트는 로컬에 저장됩니다"/></div>
-      <div className="titlebar-actions"><span className="runtime-badge"><Circle size={6} fill="currentColor"/>{isNative?t.native:t.browser}</span><button className="button quiet guide-button" onClick={()=>setDialog('guide')}><BookOpen size={16}/>사용 가이드</button>{updater.status.state==='available'?<button className="button small app-update-alert" onClick={()=>setDialog('update')}>v{updater.status.latestVersion} 업데이트</button>:<IconButton title="앱 업데이트" onClick={()=>setDialog('update')}><RefreshCw size={16}/></IconButton>}<IconButton title="공급자 연동 상태" onClick={()=>setDialog('provider')}><Link2 size={16}/></IconButton><IconButton title={t.settings} onClick={()=>setDialog('environment')}><Settings2 size={16}/></IconButton><button className="button primary export-top" onClick={()=>setDialog('export')} disabled={!assets.length}><Download size={14}/>{t.export}<kbd>{shortcutModifier()} E</kbd></button></div>
+      <div className="titlebar-actions"><span className="runtime-badge"><Circle size={6} fill="currentColor"/>{isNative?t.native:t.browser}</span><button className="button quiet guide-button" onClick={()=>setDialog('guide')}><BookOpen size={16}/>사용 가이드</button>{updater.status.state==='available'?<button className="button small app-update-alert" onClick={()=>setDialog('update')}>v{updater.status.latestVersion} 업데이트</button>:<IconButton title="앱 업데이트" onClick={()=>setDialog('update')}><RefreshCw size={16}/></IconButton>}<button className="button quiet" title="공급자 연동 상태" onClick={()=>setDialog('provider')}><Link2 size={16}/>구독 연결</button><IconButton title={t.settings} onClick={()=>setDialog('environment')}><Settings2 size={16}/></IconButton><button className="button primary export-top" onClick={()=>setDialog('export')} disabled={!assets.length}><Download size={14}/>{t.export}<kbd>{shortcutModifier()} E</kbd></button></div>
     </header>
 
     <aside className="sidebar" aria-label="프로젝트와 에셋 탐색">

@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$BuildReportPath)
+param(
+    [Parameter(Mandatory)][string]$BuildReportPath,
+    [string]$ReleaseNotes = 'Windows 앱 업데이트'
+)
 $ErrorActionPreference = 'Stop'
 $publishWorkspace = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $publishBuild = Get-Content -Raw -LiteralPath $BuildReportPath | ConvertFrom-Json
@@ -61,7 +64,7 @@ if (@(Get-ChildItem -LiteralPath (Join-Path $publishExtracted 'AssetStudio-windo
 $publishSetupEvidence = Get-Evidence $publishSetup
 $publishZipEvidence = Get-Evidence $publishZip
 $publishReleaseRoot = 'https://github.com/oocheol/masset/releases'
-$publishLatest = [ordered]@{ version=$publishVersion; notes='큰 글씨와 사용 가이드, GPT-6.1 Sol 고정, 서명된 Windows 앱 내부 업데이트'; pub_date=[DateTimeOffset]::UtcNow.ToString('o'); platforms=[ordered]@{ 'windows-x86_64'=[ordered]@{ url="$publishReleaseRoot/download/v$publishVersion/AssetStudio_${publishVersion}_x64-setup.exe"; signature=[IO.File]::ReadAllText($publishSetup+'.sig').Trim(); bytes=$publishSetupEvidence.bytes; sha256=$publishSetupEvidence.sha256 } } }
+$publishLatest = [ordered]@{ version=$publishVersion; notes=$ReleaseNotes; pub_date=[DateTimeOffset]::UtcNow.ToString('o'); platforms=[ordered]@{ 'windows-x86_64'=[ordered]@{ url="$publishReleaseRoot/download/v$publishVersion/AssetStudio_${publishVersion}_x64-setup.exe"; signature=[IO.File]::ReadAllText($publishSetup+'.sig').Trim(); bytes=$publishSetupEvidence.bytes; sha256=$publishSetupEvidence.sha256 } } }
 $publishLatest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $publishParent 'latest.json') -Encoding utf8NoBOM
 ($publishSetupEvidence.sha256+'  '+[IO.Path]::GetFileName($publishSetup)+"`n"+$publishZipEvidence.sha256+'  '+[IO.Path]::GetFileName($publishZip)+"`n") | Set-Content -LiteralPath (Join-Path $publishParent 'SHA256SUMS.txt') -Encoding utf8NoBOM
 $publishReport = [ordered]@{ version=$publishVersion; createdAt=[DateTimeOffset]::UtcNow.ToString('o'); directory=$publishDirectory; installer=$publishSetupEvidence; zip=$publishZipEvidence; executable=$publishExe[0]; zipFilesVerified=$publishFiles.Count; portableFiles=$publishFiles; sourceBuildReport=[IO.Path]::GetFullPath($BuildReportPath); signatureVerificationPending=$true; nativeChecksPending=$true }

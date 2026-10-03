@@ -26,14 +26,14 @@ fn connection(status: &RuntimeStatus) -> Value {
         "usage":status.rate_limits,"checkedAt":now()})
 }
 
-fn executable() -> Option<PathBuf> {
+fn executable(managed: Vec<PathBuf>) -> Option<PathBuf> {
     // An explicit runtime selection is preserved; it cannot silently fall back.
     if let Some(path) = std::env::var_os("CODEX_EXECUTABLE") {
         let path = PathBuf::from(path);
-        return (path.is_absolute() && path.is_file() && official_runtime_file(&path))
+        return (path.is_absolute() && path.is_file() && official_image_runtime(&path))
             .then_some(path);
     }
-    let mut candidates = Vec::new();
+    let mut candidates = managed;
     if let Some(local) = std::env::var_os("LOCALAPPDATA") {
         let local = PathBuf::from(local);
         candidates.push(local.join("Programs/OpenAI/Codex/bin/codex.exe"));
@@ -53,7 +53,7 @@ fn executable() -> Option<PathBuf> {
     ));
     candidates
         .into_iter()
-        .filter(|path| path.is_absolute() && path.is_file() && official_runtime_file(path))
+        .filter(|path| path.is_absolute() && path.is_file() && official_image_runtime(path))
         .filter_map(|path| {
             let version = asset_providers::probe_codex(&path).ok()?.version?;
             Some((runtime_version_rank(&version)?, path))
@@ -70,6 +70,50 @@ fn runtime_version_rank(value: &str) -> Option<semver::Version> {
     let safe = asset_providers::safe_codex_version(value.as_bytes())?;
     let version = safe.strip_prefix("codex-cli ")?;
     semver::Version::parse(version).ok()
+}
+
+fn official_image_runtime(path: &Path) -> bool {
+    if !official_runtime_file(path) {
+        return false;
+    }
+    #[cfg(windows)]
+    {
+        // Official packaged installs can prefer codex-resources over the
+        // sibling helper. Verify every existing candidate in those fixed
+        // layouts, so an unsigned preferred resource cannot bypass this check.
+        let Ok(canonical) = path.canonicalize() else {
+            return false;
+        };
+        let helpers: Vec<_> = image_runtime_helper_paths(&canonical)
+            .into_iter()
+            .filter(|helper| helper.is_file())
+            .collect();
+        !helpers.is_empty() && helpers.iter().all(|helper| official_runtime_file(helper))
+    }
+    #[cfg(not(windows))]
+    {
+        true
+    }
+}
+
+#[cfg(windows)]
+fn image_runtime_helper_paths(executable: &Path) -> Vec<PathBuf> {
+    let Some(directory) = executable.parent() else {
+        return Vec::new();
+    };
+    let name = "codex-code-mode-host.exe";
+    let mut helpers = vec![
+        directory.join(name),
+        directory.join("codex-resources").join(name),
+    ];
+    if let Some(parent) = directory.parent() {
+        match directory.file_name().and_then(|part| part.to_str()) {
+            Some("bin") => helpers.push(parent.join("codex-resources").join(name)),
+            Some("codex-resources") => helpers.push(parent.join("bin").join(name)),
+            _ => {}
+        }
+    }
+    helpers
 }
 
 #[cfg(windows)]
@@ -136,9 +180,72 @@ fn official_runtime_file(_: &Path) -> bool {
 }
 
 impl Backend {
+    fn provider_executable(&self) -> Option<PathBuf> {
+        executable(self.inner.codex_installer.installed_executables())
+    }
+
+    pub(super) fn provider_setup(&self, request: &Value) -> Result<Value> {
+        match request["action"].as_str() {
+            Some("provider_setup_status") => {}
+            Some("provider_setup_install") => {
+                let _request = self.inner.requests.lock().unwrap();
+                let _dispatch = self.inner.dispatch.lock().unwrap();
+                if self.inner.stop.load(Ordering::SeqCst) {
+                    bail!("앱 종료 중에는 Codex를 준비할 수 없습니다.");
+                }
+                self.ensure_workers_idle()?;
+                if std::env::var_os("CODEX_EXECUTABLE").is_some() {
+                    bail!("CODEX_EXECUTABLE로 지정한 실행 경로를 먼저 확인해 주세요. 지정한 경로를 자동 변경하지 않습니다.");
+                }
+                self.inner.codex_installer.start(
+                    request["consent"].as_bool() == Some(true),
+                    request["expectedVersion"].as_str().unwrap_or(""),
+                    request["expectedSha256"].as_str().unwrap_or(""),
+                    Arc::new(|path| {
+                        official_image_runtime(path)
+                            && asset_providers::probe_codex(path)
+                                .ok()
+                                .and_then(|status| status.version)
+                                .as_deref()
+                                == Some("codex-cli 0.160.0")
+                    }),
+                )?;
+            }
+            Some("provider_setup_cancel") => {
+                self.inner.codex_installer.cancel();
+            }
+            Some("provider_setup_open") => {
+                let url = match request["page"].as_str() {
+                    Some("source") => "https://github.com/openai/codex/releases/tag/rust-v0.160.0",
+                    Some("license") => "https://github.com/openai/codex/blob/rust-v0.160.0/LICENSE",
+                    Some("guide") => "https://developers.openai.com/codex/app/windows/",
+                    _ => bail!("지원하지 않는 Codex 안내 페이지입니다."),
+                };
+                open_trusted_browser(url)?;
+            }
+            _ => bail!("지원하지 않는 Codex 준비 명령입니다."),
+        }
+        let mut status = serde_json::to_value(self.inner.codex_installer.status())?;
+        status["runtimeDetected"] = json!(
+            !self.inner.codex_installer.busy()
+                && self
+                    .provider_executable()
+                    .and_then(|path| asset_providers::probe_codex(&path).ok()?.version)
+                    .and_then(|version| runtime_version_rank(&version))
+                    .is_some_and(|version| version
+                        .cmp_precedence(&semver::Version::new(0, 160, 0))
+                        .is_ge())
+        );
+        if std::env::var_os("CODEX_EXECUTABLE").is_some() && status["runtimeDetected"] != true {
+            status["supported"] = json!(false);
+            status["message"] = json!("CODEX_EXECUTABLE로 지정한 실행 경로를 확인해 주세요. 지정한 경로를 자동 변경하지 않습니다.");
+        }
+        Ok(status)
+    }
+
     pub(super) fn provider_status(&self) -> Result<Value> {
         let result = (|| -> Result<Value> {
-            let path = executable().context("공식 Codex 실행 파일을 찾을 수 없습니다. Codex 설치 또는 CODEX_EXECUTABLE 설정을 확인해 주세요.")?;
+            let path = self.provider_executable().context("공식 Codex 실행 파일과 코드 모드 호스트가 없습니다. 연결 화면의 Codex 준비에서 설치하거나 공식 Codex 설치를 확인해 주세요.")?;
             let mut runtime = self.inner.provider_runtime.lock().unwrap();
             if runtime.is_none() {
                 *runtime = Some(CodexRuntime::connect(RuntimeOptions::new(
@@ -264,7 +371,8 @@ impl Backend {
     ) -> Result<()> {
         let mut queue = SchedulerStore::open(&root.join("scheduler.sqlite"))?;
         let options = RuntimeOptions::new(
-            executable().context("공식 Codex 런타임을 찾을 수 없습니다.")?,
+            self.provider_executable()
+                .context("공식 Codex 런타임과 코드 모드 호스트를 확인할 수 없습니다.")?,
             work.join("received"),
         );
         queue.set_progress(&task.id, "공식 구독 연결 확인", None, None)?;
@@ -284,7 +392,7 @@ impl Backend {
             bail!("대기 작업의 공급자 설정이 현재 런타임과 다릅니다.")
         }
         let request = ImageGenerationRequest {
-            prompt:format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Do not run commands or other tools. Return the generated image.",
+            prompt:format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Use code-mode only to invoke the built-in image generation tool. Do not run commands, access files or network APIs, or create asset scripts. Return the generated image.",
                 text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"]),
             requested_model:text_field(&payload,"requestedModel")?.into(),reference_paths:vec![],width:None,height:None,
             transparent_background:None,mask_path:None,requires_confirmed_model:false,
@@ -293,10 +401,18 @@ impl Backend {
         // silently enqueue another subscription charge on restart.
         queue.mark_external_submitted(&task.id)?;
         let mut event_error = None;
+        let mut image_tool_started = false;
+        let mut external_identity: Option<(String, String)> = None;
         let outcome = runtime.generate(&request,cancel,|event| {
             let result = match event {
-                ProviderEvent::Started{thread_id,turn_id} => queue.set_external_identity(&task.id,&thread_id,&turn_id),
-                ProviderEvent::ImageGenerationStarted{..} => queue.set_progress(&task.id,"이미지 생성 중",None,None),
+                ProviderEvent::Started{thread_id,turn_id} => {
+                    external_identity = Some((thread_id.clone(), turn_id.clone()));
+                    queue.set_external_identity(&task.id,&thread_id,&turn_id)
+                },
+                ProviderEvent::ImageGenerationStarted{..} => {
+                    image_tool_started = true;
+                    queue.set_progress(&task.id,"이미지 생성 중",None,None)
+                },
                 ProviderEvent::FileReady{receipt} => persist_receipt(work,task,&receipt).and_then(|_|queue.set_progress(&task.id,"이미지 파일 수신 · 검증 대기",None,None)),
                 ProviderEvent::Interrupted{thread_id,turn_id} => persist_event(work,"turn-interrupted",&json!({"jobId":task.id,"threadId":thread_id,"turnId":turn_id,"runtimeTurnInterrupted":true,"remoteImageCancellationConfirmed":null})).and_then(|_|queue.cancel(&task.id).map(|_|())),
                 ProviderEvent::InterruptAcknowledged{..} => Ok(()),
@@ -316,6 +432,22 @@ impl Backend {
         let outcome = match outcome {
             Ok(outcome) => outcome,
             Err(error) => {
+                if matches!(error, RuntimeError::NoImageProduced) {
+                    let _ = persist_event(
+                        work,
+                        "no-image",
+                        &json!({
+                            "jobId": task.id, "attempt": task.attempts,
+                            "code": error.code(), "imageToolStarted": image_tool_started,
+                            "threadId": external_identity.as_ref().map(|identity| &identity.0),
+                            "turnId": external_identity.as_ref().map(|identity| &identity.1),
+                            "requestedModel": payload["requestedModel"],
+                            "reasoningModel": payload["reasoningModel"],
+                            "runtimeVersion": payload["toolVersion"],
+                            "receivedFiles": 0, "automaticResubmission": false
+                        }),
+                    );
+                }
                 if let RuntimeError::OutcomeUnknown {
                     stage,
                     thread_id,
@@ -478,6 +610,9 @@ fn failure_kind(error: &RuntimeError) -> FailureKind {
 }
 
 fn failure_message(error: &RuntimeError) -> String {
+    if matches!(error, RuntimeError::NoImageProduced) {
+        return format!("공식 Codex가 이미지 파일 없이 응답을 마쳤습니다. 이미지 도구 실행 여부는 진단 기록에서 확인할 수 있습니다. 자동 재요청은 하지 않았습니다. ({})", error.code());
+    }
     if matches!(error, RuntimeError::ReasoningModelUnavailable) {
         return format!("선택된 추론 모델 {DEFAULT_REASONING_MODEL}이 현재 모델 목록에 없습니다. 계정 이용 권한은 별도로 확인해야 합니다. 다른 모델로 자동 변경하지 않았습니다.");
     }
@@ -510,6 +645,10 @@ fn open_official_login(value: &str) -> Result<()> {
     {
         bail!("공식 로그인 호스트가 아닌 주소는 열 수 없습니다.")
     }
+    open_trusted_browser(value)
+}
+
+fn open_trusted_browser(value: &str) -> Result<()> {
     #[cfg(windows)]
     {
         use windows_sys::Win32::UI::Shell::ShellExecuteW;
@@ -542,6 +681,35 @@ fn open_official_login(value: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(windows)]
+    #[test]
+    fn helper_signature_checks_cover_preferred_resources_and_legacy_layouts() {
+        for (executable, required) in [
+            (
+                "C:/official/bin/codex.exe",
+                "C:/official/codex-resources/codex-code-mode-host.exe",
+            ),
+            (
+                "C:/official/codex-resources/codex.exe",
+                "C:/official/bin/codex-code-mode-host.exe",
+            ),
+            (
+                "C:/official/release/codex.exe",
+                "C:/official/release/codex-resources/codex-code-mode-host.exe",
+            ),
+        ] {
+            let executable = Path::new(executable);
+            let paths = image_runtime_helper_paths(executable);
+            assert!(paths.contains(&PathBuf::from(required)));
+            assert!(paths.contains(
+                &executable
+                    .parent()
+                    .unwrap()
+                    .join("codex-code-mode-host.exe")
+            ));
+        }
+    }
 
     #[test]
     fn runtime_selection_ranks_newer_alpha_above_older_stable() {

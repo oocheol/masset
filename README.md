@@ -1,10 +1,10 @@
 # Asset Studio
 
-[기능 소개 사이트](https://masset-nu.vercel.app/) · [Windows 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.1/AssetStudio_0.1.1_x64-setup.exe) · [공개 릴리스](https://github.com/oocheol/masset/releases/tag/v0.1.1)
+[기능 소개 사이트](https://masset-nu.vercel.app/) · [Windows 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_x64-setup.exe) · [공개 릴리스](https://github.com/oocheol/masset/releases/tag/v0.1.2)
 
 로컬에서 이미지와 절차적 3D 에셋 묶음을 제작·검사·버전 관리·내보내는 Windows/macOS용 오픈소스 데스크톱 도구입니다. Tauri 2, Rust, React/TypeScript, SQLite, Three.js를 사용합니다. 프로젝트 이름은 가칭이며 파일 계약은 브랜드와 분리되어 있습니다.
 
-**0.1.1의 추론 모델은 사용자가 지정한 GPT-6.1 Sol (`gpt-6.1-sol`)이며 이미지 목표는 GPT Image 2입니다. 실제 이미지 파일 수신은 아직 미검증입니다.** 계정 인증·로컬 준비 상태와 모델 이용 권한을 구분해 표시합니다. 이전 0.1.0의 명시 요청은 공급자 오류로 파일을 받지 못했으며 자동 재요청하지 않았습니다. 다른 모델이나 유료 API로 조용히 전환하지 않습니다. [공급자 실증 기록](docs/provider-feasibility.md)과 [ima2-gen 구조 비교](docs/ima2-gen-comparison.md)를 참고하세요.
+**0.1.2는 GPT-6.1 Sol (`gpt-6.1-sol`)의 이미지 도구 설정 충돌을 수정했습니다.** 이미지 목표는 GPT Image 2입니다. 수정된 Windows Backend에서 새 요청 한 번으로 PNG 수신·디코딩·저장·재열기·독립 내보내기 검사를 통과했습니다. 공개 이벤트에 실제 이미지 모델 ID가 없어 `confirmedModel=null`은 유지합니다. 계정 인증·로컬 준비 상태와 계정별 모델 권한을 구분하며 기존 실패 작업을 자동 재전송하지 않습니다. 다른 모델이나 유료 API로 조용히 전환하지 않습니다. [공급자 실증 기록](docs/provider-feasibility.md)과 [ima2-gen 구조 비교](docs/ima2-gen-comparison.md)를 참고하세요.
 
 앱 소스가 오픈소스인 것과 외부 AI 모델·서비스가 무료 또는 오픈소스인 것은 다릅니다. 입력·출력 에셋의 권리는 소스코드 라이선스와 별도로 확인해야 합니다.
 
@@ -12,11 +12,13 @@
 
 ## Windows 다운로드
 
-[Asset Studio 0.1.1 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.1/AssetStudio_0.1.1_x64-setup.exe)을 실행하세요. 기존 0.1.0 포터블 사용자는 한 번 직접 설치하면 이후부터 앱 안에서 업데이트할 수 있습니다. 시작 시와 10분마다 새 버전을 확인하고, 승인한 파일의 서명·버전·크기·SHA-256을 검사한 뒤 제작 작업이 끝났을 때 설치·재시작합니다.
+[Asset Studio 0.1.2 설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_x64-setup.exe)을 실행하세요. 기존 0.1.1 설치 사용자는 앱 내부 업데이트를 이용하고, 0.1.0 포터블 사용자는 한 번 직접 설치하면 이후부터 앱 안에서 업데이트할 수 있습니다. 시작 시와 10분마다 새 버전을 확인하고, 승인한 파일의 서명·버전·크기·SHA-256을 검사한 뒤 제작 작업이 끝났을 때 설치·재시작합니다.
 
-주요 버튼·입력 글씨는 14px 이상, 가이드는 16px로 키웠고 긴 설명은 접었습니다. 상단 **사용 가이드**에서 단계별 이용 방법을 확인하세요. [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.1/AssetStudio-windows-x64-portable.zip)도 제공하며 전체를 새 폴더에 풀어 실행합니다. WebView2와 3D용 Blender는 별도 필요합니다. Node.js·Rust 개발 도구는 이용자에게 필요하지 않습니다. 업데이트 파일 서명과 별개로 Windows Authenticode 코드 서명은 없으며 macOS 다운로드는 준비 중입니다.
+주요 버튼·입력 글씨는 14px 이상, 가이드는 16px로 키웠고 긴 설명은 접었습니다. 상단 **사용 가이드**에서 단계별 이용 방법을 확인하세요. [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio-windows-x64-portable.zip)도 제공하며 전체를 새 폴더에 풀어 실행합니다. WebView2와 3D용 Blender는 별도 필요합니다. Node.js·Rust 개발 도구는 이용자에게 필요하지 않습니다. 업데이트 파일 서명과 별개로 Windows Authenticode 코드 서명은 없으며 macOS 다운로드는 준비 중입니다.
 
-[처음 사용하기](docs/windows-quickstart.md) · [릴리스 안내와 SHA-256](docs/releases/v0.1.1.md) · [공개 배포 메타데이터](docs/releases/v0.1.1.json)
+Codex가 없는 사용자도 상단 **구독 연결**에서 **Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작할 수 있습니다. 공식 Windows x64 패키지의 출처·버전·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. 파일 해시와 OpenAI 실행 파일 서명을 검사하며 진행 확인·취소를 지원합니다. 기존의 검증 가능한 Codex는 재사용하고 로그인은 공식 페이지에서 진행합니다. [다운로드 정보와 안내](docs/windows-quickstart.md#chatgpt-구독-이미지)를 확인하세요.
+
+[처음 사용하기](docs/windows-quickstart.md) · [릴리스 안내와 SHA-256](docs/releases/v0.1.2.md) · [공개 배포 메타데이터](docs/releases/v0.1.2.json)
 
 | 영역 | 현재 범위 | 검증 상태 |
 | --- | --- | --- |
@@ -26,7 +28,7 @@
 | 기본 재질 처리 | Base Color·PBR 상수, 밝기 기반 노멀맵 계산 | 실험적 노멀맵의 Rust 검사·네이티브 파일 출력 통과; 물성 측정 또는 AO/고급 재질 복원 지원을 주장하지 않음 |
 | 작업 큐 | 자원 한도, 의존 관계, 취소·복구·부분 재실행 | 스케줄러 33개·프로세스 충돌 검사 2개 통과; 로컬 해시 6개 작업의 1회 실측은 761→448ms(1.70배), AI/Blender 성능으로 일반화하지 않음 |
 | 결과 캐시 | 입력 SHA·도구 버전 키, 저장 결과 복사본 검사·명시적 재사용 | 네이티브 백엔드의 선택 결과 재사용·버전 보존·재열기 확인 |
-| 구독 이미지 생성 | GPT-6.1 Sol 추론·GPT Image 2 목표·공식 Codex 연결·명시 요청 | 모델 이용 권한 미확인; 이미지 수신·저장·재열기 미검증. 기존 실패 작업 자동 재전송 없음 |
+| 구독 이미지 생성 | GPT-6.1 Sol 추론·GPT Image 2 목표·공식 Codex 연결·명시 요청 | 수정된 Windows Backend의 새 요청 1회 수신·저장·재열기 검증. 실제 이미지 모델 ID와 모든 계정 권한은 미확인 |
 | macOS 패키지 | arm64/x64 빌드 절차 및 수동 선택 CI | 자동 빌드 보류; 실제 macOS 빌드·설치·실행 미검증 |
 | 이미지 기반 3D·CAD | 추후 독립 어댑터 | 계획됨, 지원하지 않음 |
 
@@ -57,7 +59,7 @@ Windows 포터블 빌드가 기본 경로입니다. EXE와 `examples`, `workers/
 
 Windows를 먼저 검증하며 macOS CI는 명시적인 수동 선택으로만 실행합니다. 포터블 폴더도 다른 PC의 런타임·DLL 확인이 필요합니다. 네이티브 빌드 명령과 아키텍처별 상태, NSIS 추가 도구의 출처·크기·해시는 [플랫폼 표](docs/platform-support.md)에 있습니다. 서명·공증·설치/업그레이드/제거 검증은 별도 항목입니다.
 
-0.1.0의 Windows 개발 호스트 검사에서는 Rust 110개 통과·4개 fixture 제외, release 백엔드 8개 작업과 출력 33개, 포터블 앱의 화면·12개 이미지·네이티브 IPC·실제 Blender 3D 렌더를 확인했습니다. 0.1.1의 별도 검사 범위는 [검증 기록](docs/verification.md)에 표시하며 이전 기록은 보존합니다. 공개 배포 파일의 해시는 [릴리스 메타데이터](docs/releases/v0.1.1.json)에서 확인합니다. 다른 PC·설치 수명주기는 별도 검증 상태입니다.
+0.1.0의 Windows 개발 호스트 검사에서는 Rust 110개 통과·4개 fixture 제외, release 백엔드 8개 작업과 출력 33개, 포터블 앱의 화면·12개 이미지·네이티브 IPC·실제 Blender 3D 렌더를 확인했습니다. 0.1.1과 0.1.2의 별도 검사 범위는 [검증 기록](docs/verification.md)에 표시하며 이전 기록은 보존합니다. 공개 배포 파일의 해시는 [릴리스 메타데이터](docs/releases/v0.1.2.json)에서 확인합니다. 다른 PC·설치 수명주기는 별도 검증 상태입니다.
 
 ## 에셋 제작 흐름
 

@@ -46,6 +46,7 @@ struct Inner {
     limits: ResourceLimits,
     provider_runtime: Mutex<Option<asset_providers::runtime::CodexRuntime>>,
     provider_connection: Mutex<Value>,
+    codex_installer: asset_providers::installer::CodexInstaller,
 }
 struct Runner {
     cancel: Arc<AtomicBool>,
@@ -55,6 +56,8 @@ struct Runner {
 
 impl Backend {
     pub fn new(data: PathBuf, examples: PathBuf, worker: PathBuf) -> Self {
+        let codex_installer =
+            asset_providers::installer::CodexInstaller::new(data.join("codex-runtimes"));
         let blender = find_blender();
         let blender_version = blender.as_deref().and_then(blender_version);
         let worker_sha256 = asset_core::sha256_file(&worker).ok().map(|result| result.0);
@@ -84,6 +87,7 @@ impl Backend {
                 provider_connection: Mutex::new(provider::unavailable_connection(
                     "공식 Codex 연결을 확인해 주세요.",
                 )),
+                codex_installer,
             }),
         }
     }
@@ -168,6 +172,9 @@ impl Backend {
     pub fn shutdown(&self) {
         self.inner.stop.store(true, Ordering::SeqCst);
         let _request = self.inner.requests.lock().unwrap();
+        // A preparation already admitted under this mutex must be observed
+        // before cancellation; otherwise it could start after an early cancel.
+        self.inner.codex_installer.cancel();
         // Stop admission before observing runners. The lease stays held until
         // the last local worker actually exits, including during cancellation.
         let _dispatch = self.inner.dispatch.lock().unwrap();
@@ -198,12 +205,18 @@ impl Backend {
     pub fn ensure_update_idle(&self) -> Result<()> {
         let _request = self.inner.requests.lock().unwrap();
         let _dispatch = self.inner.dispatch.lock().unwrap();
+        if self.inner.codex_installer.busy() {
+            bail!("Codex 준비를 완료하거나 취소한 다음 앱을 업데이트해 주세요.");
+        }
         self.ensure_workers_idle()
             .map_err(|_| anyhow!("제작 작업을 완료하거나 취소한 다음 업데이트해 주세요."))
     }
     pub fn prepare_update_shutdown(&self) -> Result<()> {
         let _request = self.inner.requests.lock().unwrap();
         let _dispatch = self.inner.dispatch.lock().unwrap();
+        if self.inner.codex_installer.busy() {
+            bail!("Codex 준비를 완료하거나 취소한 다음 앱을 업데이트해 주세요.");
+        }
         self.ensure_workers_idle()?;
         self.inner.stop.store(true, Ordering::SeqCst);
         self.release_lease_if_stopped_locked();
@@ -286,14 +299,22 @@ impl Backend {
     }
     pub fn request(&self, request: Value) -> Result<Value> {
         let action = text_field(&request, "action")?;
-        if matches!(action, "provider_status" | "provider_login") {
+        if matches!(
+            action,
+            "provider_status"
+                | "provider_login"
+                | "provider_setup_status"
+                | "provider_setup_install"
+                | "provider_setup_cancel"
+                | "provider_setup_open"
+        ) {
             if self.inner.stop.load(Ordering::SeqCst) {
                 bail!("작업 백엔드가 종료되었습니다.")
             }
-            return if action == "provider_status" {
-                self.provider_status()
-            } else {
-                self.provider_login()
+            return match action {
+                "provider_status" => self.provider_status(),
+                "provider_login" => self.provider_login(),
+                _ => self.provider_setup(&request),
             };
         }
         // Serialize command batches and project selection, while admitted
@@ -1824,6 +1845,9 @@ mod lifecycle_tests {
                     provider_connection: Mutex::new(provider::unavailable_connection(
                         "단위 테스트는 외부 생성을 요청하지 않습니다.",
                     )),
+                    codex_installer: asset_providers::installer::CodexInstaller::new(
+                        directory.join("appdata/codex-runtimes"),
+                    ),
                 }),
             };
             backend

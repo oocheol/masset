@@ -1,0 +1,73 @@
+{
+  "product": "Asset Studio",
+  "version": "0.1.2",
+  "platform": "windows-x64",
+  "distribution": "nsis",
+  "filename": "AssetStudio_0.1.2_x64-setup.exe",
+  "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_x64-setup.exe",
+  "bytes": 20412586,
+  "sha256": "fe042a70b9ac5dbb3b4a67355d6d6fe9bb9b72ff63e28d7b694f6823a4180a85",
+  "windowsAuthenticodeSigned": false,
+  "updaterSignature": true,
+  "updaterManifestUrl": "https://github.com/oocheol/masset/releases/latest/download/latest.json",
+  "portable": {
+    "filename": "AssetStudio-windows-x64-portable.zip",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio-windows-x64-portable.zip",
+    "bytes": 9547193,
+    "sha256": "f56a1013d97b2541897fd3ff6c632e47fd587e1158c29c69b88015873149e505",
+    "executableSha256": "9e9a545c35d1f3fc4bd8075a5dd408bd5b42a555b2d6973dc8536a6731fe7ad7"
+  },
+  "installedExecutableSha256": null,
+  "checks": {
+    "windowsDevelopmentHost": true,
+    "nativeWindowAnd2D": true,
+    "nativeFontsAndGuide": true,
+    "nativeBlender3D": true,
+    "freshBlenderModelReopens": 0,
+    "signedInstallerVerified": true,
+    "installationOnDevelopmentHost": false,
+    "sameVersionNsisUpdateRestart": false,
+    "ownQaUninstall": false,
+    "publicTauriDownload": false,
+    "crossVersionProductionPluginInstall": false,
+    "cleanWindowsMachine": false,
+    "macOS": false,
+    "subscriptionImageReceipt": true,
+    "subscriptionImageRequests": 1,
+    "subscriptionImageReopened": true,
+    "subscriptionIndependentExport": true,
+    "codexOnboardingEntryAndGuide": true,
+    "codexInstallerFixtures": 12,
+    "codexConsentBackendVerified": true,
+    "codexManagedDownload": false,
+    "codexManagedLoggedOutRpc": false
+  },
+  "reasoningModel": "gpt-6.1-sol",
+  "requestedImageModel": "gpt-image-2",
+  "confirmedImageModel": null,
+  "inferenceAccess": "unknown",
+  "generatedImageProof": {
+    "width": 1254,
+    "height": 1254,
+    "bytes": 767840,
+    "sha256": "b5fdcf0954e6fe2672ebb47c2d14f931e228b644985b996df03488cbf9250ffb",
+    "scope": "One explicit request using the modified Windows native Backend proof executable; actual model ID not supplied by the public image event"
+  },
+  "requirements": [
+    "Windows x64 with Microsoft WebView2 already installed; installer downloads no runtime",
+    "Official signed Codex and code-mode host, ChatGPT login and account model access for subscription generation; existing runtime verified with codex-cli 0.160.0; optional managed preparation requires separate download consent",
+    "Blender installed separately for procedural 3D; verified with Blender 5.2.1"
+  ],
+  "legacyUpdate": "0.1.1 installed users approve the in-app update; 0.1.0 portable users install 0.1.2 once manually",
+  "installationScope": "Current 0.1.2 installer was cryptographically verified without modifying the existing user installation; 0.1.1 installation/update/uninstall history is recorded separately",
+  "codexSetup": {
+    "version": "0.160.0",
+    "bytes": 157444460,
+    "sha256": "7f7fbbc8d6fd4ea2f3b13855ef47ea59663ba7e61fb2e9821df37163b8030891",
+    "sourceUrl": "https://github.com/openai/codex/releases/tag/rust-v0.160.0",
+    "license": "Apache-2.0; bundled third-party notices",
+    "flow": "Codex preparation -> official account login -> connection check",
+    "actualManagedPreparationVerified": false,
+    "scope": "Native consent/manifest rejection and 12 offline installer fixtures verified; actual package preparation unverified because additional download consent is pending"
+  }
+}

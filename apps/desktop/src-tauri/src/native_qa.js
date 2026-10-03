@@ -58,6 +58,13 @@
     const guide=document.querySelector('.guide-button');check(guide&&!guide.disabled,'Usage guide button unavailable');guide.focus();guide.click();
     await wait('Usage guide',()=>document.querySelector('.dialog-guide .usage-guide'),5000);
     const guideSize=parseFloat(getComputedStyle(document.querySelector('.guide-intro')).fontSize);
+    const onboardingButton=[...document.querySelectorAll('.titlebar-actions button')].find(button=>button.textContent.trim()==='구독 연결');
+    const guideText=document.querySelector('.usage-guide').textContent;
+    state.codexOnboarding={visibleEntry:!!onboardingButton&&!onboardingButton.disabled,
+      entryFont:onboardingButton?parseFloat(getComputedStyle(onboardingButton).fontSize):0,
+      guideSequence:['Codex 준비','공식 계정 연결','연결 확인'].every(text=>guideText.includes(text)),
+      installerInvoked:false,loginInvoked:false};
+    check(state.codexOnboarding.visibleEntry&&state.codexOnboarding.entryFont>=14&&state.codexOnboarding.guideSequence,'Native onboarding entry/guide unavailable');
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
     await wait('Usage guide focus return',()=>!document.querySelector('[role="dialog"]')&&document.activeElement===guide,5000);
     const updateStatus=await invoke({action:'update_status'});

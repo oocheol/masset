@@ -59,6 +59,15 @@ export interface AppUpdateStatus {
   downloadedBytes: number; totalBytes: number | null; sha256: string | null;
   releaseUrl: string | null; message: string; checkedAt: string | null;
 }
+export interface CodexSetupStatus {
+  supported: boolean; runtimeDetected: boolean;
+  state: 'idle' | 'downloading' | 'verifying' | 'extracting' | 'ready' | 'cancelled' | 'error';
+  version: string; downloadedBytes: number; totalBytes: number; message: string;
+  manifest: {
+    version: string; target: string; url: string; bytes: number; sha256: string;
+    sourceUrl: string; license: string; licenseUrl: string;
+  };
+}
 export type ImageOperation =
   | {type: 'resize'; width: number; height: number; pixelArt: boolean}
   | {type: 'crop'; x: number; y: number; width: number; height: number}

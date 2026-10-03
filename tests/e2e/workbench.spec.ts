@@ -24,7 +24,7 @@ test('workstation renders actual fixtures and keeps provider requests desktop-on
   await expect(page.getByRole('listitem').first().locator('img')).toBeVisible();
   await expect.poll(() => page.getByRole('listitem').first().locator('img').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
   await page.screenshot({path: testInfo.outputPath('workstation-browser.png'), fullPage: false});
-  await page.getByRole('button', {name: '공급자 연동 상태', exact: true}).click();
+  await page.getByRole('button', {name: '구독 연결', exact: true}).click();
   const dialog = page.getByRole('dialog', {name: '이미지 생성 연동 상태'});
   await expect(dialog.locator('.status-tag')).toHaveText('데스크톱 전용');
   await expect(dialog).toContainText('gpt-image-2');
@@ -32,8 +32,10 @@ test('workstation renders actual fixtures and keeps provider requests desktop-on
   await expect(dialog).toContainText('0개 / 파일 검증 0개');
   await expect(dialog).toContainText('기존 이미지 가져오기');
   await expect(dialog.getByRole('button', {name: '공식 계정 연결', exact: true})).toBeDisabled();
-  await dialog.getByRole('button', {name: '연결 확인', exact: true}).click();
-  await expect(dialog).toContainText('연결 확인 시각');
+  await expect(dialog.getByRole('button', {name: '연결 확인', exact: true})).toBeDisabled();
+  await expect(dialog.getByRole('button', {name: '다운로드 준비', exact: true})).toBeDisabled();
+  await expect(dialog.getByRole('checkbox')).not.toBeChecked();
+  await expect(dialog).toContainText('Codex 준비');
   await expect(dialog.locator('.status-tag')).toHaveText('데스크톱 전용');
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
@@ -171,7 +173,7 @@ test('selected fixture icons produce an atlas with valid frames in the downloade
 });
 
 test('keyboard dialogs keep focus inside and return focus to the triggering control', async ({page}) => {
-  const trigger = page.getByRole('button', {name: '공급자 연동 상태', exact: true});
+  const trigger = page.getByRole('button', {name: '구독 연결', exact: true});
   await trigger.focus();
   await page.keyboard.press('Enter');
   const provider = page.getByRole('dialog', {name: '이미지 생성 연동 상태'});
