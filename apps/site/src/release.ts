@@ -19,4 +19,21 @@ export type MacRelease = {
 };
 
 // Populated only after the actual macOS package and public download are verified.
-export const macReleases: MacRelease[] = [];
+export const macReleases: MacRelease[] = [
+  {
+    "architecture": "arm64",
+    "label": "Apple Silicon",
+    "filename": "AssetStudio_0.1.2_macos-arm64.dmg",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_macos-arm64.dmg",
+    "bytes": 16758899,
+    "sha256": "077ab59fac87524cc9a6d71b1102d94a75a19dc45333d3e972ee483d0e18a028"
+  },
+  {
+    "architecture": "x64",
+    "label": "Intel",
+    "filename": "AssetStudio_0.1.2_macos-x64.dmg",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_macos-x64.dmg",
+    "bytes": 17942253,
+    "sha256": "831838593432c1b0ed0744b1a7c2348f6f578fe0912b95533c6046c3f4231a40"
+  }
+];

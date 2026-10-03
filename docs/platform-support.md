@@ -64,17 +64,22 @@ After a successful native build, run backend smoke and independently decode its 
 
 ## macOS
 
+0.1.2 now has [Apple Silicon and Intel trial DMGs](https://github.com/oocheol/masset/releases/tag/v0.1.2), built and executed on matching native macOS 15.7.9 runners. [The successful workflow](https://github.com/oocheol/masset/actions/runs/37113522134) records 138 Rust checks per architecture, actual DMG mount/copy, local ad-hoc bundle seal, copied-app WebView/IPC/readability and separate CLI 2D output checks. Anonymous public downloads matched both native package hashes. Exact bytes, source commit and boundaries are in [Mac release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2-macos.json); the table above remains the original 0.1.0 history.
+
+The Mac trial supports local 2D use. Subscription generation, managed Codex and in-app updates are unsupported until official runtime trust/layout and update installation are verified on Mac. Blender 3D, Gatekeeper first-download quarantine, clean hardware, minimum macOS 12, replacement and uninstall remain unverified. The local ad-hoc seal verifies bundle contents; no Apple Developer ID identity or notarization is provided. Follow [Mac installation guidance](macos-quickstart.md).
+
 Run on a Mac with Xcode Command Line Tools:
 
 ```sh
 npm ci
 rustup target add aarch64-apple-darwin
 cargo test --workspace --target aarch64-apple-darwin
-npm run desktop:build -- --target aarch64-apple-darwin --bundles app,dmg
+node scripts/collect-third-party-notices.mjs --target aarch64-apple-darwin --out docs/licenses --strict
+npm run desktop:build -- --target aarch64-apple-darwin --config "$PWD/apps/desktop/src-tauri/tauri.macos.conf.json" --bundles app,dmg
 ```
 
 On Intel macOS, replace the target with `x86_64-apple-darwin`. Test each architecture on matching hardware. Rosetta execution and cross-compilation do not replace native arm64/x64 validation. Unsigned developer packages may be rejected by Gatekeeper; no signing or notarization is performed without credentials and authorization.
 
-GitHub Actions automatically checks Windows and builds a portable distribution on `windows-latest`. Actual Windows WebView startup is an explicit `native_window_smoke` manual input. macOS builds on `macos-15` (arm64) and `macos-15-intel` (x64) require the `macos_checks` manual input; push/PR never schedules them. Runner names were checked against [official runner documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). These workflow definitions have not been dispatched during this local session. They upload evidence/artifacts and never publish a release automatically.
+GitHub Actions automatically checks Windows and builds a portable distribution on `windows-latest`. Actual Windows WebView startup is an explicit `native_window_smoke` manual input. The historical combined workflow's Mac checks require `macos_checks`; the dedicated **Verified macOS packages** workflow builds on `macos-15` (arm64) and `macos-15-intel` (x64) by manual dispatch. Push/PR never schedules Mac builds. Runner names were checked against [official runner documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). The final 0.1.2 dedicated run was dispatched and passed; earlier failures are retained in [verification.md](verification.md). Workflows upload evidence/artifacts and never publish a release automatically.
 
 Before claiming platform support, record package creation, digest, signature/notarization status, install location, actual window launch, 2D import/export, project reopen, optional Blender workflow, update and uninstall. Preserve user projects throughout the lifecycle.

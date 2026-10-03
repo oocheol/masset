@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.2",
+  "distribution": "macOS trial DMG",
+  "createdAt": "2026-10-03T10:13:54.103Z",
+  "sourceCommit": "0674d189a9c85e6ef64810cc5b777fd149daf967",
+  "sourceUrl": "https://github.com/oocheol/masset/tree/0674d189a9c85e6ef64810cc5b777fd149daf967",
+  "workflowRun": "https://github.com/oocheol/masset/actions/runs/37113522134",
+  "minimumSystemVersionConfigured": "12.0",
+  "appleDeveloperIdSigned": false,
+  "notarized": false,
+  "subscriptionGenerationSupported": false,
+  "managedCodexSupported": false,
+  "inAppUpdatesSupported": false,
+  "blenderVerified": false,
+  "windowsReleaseFilesPreserved": true,
+  "windowsUpdaterManifestSha256": "4f906c68eced56df442eb76180b4cbd12d0bd1d6fd732fb5eb05d7cead8ab73a",
+  "packages": [
+    {
+      "architecture": "arm64",
+      "label": "Apple Silicon",
+      "target": "aarch64-apple-darwin",
+      "filename": "AssetStudio_0.1.2_macos-arm64.dmg",
+      "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_macos-arm64.dmg",
+      "bytes": 16758899,
+      "sha256": "077ab59fac87524cc9a6d71b1102d94a75a19dc45333d3e972ee483d0e18a028",
+      "testedPlatform": {
+        "os": "macos",
+        "uname": "arm64",
+        "nodeArchitecture": "arm64",
+        "nodeVersion": "v24.15.0",
+        "translated": false,
+        "osVersion": "ProductName:\t\tmacOS\nProductVersion:\t\t15.7.9\nBuildVersion:\t\t24G830"
+      },
+      "appArchitectures": [
+        "arm64"
+      ],
+      "appExecutableBytes": 17853680,
+      "appExecutableSha256": "8c45ddca7320c37d6c8124c88e093d835f1f437dcb49c8b943738389ab1ea5fe",
+      "rustTests": {
+        "passed": 138,
+        "failed": 0,
+        "ignored": 0
+      },
+      "nativeGui": {
+        "decodedImages": 12,
+        "externalProviderActions": 0,
+        "updaterNetworkActions": 0
+      },
+      "nativeBackend": {
+        "productionBackend": true,
+        "copiedAppResourcesUsedByCli": false,
+        "equivalentBundledInputHashesVerified": true,
+        "jobs": 6,
+        "pngs": 16,
+        "reopened": true,
+        "leaseScope": "same-process independent handles"
+      },
+      "checks": {
+        "copiedAppMatchesDmg": true,
+        "bundledRepositoryInputsEqual": true,
+        "macTargetLicensesVerified": true,
+        "copiedAppGuiVerified": true,
+        "nativeBackend2DVerified": true,
+        "repositoryOriginalsPreserved": true,
+        "ownDmgDetached": true
+      },
+      "boundaries": {
+        "liveProviderVerified": false,
+        "blenderVerified": false,
+        "appUpdaterVerified": false,
+        "copiedAppUi2DProcessingVerified": false,
+        "cliUsesRepositoryFixtures": true,
+        "gatekeeperVerified": false,
+        "notarizationVerified": false,
+        "cleanMachineVerified": false
+      },
+      "signing": {
+        "codesignVerificationExitCode": 0,
+        "appBundleSealVerified": true,
+        "notarization": "unverified",
+        "gatekeeper": "unverified"
+      },
+      "anonymousDownloadVerified": true
+    },
+    {
+      "architecture": "x64",
+      "label": "Intel",
+      "target": "x86_64-apple-darwin",
+      "filename": "AssetStudio_0.1.2_macos-x64.dmg",
+      "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.2/AssetStudio_0.1.2_macos-x64.dmg",
+      "bytes": 17942253,
+      "sha256": "831838593432c1b0ed0744b1a7c2348f6f578fe0912b95533c6046c3f4231a40",
+      "testedPlatform": {
+        "os": "macos",
+        "uname": "x86_64",
+        "nodeArchitecture": "x64",
+        "nodeVersion": "v24.15.0",
+        "translated": false,
+        "osVersion": "ProductName:\t\tmacOS\nProductVersion:\t\t15.7.9\nBuildVersion:\t\t24G830"
+      },
+      "appArchitectures": [
+        "x86_64"
+      ],
+      "appExecutableBytes": 19552064,
+      "appExecutableSha256": "97a17d1dd930cc2db0c571e5041c196110dd29d2659f28487872275776414566",
+      "rustTests": {
+        "passed": 138,
+        "failed": 0,
+        "ignored": 0
+      },
+      "nativeGui": {
+        "decodedImages": 12,
+        "externalProviderActions": 0,
+        "updaterNetworkActions": 0
+      },
+      "nativeBackend": {
+        "productionBackend": true,
+        "copiedAppResourcesUsedByCli": false,
+        "equivalentBundledInputHashesVerified": true,
+        "jobs": 6,
+        "pngs": 16,
+        "reopened": true,
+        "leaseScope": "same-process independent handles"
+      },
+      "checks": {
+        "copiedAppMatchesDmg": true,
+        "bundledRepositoryInputsEqual": true,
+        "macTargetLicensesVerified": true,
+        "copiedAppGuiVerified": true,
+        "nativeBackend2DVerified": true,
+        "repositoryOriginalsPreserved": true,
+        "ownDmgDetached": true
+      },
+      "boundaries": {
+        "liveProviderVerified": false,
+        "blenderVerified": false,
+        "appUpdaterVerified": false,
+        "copiedAppUi2DProcessingVerified": false,
+        "cliUsesRepositoryFixtures": true,
+        "gatekeeperVerified": false,
+        "notarizationVerified": false,
+        "cleanMachineVerified": false
+      },
+      "signing": {
+        "codesignVerificationExitCode": 0,
+        "appBundleSealVerified": true,
+        "notarization": "unverified",
+        "gatekeeper": "unverified"
+      },
+      "anonymousDownloadVerified": true
+    }
+  ]
+}

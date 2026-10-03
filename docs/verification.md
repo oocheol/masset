@@ -2,6 +2,16 @@
 
 Latest update: 2026-10-03 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
 
+## 0.1.2 macOS trial publication
+
+[Native workflow 37113522134](https://github.com/oocheol/masset/actions/runs/37113522134) completed successfully from `0674d189a9c85e6ef64810cc5b777fd149daf967`. Apple Silicon and Intel both ran natively on macOS 15.7.9 without Rosetta. Each passed 138 Rust tests and strict target-specific licenses: both have 20 npm packages and five MPL source archives with zero missing texts; Apple Silicon has 311 Cargo packages / 253 license texts, Intel has 312 / 254. Each mounted/verified the actual DMG and byte-compared its copied `.app`, and passed `codesign --verify --deep --strict` with a local ad-hoc bundle seal. No Apple Developer ID or notarization is claimed.
+
+Each copied native app decoded twelve fixture images, checked native environment IPC, 14px minimum buttons and the 16px guide/focus behavior. Separately, each release `asset-cli` executed six local CPU jobs and passed project reopen/ownership/cache checks; independent QA verified sixteen PNGs and both atlas source frames, plus all twelve original fixture digests. The CLI used repository fixtures whose bytes matched the bundle; copied-app UI processing buttons were not the source of these backend transforms. Provider/updater actions measured zero.
+
+Both [public DMGs](releases/v0.1.2-macos.md) were anonymously downloaded and matched the actual native candidates in bytes and SHA-256. Windows `latest.json` remains byte-identical (`4f906c68eced56df442eb76180b4cbd12d0bd1d6fd732fb5eb05d7cead8ab73a`). Mac subscription generation, managed Codex preparation and in-app updates are unsupported; Mac Blender, Gatekeeper quarantine/first download, clean hardware, application replacement/uninstall and minimum macOS 12 remain unverified. [Mac release metadata](releases/v0.1.2-macos.json) records the exact per-platform hashes and boundaries.
+
+Earlier evidence is retained: run 37111110534 failed the ten-level Korean SQLite path fixture; the core now checks the native SQLite VFS byte limit and preserves Windows long-path tests. Run 37111842296 passed native Rust but stopped with thirteen missing Mac license texts, subsequently supplied with pinned declarations and distinct canonical supplements. Run 37112589325 produced an Apple Silicon app that passed GUI/backend checks but had an unsealed bundle; it was not published, and its remaining Intel job was cancelled when the sealing fix was ready. Only the final sealed packages above were published.
+
 ## 0.1.2 Windows image-provider repair
 
 The pinned `gpt-6.1-sol` catalog requires code mode. The 0.1.1 application disabled its official host and received no image-tool start or accepted image file in the user's two failed requests. 0.1.2 enables the signed isolated host, verifies empty environments/read-only network-disabled thread state, and keeps execution/file/browser/MCP/skill/agent tools disabled. User projects, installed application and old failed jobs were preserved.
