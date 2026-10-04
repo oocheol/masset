@@ -3,14 +3,24 @@
   window.__ASSET_NATIVE_QA_RUNNING__ = true;
   const withModel = window.__ASSET_NATIVE_QA__?.withNativeModel === true;
   const state = {domReady:false, decodedImages:0, title:document.title}, restores=[];
-  let providerCalls=0,updateNetworkActions=0;
+  let providerCalls=0,updateNetworkActions=0,gameUiPhase=false,gameUiBaseline=null,gameUiSubmission=null;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const invoke=request=>window.__TAURI__.core.invoke('workspace_command',{request});
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
   const wait=async(label,predicate,timeout)=>{const deadline=Date.now()+timeout;while(Date.now()<deadline){const value=await predicate();if(value)return value;await sleep(150);}throw new Error(`${label} timed out`);};
   const originalInvoke=window.__TAURI_INTERNALS__.invoke;
   window.__TAURI_INTERNALS__.invoke=function(command,args,...rest){
-    if(command==='workspace_command'&&['provider_status','provider_login','generate'].includes(args?.request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
+    const request=args?.request;
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_status')return Promise.resolve({ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',receivedImages:0,rateLimits:[]});
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='plan_assets'){
+      const names=['플라스마 소총','레이저 권총','중력 대포','EMP 발사기','광자 검'];
+      return Promise.resolve({schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:'images',mode:'new',spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Native UI fixture: five individually named weapons; provider response mocked.',warnings:[],items:names.map(name=>({id:crypto.randomUUID(),name,kind:'image',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'독립 인벤토리 아이콘',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))});
+    }
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='generate_bundle'){
+      gameUiSubmission=structuredClone(request);
+      return Reflect.apply(originalInvoke,this,[command,{request:{action:'snapshot'}},...rest]);
+    }
+    if(command==='workspace_command'&&['provider_status','provider_login','generate','plan_assets','generate_bundle','cancel_plan'].includes(request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
     if(command==='workspace_command'&&['update_check','update_install'].includes(args?.request?.action)){updateNetworkActions++;return Promise.reject(new Error('Local native QA refuses update network actions'));}
     return Reflect.apply(originalInvoke,this,[command,args,...rest]);
   };
@@ -72,6 +82,32 @@
     state.appUpdater={supported:updateStatus.supported,state:updateStatus.state,networkActions:updateNetworkActions};
     check(!smallButtons.length&&!state.readability.horizontalOverflow&&guideSize>=16,'Native readability checks failed');
     check(updateStatus.supported===false&&updateStatus.state==='unsupported'&&updateNetworkActions===0,'Native QA update gate failed');
+    // Exercise the real native WebView controls using an explicitly mocked
+    // planner response. Real subscription/Blender generation is verified by the
+    // independent native game-bundle-proof example, never by this UI fixture.
+    gameUiBaseline=await invoke({action:'snapshot'});gameUiPhase=true;
+    const ui=state.gameBundleUi={nativeWebView:true,planResponseMocked:true,submissionIntercepted:true,providerRequests:0,initialRows:0,submittedItems:0,passed:false};
+    const imageButton=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='이미지 제작');check(imageButton&&!imageButton.disabled,'Image bundle entry missing');imageButton.click();
+    const panel=await wait('Native game bundle panel',()=>document.querySelector('.game-bundle-panel'),5000);
+    check(document.querySelector('input[name="generation-mode"][value="separate"]')?.checked,'Individual assets must be the default image mode');
+    const setField=(element,value)=>{check(element,'Bundle field unavailable');Object.getOwnPropertyDescriptor(element.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(element,value);element.dispatchEvent(new Event('input',{bubbles:true}));element.dispatchEvent(new Event('change',{bubbles:true}));};
+    setField(panel.querySelector('textarea[aria-label="이미지 설명"]'),'우주 전쟁 게임에 필요한 서로 다른 무기 5개');
+    setField(panel.querySelector('input[aria-label="이미지 수"]'),'5');
+    const planSubmit=panel.querySelector('button[type="submit"]');await wait('Native plan fixture enabled',()=>!planSubmit.disabled,5000);planSubmit.click();
+    await wait('Five native reviewed item rows',()=>panel.querySelectorAll('.bundle-item').length===5,5000);ui.initialRows=5;
+    check([...panel.querySelectorAll('.bundle-item input[aria-label$="번 에셋 이름"]')].map(field=>field.value).join('|')==='플라스마 소총|레이저 권총|중력 대포|EMP 발사기|광자 검','Reviewed items lost their distinct identities');
+    check(panel.querySelector('.bundle-review-approval input')?.checked===false,'Review must require explicit approval');
+    setField(panel.querySelector('input[aria-label="1번 에셋 이름"]'),'플라스마 소총 MK2');
+    panel.querySelectorAll('.bundle-item-heading input[type="checkbox"]')[4].click();
+    const approved=panel.querySelector('.bundle-review-approval input');await wait('Native review approval enabled',()=>!approved.disabled,5000);approved.click();
+    const submit=[...panel.querySelectorAll('button')].find(button=>button.textContent.trim()==='검토한 에셋 묶음 제작');await wait('Native bundle fixture enabled',()=>!submit.disabled,5000);submit.click();
+    await wait('Native bundle submission captured',()=>gameUiSubmission,5000);
+    const included=gameUiSubmission.plan.items.filter(item=>item.enabled);ui.submittedItems=included.length;ui.names=included.map(item=>item.name);
+    check(gameUiSubmission.approved===true&&included.length===4&&new Set(ui.names).size===4&&ui.names[0]==='플라스마 소총 MK2','Bundle review/exclusion/rename not reflected in submission');
+    check(included.every(item=>item.prompt.includes(`이 파일에는 "${item.name}" 에셋 하나만`)),'Per-item single-asset rule missing');
+    await wait('Native bundle dialog closed',()=>!document.querySelector('.dialog-generate'),5000);
+    const afterUi=await invoke({action:'snapshot'});check(afterUi.project.assets.length===gameUiBaseline.project.assets.length&&afterUi.project.jobs.length===gameUiBaseline.project.jobs.length,'UI fixture unexpectedly created native work');
+    ui.passed=true;gameUiPhase=false;
     if(withModel){
       const report=state.native3D={requested:true,passed:false,stage:'initial snapshot',assetId:null,generator:'Blender',blenderUsed:false,modelJobSucceeded:false,parameters:null,glbFetch:null,webgl:{context:false,drawCalls:0,defaultFramebufferDrawCalls:0,pixelReadbacks:0,pixelColorVariation:false,pixels:[],visibilityState:document.visibilityState},externalProviderCalls:0,error:null};
       const baseline=await invoke({action:'snapshot'}),oldAssetIds=new Set(baseline.project.assets.map(asset=>asset.id)),oldJobIds=new Set(baseline.project.jobs.map(job=>job.id));

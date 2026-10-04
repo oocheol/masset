@@ -42,11 +42,17 @@ test('workstation renders actual fixtures and keeps provider requests desktop-on
 
   await page.getByRole('button', {name: '이미지 제작', exact: true}).click();
   const generation = page.getByRole('dialog', {name: 'GPT Image2 이미지 제작'});
+  await expect(generation.getByRole('radio', {name: '서로 다른 에셋 · 개별 구성안 검토 (기본)'})).toBeChecked();
   await generation.getByLabel('이미지 설명', {exact: true}).fill('A local test icon; no provider request is authorized.');
+  await generation.getByLabel('이미지 수', {exact: true}).fill('5');
+  await expect(generation).toContainText('한 행은 에셋 하나입니다.');
+  await expect(generation.getByRole('button', {name: '구성안 만들기', exact: true})).toBeDisabled();
+  await generation.getByRole('radio', {name: '동일 에셋의 여러 변형 · 같은 설명 반복'}).check();
+  await generation.getByLabel('동일 에셋 설명', {exact: true}).fill('Same local test icon variations; no provider request is authorized.');
   await generation.getByRole('textbox', {name: /^이미지 이름 \(선택\)/}).fill('QA browser gate');
-  await generation.getByLabel('이미지 수', {exact: true}).fill('3');
+  await generation.getByLabel('변형 수', {exact: true}).fill('3');
   await generation.getByRole('checkbox', {name: '현재 규격과 스타일을 제작 기준으로 승인합니다.'}).check();
-  await expect(generation.getByRole('button', {name: '이미지 요청 제출', exact: true})).toBeDisabled();
+  await expect(generation.getByRole('button', {name: '동일 에셋 변형 요청 제출', exact: true})).toBeDisabled();
   await expect(generation.getByRole('button', {name: '공식 계정 연결', exact: true})).toBeDisabled();
   await expect(generation.locator('.status-tag')).toHaveText('데스크톱 전용');
   await page.screenshot({path: testInfo.outputPath('browser-generation-gate.png'), fullPage: false});
@@ -61,14 +67,21 @@ test('workstation renders actual fixtures and keeps provider requests desktop-on
     let generateError: string | null = null;
     try { await browserCommand({action: 'generate', requestId: crypto.randomUUID(), prompt: 'QA browser boundary', count: 3}); }
     catch (error) { generateError = error instanceof Error ? error.message : String(error); }
+    const bundleErrors: string[] = [];
+    for (const action of ['plan_assets', 'generate_bundle']) {
+      try { await browserCommand({action, requestId: crypto.randomUUID(), brief: 'Five individual weapons', count: 5}); }
+      catch (error) { bundleErrors.push(error instanceof Error ? error.message : String(error)); }
+    }
     const after = await browserCommand({action: 'snapshot'});
-    return {native: false, status, login, generateError, beforeJobs: before.project.jobs, afterJobs: after.project.jobs, beforeAssets: before.project.assets.length, afterAssets: after.project.assets.length};
+    return {native: false, status, login, generateError, bundleErrors, beforeJobs: before.project.jobs, afterJobs: after.project.jobs, beforeAssets: before.project.assets.length, afterAssets: after.project.assets.length};
   });
   for (const connection of [boundary.status, boundary.login]) {
     expect(connection.ready).toBe(false); expect(connection.authenticated).toBe(false);
     expect(connection.confirmedModel).toBeNull(); expect(connection.reason).toContain('데스크톱 전용');
   }
   expect(boundary.generateError).toContain('데스크톱 전용');
+  expect(boundary.bundleErrors).toHaveLength(2);
+  expect(boundary.bundleErrors.every(error => error.includes('데스크톱 전용'))).toBe(true);
   expect(boundary.beforeJobs).toEqual([]); expect(boundary.afterJobs).toEqual([]);
   expect(boundary.beforeAssets).toBe(12); expect(boundary.afterAssets).toBe(12);
   const externalRequests = externalRequestsByPage.get(page)!;

@@ -87,6 +87,11 @@ fn macos_app_runtime_paths() -> Vec<PathBuf> {
         .collect()
 }
 
+fn individual_asset_prompt(payload: &Value) -> Result<String> {
+    let subject=if payload["assetKind"]=="texture" {"Create ONE seamless texture tile filling one canvas."} else {"Create ONE standalone game asset with exactly ONE isolated subject, its full silhouette visible."};
+    Ok(format!("{subject} The only asset to depict is: {}. Individual description: {}\nUse the attached references only as visual/style guidance or to improve the selected source. Do not reproduce other objects from a reference collage. No contact sheet, overview, montage, multiple panels, collection of items, text labels or asset list. Return one image file for this one named asset.\nApproved common style: {}\nApproved target specification: {}\nUse only the native image tool; do not create or execute scripts.",text_field(payload,"name")?,text_field(payload,"prompt")?,payload["styleGuide"],payload["spec"]))
+}
+
 fn runtime_version_rank(value: &str) -> Option<semver::Version> {
     let safe = asset_providers::safe_codex_version(value.as_bytes())?;
     let version = safe.strip_prefix("codex-cli ")?;
@@ -260,7 +265,7 @@ fn official_runtime_file(_: &Path) -> bool {
 }
 
 impl Backend {
-    fn provider_executable(&self) -> Option<PathBuf> {
+    pub(super) fn provider_executable(&self) -> Option<PathBuf> {
         executable(self.inner.codex_installer.installed_executables())
     }
 
@@ -419,6 +424,9 @@ impl Backend {
         if !(1..=20).contains(&count) {
             bail!("이미지는 한 번에 1~20개까지 요청할 수 있습니다.")
         }
+        if count > 1 && request["mode"] != "variations" {
+            bail!("여러 개의 서로 다른 에셋은 구성안을 확인한 뒤 한 번에 제출해 주세요. 같은 에셋 변형은 변형 모드를 선택하세요.")
+        }
         let request_id = text_field(request, "requestId")?;
         Uuid::parse_str(request_id).context("생성 요청 식별자가 올바르지 않습니다.")?;
         let status = self.inner.provider_connection.lock().unwrap().clone();
@@ -478,11 +486,15 @@ impl Backend {
             queue.fail(&task.id,FailureKind::Unsupported,"대기 중 공급자 모델 또는 런타임 버전이 바뀌었습니다. 현재 연결을 확인하고 새 요청을 만들어 주세요.")?;
             bail!("대기 작업의 공급자 설정이 현재 런타임과 다릅니다.")
         }
+        let individual = payload["singleAsset"] == true;
+        let reference_paths = if individual {
+            super::bundle::copy_reference_images(root,&payload["references"],work)?
+        } else {vec![]};
         let request = ImageGenerationRequest {
-            prompt:format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Use code-mode only to invoke the built-in image generation tool. Do not run commands, access files or network APIs, or create asset scripts. Return the generated image.",
-                text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"]),
-            requested_model:text_field(&payload,"requestedModel")?.into(),reference_paths:vec![],width:None,height:None,
-            transparent_background:None,mask_path:None,requires_confirmed_model:false,
+            prompt: if individual {individual_asset_prompt(&payload)?} else {format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Use code-mode only to invoke the built-in image generation tool. Do not run commands, access files or network APIs, or create asset scripts. Return the generated image.",
+                text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"])},
+            requested_model:text_field(&payload,"requestedModel")?.into(),reference_paths,width:None,height:None,
+            transparent_background:if payload["assetKind"]=="sprite" {Some(true)} else {None},mask_path:None,requires_confirmed_model:false,
         };
         // Persist intent before submission: a crash during turn/start cannot
         // silently enqueue another subscription charge on restart.
@@ -556,6 +568,9 @@ impl Backend {
         if cancel.load(Ordering::SeqCst) {
             bail!("취소한 생성 결과는 자동으로 에셋에 반영하지 않았습니다.")
         }
+        if individual && outcome.receipts.len()!=1 {
+            bail!("개별 에셋 한 항목에서 이미지 파일이 하나만 수신되어야 합니다. 수신 기록은 보존하며 자동 재요청하지 않았습니다.")
+        }
         queue.set_progress(&task.id, "파일 디코딩 · 해시 · 프로젝트 저장", None, None)?;
         for (index, receipt) in outcome.receipts.iter().enumerate() {
             asset_providers::validate_receipt(&request, receipt)?;
@@ -589,26 +604,40 @@ impl Backend {
                 bail!("수신 파일의 검증 결과가 저장 파일과 다릅니다.")
             }
             repo.verify_artifact(&artifact)?;
-            let mut report = image_report(&artifact.id, &copied_info)?;
             let requested_width = payload["spec"]["width"].as_u64().unwrap_or(0);
             let requested_height = payload["spec"]["height"].as_u64().unwrap_or(0);
-            if u64::from(info.width) != requested_width
+            let mut artifacts=vec![artifact.clone()];
+            let final_info = if payload["normalizeToSpec"]==true {
+                let normalized=work.join(format!("game-asset-{index}.png"));
+                let info=raster::process(&repo.artifact_path(&artifact.path)?,&normalized,&json!({"type":"resize","width":requested_width,"height":requested_height,"pixelArt":payload["spec"]["pixelArt"].as_bool().unwrap_or(false)}))?;
+                artifacts[0].role=ArtifactRole::Source;
+                let mut output=repo.copy_in(&normalized,"versions",&format!("game-asset-{}-{index}.png",task.id))?;
+                output.role=ArtifactRole::Output;
+                artifact=output.clone();artifacts.push(output);info
+            } else {copied_info};
+            let mut report = image_report(&artifact.id, &final_info)?;
+            if payload["normalizeToSpec"]!=true && (u64::from(info.width) != requested_width
                 || u64::from(info.height) != requested_height
-            {
+            ) {
                 report.checks.push(ValidationCheck{code:"requested-size".into(),status:ValidationStatus::Warn,
                     message:format!("수신 크기 {}×{}px, 프로젝트 목표 {}×{}px. 로컬 크기 조정으로 새 버전을 만들 수 있습니다.",info.width,info.height,requested_width,requested_height),measured:None});
             }
             let mut asset = new_asset(
                 payload["name"].as_str().unwrap_or("생성 이미지").into(),
-                AssetKind::Image,
+                if individual {serde_json::from_value(payload["assetKind"].clone())?} else {AssetKind::Image},
                 AssetSource::CodexSubscription,
-                vec![artifact],
-                Some((info.width, info.height)),
+                artifacts,
+                Some((final_info.width, final_info.height)),
                 None,
                 Some(report),
                 BTreeMap::from([
                     ("styleGuide".into(), payload["styleGuide"].clone()),
                     ("spec".into(), payload["spec"].clone()),
+                    ("bundleId".into(),payload["bundleId"].clone()),
+                    ("bundleItemId".into(),payload["bundleItemId"].clone()),
+                    ("referenceMetadata".into(),payload["referenceMetadata"].clone()),
+                    ("receivedDimensions".into(),json!([info.width,info.height])),
+                    ("normalizedToSpec".into(),payload["normalizeToSpec"].clone()),
                     ("providerThreadId".into(), json!(outcome.thread_id)),
                     ("providerTurnId".into(), json!(outcome.turn_id)),
                     (

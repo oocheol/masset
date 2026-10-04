@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.6",
+  "platform": "macos-arm64",
+  "nativeBackend": true,
+  "nativeWindow": false,
+  "sourceCommit": null,
+  "planner": {
+    "model": "gpt-5.5",
+    "reasoningEffort": "medium",
+    "textOnly": true,
+    "completed": true,
+    "automaticFallback": false
+  },
+  "imageAgent": "gpt-6.1-sol",
+  "requestedImageModel": "gpt-image-2",
+  "actualImageModel": null,
+  "imageRequests": 5,
+  "automaticImageRetry": false,
+  "referenceCount": 2,
+  "referenceKinds": [
+    "image",
+    "model"
+  ],
+  "referenceOriginalsPreserved": true,
+  "oneAtomicAdmission": true,
+  "repeatedSubmitDidNotDuplicateJobs": true,
+  "independentNewAssets": 7,
+  "projectReopened": true,
+  "independentExportVerified": true,
+  "independentExportFiles": 28,
+  "freshBlenderArtifactReopens": 4,
+  "images": [
+    {
+      "name": "plasma_rifle_icon",
+      "format": "png",
+      "bytes": 98944,
+      "sha256": "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+      "width": 512,
+      "height": 512,
+      "singleWeaponVisuallyInspected": true
+    },
+    {
+      "name": "laser_pistol_icon",
+      "format": "png",
+      "bytes": 150126,
+      "sha256": "7a8029a703bddd45335648b9bd7b4dc1942c85122996b44caeda501967beca5d",
+      "width": 512,
+      "height": 512,
+      "singleWeaponVisuallyInspected": true
+    },
+    {
+      "name": "gravity_cannon_icon",
+      "format": "png",
+      "bytes": 223484,
+      "sha256": "1b90ea1d58c75a9d2e95f6ad015aadb169a7fbb28a18a620e5ab30e1c38cef7d",
+      "width": 512,
+      "height": 512,
+      "singleWeaponVisuallyInspected": true
+    },
+    {
+      "name": "emp_launcher_icon",
+      "format": "png",
+      "bytes": 140180,
+      "sha256": "e6cd141a3a7fd1c18bb2f450888a06833dc4ac21a7a0f0e4c99512a9dbd45413",
+      "width": 512,
+      "height": 512,
+      "singleWeaponVisuallyInspected": true
+    },
+    {
+      "name": "photon_sword_icon",
+      "format": "png",
+      "bytes": 117009,
+      "sha256": "a77709be97cf9d3c2e0ebed23d092bd5ab209bbd405ba2c659fe14c53d38258d",
+      "width": 512,
+      "height": 512,
+      "singleWeaponVisuallyInspected": true
+    }
+  ],
+  "models": [
+    {
+      "name": "falcon_interceptor_model",
+      "format": "glb",
+      "bytes": 140252,
+      "sha256": "8cd52c290e8945b86970329f44d430737c82d5b4543c4137c3be2ed90583ed6f",
+      "mesh": {
+        "dimensions": [
+          2.4,
+          0.9,
+          3.2
+        ],
+        "triangles": 1980,
+        "unit": "m",
+        "vertices": 3888
+      }
+    },
+    {
+      "name": "munitions_crate_model",
+      "format": "glb",
+      "bytes": 116956,
+      "sha256": "ba296d80feac95eed903c880376bed74897b36ddac077828b1fc19c25c95670d",
+      "mesh": {
+        "dimensions": [
+          1.6,
+          0.8,
+          1.0
+        ],
+        "triangles": 1620,
+        "unit": "m",
+        "vertices": 3240
+      }
+    }
+  ],
+  "boundaries": {
+    "nativeUiReviewIsSeparate": true,
+    "allAccountsOrModels": false,
+    "arbitraryImageTo3D": false,
+    "arbitraryMeshEditing": false,
+    "windowsNewWorkflowNativeVerified": false
+  }
+}
