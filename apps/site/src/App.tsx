@@ -140,17 +140,17 @@ export default function App() {
 
       <section id="workbench" className="workbench-section section-space" aria-labelledby="workbench-title">
         <div className="page-width">
-          <div className="section-heading workbench-heading"><h2 id="workbench-title">원본은 남기고,<br />결과를 다듬으세요.</h2><p>왼쪽에서 고르고, 가운데에서 확인하고,<br className="desktop-break" /> 오른쪽에서 수정하세요. 작업 큐에 처리 기록이 남습니다.</p></div>
+          <div className="section-heading workbench-heading"><h2 id="workbench-title">설명하고 제작하고,<br />결과를 확인하세요.</h2><p>Mac 0.1.8 후보는 게임 설명과 폴더 연결로 시작합니다. GPT로 제작 목록을 만들고 개별 결과를 검수하세요. 편집 도구는 필요할 때 엽니다.</p></div>
           <figure className="workstation-figure">
-            <div className="workstation-title"><span><Image size={17} aria-hidden="true" />Asset Studio 작업대</span><span className="preview-label">브라우저 미리보기</span></div>
+            <div className="workstation-title"><span><Image size={17} aria-hidden="true" />기존 편집 도구</span><span className="preview-label">0.1.3 브라우저 미리보기</span></div>
             <button ref={screenshotTrigger} className="screenshot-button" aria-label="Asset Studio 브라우저 미리보기 화면 크게 보기" onClick={() => screenshotDialog.current?.showModal()}>
               <img src="/media/workstation-browser-013.png" alt="Asset Studio의 브라우저 미리보기. 왼쪽 프로젝트 목록, 가운데 이미지 라이브러리, 오른쪽 편집 속성, 아래 작업 큐가 보입니다." width="1500" height="960" loading="lazy" />
               <span className="expand-label"><Expand size={16} aria-hidden="true" />화면 크게 보기</span>
             </button>
-            <figcaption><span>실제 앱 UI의 브라우저 미리보기 화면</span><span>이미지 편집 · 라이브러리 · 버전 · 작업 큐</span></figcaption>
+            <figcaption><span>공개 0.1.3의 편집 화면 · 최신 제작 홈과 구분</span><span>이미지 편집 · 라이브러리 · 버전 · 작업 큐</span></figcaption>
           </figure>
           <div className="workbench-details">
-            <dl className="editing-list"><div><dt><Image size={22} aria-hidden="true" />이미지를 새 버전으로</dt><dd>PNG·JPEG·WebP의 크기, 자르기, 색상과 배경 마스크를 조정합니다. 이전 버전과 비교하고 원하는 결과를 고르세요.</dd></div><div><dt><Layers size={22} aria-hidden="true" />프레임에서 아틀라스까지</dt><dd>이미지를 프레임으로 분할하고 한 장에 묶습니다. 좌표·피벗·재생 속도가 담긴 JSON도 함께 남습니다.</dd></div><div><dt><Box size={22} aria-hidden="true" />게임 설명에서 개별 에셋으로</dt><dd>게임 에셋 묶음에서 이미지·모델·혼합 구성을 검토하고 개별 항목을 제작합니다. Mac의 3D 만들기에서는 투명 이미지를 개별 모델로 복원하거나 기존 GLB를 새 버전으로 다듬을 수 있습니다.</dd></div></dl>
+            <dl className="editing-list"><div><dt><Image size={22} aria-hidden="true" />GPT와 제작 목록 준비</dt><dd>공식 구독을 연결하고 게임의 장르·시점·스타일을 설명하세요. Mac 0.1.8 후보는 기존 프로젝트의 에셋 목록과 누락 참조를 참고해 제작 범위를 제안합니다.</dd></div><div><dt><Layers size={22} aria-hidden="true" />필요한 에셋을 개별 파일로</dt><dd>각 이미지와 3D 참고 이미지를 독립 요청합니다. 3D는 로컬 TripoSR와 Blender로 변환하고 게임용 GLB·LOD·텍스처를 새 폴더에 저장합니다.</dd></div><div><dt><Box size={22} aria-hidden="true" />결과 확인과 선택한 에셋 개선</dt><dd>완료된 카드에서 결과를 살펴보고 검수 승인하세요. 개선할 결과만 참고 자료로 선택해 새로 제작할 수 있습니다. 기존 게임 파일과 이전 결과는 유지합니다.</dd></div></dl>
             <aside className="workspace-note"><PackageOpen size={26} aria-hidden="true" /><h3>다음 작업도 이어서.</h3><p>프로젝트와 작업 큐를 로컬에 저장합니다. 자원별 처리, 취소·복구·캐시로 반복 제작을 관리하세요.</p><p>큰 글씨와 앱 안의 사용 가이드로 시작할 수 있습니다. Node.js·Rust 설치는 필요 없습니다.</p><a className="text-link" href="#download">내 컴퓨터에 작업대 준비 <ArrowDownToLine size={17} aria-hidden="true" /></a></aside>
           </div>
         </div>
