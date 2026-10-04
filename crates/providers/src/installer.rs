@@ -22,16 +22,75 @@ use thiserror::Error;
 use uuid::Uuid;
 
 pub const CODEX_VERSION: &str = "0.160.0";
-pub const CODEX_TARGET: &str = "x86_64-pc-windows-msvc";
-pub const CODEX_PACKAGE_BYTES: u64 = 157_444_460;
-pub const CODEX_PACKAGE_SHA256: &str =
-    "7f7fbbc8d6fd4ea2f3b13855ef47ea59663ba7e61fb2e9821df37163b8030891";
-const PACKAGE_URL: &str = "https://github.com/openai/codex/releases/download/rust-v0.160.0/codex-package-x86_64-pc-windows-msvc.tar.gz";
+pub const CODEX_TARGET: &str = NATIVE_PACKAGE.target;
+pub const CODEX_PACKAGE_BYTES: u64 = NATIVE_PACKAGE.bytes;
+pub const CODEX_PACKAGE_SHA256: &str = NATIVE_PACKAGE.sha256;
 const SOURCE_URL: &str = "https://github.com/openai/codex/releases/tag/rust-v0.160.0";
 const LICENSE_URL: &str = "https://github.com/openai/codex/blob/rust-v0.160.0/LICENSE";
-const MAIN_PATH: &str = "bin/codex.exe";
-// The tagged packaging source puts the code-mode host next to the main binary.
-const HOST_PATH: &str = "bin/codex-code-mode-host.exe";
+
+struct PinnedPackage {
+    target: &'static str,
+    url: &'static str,
+    bytes: u64,
+    sha256: &'static str,
+    main: &'static str,
+    host: &'static str,
+    ripgrep: &'static str,
+    zsh: Option<&'static str>,
+}
+
+const WINDOWS_PACKAGE: PinnedPackage = PinnedPackage {
+    target: "x86_64-pc-windows-msvc",
+    url: "https://github.com/openai/codex/releases/download/rust-v0.160.0/codex-package-x86_64-pc-windows-msvc.tar.gz",
+    bytes: 157_444_460,
+    sha256: "7f7fbbc8d6fd4ea2f3b13855ef47ea59663ba7e61fb2e9821df37163b8030891",
+    main: "bin/codex.exe",
+    host: "bin/codex-code-mode-host.exe",
+    ripgrep: "codex-path/rg.exe",
+    zsh: None,
+};
+
+// Official rust-v0.160.0 GitHub release asset 604060802. Its downloaded
+// bytes/hash and regular-file layout were independently verified on macOS.
+// This package's bin/codex is a native Mach-O, unlike ChatGPT.app's launcher.
+const MACOS_PACKAGE: PinnedPackage = PinnedPackage {
+    target: "aarch64-apple-darwin",
+    url: "https://github.com/openai/codex/releases/download/rust-v0.160.0/codex-package-aarch64-apple-darwin.tar.gz",
+    bytes: 129_976_298,
+    sha256: "007df41b607dbbc8d204b9746ce7fed2d4ce6c813f44c32ceee54175ca796525",
+    main: "bin/codex",
+    host: "bin/codex-code-mode-host",
+    ripgrep: "codex-path/rg",
+    zsh: Some("codex-resources/zsh/bin/zsh"),
+};
+
+const NATIVE_PACKAGE: &PinnedPackage = if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+    &MACOS_PACKAGE
+} else {
+    &WINDOWS_PACKAGE
+};
+
+fn supported_platform() -> bool {
+    cfg!(any(
+        all(target_os = "windows", target_arch = "x86_64"),
+        all(target_os = "macos", target_arch = "aarch64")
+    ))
+}
+
+fn package_for_target(target: &str) -> Result<&'static PinnedPackage, InstallerError> {
+    match target {
+        "x86_64-pc-windows-msvc" => Ok(&WINDOWS_PACKAGE),
+        "aarch64-apple-darwin" => Ok(&MACOS_PACKAGE),
+        _ => Err(InstallerError::PackageLayout),
+    }
+}
+
+#[cfg(test)]
+const PACKAGE_URL: &str = NATIVE_PACKAGE.url;
+#[cfg(test)]
+const MAIN_PATH: &str = NATIVE_PACKAGE.main;
+#[cfg(test)]
+const HOST_PATH: &str = NATIVE_PACKAGE.host;
 const RECEIPT_NAME: &str = "install-receipt.json";
 const MAX_UNPACKED_BYTES: u64 = 1024 * 1024 * 1024;
 const MAX_ENTRIES: usize = 20_000;
@@ -55,15 +114,21 @@ pub struct InstallerManifest {
 }
 
 pub fn official_manifest() -> InstallerManifest {
-    InstallerManifest {
-        version: CODEX_VERSION.into(),
-        target: CODEX_TARGET.into(),
-        url: PACKAGE_URL.into(),
-        bytes: CODEX_PACKAGE_BYTES,
-        sha256: CODEX_PACKAGE_SHA256.into(),
-        source_url: SOURCE_URL.into(),
-        license: "Apache-2.0; bundled third-party notices".into(),
-        license_url: LICENSE_URL.into(),
+    NATIVE_PACKAGE.manifest()
+}
+
+impl PinnedPackage {
+    fn manifest(&self) -> InstallerManifest {
+        InstallerManifest {
+            version: CODEX_VERSION.into(),
+            target: self.target.into(),
+            url: self.url.into(),
+            bytes: self.bytes,
+            sha256: self.sha256.into(),
+            source_url: SOURCE_URL.into(),
+            license: "Apache-2.0; bundled third-party notices".into(),
+            license_url: LICENSE_URL.into(),
+        }
     }
 }
 
@@ -97,7 +162,7 @@ pub type Status = InstallerStatus;
 pub enum InstallerError {
     #[error("공식 Codex 다운로드·설치 동의가 필요합니다.")]
     ConsentRequired,
-    #[error("공식 자동 설치는 Windows x64에서 지원합니다.")]
+    #[error("공식 자동 설치는 Windows x64와 macOS Apple Silicon에서 지원합니다.")]
     UnsupportedPlatform,
     #[error("화면에 표시된 공식 버전과 해시를 다시 확인해 주세요.")]
     ManifestMismatch,
@@ -202,7 +267,7 @@ impl CodexInstaller {
 
     fn with_manifest(root: PathBuf, manifest: InstallerManifest) -> Self {
         let status = InstallerStatus {
-            supported: cfg!(all(target_os = "windows", target_arch = "x86_64")),
+            supported: supported_platform(),
             state: InstallerState::Idle,
             version: manifest.version.clone(),
             downloaded_bytes: 0,
@@ -276,6 +341,9 @@ impl CodexInstaller {
     /// Discovery only. The native bridge must recheck the main binary and
     /// resolved helper signatures before executing any returned path.
     pub fn installed_executables(&self) -> Vec<PathBuf> {
+        let Ok(package) = package_for_target(&self.inner.manifest.target) else {
+            return vec![];
+        };
         let Ok(root) = safe_root(&self.inner.root, false) else {
             return vec![];
         };
@@ -308,14 +376,14 @@ impl CodexInstaller {
                 || receipt.target != self.inner.manifest.target
                 || receipt.bytes != self.inner.manifest.bytes
                 || receipt.sha256 != self.inner.manifest.sha256
-                || receipt.entrypoint != MAIN_PATH
-                || receipt.host != HOST_PATH
+                || receipt.entrypoint != package.main
+                || receipt.host != package.host
                 || !receipt.signature_verified
                 || validate_layout(&directory, &self.inner.manifest).is_err()
             {
                 continue;
             }
-            if let Ok(main) = contained_file(&directory, &directory.join(MAIN_PATH)) {
+            if let Ok(main) = contained_file(&directory, &directory.join(package.main)) {
                 installed.push((receipt.committed_at_ms, main));
             }
         }
@@ -327,7 +395,7 @@ impl CodexInstaller {
         if !consent {
             return Err(InstallerError::ConsentRequired);
         }
-        if !cfg!(all(target_os = "windows", target_arch = "x86_64")) {
+        if !supported_platform() {
             return Err(InstallerError::UnsupportedPlatform);
         }
         if version != self.inner.manifest.version || hash != self.inner.manifest.sha256 {
@@ -441,6 +509,7 @@ impl CodexInstaller {
         verify: SignatureVerifier,
     ) -> Result<(), InstallerError> {
         check_job(job)?;
+        let package = package_for_target(&self.inner.manifest.target)?;
         let root = safe_root(&self.inner.root, true)?;
         let workspace = root.join(format!("installing-{}", job.id));
         fs::create_dir(&workspace).map_err(|_| InstallerError::StorageFailed)?;
@@ -490,7 +559,7 @@ impl CodexInstaller {
             "공식 실행 파일의 서명을 확인하고 있습니다.",
         );
         check_job(job)?;
-        let main = contained_file(&bundle, &bundle.join(MAIN_PATH))?;
+        let main = contained_file(&bundle, &bundle.join(package.main))?;
         if !verify(&main) {
             return Err(InstallerError::SignatureRejected);
         }
@@ -558,7 +627,9 @@ impl CodexInstaller {
             .map_err(|_| InstallerError::DownloadFailed)?;
         let mut url =
             Url::parse(&self.inner.manifest.url).map_err(|_| InstallerError::UnsafeDownloadUrl)?;
-        if url.as_str() != PACKAGE_URL || !official_download_url(&url) {
+        if url.as_str() != package_for_target(&self.inner.manifest.target)?.url
+            || !official_download_url(&url)
+        {
             return Err(InstallerError::UnsafeDownloadUrl);
         }
         for redirects in 0..=5 {
@@ -604,6 +675,7 @@ impl CodexInstaller {
         // published, cancel cannot change that completed installation to cancelled.
         let mut control = self.control();
         check_job(job)?;
+        let package = package_for_target(&self.inner.manifest.target)?;
         if !control
             .active
             .as_ref()
@@ -626,8 +698,8 @@ impl CodexInstaller {
             target: self.inner.manifest.target.clone(),
             bytes: self.inner.manifest.bytes,
             sha256: self.inner.manifest.sha256.clone(),
-            entrypoint: MAIN_PATH.into(),
-            host: HOST_PATH.into(),
+            entrypoint: package.main.into(),
+            host: package.host.into(),
             signature_verified: true,
             committed_at_ms: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
@@ -821,13 +893,14 @@ fn read_json_file<T: for<'de> Deserialize<'de>>(path: &Path) -> Result<T, Instal
 }
 
 fn validate_layout(root: &Path, manifest: &InstallerManifest) -> Result<(), InstallerError> {
+    let package = package_for_target(&manifest.target)?;
     let metadata_path = contained_file(root, &root.join("codex-package.json"))?;
     let metadata: serde_json::Value = read_json_file(&metadata_path)?;
     if metadata["layoutVersion"] != 1
         || metadata["version"] != manifest.version
         || metadata["target"] != manifest.target
         || metadata["variant"] != "codex"
-        || metadata["entrypoint"] != MAIN_PATH
+        || metadata["entrypoint"] != package.main
         || metadata["resourcesDir"] != "codex-resources"
         || metadata["pathDir"] != "codex-path"
     {
@@ -838,14 +911,21 @@ fn validate_layout(root: &Path, manifest: &InstallerManifest) -> Result<(), Inst
             return Err(InstallerError::PackageLayout);
         }
     }
-    for executable in [MAIN_PATH, HOST_PATH, "codex-path/rg.exe"] {
+    for executable in [package.main, package.host, package.ripgrep]
+        .into_iter()
+        .chain(package.zsh)
+    {
         let path = contained_file(root, &root.join(executable))?;
-        if fs::metadata(path)
-            .map_err(|_| InstallerError::PackageLayout)?
-            .len()
-            == 0
-        {
+        let metadata = fs::metadata(path).map_err(|_| InstallerError::PackageLayout)?;
+        if metadata.len() == 0 {
             return Err(InstallerError::PackageLayout);
+        }
+        #[cfg(unix)]
+        if package.target == MACOS_PACKAGE.target {
+            use std::os::unix::fs::PermissionsExt;
+            if metadata.permissions().mode() & 0o100 == 0 {
+                return Err(InstallerError::PackageLayout);
+            }
         }
     }
     Ok(())
@@ -1173,6 +1253,25 @@ fn unpack_archive(path: &Path, root: &Path, job: &Job) -> Result<(), InstallerEr
             if written != expected {
                 return Err(InstallerError::UnsafeArchive);
             }
+            // Manual extraction never applies archive ownership, ACLs or
+            // special bits. Preserve executability for macOS native helpers
+            // and resources, without setuid/setgid or group/world write bits.
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let archive_mode = entry
+                    .header()
+                    .mode()
+                    .map_err(|_| InstallerError::UnsafeArchive)?;
+                let mode = if archive_mode & 0o111 != 0 {
+                    0o755
+                } else {
+                    0o644
+                };
+                output
+                    .set_permissions(fs::Permissions::from_mode(mode))
+                    .map_err(|_| InstallerError::StorageFailed)?;
+            }
             output
                 .sync_all()
                 .map_err(|_| InstallerError::StorageFailed)?;
@@ -1266,6 +1365,10 @@ mod tests {
     }
 
     fn fixture_package(extra: Option<(&str, u8, &[u8])>) -> Vec<u8> {
+        fixture_package_for(NATIVE_PACKAGE, extra)
+    }
+
+    fn fixture_package_for(package: &PinnedPackage, extra: Option<(&str, u8, &[u8])>) -> Vec<u8> {
         let mut archive = tar::Builder::new(Vec::new());
         for directory in ["bin/", "codex-resources/", "codex-path/"] {
             archive
@@ -1273,20 +1376,24 @@ mod tests {
                 .unwrap();
         }
         let metadata = serde_json::json!({
-            "layoutVersion":1,"version":CODEX_VERSION,"target":CODEX_TARGET,"variant":"codex",
-            "entrypoint":MAIN_PATH,"resourcesDir":"codex-resources","pathDir":"codex-path",
+            "layoutVersion":1,"version":CODEX_VERSION,"target":package.target,"variant":"codex",
+            "entrypoint":package.main,"resourcesDir":"codex-resources","pathDir":"codex-path",
         })
         .to_string();
-        for (path, bytes) in [
+        let mut files = vec![
             ("codex-package.json", metadata.as_bytes()),
-            (MAIN_PATH, b"fixture-main-never-executed".as_slice()),
-            (HOST_PATH, b"fixture-host-never-executed".as_slice()),
-            ("codex-path/rg.exe", b"fixture-rg-never-executed".as_slice()),
+            (package.main, b"fixture-main-never-executed".as_slice()),
+            (package.host, b"fixture-host-never-executed".as_slice()),
+            (package.ripgrep, b"fixture-rg-never-executed".as_slice()),
             (
                 "codex-resources/NOTICE",
                 b"fixture-third-party-notices".as_slice(),
             ),
-        ] {
+        ];
+        if let Some(zsh) = package.zsh {
+            files.push((zsh, b"fixture-zsh-never-executed".as_slice()));
+        }
+        for (path, bytes) in files {
             // Python's canonical tar writer emits fractional-mtime PAX headers.
             let pax = pax_record("mtime", "1.5");
             archive
@@ -1295,9 +1402,12 @@ mod tests {
                     Cursor::new(pax),
                 )
                 .unwrap();
-            archive
-                .append(&header(path, b'0', bytes.len() as u64), Cursor::new(bytes))
-                .unwrap();
+            let mut file_header = header(path, b'0', bytes.len() as u64);
+            if matches!(path, "codex-package.json" | "codex-resources/NOTICE") {
+                file_header.set_mode(0o644);
+                file_header.set_cksum();
+            }
+            archive.append(&file_header, Cursor::new(bytes)).unwrap();
         }
         if let Some((path, kind, bytes)) = extra {
             let mut extra_header = header(path, kind, bytes.len() as u64);
@@ -1312,9 +1422,17 @@ mod tests {
     }
 
     fn fixture_installer(root: &FixtureRoot, bytes: &[u8]) -> (CodexInstaller, PathBuf) {
+        fixture_installer_for(root, bytes, NATIVE_PACKAGE)
+    }
+
+    fn fixture_installer_for(
+        root: &FixtureRoot,
+        bytes: &[u8],
+        pinned: &PinnedPackage,
+    ) -> (CodexInstaller, PathBuf) {
         let package = root.0.join(format!("cache-{}.tar.gz", Uuid::new_v4()));
         fs::write(&package, bytes).unwrap();
-        let mut manifest = official_manifest();
+        let mut manifest = pinned.manifest();
         manifest.bytes = bytes.len() as u64;
         manifest.sha256 = format!("{:x}", Sha256::digest(bytes));
         // Only private fixtures can substitute this tiny manifest. Public APIs
@@ -1326,7 +1444,14 @@ mod tests {
     }
 
     fn wait_finished(installer: &CodexInstaller) -> InstallerStatus {
-        let deadline = Instant::now() + Duration::from_secs(10);
+        wait_finished_with_timeout(installer, Duration::from_secs(10))
+    }
+
+    fn wait_finished_with_timeout(
+        installer: &CodexInstaller,
+        timeout: Duration,
+    ) -> InstallerStatus {
+        let deadline = Instant::now() + timeout;
         while installer.busy() {
             assert!(Instant::now() < deadline, "fixture worker must terminate");
             thread::sleep(Duration::from_millis(10));
@@ -1489,6 +1614,7 @@ mod tests {
 
     #[test]
     fn paths_links_duplicates_and_archive_limits_are_rejected_before_signature() {
+        let duplicate_main = MAIN_PATH.to_uppercase();
         for (path, kind) in [
             ("../outside-original", b'0'),
             ("/outside-original", b'0'),
@@ -1498,7 +1624,7 @@ mod tests {
             ("bin/linked", b'1'),
             ("bin/linked", b'2'),
             ("bin/pipe", b'6'),
-            ("BIN/CODEX.EXE", b'0'),
+            (duplicate_main.as_str(), b'0'),
             (RECEIPT_NAME, b'0'),
         ] {
             let root = FixtureRoot::new();
@@ -1611,11 +1737,14 @@ mod tests {
             .launch(
                 PackageInput::Cache(package.clone()),
                 Arc::new(move |main| {
-                    assert_eq!(main.file_name().unwrap(), "codex.exe");
+                    assert_eq!(
+                        main.file_name().unwrap(),
+                        Path::new(MAIN_PATH).file_name().unwrap()
+                    );
                     assert!(main
                         .parent()
                         .unwrap()
-                        .join("codex-code-mode-host.exe")
+                        .join(Path::new(HOST_PATH).file_name().unwrap())
                         .is_file());
                     entered_tx.send(()).unwrap();
                     release
@@ -1738,6 +1867,8 @@ mod tests {
         let original = fs::read(&receipt).unwrap();
         for (field, value) in [
             ("entrypoint", serde_json::json!("../outside-original")),
+            ("host", serde_json::json!("../outside-original")),
+            ("target", serde_json::json!("x86_64-apple-darwin")),
             ("sha256", serde_json::json!("untrusted-hash")),
             ("signatureVerified", serde_json::json!(false)),
         ] {
@@ -1750,5 +1881,314 @@ mod tests {
         assert_eq!(installer.installed_executables().len(), 1);
         fs::remove_file(directory.join(HOST_PATH)).unwrap();
         assert!(installer.installed_executables().is_empty());
+    }
+
+    #[test]
+    fn both_platform_layouts_commit_matching_receipts_and_reject_cross_target_discovery() {
+        for (pinned, other) in [
+            (&WINDOWS_PACKAGE, &MACOS_PACKAGE),
+            (&MACOS_PACKAGE, &WINDOWS_PACKAGE),
+        ] {
+            let root = FixtureRoot::new();
+            let bytes = fixture_package_for(pinned, None);
+            let (installer, package) = fixture_installer_for(&root, &bytes, pinned);
+            installer
+                .launch(
+                    PackageInput::Cache(package.clone()),
+                    Arc::new(move |main| {
+                        assert_eq!(
+                            main.file_name().unwrap(),
+                            Path::new(pinned.main).file_name().unwrap()
+                        );
+                        true
+                    }),
+                )
+                .unwrap();
+            assert_eq!(wait_finished(&installer).state, InstallerState::Ready);
+            let executable = installer.installed_executables().remove(0);
+            let directory = executable.parent().unwrap().parent().unwrap();
+            let receipt: InstallReceipt = read_json_file(&directory.join(RECEIPT_NAME)).unwrap();
+            assert_eq!(receipt.target, pinned.target);
+            assert_eq!(receipt.entrypoint, pinned.main);
+            assert_eq!(receipt.host, pinned.host);
+            assert!(receipt.signature_verified);
+            assert_eq!(
+                CodexInstaller::with_manifest(
+                    installer.inner.root.clone(),
+                    installer.inner.manifest.clone()
+                )
+                .installed_executables(),
+                vec![executable.clone()]
+            );
+            let mut wrong_target = installer.inner.manifest.clone();
+            wrong_target.target = other.target.into();
+            assert_eq!(
+                validate_layout(directory, &wrong_target),
+                Err(InstallerError::PackageLayout)
+            );
+            assert!(
+                CodexInstaller::with_manifest(installer.inner.root.clone(), wrong_target)
+                    .installed_executables()
+                    .is_empty()
+            );
+            assert_eq!(fs::read(package).unwrap(), bytes);
+        }
+        assert!(package_for_target("x86_64-apple-darwin").is_err());
+        assert!(package_for_target("aarch64-pc-windows-msvc").is_err());
+        assert!(package_for_target("aarch64-unknown-linux-gnu").is_err());
+    }
+
+    #[test]
+    fn macos_layout_requires_native_main_host_ripgrep_and_bundled_shell() {
+        for required in [
+            MACOS_PACKAGE.main,
+            MACOS_PACKAGE.host,
+            MACOS_PACKAGE.ripgrep,
+        ]
+        .into_iter()
+        .chain(MACOS_PACKAGE.zsh)
+        {
+            let root = FixtureRoot::new();
+            let bytes = fixture_package_for(&MACOS_PACKAGE, None);
+            let archive = root.0.join("macos.tar.gz");
+            fs::write(&archive, bytes).unwrap();
+            let extracted = root.0.join("package");
+            fs::create_dir(&extracted).unwrap();
+            let job = fixture_job();
+            inspect_archive(&archive, &job).unwrap();
+            unpack_archive(&archive, &extracted, &job).unwrap();
+            let manifest = MACOS_PACKAGE.manifest();
+            validate_layout(&extracted, &manifest).unwrap();
+            let executable = extracted.join(required);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                fs::set_permissions(&executable, fs::Permissions::from_mode(0o644)).unwrap();
+                assert_eq!(
+                    validate_layout(&extracted, &manifest),
+                    Err(InstallerError::PackageLayout)
+                );
+                fs::set_permissions(&executable, fs::Permissions::from_mode(0o755)).unwrap();
+            }
+            fs::write(&executable, []).unwrap();
+            assert_eq!(
+                validate_layout(&extracted, &manifest),
+                Err(InstallerError::PackageLayout)
+            );
+            fs::remove_file(executable).unwrap();
+            assert_eq!(
+                validate_layout(&extracted, &manifest),
+                Err(InstallerError::PackageLayout)
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn extraction_preserves_executability_without_special_or_group_write_bits() {
+        use std::os::unix::fs::PermissionsExt;
+        let root = FixtureRoot::new();
+        let archive = root.0.join("permissions.tar.gz");
+        let mut builder = tar::Builder::new(Vec::new());
+        for (path, mode) in [("native-helper", 0o6777), ("metadata.json", 0o666)] {
+            let mut file_header = header(path, b'0', 7);
+            file_header.set_mode(mode);
+            file_header.set_cksum();
+            builder
+                .append(&file_header, Cursor::new(b"fixture"))
+                .unwrap();
+        }
+        builder.finish().unwrap();
+        fs::write(&archive, gzip(&builder.into_inner().unwrap())).unwrap();
+        let extracted = root.0.join("package");
+        fs::create_dir(&extracted).unwrap();
+        let job = fixture_job();
+        inspect_archive(&archive, &job).unwrap();
+        unpack_archive(&archive, &extracted, &job).unwrap();
+        for (path, expected) in [("native-helper", 0o755), ("metadata.json", 0o644)] {
+            assert_eq!(
+                fs::metadata(extracted.join(path))
+                    .unwrap()
+                    .permissions()
+                    .mode()
+                    & 0o7777,
+                expected
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlinked_roots_cached_packages_and_helpers_are_rejected() {
+        use std::os::unix::fs::symlink;
+        let root = FixtureRoot::new();
+        let original = root.0.join("original");
+        fs::create_dir(&original).unwrap();
+        let linked_root = root.0.join("linked-root");
+        symlink(&original, &linked_root).unwrap();
+        assert_eq!(
+            safe_root(&linked_root.join("managed"), true),
+            Err(InstallerError::UnsafeRoot)
+        );
+        assert!(!original.join("managed").exists());
+
+        let bytes = fixture_package(None);
+        let (installer, package) = fixture_installer(&root, &bytes);
+        let linked_cache = root.0.join("linked-cache.tar.gz");
+        symlink(&package, &linked_cache).unwrap();
+        installer
+            .launch(
+                PackageInput::Cache(linked_cache),
+                Arc::new(|_| panic!("symlinked archive cannot reach signature verification")),
+            )
+            .unwrap();
+        assert_eq!(
+            wait_finished(&installer).message,
+            InstallerError::UnsafeArchive.to_string()
+        );
+        installer
+            .launch(PackageInput::Cache(package.clone()), Arc::new(|_| true))
+            .unwrap();
+        assert_eq!(wait_finished(&installer).state, InstallerState::Ready);
+        let executable = installer.installed_executables().remove(0);
+        let host = executable
+            .parent()
+            .unwrap()
+            .join(Path::new(HOST_PATH).file_name().unwrap());
+        let original_host = original.join("host");
+        fs::rename(&host, &original_host).unwrap();
+        symlink(&original_host, &host).unwrap();
+        assert!(installer.installed_executables().is_empty());
+        assert_eq!(fs::read(package).unwrap(), bytes);
+    }
+
+    #[test]
+    fn archive_entry_and_job_time_limits_are_enforced() {
+        let root = FixtureRoot::new();
+        let archive = root.0.join("too-many-entries.tar.gz");
+        let mut builder = tar::Builder::new(Vec::new());
+        for index in 0..=MAX_ENTRIES {
+            builder
+                .append(&header(&format!("file-{index}"), b'0', 0), Cursor::new([]))
+                .unwrap();
+        }
+        builder.finish().unwrap();
+        fs::write(&archive, gzip(&builder.into_inner().unwrap())).unwrap();
+        assert_eq!(
+            inspect_archive(&archive, &fixture_job()),
+            Err(InstallerError::UnsafeArchive)
+        );
+        let mut job = fixture_job();
+        job.started = Instant::now() - MAX_INSTALL_DURATION - Duration::from_secs(1);
+        assert_eq!(
+            inspect_archive(&archive, &job),
+            Err(InstallerError::Timeout)
+        );
+    }
+
+    // Opt-in native artifact verification, using only a task-specific download
+    // and output directory. Never launches Codex or accesses an account.
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    #[test]
+    #[ignore = "requires the pinned official archive and a task-only evidence directory"]
+    fn official_macos_package_prepares_with_native_signatures_and_receipt() {
+        use std::{os::unix::fs::PermissionsExt, process::Command};
+        let package = PathBuf::from(
+            std::env::var_os("MASSET_CODEX_INSTALLER_PACKAGE").expect("official archive path"),
+        );
+        let evidence = PathBuf::from(
+            std::env::var_os("MASSET_CODEX_INSTALLER_EVIDENCE_DIR")
+                .expect("task-only evidence path"),
+        );
+        let evidence = safe_root(&evidence, false).unwrap();
+        let proof = evidence.join(format!("native-installer-proof-{}", Uuid::new_v4()));
+        fs::create_dir(&proof).unwrap();
+        let managed = proof.join("managed");
+        let installer = CodexInstaller::new(managed.clone());
+        let signature_results = Arc::new(Mutex::new(Vec::new()));
+        let observed = signature_results.clone();
+        assert!(installer.status().supported);
+        assert_eq!(official_manifest(), MACOS_PACKAGE.manifest());
+        installer
+            .start_from_cached_package(
+                true,
+                CODEX_VERSION,
+                CODEX_PACKAGE_SHA256,
+                package.clone(),
+                Arc::new(move |main| {
+                    let bundle = main.parent().unwrap().parent().unwrap();
+                    let requirement = "=anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = \"2DC432GLL2\"";
+                    let mut valid = true;
+                    for relative in [MACOS_PACKAGE.main, MACOS_PACKAGE.host] {
+                        let path = bundle.join(relative);
+                        assert_eq!(path.metadata().unwrap().permissions().mode() & 0o7777, 0o755);
+                        for (tool, args) in [
+                            ("/usr/bin/lipo", vec![path.as_os_str(), "-verify_arch".as_ref(), "arm64".as_ref()]),
+                            ("/usr/bin/codesign", vec!["--verify".as_ref(), "--strict".as_ref(), "-R".as_ref(), requirement.as_ref(), path.as_os_str()]),
+                        ] {
+                            let output = Command::new(tool).args(args).output().unwrap();
+                            valid &= output.status.success();
+                            observed.lock().unwrap().push(serde_json::json!({
+                                "path":relative,"tool":tool,"exit":output.status.code(),
+                                "stdout":String::from_utf8_lossy(&output.stdout),
+                                "stderr":String::from_utf8_lossy(&output.stderr),
+                            }));
+                        }
+                    }
+                    valid
+                }),
+            )
+            .unwrap();
+        let status = wait_finished_with_timeout(&installer, Duration::from_secs(120));
+        let signature_results = signature_results.lock().unwrap();
+        let mut output = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(proof.join("verification.json"))
+            .unwrap();
+        serde_json::to_writer_pretty(
+            &mut output,
+            &serde_json::json!({
+                "status":status,"nativeSignatures":*signature_results,
+                "sourceArchive":package,"managedRoot":managed,
+            }),
+        )
+        .unwrap();
+        println!("Native installer evidence: {}", proof.display());
+        assert_eq!(status.state, InstallerState::Ready, "{}", status.message);
+        assert_eq!(signature_results.len(), 4);
+        let installed = installer.installed_executables();
+        assert_eq!(installed.len(), 1);
+        let bundle = installed[0].parent().unwrap().parent().unwrap();
+        let receipt: InstallReceipt = read_json_file(&bundle.join(RECEIPT_NAME)).unwrap();
+        assert_eq!(receipt.target, MACOS_PACKAGE.target);
+        assert_eq!(receipt.entrypoint, MACOS_PACKAGE.main);
+        assert_eq!(receipt.host, MACOS_PACKAGE.host);
+        assert_eq!(receipt.bytes, MACOS_PACKAGE.bytes);
+        assert_eq!(receipt.sha256, MACOS_PACKAGE.sha256);
+        for relative in [
+            MACOS_PACKAGE.main,
+            MACOS_PACKAGE.host,
+            MACOS_PACKAGE.ripgrep,
+        ]
+        .into_iter()
+        .chain(MACOS_PACKAGE.zsh)
+        {
+            assert_eq!(
+                bundle
+                    .join(relative)
+                    .metadata()
+                    .unwrap()
+                    .permissions()
+                    .mode()
+                    & 0o7777,
+                0o755
+            );
+        }
+        assert_eq!(
+            CodexInstaller::new(managed).installed_executables(),
+            installed
+        );
+        verify_package_hash(&package, &official_manifest(), &fixture_job()).unwrap();
     }
 }

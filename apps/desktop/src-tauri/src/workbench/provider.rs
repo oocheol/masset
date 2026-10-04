@@ -48,9 +48,7 @@ fn executable(managed: Vec<PathBuf>) -> Option<PathBuf> {
         }
     }
     #[cfg(target_os = "macos")]
-    candidates.push(PathBuf::from(
-        "/Applications/Codex.app/Contents/Resources/codex",
-    ));
+    candidates.extend(macos_app_runtime_paths());
     candidates
         .into_iter()
         .filter(|path| path.is_absolute() && path.is_file() && official_image_runtime(path))
@@ -66,6 +64,29 @@ fn executable(managed: Vec<PathBuf>) -> Option<PathBuf> {
         .map(|(_, path)| path)
 }
 
+#[cfg(target_os = "macos")]
+fn macos_app_runtime_paths() -> Vec<PathBuf> {
+    let mut applications = vec![PathBuf::from("/Applications")];
+    if let Some(home) = std::env::var_os("HOME") {
+        let home = PathBuf::from(home);
+        if home.is_absolute() {
+            applications.push(home.join("Applications"));
+        }
+    }
+    applications
+        .into_iter()
+        .flat_map(|directory| {
+            ["ChatGPT.app", "Codex.app"].into_iter().flat_map(move |app| {
+                let resources = directory.join(app).join("Contents/Resources");
+                [
+                    resources.join("codex-cli/CodexCLI.app/Contents/MacOS/codex"),
+                    resources.join("codex"),
+                ]
+            })
+        })
+        .collect()
+}
+
 fn runtime_version_rank(value: &str) -> Option<semver::Version> {
     let safe = asset_providers::safe_codex_version(value.as_bytes())?;
     let version = safe.strip_prefix("codex-cli ")?;
@@ -76,7 +97,7 @@ fn official_image_runtime(path: &Path) -> bool {
     if !official_runtime_file(path) {
         return false;
     }
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     {
         // Official packaged installs can prefer codex-resources over the
         // sibling helper. Verify every existing candidate in those fixed
@@ -90,18 +111,22 @@ fn official_image_runtime(path: &Path) -> bool {
             .collect();
         !helpers.is_empty() && helpers.iter().all(|helper| official_runtime_file(helper))
     }
-    #[cfg(not(windows))]
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         true
     }
 }
 
-#[cfg(windows)]
+#[cfg(any(windows, target_os = "macos"))]
 fn image_runtime_helper_paths(executable: &Path) -> Vec<PathBuf> {
     let Some(directory) = executable.parent() else {
         return Vec::new();
     };
-    let name = "codex-code-mode-host.exe";
+    let name = if cfg!(windows) {
+        "codex-code-mode-host.exe"
+    } else {
+        "codex-code-mode-host"
+    };
     let mut helpers = vec![
         directory.join(name),
         directory.join("codex-resources").join(name),
@@ -111,6 +136,19 @@ fn image_runtime_helper_paths(executable: &Path) -> Vec<PathBuf> {
             Some("bin") => helpers.push(parent.join("codex-resources").join(name)),
             Some("codex-resources") => helpers.push(parent.join("bin").join(name)),
             _ => {}
+        }
+    }
+    #[cfg(target_os = "macos")]
+    if directory.file_name().and_then(|part| part.to_str()) == Some("MacOS") {
+        if let Some(bundle) = directory.parent().and_then(Path::parent).filter(|bundle| {
+            bundle.file_name().and_then(|part| part.to_str()) == Some("CodexCLI.app")
+                && directory.parent().and_then(Path::file_name).and_then(|part| part.to_str())
+                    == Some("Contents")
+        }) {
+            if let Some(package) = bundle.parent() {
+                helpers.push(package.join("bin").join(name));
+                helpers.push(package.join("codex-resources").join(name));
+            }
         }
     }
     helpers
@@ -174,11 +212,50 @@ fn official_runtime_file(path: &Path) -> bool {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn official_runtime_file(path: &Path) -> bool {
+    // Verify the native binary, not an unsigned shell/npm launcher. The same
+    // OpenAI Developer ID identity is required for the V8 image-tool host.
+    const REQUIREMENT: &str = "=anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] exists and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = \"2DC432GLL2\"";
+    let Ok(path) = path.canonicalize() else {
+        return false;
+    };
+    if !path.is_file() {
+        return false;
+    }
+    let mut architecture = Command::new("/usr/bin/lipo");
+    architecture.arg(&path).args(["-verify_arch", "arm64"]);
+    let mut signature = Command::new("/usr/bin/codesign");
+    signature.args(["--verify", "--strict", "-R", REQUIREMENT]).arg(&path);
+    for mut command in [architecture, signature] {
+        let Ok(mut child) = command
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        else {
+            return false;
+        };
+        let started = Instant::now();
+        loop {
+            match child.try_wait() {
+                Ok(Some(status)) if status.success() => break,
+                Ok(None) if started.elapsed() < Duration::from_secs(15) => {
+                    thread::sleep(Duration::from_millis(25));
+                }
+                _ => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return false;
+                }
+            }
+        }
+    }
+    true
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn official_runtime_file(_: &Path) -> bool {
-    // A Mac package is not evidence of the CLI/helper's OpenAI identity.
-    // Keep subscription execution closed until the official signing identity
-    // and helper layout have been verified on that platform.
     false
 }
 
@@ -246,17 +323,13 @@ impl Backend {
             status["supported"] = json!(false);
             status["message"] = json!("CODEX_EXECUTABLE로 지정한 실행 경로를 확인해 주세요. 지정한 경로를 자동 변경하지 않습니다.");
         }
-        if cfg!(target_os = "macos") {
-            status["supported"] = json!(false);
-            status["message"] = json!("Mac 시험 배포는 로컬 2D 기능을 제공합니다. 공식 Codex 서명과 이미지 호스트 검증 전까지 구독 연결은 지원하지 않습니다.");
-        }
         Ok(status)
     }
 
     pub(super) fn provider_status(&self) -> Result<Value> {
         let result = (|| -> Result<Value> {
             let path = self.provider_executable().context(if cfg!(target_os = "macos") {
-                "Mac 시험 배포는 공식 Codex 서명과 이미지 호스트 검증 전까지 구독 연결을 지원하지 않습니다. 로컬 이미지 편집·스프라이트·아틀라스 기능을 이용해 주세요."
+                "OpenAI 서명이 유효한 Apple Silicon Codex와 이미지 실행 호스트가 필요합니다. 연결 화면의 Codex 준비에서 설치하거나 공식 ChatGPT/Codex Mac 앱을 확인해 주세요."
             } else {
                 "공식 Codex 실행 파일과 코드 모드 호스트가 없습니다. 연결 화면의 Codex 준비에서 설치하거나 공식 Codex 설치를 확인해 주세요."
             })?;
@@ -695,6 +768,32 @@ fn open_trusted_browser(value: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_helper_checks_cover_native_bundle_and_preferred_package_resources() {
+        let nested = image_runtime_helper_paths(Path::new(
+            "/official/codex-cli/CodexCLI.app/Contents/MacOS/codex",
+        ));
+        for expected in [
+            "/official/codex-cli/bin/codex-code-mode-host",
+            "/official/codex-cli/codex-resources/codex-code-mode-host",
+        ] {
+            assert!(nested.contains(&PathBuf::from(expected)));
+        }
+        let direct = image_runtime_helper_paths(Path::new("/official/bin/codex"));
+        assert!(direct.contains(&PathBuf::from("/official/bin/codex-code-mode-host")));
+        assert!(direct.contains(&PathBuf::from(
+            "/official/codex-resources/codex-code-mode-host"
+        )));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_runtime_rejects_native_code_without_openai_developer_identity() {
+        assert!(!official_runtime_file(&std::env::current_exe().unwrap()));
+        assert!(!official_runtime_file(Path::new("/missing/codex")));
+    }
 
     #[cfg(windows)]
     #[test]

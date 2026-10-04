@@ -1,6 +1,14 @@
-# 구독 이미지 생성 실증 — 2026-10-03
+# 구독 이미지 생성 실증 — 2026-10-04
 
-사용자가 이미지 목표를 **GPT Image 2**로 변경했다. 종전 2.5 선택 검증은 현재 출시 조건이 아니다. Windows를 먼저 검증하며 macOS 실행은 이후 별도로 검증한다.
+사용자가 이미지 목표를 **GPT Image 2**로 변경했다. 종전 2.5 선택 검증은 현재 출시 조건이 아니다. Windows와 Apple Silicon Mac의 실행 결과를 버전별로 구분한다.
+
+## 0.1.5 Mac 구독 연결
+
+Mac의 플랫폼 차단을 제거하고 OpenAI Developer ID Team `2DC432GLL2`의 유효한 Apple 인증서 체인·arm64 실행 파일·이미지 호스트를 검사한다. 공식 ChatGPT/Codex 앱의 네이티브 Codex와 고정 helper 경로를 발견하고, Codex가 없으면 동의 후 공식 Apple Silicon 패키지를 앱 전용 폴더에 준비한다. 셸/npm 런처를 공식 네이티브 실행 파일로 간주하지 않는다.
+
+2026-10-04 실제 Mac 네이티브 Backend에서 기존 공식 구독 인증·이미지 도구 제한을 확인한 뒤 새 요청 한 번을 제출했다. `codex-cli 0.160.0`, 추론 모델 `gpt-6.1-sol`, 요청 이미지 모델 `gpt-image-2`로 PNG 1254×1254, 565,884 bytes를 수신했다. SHA-256은 `bc25c4a6bafaf6e493068c18461751cfb9c629214dda5522d9302bf754056abb`이다. 디코딩·프로젝트 저장·종료 후 재열기·독립 내보내기와 해시 확인을 통과했다. attempts=1이며 자동 재요청·API 전환은 없었다. 응답에 실제 이미지 모델 ID가 없으므로 `confirmedModel=null`을 유지한다.
+
+증거: `output/macos-subscription/installed-runtime-readonly-2/provider-proof.json`, `output/macos-subscription/native-live-image/provider-proof.json`. Mac 0.1.5 패키지와 신규 Codex 준비 검증은 [Mac 릴리스 기록](releases/v0.1.5-macos.md)에 구분해 기록한다. 아래 Windows 기록은 해당 버전 당시 결과다.
 
 ## 0.1.2 이미지 도구 호출 수정
 
