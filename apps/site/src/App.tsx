@@ -50,7 +50,7 @@ const faqs = [
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Mac 0.1.6은 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 고정 레시피를 제공합니다. 각 모델 행에서 너비·깊이·높이·베벨·재질 색상을 수정해 새 독립 에셋을 만듭니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 참고 모델의 임의 형상 복원은 지원하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
   { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
-  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.6은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 실제 Mac에서 새 PNG 한 장의 수신·저장·재열기·내보내기를 확인했습니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Mac Blender 작업자는 새 게임 레시피의 실제 생성과 GLB·.blend 재열기를 검증했습니다. Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.' },
+  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.6은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Mac Blender 작업자는 새 게임 레시피의 실제 생성과 GLB·.blend 재열기를 검증했습니다. Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
@@ -172,7 +172,7 @@ export default function App() {
 
       <section className="status-section section-space" aria-labelledby="status-title">
         <div className="page-width status-layout">
-          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>공개 Windows v{release.version} · Mac v{macReleases[0]?.version}와 개발 소스의 기능별 확인 범위입니다. 작업자 산출물 검사와 네이티브 데스크톱 전체 흐름을 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>공개 Windows v{release.version} · Mac v{macReleases[0]?.version}의 기능별 확인 범위입니다. 작업자 산출물 검사와 네이티브 데스크톱 전체 흐름을 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           <dl className="status-list">{statuses.map(item => <div key={item.feature} className="status-item"><dt>{item.feature}<span className={`status-label ${item.tone}`}>{item.tone === 'verified' && <Check size={13} aria-hidden="true" />}{item.status}</span></dt><dd>{item.detail}</dd></div>)}</dl>
         </div>
       </section>
@@ -186,7 +186,7 @@ export default function App() {
         <div className="checksum-row"><div className="checksum-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
         <section id="download-mac" className="mac-download" aria-labelledby="mac-download-title">
           <div className="mac-download-heading"><h3 id="mac-download-title">Mac 시험 배포</h3><span className="mac-trial-label">GPT 구독 연결 추가</span></div>
-          <p className="mac-download-intro">Apple Silicon용 v{macReleases[0]?.version}. 로컬 2D·GPT 구독 연결·공식 Codex 준비·앱 내부 업데이트를 지원합니다. 0.1.4 사용자는 앱에서 업데이트하고, 0.1.3 이하는 아래 방법으로 새 버전을 한 번 설치하세요.</p>
+          <p className="mac-download-intro">Apple Silicon용 v{macReleases[0]?.version}. 게임 에셋 묶음·로컬 2D·GPT 구독 연결·공식 Codex 준비·앱 내부 업데이트를 지원합니다. 0.1.4·0.1.5 사용자는 앱에서 업데이트하고, 0.1.3 이하는 아래 방법으로 새 버전을 한 번 설치하세요.</p>
           {hasMacRelease ? <div className="mac-release-grid">{macReleases.map(item => <article className="mac-release" key={item.architecture} aria-label={`${item.label} 다운로드`}>
             <h4>{item.label} · v{item.version}</h4><p>M 시리즈 Mac용 · GPT 구독 연결 · 앱 내부 업데이트</p>
             <a className="button button-primary" href={item.downloadUrl} aria-label={`${item.label} DMG 다운로드`}><ArrowDownToLine size={18} aria-hidden="true" />DMG 다운로드</a>

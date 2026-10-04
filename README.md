@@ -94,7 +94,7 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
   install_tmp="$(mktemp -d)"
   trap 'rm -rf "$install_tmp"' EXIT
   curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.6/install-macos.sh -o "$install_tmp/install-macos.sh"
-  printf '%s  %s\n' 'fff494de08776b20cb0415e4e47cca32a43acfd1cf2ea664b67eae4e2fa71d01' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
+  printf '%s  %s\n' '0127c9b90f1995a35c36b593ed721a3d4ec798c3216452e8703cc6a75c3747be' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
   bash "$install_tmp/install-macos.sh"
 )
 ```
