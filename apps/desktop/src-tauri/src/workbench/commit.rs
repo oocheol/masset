@@ -237,6 +237,7 @@ fn marker_for(project: &Project, repository: &Repository, task: &Job) -> Result<
                     );
                     valid_report(version)?;
                     verify_files(repository, version)?;
+                    super::production::verify_delivery(task, version)?;
                     versions.push(proof(&asset.id, version, &task.id, None));
                 }
             }

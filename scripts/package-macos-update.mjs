@@ -13,7 +13,7 @@ export async function packageMacUpdate(archive, output, version) {
   const decoded = Buffer.from(signature, 'base64').toString('utf8');
   if (!decoded.split('\n').some(line => line.startsWith('trusted comment: ') && line.split('\t').includes(`version:${version}`))) throw new Error('Tauri signature has no matching authenticated version');
   const filename = `AssetStudio_${version}_macos-arm64.app.tar.gz`;
-  const metadata = {version, notes:'Apple Silicon Mac: 투명 이미지마다 독립 3D 모델을 만들고 기존 GLB는 원본을 보존한 새 버전으로 다듬습니다. 게임용·고해상도·LOD, UV 텍스처·Blender 원본·턴테이블을 저장합니다. 로컬 TripoSR 준비는 CPython 3.9·최소 16GB 메모리와 Blender가 필요합니다. 현재 Tripo Studio H3.1과 같은 품질은 아닙니다. 기존 앱은 백업한 뒤 교체·재실행합니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
+  const metadata = {version, notes:'Apple Silicon Mac: 게임 설명과 프로젝트 루트 연결로 필요한 에셋을 분석하고 개별 2D·3D 결과를 제작·검수합니다. GPT 참고 이미지에서 로컬 TripoSR와 Blender로 모델을 만들고 새 결과 폴더에 저장합니다. 원본과 이전 버전은 보존합니다. 로컬 3D 준비는 CPython 3.9·최소 16GB 메모리와 Blender가 필요합니다. 기존 앱은 백업한 뒤 교체·재실행합니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
     url:`https://github.com/oocheol/masset/releases/download/v${version}/${filename}`, signature,
     bytes:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex'),
   }}};

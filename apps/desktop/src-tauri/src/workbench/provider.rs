@@ -76,20 +76,31 @@ fn macos_app_runtime_paths() -> Vec<PathBuf> {
     applications
         .into_iter()
         .flat_map(|directory| {
-            ["ChatGPT.app", "Codex.app"].into_iter().flat_map(move |app| {
-                let resources = directory.join(app).join("Contents/Resources");
-                [
-                    resources.join("codex-cli/CodexCLI.app/Contents/MacOS/codex"),
-                    resources.join("codex"),
-                ]
-            })
+            ["ChatGPT.app", "Codex.app"]
+                .into_iter()
+                .flat_map(move |app| {
+                    let resources = directory.join(app).join("Contents/Resources");
+                    [
+                        resources.join("codex-cli/CodexCLI.app/Contents/MacOS/codex"),
+                        resources.join("codex"),
+                    ]
+                })
         })
         .collect()
 }
 
 fn individual_asset_prompt(payload: &Value) -> Result<String> {
-    let subject=if payload["assetKind"]=="texture" {"Create ONE seamless texture tile filling one canvas."} else {"Create ONE standalone game asset with exactly ONE isolated subject, its full silhouette visible."};
-    Ok(format!("{subject} The only asset to depict is: {}. Individual description: {}\nUse the attached references only as visual/style guidance or to improve the selected source. Do not reproduce other objects from a reference collage. No contact sheet, overview, montage, multiple panels, collection of items, text labels or asset list. Return one image file for this one named asset.\nApproved common style: {}\nApproved target specification: {}\nUse only the native image tool; do not create or execute scripts.",text_field(payload,"name")?,text_field(payload,"prompt")?,payload["styleGuide"],payload["spec"]))
+    let subject = if payload["assetKind"] == "texture" {
+        "Create ONE seamless texture tile filling one canvas."
+    } else {
+        "Create ONE standalone game asset with exactly ONE isolated subject, its full silhouette visible."
+    };
+    let reconstruction = if payload["productionConcept"] == true {
+        "This image is the input for single-image 3D reconstruction. Depict one rigid standalone object in a clear three-quarter view, with its entire silhouette visible, no base or floor, no cast shadow, neutral diffuse lighting and transparent background. Keep the object connected and centered. This is a concept image, not an actual 3D model."
+    } else {
+        ""
+    };
+    Ok(format!("{subject} The only asset to depict is: {}. Individual description: {}\n{reconstruction}\nUse the attached references only as visual/style guidance or to improve the selected source. Do not reproduce other objects from a reference collage. No contact sheet, overview, montage, multiple panels, collection of items, text labels or asset list. Return one image file for this one named asset.\nApproved common style: {}\nApproved target specification: {}\nUse only the native image tool; do not create or execute scripts.",text_field(payload,"name")?,text_field(payload,"prompt")?,payload["styleGuide"],payload["spec"]))
 }
 
 fn runtime_version_rank(value: &str) -> Option<semver::Version> {
@@ -147,7 +158,10 @@ fn image_runtime_helper_paths(executable: &Path) -> Vec<PathBuf> {
     if directory.file_name().and_then(|part| part.to_str()) == Some("MacOS") {
         if let Some(bundle) = directory.parent().and_then(Path::parent).filter(|bundle| {
             bundle.file_name().and_then(|part| part.to_str()) == Some("CodexCLI.app")
-                && directory.parent().and_then(Path::file_name).and_then(|part| part.to_str())
+                && directory
+                    .parent()
+                    .and_then(Path::file_name)
+                    .and_then(|part| part.to_str())
                     == Some("Contents")
         }) {
             if let Some(package) = bundle.parent() {
@@ -231,7 +245,9 @@ fn official_runtime_file(path: &Path) -> bool {
     let mut architecture = Command::new("/usr/bin/lipo");
     architecture.arg(&path).args(["-verify_arch", "arm64"]);
     let mut signature = Command::new("/usr/bin/codesign");
-    signature.args(["--verify", "--strict", "-R", REQUIREMENT]).arg(&path);
+    signature
+        .args(["--verify", "--strict", "-R", REQUIREMENT])
+        .arg(&path);
     for mut command in [architecture, signature] {
         let Ok(mut child) = command
             .stdin(Stdio::null())
@@ -488,13 +504,30 @@ impl Backend {
         }
         let individual = payload["singleAsset"] == true;
         let reference_paths = if individual {
-            super::bundle::copy_reference_images(root,&payload["references"],work)?
-        } else {vec![]};
+            super::bundle::copy_reference_images(root, &payload["references"], work)?
+        } else {
+            vec![]
+        };
         let request = ImageGenerationRequest {
-            prompt: if individual {individual_asset_prompt(&payload)?} else {format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Use code-mode only to invoke the built-in image generation tool. Do not run commands, access files or network APIs, or create asset scripts. Return the generated image.",
-                text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"])},
-            requested_model:text_field(&payload,"requestedModel")?.into(),reference_paths,width:None,height:None,
-            transparent_background:if payload["assetKind"]=="sprite" {Some(true)} else {None},mask_path:None,requires_confirmed_model:false,
+            prompt: if individual {
+                individual_asset_prompt(&payload)?
+            } else {
+                format!("Create one image asset using the native image generation tool. User description: {}\nApproved style guide: {}\nRequested visual specification (report actual output dimensions): {}\nVariation {} of {}. Use code-mode only to invoke the built-in image generation tool. Do not run commands, access files or network APIs, or create asset scripts. Return the generated image.",
+                text_field(&payload,"prompt")?,payload["styleGuide"],payload["spec"],payload["variationIndex"].as_u64().unwrap_or(0)+1,payload["variationCount"])
+            },
+            requested_model: text_field(&payload, "requestedModel")?.into(),
+            reference_paths,
+            width: None,
+            height: None,
+            transparent_background: if payload["assetKind"] == "sprite"
+                || payload["transparentBackground"] == true
+            {
+                Some(true)
+            } else {
+                None
+            },
+            mask_path: None,
+            requires_confirmed_model: false,
         };
         // Persist intent before submission: a crash during turn/start cannot
         // silently enqueue another subscription charge on restart.
@@ -568,7 +601,7 @@ impl Backend {
         if cancel.load(Ordering::SeqCst) {
             bail!("취소한 생성 결과는 자동으로 에셋에 반영하지 않았습니다.")
         }
-        if individual && outcome.receipts.len()!=1 {
+        if individual && outcome.receipts.len() != 1 {
             bail!("개별 에셋 한 항목에서 이미지 파일이 하나만 수신되어야 합니다. 수신 기록은 보존하며 자동 재요청하지 않았습니다.")
         }
         queue.set_progress(&task.id, "파일 디코딩 · 해시 · 프로젝트 저장", None, None)?;
@@ -606,25 +639,42 @@ impl Backend {
             repo.verify_artifact(&artifact)?;
             let requested_width = payload["spec"]["width"].as_u64().unwrap_or(0);
             let requested_height = payload["spec"]["height"].as_u64().unwrap_or(0);
-            let mut artifacts=vec![artifact.clone()];
-            let final_info = if payload["normalizeToSpec"]==true {
-                let normalized=work.join(format!("game-asset-{index}.png"));
-                let info=raster::process(&repo.artifact_path(&artifact.path)?,&normalized,&json!({"type":"resize","width":requested_width,"height":requested_height,"pixelArt":payload["spec"]["pixelArt"].as_bool().unwrap_or(false)}))?;
-                artifacts[0].role=ArtifactRole::Source;
-                let mut output=repo.copy_in(&normalized,"versions",&format!("game-asset-{}-{index}.png",task.id))?;
-                output.role=ArtifactRole::Output;
-                artifact=output.clone();artifacts.push(output);info
-            } else {copied_info};
+            let mut artifacts = vec![artifact.clone()];
+            let final_info = if payload["normalizeToSpec"] == true {
+                let normalized = work.join(format!("game-asset-{index}.png"));
+                let info = raster::process(
+                    &repo.artifact_path(&artifact.path)?,
+                    &normalized,
+                    &json!({"type":"resize","width":requested_width,"height":requested_height,"pixelArt":payload["spec"]["pixelArt"].as_bool().unwrap_or(false)}),
+                )?;
+                artifacts[0].role = ArtifactRole::Source;
+                let mut output = repo.copy_in(
+                    &normalized,
+                    "versions",
+                    &format!("game-asset-{}-{index}.png", task.id),
+                )?;
+                output.role = ArtifactRole::Output;
+                artifact = output.clone();
+                artifacts.push(output);
+                info
+            } else {
+                copied_info
+            };
             let mut report = image_report(&artifact.id, &final_info)?;
-            if payload["normalizeToSpec"]!=true && (u64::from(info.width) != requested_width
-                || u64::from(info.height) != requested_height
-            ) {
+            if payload["normalizeToSpec"] != true
+                && (u64::from(info.width) != requested_width
+                    || u64::from(info.height) != requested_height)
+            {
                 report.checks.push(ValidationCheck{code:"requested-size".into(),status:ValidationStatus::Warn,
                     message:format!("수신 크기 {}×{}px, 프로젝트 목표 {}×{}px. 로컬 크기 조정으로 새 버전을 만들 수 있습니다.",info.width,info.height,requested_width,requested_height),measured:None});
             }
             let mut asset = new_asset(
                 payload["name"].as_str().unwrap_or("생성 이미지").into(),
-                if individual {serde_json::from_value(payload["assetKind"].clone())?} else {AssetKind::Image},
+                if individual {
+                    serde_json::from_value(payload["assetKind"].clone())?
+                } else {
+                    AssetKind::Image
+                },
                 AssetSource::CodexSubscription,
                 artifacts,
                 Some((final_info.width, final_info.height)),
@@ -633,11 +683,20 @@ impl Backend {
                 BTreeMap::from([
                     ("styleGuide".into(), payload["styleGuide"].clone()),
                     ("spec".into(), payload["spec"].clone()),
-                    ("bundleId".into(),payload["bundleId"].clone()),
-                    ("bundleItemId".into(),payload["bundleItemId"].clone()),
-                    ("referenceMetadata".into(),payload["referenceMetadata"].clone()),
-                    ("receivedDimensions".into(),json!([info.width,info.height])),
-                    ("normalizedToSpec".into(),payload["normalizeToSpec"].clone()),
+                    ("bundleId".into(), payload["bundleId"].clone()),
+                    ("bundleItemId".into(), payload["bundleItemId"].clone()),
+                    (
+                        "referenceMetadata".into(),
+                        payload["referenceMetadata"].clone(),
+                    ),
+                    (
+                        "receivedDimensions".into(),
+                        json!([info.width, info.height]),
+                    ),
+                    (
+                        "normalizedToSpec".into(),
+                        payload["normalizeToSpec"].clone(),
+                    ),
                     ("providerThreadId".into(), json!(outcome.thread_id)),
                     ("providerTurnId".into(), json!(outcome.turn_id)),
                     (
@@ -661,6 +720,11 @@ impl Backend {
             asset.versions[0].requested_model = Some(receipt.requested_model.clone());
             asset.versions[0].confirmed_model = receipt.confirmed_model.clone();
             asset.versions[0].provider_version = runtime.status().version.clone();
+            if payload["productionConcept"] == true {
+                asset.folder = "3D 참고 이미지".into();
+            } else if payload["productionDeliver"] == true {
+                asset.folder = "게임 제작 결과".into();
+            }
             record_generated(&mut repo, asset, task)?;
         }
         Ok(())

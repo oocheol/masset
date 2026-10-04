@@ -191,7 +191,7 @@ impl Backend {
             let _ = handle.join();
         }
     }
-    fn quality3d_pipeline_hash(&self) -> Result<String> {
+    pub(super) fn quality3d_pipeline_hash(&self) -> Result<String> {
         let mut digest = Sha256::new();
         for (folder, name) in [
             ("blender-quality", "worker.py"),

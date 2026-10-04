@@ -65,8 +65,11 @@ def mesh_inspection(obj):
     coordinates = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
     mesh.vertices.foreach_get("co", coordinates)
     coordinates = coordinates.reshape(-1, 3)
-    normals = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
-    mesh.vertices.foreach_get("normal", normals)
+    # Rendering and glTF export use split corner normals. Averaged vertex
+    # normals can cancel at sharp/non-manifold vertices and their lazy cache
+    # may be stale after transforms; they do not describe exported shading.
+    normals = np.empty(len(mesh.corner_normals) * 3, dtype=np.float32)
+    mesh.corner_normals.foreach_get("vector", normals)
     normals = normals.reshape(-1, 3)
     if not len(coordinates) or not np.isfinite(coordinates).all():
         raise ValueError("Imported mesh has empty or non-finite geometry")
@@ -102,6 +105,7 @@ def mesh_inspection(obj):
             "uvRange": uv_range, "uvTriangleAreaSum": uv_area,
             "degenerateUVTriangles": uv_degenerate,
             "finiteNormals": bool(np.isfinite(normals).all()),
+            "normalDomain": "corner",
             "unitNormals": bool(np.all(np.abs(np.linalg.norm(normals, axis=1) - 1) < 0.002)),
             "boundaryEdges": boundary, "nonManifoldEdges": non_manifold,
             "looseEdges": loose, "materialCount": len(mesh.materials),

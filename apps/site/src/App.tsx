@@ -27,6 +27,7 @@ const models = [
 ];
 
 const statuses = [
+  { feature: 'Mac 0.1.8 후보 · 게임 프로젝트에서 제작과 검수', status: 'Mac 실제 제작 확인', tone: 'experimental', detail: '게임 설명과 프로젝트 루트로 필요한 시각 에셋을 분석하고, 최대 120개를 개별 작업으로 제작합니다. GPT 참고 이미지에서 로컬 TripoSR 모델을 만들고 새 프로젝트 폴더에 저장합니다. 실제 PNG·GLB 제작·해시 검증·별도 Blender 재열기를 확인했습니다. 공개 다운로드는 검증된 0.1.6을 유지합니다.' },
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
   { feature: 'Mac 0.1.6 게임 에셋 묶음', status: 'Mac 백엔드 제작 확인', tone: 'experimental', detail: 'GPT-5.5에 텍스트 구성안을 요청하고, 개별 이름·설명·참고 자료와 포함 여부를 수정해 한 번에 큐에 제출하는 흐름입니다. Mac 네이티브 백엔드에서 개별 PNG 5장과 모델 2개의 제작·저장·재열기·독립 내보내기를 확인했습니다.' },
@@ -44,11 +45,11 @@ const faqs = [
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64와 Apple Silicon Mac 0.1.6의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
-  { question: '게임 설명에서 개별 에셋을 어떻게 구성하나요?', answer: '게임 에셋 만들기 → 게임 에셋 묶음 구성안에서 2D 이미지, 3D 모델 또는 이미지 + 3D 모델을 고릅니다. 이름·설명·용도와 포함 여부를 수정하고 규격·스타일을 승인한 뒤 검토한 에셋 묶음 제작으로 한 번에 큐에 등록하는 흐름입니다. Mac 네이티브 백엔드에서 개별 이미지 5장과 모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.', link: `${sourceUrl}/blob/master/docs/game-asset-bundles.md`, label: '게임 에셋 묶음 안내' },
-  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5 (gpt-5.5)는 공식 Codex 카탈로그의 텍스트 플래너로, 도구 실행 없이 이름과 개별 설명을 제안하도록 요청합니다. GPT-6.1 Sol (gpt-6.1-sol)은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트입니다. 3D는 로컬 Blender의 고정 레시피가 담당합니다. 실제 GPT-5.5 구성안 수신을 Mac 네이티브 백엔드에서 확인했습니다.' },
+  { question: '게임 설명과 프로젝트 폴더로 에셋을 만들 수 있나요?', answer: 'Mac 0.1.8 후보는 게임 에셋 제작 → 게임 프로젝트 루트 연결 → 게임 설명 → 필요한 에셋 분석 → 필요한 에셋 모두 제작 → 결과 검수가 기본 흐름입니다. 상대 파일 목록과 누락 참조를 참고하고 소스 코드 내용은 GPT에 전송하지 않습니다. 개별 2D 이미지와 3D 모델을 제작하며 기존 파일을 덮어쓰지 않습니다. 최대 120개 시각 에셋과 추정 가능한 형상이 범위이며, 생략한 요구 사항은 경고로 표시합니다. 공개 0.1.6은 기존 게임 에셋 묶음 구성안을 사용합니다.', link: `${sourceUrl}/blob/feature/local-image-to-3d/docs/game-production.md`, label: '프로젝트에서 제작하는 흐름' },
+  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5는 텍스트 제작 목록을 계획하고, GPT-6.1 Sol이 공식 구독 경로의 GPT Image 2 요청을 담당합니다. Mac 0.1.8 후보의 3D 항목은 개별 참고 이미지 → 로컬 TripoSR → Blender 변환과 검증으로 이어집니다. 실제 메시를 직접 GPT에서 받는 기능은 아닙니다. 공개 0.1.6의 묶음 모델은 기존 Blender 고정 레시피를 사용합니다. 응답에 실제 이미지 모델 ID가 없으면 미확인으로 기록합니다.' },
   { question: '요청 이미지 수는 모델까지 합친 수인가요?', answer: '요청 이미지 수는 이미지·스프라이트·텍스처 행의 정확한 수이며, 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 이름과 설명이 다른 오브젝트 하나를 개별 PNG로 요청합니다. 구성안에서 행을 추가·삭제하거나 제외한 뒤에는 포함한 이미지·모델 행 수가 실제 제출 수입니다.' },
   { question: '참고 이미지나 GLB는 어떻게 사용하나요?', answer: 'PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개를 직접 선택하고, 이미지·미리보기·메타데이터의 외부 전송에 동의합니다. GLB는 측정한 메시 치수·정점 수·삼각형 수와 이미 있는 썸네일로 참고합니다. 임의 모델의 형상을 재구성·편집하거나 원본 메시를 코드로 실행하는 기능은 제공하지 않습니다.' },
-  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Mac 0.1.7 릴리스 후보의 3D 만들기에서 투명 배경의 단일 물체 이미지 또는 기존 GLB를 최대 5개 선택합니다. 이미지 한 장은 모델 하나로 만들고, GLB는 원본을 유지한 새 버전으로 저장합니다. 게임용 GLB·고해상도 형상·LOD·UV 텍스처·편집 가능한 .blend·썸네일·턴테이블을 내보냅니다. 공개 0.1.6은 기본 소품 레시피를 제공합니다.', link: `${sourceUrl}/blob/master/docs/model-quality.md`, label: '이미지에서 3D·모델 다듬기 안내' },
+  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Mac 0.1.8 후보는 제작 목록의 3D 항목마다 GPT 참고 이미지를 만들고 로컬 모델로 변환합니다. 게임용 GLB·LOD·텍스처는 새 프로젝트 결과 폴더에 저장하고, 고해상도 형상·편집 가능한 .blend·미리보기는 로컬 보관함에도 남깁니다. 기존 이미지·GLB를 최대 5개씩 다듬는 별도 도구도 제공합니다. 공개 0.1.6은 기본 소품 레시피를 제공합니다.', link: `${sourceUrl}/blob/master/docs/model-quality.md`, label: '이미지에서 3D·모델 다듬기 안내' },
   { question: '현재 Tripo Studio와 같은 모델인가요?', answer: '로컬 추정은 구형 오픈 모델 TripoSR을 사용하며 현재 Tripo Studio H3.1과는 다릅니다. 한 장에서 보이지 않는 뒷면을 추정하고, 얇거나 각진 물체는 형태가 흐려질 수 있습니다. 8K·자동 리깅·쿼드 리토폴로지는 제공하지 않습니다. 최초 동의 후 모델과 의존성을 내려받으며, 이후 이미지 전송이나 유료 API 없이 Mac CPU에서 실행합니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
   { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
@@ -113,8 +114,8 @@ export default function App() {
         <div className="hero-copy">
           <p className="release-note">로컬 에셋 제작 작업실 <span>Windows {release.version} · Mac {macReleases[0]?.version}</span></p>
           <h1 id="hero-title">Asset Studio</h1>
-          <p className="hero-purpose">이미지와 3D 소품을<br />만들고 다듬는 작업실.</p>
-          <p className="hero-description">원본을 남기고, 버전을 쌓고,<br />게임과 앱에 쓸 파일로 꺼내세요.</p>
+          <p className="hero-purpose">게임을 설명하고,<br />필요한 에셋을 한 번에.</p>
+          <p className="hero-description">Mac 0.1.8 후보는 프로젝트 연결 → GPT 제작 목록 → 개별 이미지·3D 생성 → 결과 검수를 제공합니다. 공개 다운로드는 Windows {release.version} · Mac {macReleases[0]?.version}입니다.</p>
           <div className="hero-actions"><DownloadLink /><a className="text-link" href="#workbench">작업대 살펴보기 <ArrowDownToLine size={16} aria-hidden="true" /></a></div>
           <p className="download-hint">Windows x64 설치 파일 <span>{sizeMiB} MiB</span><br /><a href="#requirements">WebView2 필요 · 3D는 Blender 별도 설치</a></p>
           <a className="text-link mac-hero-link" href="#download-mac">Mac 시험 배포 안내 <ArrowDownToLine size={16} aria-hidden="true" /></a>

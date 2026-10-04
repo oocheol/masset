@@ -606,6 +606,26 @@ kbd { font-variant-numeric: tabular-nums; color: var(--muted); }
 .job-status.failed, .job-status.external_unknown, .job-error { color: var(--warning); }
 .statusbar { background: var(--ink); border-top-color: var(--edge); color: var(--muted); }
 .statusbar button { border-left-color: var(--edge); color: var(--paper); }
+
+.workbench.generation-workbench{grid-template-columns:minmax(0,1fr);min-width:760px;grid-template-rows:56px minmax(0,1fr) 193px 25px}
+.workbench.queue-collapsed{grid-template-rows:56px minmax(0,1fr) 42px 25px}
+.generation-workbench .main-workspace,.generation-workbench .queue-panel{grid-column:1/-1}
+.generation-workbench .project-breadcrumb{max-width:210px;min-width:0;overflow:hidden}
+.generation-workbench .titlebar-actions{margin-left:auto}
+.advanced-toggle{margin-left:auto;font-size:14px!important}
+.production-review{display:flex;flex-direction:column;gap:18px;padding:24px 32px;min-height:0;flex:1;overflow:auto}
+.production-review-heading{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.production-review-heading>div{flex:1}
+.production-review-heading h1{font-size:24px}
+.production-review-heading p{margin-top:8px;color:var(--muted);font-size:14px}
+.production-review-image{min-height:260px;flex:1;display:flex;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:12px;overflow:hidden}
+.production-review-image img{display:block;max-width:100%;max-height:60vh;object-fit:contain}
+.production-review-model{position:relative;min-height:400px;flex:1;border:1px solid var(--edge);border-radius:12px;overflow:hidden}
+.production-review-model>.model-viewport{height:100%;min-height:400px}
+.production-review-level{position:absolute;top:16px;left:16px;display:flex;align-items:center;gap:12px;font-size:14px;background:var(--panel);padding:8px 12px;border-radius:8px}
+.production-review-checks{font-size:14px;line-height:1.8;color:var(--muted)}
+.production-review-checks summary{cursor:pointer;color:var(--paper)}
+@media(max-width:1050px){.generation-workbench .project-breadcrumb{display:none}.generation-workbench .titlebar{gap:12px}.production-review{padding:20px}}
 .notification { color: var(--paper); background: var(--panel); border-color: var(--cyan); border-radius: 2px; box-shadow: 0 8px 24px rgb(8 15 23 / .45); }
 .notification.error { color: var(--warning); background: var(--rail); border-color: var(--warning); }
 .drop-overlay { color: var(--paper); border-color: var(--cyan); background: rgb(16 29 41 / .96); border-radius: 2px; }

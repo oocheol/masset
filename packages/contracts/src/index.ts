@@ -104,6 +104,26 @@ export interface GameBundlePlan {
   references: GameBundleReference[]; summary: string;
   items: GameBundleItem[]; warnings: string[];
 }
+export interface GameProjectScan {
+  root: string; engine: 'godot' | 'unity' | 'unreal' | 'unknown'; projectName: string;
+  scannedFiles: number; assetCount: number; assets: {path: string; kind: 'image' | 'model' | 'audio' | 'other'}[];
+  missingReferences: {path: string; referencedBy: string}[]; warnings: string[]; fingerprint: string;
+}
+export interface ProductionPlan extends Omit<GameBundlePlan, 'mode'> {
+  gameRoot: string; fingerprint: string; mode: 'new';
+}
+export interface ProductionItemResult {
+  id: string; name: string; kind: AssetKind; jobIds: string[]; assetId: string | null;
+  status: 'pending' | 'running' | 'completed' | 'needs_attention' | 'cancelled';
+  review: 'pending' | 'approved'; outputPath: string | null; error: string | null;
+}
+export interface ProductionRun {
+  id: string; planId: string; brief: string; createdAt: string; outputRoot: string;
+  status: ProductionItemResult['status']; items: ProductionItemResult[];
+}
+export interface ProductionState {
+  connection: GameProjectScan | null; plan: ProductionPlan | null; runs: ProductionRun[];
+}
 export interface AtlasOptions {width: number; height: number; padding: number;}
 export const DEFAULT_SPEC: AssetSpec = {domain:'game',width:512,height:512,unit:'m',axis:'Y-up',pivot:[0.5,0.5],polygonBudget:10000,pixelArt:false,colorSpace:'sRGB',normalConvention:'OpenGL',naming:'{name}_v{version}',target:'Unity / Godot'};
 export const DEFAULT_STYLE: StyleGuide = {id:'default',name:'차분한 판타지',palette:['#799993','#d4bd8a','#7192bc','#c78272'],lineWeight:2,camera:'orthographic 3/4',lighting:'soft studio',detail:'clean readable silhouette',margin:24,referenceAssetIds:[],approved:true};

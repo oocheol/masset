@@ -29,6 +29,8 @@ export function planAssets(request: {action: 'plan_assets'; brief: string; outpu
 }
 export async function chooseFolder(title:string):Promise<string|null> {
   if (!isNative) return null;
+  const qa=window as Window & {__ASSET_NATIVE_QA__?: {gameProjectRoot?: string}};
+  if(title==='게임 프로젝트 루트 연결' && qa.__ASSET_NATIVE_QA__?.gameProjectRoot) return qa.__ASSET_NATIVE_QA__.gameProjectRoot;
   const path = await open({directory:true,multiple:false,title});
   return typeof path === 'string' ? path : null;
 }

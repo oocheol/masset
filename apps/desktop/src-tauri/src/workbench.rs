@@ -18,10 +18,12 @@ use std::{
     time::{Duration, Instant},
 };
 use uuid::Uuid;
-mod commit;
-mod provider;
 mod bundle;
+mod commit;
 mod glb;
+mod production;
+mod project_scan;
+mod provider;
 mod quality3d;
 
 #[cfg(windows)]
@@ -179,7 +181,10 @@ impl Backend {
     }
     pub fn shutdown(&self) {
         self.inner.stop.store(true, Ordering::SeqCst);
-        self.inner.quality3d_setup.cancel.store(true, Ordering::SeqCst);
+        self.inner
+            .quality3d_setup
+            .cancel
+            .store(true, Ordering::SeqCst);
         if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
             cancel.store(true, Ordering::SeqCst);
         }
@@ -342,8 +347,13 @@ impl Backend {
                 _ => self.provider_setup(&request),
             };
         }
-        if matches!(action, "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup") {
-            if self.inner.stop.load(Ordering::SeqCst) { bail!("작업 백엔드가 종료되었습니다."); }
+        if matches!(
+            action,
+            "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup"
+        ) {
+            if self.inner.stop.load(Ordering::SeqCst) {
+                bail!("작업 백엔드가 종료되었습니다.");
+            }
             return self.quality3d_setup_request(&request);
         }
         // Serialize command batches and project selection, while admitted
@@ -364,6 +374,10 @@ impl Backend {
                 native: true,
             })?),
             "quality3d" => self.enqueue_quality3d(&request),
+            "game_connect" | "production_state" | "production_plan" | "production_start"
+            | "production_review" | "production_retry" | "production_cancel" => {
+                self.production_request(&request)
+            }
             "bootstrap" => {
                 let _initialize = self.inner.initialize.lock().unwrap();
                 if self.current_root().is_none() {
@@ -468,7 +482,11 @@ impl Backend {
                 }
                 for path in paths {
                     let path = PathBuf::from(path);
-                    if path.extension().and_then(|s|s.to_str()).is_some_and(|s|s.eq_ignore_ascii_case("glb")) {
+                    if path
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .is_some_and(|s| s.eq_ignore_ascii_case("glb"))
+                    {
                         self.import_glb(&path)?;
                     } else {
                         self.import_raster(&path, AssetSource::Import)?;
@@ -1146,7 +1164,15 @@ impl Backend {
             }
             "blender_model" => self.run_blender(root, task, &work, cancel)?,
             "quality3d" => self.run_quality3d(root, task, &work, cancel)?,
-            "image_generate" => self.run_generation(root, task, &work, cancel)?,
+            "image_generate" => {
+                if !self.reuse_production_image(root, task)? {
+                    self.run_generation(root, task, &work, cancel)?;
+                }
+                if task.payload.get("productionDeliver") == Some(&json!(true)) {
+                    self.deliver_production_asset(root, task, cancel)?;
+                }
+            }
+            "production_model" => self.run_production_model(root, task, &work, cancel)?,
             _ => bail!("지원되지 않는 작업 유형입니다."),
         }
         Ok(())
@@ -1578,7 +1604,7 @@ fn job(
     })
 }
 fn cache_identity(project: &Project, kind: &str, payload: &Value) -> Result<Option<String>> {
-    if kind == "image_validate" {
+    if kind == "image_validate" || kind == "production_model" {
         return Ok(None);
     }
     let mut inputs = Vec::new();
@@ -1649,7 +1675,10 @@ fn cache_identity(project: &Project, kind: &str, payload: &Value) -> Result<Opti
     } else if kind == "quality3d" {
         (
             "local-image3d-and-blender-quality-v1".to_owned(),
-            format!("verified-quality3d-pipeline:{}", text_field(payload,"pipelineSha256")?),
+            format!(
+                "verified-quality3d-pipeline:{}",
+                text_field(payload, "pipelineSha256")?
+            ),
         )
     } else {
         (
@@ -1718,11 +1747,13 @@ fn record_generated(repo: &mut Repository, mut generated: Asset, task: &Job) -> 
     let project = repo.project()?;
     let frame = generated.versions[0].settings.get("frameIndex");
     let previous = project.assets.iter().find(|asset| {
-        ((task.kind=="image_generate" && task.payload.get("singleAsset")==Some(&json!(true)) || task.kind=="quality3d") && task.asset_id.as_deref()==Some(asset.id.as_str())) ||
-        asset.versions.iter().any(|version| {
-            version.settings.get("jobId") == Some(&json!(task.id))
-                && version.settings.get("frameIndex") == frame
-        })
+        ((task.kind == "image_generate" && task.payload.get("singleAsset") == Some(&json!(true))
+            || task.kind == "quality3d")
+            && task.asset_id.as_deref() == Some(asset.id.as_str()))
+            || asset.versions.iter().any(|version| {
+                version.settings.get("jobId") == Some(&json!(task.id))
+                    && version.settings.get("frameIndex") == frame
+            })
     });
     if let Some(previous) = previous {
         let mut version = generated.versions.remove(0);
