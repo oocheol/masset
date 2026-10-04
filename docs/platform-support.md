@@ -66,7 +66,7 @@ After a successful native build, run backend smoke and independently decode its 
 
 Historical 0.1.2 has [Apple Silicon and Intel trial DMGs](https://github.com/oocheol/masset/releases/tag/v0.1.2), built and executed on matching native macOS 15.7.9 runners. [The successful workflow](https://github.com/oocheol/masset/actions/runs/37113522134) records 138 Rust checks per architecture, actual DMG mount/copy, local ad-hoc bundle seal, copied-app WebView/IPC/readability and separate CLI 2D output checks. Anonymous public downloads matched both native package hashes. Exact bytes, source commit and boundaries are in [Mac release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2-macos.json); the table above remains the original 0.1.0 history.
 
-The Mac trial supports local 2D use. Subscription generation, managed Codex and in-app updates are unsupported until official runtime trust/layout and update installation are verified on Mac. Blender 3D, Gatekeeper first-download quarantine, clean hardware, minimum macOS 12, replacement and uninstall remain unverified. The local ad-hoc seal verifies bundle contents; no Apple Developer ID identity or notarization is provided. Follow [Mac installation guidance](macos-quickstart.md).
+The Mac trial supports local 2D use. Subscription generation and managed Codex remain unsupported on Mac. Mac 0.1.4 introduces the separately signed Apple Silicon in-app update channel; 0.1.3 and older require a one-time manual installation. Blender 3D, Clean hardware, minimum macOS 12 and uninstall remain unverified. The terminal installer avoids propagating browser quarantine to its new verified copy; browser DMG installation still requires the per-app Gatekeeper exception. The local ad-hoc seal verifies bundle contents; no Apple Developer ID identity or notarization is provided. Follow [Mac installation guidance](macos-quickstart.md).
 
 Run on a Mac with Xcode Command Line Tools:
 
@@ -75,10 +75,12 @@ npm ci
 rustup target add aarch64-apple-darwin
 cargo test --workspace --target aarch64-apple-darwin
 node scripts/collect-third-party-notices.mjs --target aarch64-apple-darwin --out docs/licenses --strict
-npm run desktop:build -- --target aarch64-apple-darwin --config "$PWD/apps/desktop/src-tauri/tauri.macos.conf.json" --bundles app,dmg
+npm run desktop:build -- --target aarch64-apple-darwin --config "$PWD/apps/desktop/src-tauri/tauri.macos.ci.conf.json" --bundles app,dmg
 ```
 
 Current published Mac builds target Apple Silicon only. Intel packaging was removed at the user's request. Rosetta execution and cross-compilation do not replace native arm64/x64 validation. Unsigned developer packages may be rejected by Gatekeeper; no signing or notarization is performed without credentials and authorization.
+
+Apple-account-free trial distribution now includes a [GitHub terminal installer](macos-quickstart.md#apple-계정-없이-터미널로-설치): it verifies the pinned public DMG and its ad-hoc app seal, then creates a new user Applications copy without propagating browser quarantine metadata. The default manual Mac workflow remains trial. Its optional notarized profile separately requires [Developer ID credentials, app/DMG tickets and native Gatekeeper assessments](macos-signing.md); it cannot silently fall back to trial. This does not change the signing status of previously published binaries.
 
 GitHub Actions automatically checks Windows and builds a portable distribution on `windows-latest`. Actual Windows WebView startup is an explicit `native_window_smoke` manual input. The historical combined workflow's Mac checks require `macos_checks`; the dedicated **Verified macOS packages** workflow now builds only on `macos-15` (arm64) by manual dispatch. Push/PR never schedules Mac builds. Runner names were checked against [official runner documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). The final 0.1.2 dedicated run was dispatched and passed; earlier failures are retained in [verification.md](verification.md). Workflows upload evidence/artifacts and never publish a release automatically.
 
@@ -87,3 +89,7 @@ Before claiming platform support, record package creation, digest, signature/not
 ## 0.1.3 design release
 
 Windows and Apple Silicon packages use the new production-workbench visual system. Exact native/package/public-download checks are recorded in [0.1.3 release metadata](releases/v0.1.3.md). The Apple Silicon job in run 37133673261 succeeded; its Intel sibling was cancelled at the user's explicit request, and that run's overall conclusion is cancelled. The selected native ARM64 evidence and public DMG digest were independently checked. Current CI and download choices exclude Intel Mac. Historical 0.1.2 artifacts and records are preserved. Native sources use commit ff6cef843d4bceaf7116cee9fa227e358f54eedd; bundled 0.1.2 quickstart documents remain historical instructions, while the current repository guide describes Apple Silicon-only distribution.
+
+## 0.1.4 Mac update channel
+
+The Mac update archive uses a separate public key, `darwin-aarch64` target and `latest-macos.json` endpoint. Payload signatures authenticate the app version (`requireSignedVersion: true`). Before installation, the native app checks bounded archive paths, bundle identity/version/architecture/seal and makes a durable previous-app copy. Installation requires a writable parent directory and idle backend; successful replacement requests a native restart. See [Mac installation](macos-quickstart.md) and [native lifecycle evidence](releases/v0.1.4-macos.md). Windows remains at 0.1.3; its existing `latest.json` must be carried forward unchanged when publishing a Mac-only latest release.

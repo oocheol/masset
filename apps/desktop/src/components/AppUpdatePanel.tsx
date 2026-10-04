@@ -29,8 +29,8 @@ export default function AppUpdatePanel({updater,workBlocked}:{updater:Updater;wo
     </dl>
     {status.state==='downloading'&&<div className="app-update-progress"><label htmlFor="app-update-progress">다운로드 진행 {percentage!==null?`${percentage.toFixed(1)}%`:''}</label><progress id="app-update-progress" max={status.totalBytes&&status.totalBytes>0?status.totalBytes:1} value={status.totalBytes&&status.totalBytes>0?Math.min(status.downloadedBytes,status.totalBytes):undefined}/><span>{updateFileSize(status.downloadedBytes)} / {updateFileSize(status.totalBytes)}</span></div>}
     {status.state==='installing'&&<div className="inline-note"><LoaderCircle size={16} className="spin"/><span>업데이트를 설치 중입니다. 설치 과정에서 앱이 닫히거나 재시작될 수 있습니다. 프로젝트를 다시 열면 로컬 저장 상태를 사용합니다.</span></div>}
-    <p className="app-update-help">업데이트 서명이 있는 NSIS 설치형을 Tauri 공식 updater로 확인합니다. 설치 전에 파일 해시와 업데이트 서명을 검증합니다. 프로젝트 소스 라이선스와 배포 파일에 포함된 외부 구성 요소의 고지는 별개입니다.</p>
-    <p className="app-update-help">기존 0.1.0 portable 사용자는 자동 업데이트를 사용하려면 새 NSIS 설치형을 한 번 직접 설치해야 합니다.</p>
+    <p className="app-update-help">Windows 설치형과 Apple Silicon Mac 앱에서 업데이트를 지원합니다. 설치 전에 파일 크기·SHA-256·업데이트 서명·서명된 버전을 검증하고, 제작 작업이 끝난 뒤 설치합니다. Mac 앱은 이전 앱을 백업하고 교체 후 재실행합니다.</p>
+    <p className="app-update-help">Mac 0.1.3 이하와 Windows 0.1.0 포터블은 업데이트 기능이 있는 버전을 한 번 직접 설치해야 합니다. Mac 앱은 쓰기 가능한 ~/Applications에 설치해 주세요. 업데이트 서명은 Apple 공증과 별개입니다.</p>
     {status.state==='available'&&<label className="check-row approval"><input type="checkbox" checked={approved} onChange={event=>setApproved(event.target.checked)} disabled={!reviewable||checking||transferring}/><span>GitHub 출처, 버전, 크기, SHA-256과 소스 라이선스 고지를 확인했습니다.</span></label>}
     {status.state==='available'&&!reviewable&&<p className="app-update-help">출처·크기·해시 정보가 확인될 때까지 설치할 수 없습니다. 업데이트를 다시 확인하세요.</p>}
     {workBlocked&&isNative&&<p className="app-update-help">현재 작업이 끝난 뒤 업데이트를 확인하거나 설치할 수 있습니다.</p>}

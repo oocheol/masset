@@ -1,5 +1,5 @@
 use crate::workbench::Backend;
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, ensure, Context, Result};
 use futures_util::future::{AbortHandle, Abortable};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -11,9 +11,49 @@ use std::time::Duration;
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const RELEASE_ROOT: &str = "https://github.com/oocheol/masset/releases";
-const UPDATE_ENDPOINT: &str =
+const WINDOWS_UPDATE_ENDPOINT: &str =
     "https://github.com/oocheol/masset/releases/latest/download/latest.json";
+const MACOS_UPDATE_ENDPOINT: &str =
+    "https://github.com/oocheol/masset/releases/latest/download/latest-macos.json";
 const MAX_INSTALLER_BYTES: u64 = 256 * 1024 * 1024;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UpdatePlatform {
+    WindowsX64,
+    MacosArm64,
+}
+
+impl UpdatePlatform {
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::WindowsX64 => "windows-x86_64",
+            Self::MacosArm64 => "darwin-aarch64",
+        }
+    }
+    pub fn artifact(self, version: &str) -> String {
+        match self {
+            Self::WindowsX64 => format!("AssetStudio_{version}_x64-setup.exe"),
+            Self::MacosArm64 => format!("AssetStudio_{version}_macos-arm64.app.tar.gz"),
+        }
+    }
+    fn endpoint(self) -> &'static str {
+        match self {
+            Self::WindowsX64 => WINDOWS_UPDATE_ENDPOINT,
+            Self::MacosArm64 => MACOS_UPDATE_ENDPOINT,
+        }
+    }
+}
+
+fn native_platform() -> Option<UpdatePlatform> {
+    if cfg!(all(windows, target_arch = "x86_64")) {
+        return Some(UpdatePlatform::WindowsX64);
+    }
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    if crate::macos_update::installed_app().is_ok() {
+        return Some(UpdatePlatform::MacosArm64);
+    }
+    None
+}
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +75,9 @@ pub struct AppUpdater {
     status: Arc<Mutex<AppUpdateStatus>>,
     available: Arc<Mutex<Option<Update>>>,
     busy: Arc<AtomicBool>,
+    platform: Option<UpdatePlatform>,
+    endpoint: String,
+    qa_cache: Option<std::path::PathBuf>,
 }
 
 struct Operation(Arc<AtomicBool>);
@@ -46,7 +89,8 @@ impl Drop for Operation {
 
 impl AppUpdater {
     pub fn new(current_version: String, qa_mode: bool) -> Self {
-        let supported = cfg!(all(windows, target_arch = "x86_64")) && !qa_mode;
+        let platform = native_platform();
+        let supported = platform.is_some() && !qa_mode;
         Self {
             status: Arc::new(Mutex::new(AppUpdateStatus {
                 supported,
@@ -61,13 +105,31 @@ impl AppUpdater {
                 message: if supported {
                     "앱에서 새 버전을 확인할 수 있습니다."
                 } else {
-                    "자동 업데이트는 Windows 설치형에서 제공합니다."
+                    "자동 업데이트는 Windows x64 설치형과 설치된 Apple Silicon Mac 앱에서 제공합니다."
                 }
                 .into(),
             })),
             available: Arc::new(Mutex::new(None)),
             busy: Arc::new(AtomicBool::new(false)),
+            platform,
+            endpoint: platform.map(|platform| platform.endpoint()).unwrap_or(WINDOWS_UPDATE_ENDPOINT).into(),
+            qa_cache: None,
         }
+    }
+
+    pub(crate) fn for_update_qa(
+        current_version: String,
+        endpoint: String,
+        cache: std::path::PathBuf,
+    ) -> Result<Self> {
+        ensure!(
+            native_platform() == Some(UpdatePlatform::MacosArm64),
+            "Update lifecycle QA requires a copied native Apple Silicon app"
+        );
+        let mut updater = Self::new(current_version, false);
+        updater.endpoint = endpoint;
+        updater.qa_cache = Some(cache);
+        Ok(updater)
     }
 
     pub fn status(&self) -> AppUpdateStatus {
@@ -103,13 +165,15 @@ impl AppUpdater {
         let result = async {
             let updater = app
                 .updater_builder()
-                .endpoints(vec![UPDATE_ENDPOINT.parse()?])?
+                .target(self.platform.context("Unsupported updater platform")?.key())
+                .endpoints(vec![self.endpoint.parse()?])?
                 .timeout(Duration::from_secs(30))
                 .build()?;
             let update = updater.check().await?;
             if let Some(update) = &update {
                 let status = self.status();
-                let (bytes, hash) = validate_update(update, &status.current_version)?;
+                let (bytes, hash) =
+                    validate_update(update, &status.current_version, self.platform.unwrap())?;
                 let mut state = self.status.lock().unwrap();
                 state.latest_version = Some(update.version.clone());
                 state.total_bytes = Some(bytes);
@@ -155,7 +219,11 @@ impl AppUpdater {
             .ok_or_else(|| anyhow::anyhow!("먼저 새 버전을 확인해 주세요."))?;
         update.timeout = Some(Duration::from_secs(300));
         let status = self.status();
-        let (expected_bytes, sha256) = validate_update(&update, &status.current_version)?;
+        let (expected_bytes, sha256) = validate_update(
+            &update,
+            &status.current_version,
+            self.platform.context("Unsupported updater platform")?,
+        )?;
         ensure!(
             update.version == expected_version && sha256 == expected_sha256,
             "확인한 버전 또는 파일이 바뀌었습니다. 새 버전을 다시 확인해 주세요."
@@ -204,6 +272,26 @@ impl AppUpdater {
             self.error("다운로드한 파일의 크기 또는 SHA-256이 다릅니다. 설치하지 않았습니다.");
             return Ok(self.status());
         }
+        #[cfg(target_os = "macos")]
+        let prepared = {
+            use tauri::Manager;
+            let cache = match &self.qa_cache {
+                Some(path) => path.clone(),
+                None => app.path().app_cache_dir()?,
+            };
+            match crate::macos_update::PreparedUpdate::prepare(
+                &bytes,
+                &status.current_version,
+                &update.version,
+                &cache,
+            ) {
+                Ok(prepared) => prepared,
+                Err(_) => {
+                    self.error("업데이트 앱 검증이나 백업에 실패했습니다. 쓰기 가능한 ~/Applications의 앱인지 확인하세요. 기존 앱은 유지됩니다.");
+                    return Ok(self.status());
+                }
+            }
+        };
         // Recheck under the backend's admission locks before any installer runs.
         if backend.prepare_update_shutdown().is_err() {
             self.error("제작 작업이 진행 중입니다. 작업이 끝난 후 업데이트해 주세요.");
@@ -214,24 +302,54 @@ impl AppUpdater {
             state.state = "installing";
             state.message = "업데이트를 설치한 뒤 앱을 다시 실행합니다.".into();
         }
-        let _ = app; // The platform updater owns restart after the installer.
-        if update.install(&bytes).is_err() {
+        let installed = update.install(&bytes);
+        #[cfg(target_os = "macos")]
+        {
+            if installed.is_err() || prepared.verify_installed().is_err() {
+                if prepared.restore().is_ok() {
+                    app.request_restart();
+                }
+                self.error(&format!(
+                    "업데이트에 실패했습니다. 이전 앱 백업: {}. 앱을 다시 실행해 주세요.",
+                    prepared.backup().display()
+                ));
+            } else {
+                app.request_restart();
+            }
+        }
+        #[cfg(not(target_os = "macos"))]
+        if installed.is_err() {
             self.error("설치를 시작하지 못했습니다. 프로젝트는 보존되어 있습니다. 앱을 다시 실행해 주세요.");
         }
         Ok(self.status())
     }
 }
 
-fn validate_update(update: &Update, current_version: &str) -> Result<(u64, String)> {
-    validate_metadata(
+fn validate_update(
+    update: &Update,
+    current_version: &str,
+    platform: UpdatePlatform,
+) -> Result<(u64, String)> {
+    validate_metadata_for(
+        platform,
         &update.version,
         current_version,
         update.download_url.as_str(),
-        &update.raw_json["platforms"]["windows-x86_64"],
+        &update.raw_json["platforms"][platform.key()],
     )
 }
 
 pub fn validate_metadata(
+    version: &str,
+    current: &str,
+    url: &str,
+    metadata: &serde_json::Value,
+) -> Result<(u64, String)> {
+    validate_metadata_for(UpdatePlatform::WindowsX64, version, current, url, metadata)
+}
+
+pub fn validate_metadata_for(
+    platform: UpdatePlatform,
     version: &str,
     current: &str,
     url: &str,
@@ -243,8 +361,10 @@ pub fn validate_metadata(
         next.pre.is_empty() && next.build.is_empty() && next.cmp_precedence(&current).is_gt(),
         "유효한 신규 정식 버전이 아닙니다."
     );
-    let expected_url =
-        format!("{RELEASE_ROOT}/download/v{version}/AssetStudio_{version}_x64-setup.exe");
+    let expected_url = format!(
+        "{RELEASE_ROOT}/download/v{version}/{}",
+        platform.artifact(version)
+    );
     ensure!(url == expected_url, "공식 릴리스의 설치 파일만 허용합니다.");
     let bytes = metadata["bytes"]
         .as_u64()
@@ -305,5 +425,25 @@ mod tests {
         ] {
             assert!(validate_metadata("0.1.2", "0.1.1", &url, &bad).is_err());
         }
+    }
+    #[test]
+    fn mac_channel_is_separate_and_requires_the_exact_app_archive() {
+        let platform = UpdatePlatform::MacosArm64;
+        let url =
+            format!("{RELEASE_ROOT}/download/v0.1.4/AssetStudio_0.1.4_macos-arm64.app.tar.gz");
+        assert!(validate_metadata_for(platform, "0.1.4", "0.1.3", &url, &metadata()).is_ok());
+        assert!(validate_metadata("0.1.4", "0.1.3", &url, &metadata()).is_err());
+        for other in [
+            url.replace(".app.tar.gz", ".dmg"),
+            url.replace("arm64", "x64"),
+            url.replace("v0.1.4", "v0.1.3"),
+            format!("{url}?other"),
+        ] {
+            assert!(
+                validate_metadata_for(platform, "0.1.4", "0.1.3", &other, &metadata()).is_err()
+            );
+        }
+        assert!(validate_metadata_for(platform, "0.1.3", "0.1.4", &url, &metadata()).is_err());
+        assert!(!AppUpdater::new("0.1.4".into(), true).status().supported);
     }
 }

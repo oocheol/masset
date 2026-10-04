@@ -11,10 +11,11 @@ import { lstat, mkdir, readFile, readdir, readlink, realpath, writeFile } from '
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { verifyMacosTrust } from './macos-signing.mjs';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGETS = { 'aarch64-apple-darwin': { uname: 'arm64', node: 'arm64', macho: 'arm64' }, 'x86_64-apple-darwin': { uname: 'x86_64', node: 'x64', macho: 'x86_64' } };
-const usage = 'Usage: bash scripts/verify-macos.sh <one.dmg> <asset-cli> <fresh-output-directory> [--target aarch64-apple-darwin|x86_64-apple-darwin] [--expected-version <semver>] [--timeout-seconds 900]';
+const usage = 'Usage: bash scripts/verify-macos.sh <one.dmg> <asset-cli> <fresh-output-directory> [--target aarch64-apple-darwin|x86_64-apple-darwin] [--expected-version <semver>] [--timeout-seconds 900] [--require-notarization --expected-team-id <Apple Team ID>]';
 const check = (value, message) => { if (!value) throw new Error(message); };
 const slash = value => value.split(sep).join('/');
 const json = async path => JSON.parse((await readFile(path, 'utf8')).replace(/^\uFEFF/, ''));
@@ -77,13 +78,18 @@ function parseArgs(args) {
   if (args[0] === '--help' || args[0] === '-h') return null;
   check(args.length >= 3 && args.slice(0, 3).every(value => value && !value.startsWith('--')), usage);
   const options = { dmg: resolve(args[0]), cli: resolve(args[1]), output: resolve(args[2]), timeout: 900 };
-  for (let i = 3; i < args.length; i += 2) {
-    const key = args[i], value = args[i + 1];
-    check(value && ['--target', '--expected-version', '--timeout-seconds'].includes(key), usage);
+  for (let i = 3; i < args.length; i++) {
+    const key = args[i];
+    if (key === '--require-notarization') { options.requireNotarization = true; continue; }
+    const value = args[++i];
+    check(value && ['--target', '--expected-version', '--timeout-seconds', '--expected-team-id'].includes(key), usage);
     if (key === '--target') options.target = value;
     if (key === '--expected-version') options.version = value;
     if (key === '--timeout-seconds') options.timeout = Number(value);
+    if (key === '--expected-team-id') options.teamId = value;
   }
+  check(!options.requireNotarization || /^[A-Z0-9]{10}$/.test(options.teamId ?? ''), 'Release verification requires --expected-team-id with --require-notarization');
+  check(!options.teamId || options.requireNotarization, '--expected-team-id requires --require-notarization');
   check(!options.target || TARGETS[options.target], 'Unsupported macOS target');
   check(Number.isInteger(options.timeout) && options.timeout >= 60 && options.timeout <= 3600, 'Timeout must be 60..3600 seconds');
   return options;
@@ -116,7 +122,7 @@ async function verify(options) {
     const item = { command: exe, arguments: args, pid: child.pid ?? null, ...result, elapsedMs: Date.now() - start, timedOut, launchError: launchError ?? null, stdout: `${prefix}.stdout.log`, stderr: `${prefix}.stderr.log` };
     report.commands.push(item);
     check(!required || (result.exitCode === 0 && !timedOut && !launchError), `${label} failed; inspect retained command logs`);
-    return { ...item, text: stdout.toString('utf8') };
+    return { ...item, text: stdout.toString('utf8'), errorText: stderr.toString('utf8') };
   };
   try {
     const packageInfo = await json(join(REPO, 'package.json'));
@@ -167,10 +173,15 @@ async function verify(options) {
     const appArch = (await run('/usr/bin/lipo', ['-archs', main], 'app-macho')).text.trim().split(/\s+/);
     check(appArch.length === 1 && appArch[0] === expected.macho, 'App Mach-O must match the native target');
     report.appArchitectures = appArch;
-    // Signing results are observations. This is not Gatekeeper/notarization acceptance.
-    const signature = await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', copiedApp], 'codesign-verify');
-    await run('/usr/bin/codesign', ['-dv', '--verbose=4', copiedApp], 'codesign-description', { required: false });
-    report.signing = { codesignVerificationExitCode: signature.exitCode, appBundleSealVerified: true, notarization: 'unverified', gatekeeper: 'unverified' };
+    report.stage = 'package signing and trust';
+    if (options.requireNotarization) {
+      report.signing = await verifyMacosTrust(run, { app: copiedApp, dmg: options.dmg, expectedTeamId: options.teamId });
+      report.boundaries.gatekeeperVerified = true; report.boundaries.notarizationVerified = true;
+    } else {
+      const signature = await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', copiedApp], 'codesign-verify');
+      await run('/usr/bin/codesign', ['-dv', '--verbose=4', copiedApp], 'codesign-description', { required: false });
+      report.signing = { codesignVerificationExitCode: signature.exitCode, appBundleSealVerified: true, notarization: 'unverified', gatekeeper: 'unverified' };
+    }
     report.stage = 'bundled resources and licenses';
     const examplesSource = join(REPO, 'apps/desktop/public/examples'), sourceExamples = await inventory(examplesSource), bundledExamples = await inventory(join(resources, 'examples'));
     assert.deepEqual(bundledExamples, sourceExamples, 'Bundled examples differ from the checkout examples used by asset-cli');

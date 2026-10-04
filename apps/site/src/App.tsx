@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ArrowDownToLine, ArrowUpRight, Box, Check, Copy, Expand, Github, Image, Layers, PackageOpen, X } from 'lucide-react';
 
-import { macReleases, release } from './release';
+import { macInstallCommand, macReleases, release } from './release';
 
 const sourceUrl = 'https://github.com/oocheol/masset';
 const releaseUrl = `${sourceUrl}/releases/tag/v${release.version}`;
@@ -32,25 +32,27 @@ const statuses = [
   { feature: '밝기 기반 노멀맵', status: '실험 기능', tone: 'experimental', detail: '이미지 밝기에서 표면 방향을 근사합니다. 실제 표면 구조를 복원하는 기능은 아닙니다.' },
   { feature: 'GPT-6.1 Sol 추론·GPT Image2 구독 요청', status: 'Windows 새 요청 1회 확인', tone: 'verified', detail: '0.1.2에서 도구 설정 충돌을 수정했습니다. 새 PNG 수신·저장·재열기·독립 내보내기를 확인했습니다. 실제 이미지 모델 ID와 모든 계정의 권한은 미확인입니다.' },
   { feature: 'Codex가 없는 PC의 관리형 준비', status: '구현·오프라인 검사', tone: 'pending', detail: '다운로드 동의·해시·압축 경로·등록·취소 검사를 통과했습니다. 새 공식 패키지의 실제 다운로드·준비는 별도 미검증 항목입니다.' },
-  { feature: 'macOS 로컬 2D 시험 배포', status: 'Mac 시험 배포', tone: 'pending', detail: hasMacRelease ? 'macOS 15에서 앱 실행과 PNG 처리를 확인했습니다. 구독 연결·앱 업데이트는 미지원이며, 3D는 Mac 검증 전입니다.' : '앱 실행과 로컬 2D 기능을 확인한 뒤 다운로드를 공개합니다. 구독 연결·앱 업데이트는 미지원이며, 3D는 Mac 검증 전입니다.' },
+  { feature: 'macOS 로컬 2D·앱 내부 업데이트', status: 'Apple Silicon 실제 확인', tone: 'verified', detail: '0.1.4부터 업데이트 파일 서명·버전을 검증해 앱을 교체하고 재실행합니다. 실제 Mac에서 프로젝트·원본 보존을 확인했습니다. 구독 연결은 미지원이며, 3D는 Mac 검증 전입니다.' },
 ];
 
 const faqs = [
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
-  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows의 기존 0.1.0 포터블 사용자는 이번 설치 파일을 한 번 설치하세요. 이후부터 앱의 업데이트 버튼으로 새 버전을 받을 수 있습니다. 버전·출처·용량·SHA-256을 검토하고 동의하면 서명 검사 후 설치하며, 프로젝트와 원본은 보존합니다. Mac 시험 배포는 새 버전 DMG를 직접 설치하세요.' },
+  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Mac 0.1.3 이하는 0.1.4를 한 번 직접 설치하세요. 이후부터 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다. Windows 0.1.0 포터블도 업데이트가 가능한 설치형을 한 번 설치해야 합니다.' },
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64 앱의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 공식 Codex 0.160.0 배포본의 출처·150.15 MiB 용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
   { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
-  { question: 'Mac에는 어떻게 설치하나요?', answer: 'M 시리즈(Apple Silicon) Mac용 DMG를 받으세요. DMG를 열고 Asset Studio를 Applications 폴더로 복사한 뒤 실행합니다. Apple Developer 서명·공증이 없는 시험 빌드여서, 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다. 설정상 최소 버전은 macOS 12이며, 실행 검증 환경은 macOS 15입니다.' },
-  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Mac 시험 배포는 처음에는 로컬 2D 기능 중심으로 사용해 주세요. Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
+  { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
+  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Mac에서는 로컬 2D 기능과 0.1.4부터 앱 내부 업데이트를 지원합니다. Codex 구독 연결·관리형 준비는 지원하지 않습니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
 export default function App() {
   const [inspectedModel, setInspectedModel] = useState(0);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [installCopyState, setInstallCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const installCommandElement = useRef<HTMLElement>(null);
   const screenshotDialog = useRef<HTMLDialogElement>(null);
   const screenshotTrigger = useRef<HTMLButtonElement>(null);
   const checksumElement = useRef<HTMLElement>(null);
@@ -73,6 +75,17 @@ export default function App() {
     }
   }
 
+  async function copyMacInstall() {
+    try { await navigator.clipboard.writeText(macInstallCommand); setInstallCopyState('copied'); }
+    catch {
+      if (installCommandElement.current) {
+        const range = document.createRange(); range.selectNodeContents(installCommandElement.current);
+        const selection = window.getSelection(); selection?.removeAllRanges(); selection?.addRange(range);
+      }
+      setInstallCopyState('failed');
+    }
+  }
+
   return <>
     <a className="skip-link" href="#main">본문으로 이동</a>
     <header className="site-header">
@@ -90,7 +103,7 @@ export default function App() {
     <main id="main">
       <section className="hero page-width" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="release-note">로컬 에셋 제작 작업실 <span>v{release.version}</span></p>
+          <p className="release-note">로컬 에셋 제작 작업실 <span>Windows {release.version} · Mac {macReleases[0]?.version}</span></p>
           <h1 id="hero-title">Asset Studio</h1>
           <p className="hero-purpose">이미지와 3D 소품을<br />만들고 다듬는 작업실.</p>
           <p className="hero-description">원본을 남기고, 버전을 쌓고,<br />게임과 앱에 쓸 파일로 꺼내세요.</p>
@@ -153,7 +166,7 @@ export default function App() {
 
       <section className="status-section section-space" aria-labelledby="status-title">
         <div className="page-width status-layout">
-          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>v{release.version}의 기능별 확인 범위입니다. Windows와 Mac의 지원 상태를 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>Windows v{release.version} · Mac v{macReleases[0]?.version}의 기능별 확인 범위입니다. Windows와 Mac의 지원 상태를 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           <dl className="status-list">{statuses.map(item => <div key={item.feature} className="status-item"><dt>{item.feature}<span className={`status-label ${item.tone}`}>{item.tone === 'verified' && <Check size={13} aria-hidden="true" />}{item.status}</span></dt><dd>{item.detail}</dd></div>)}</dl>
         </div>
       </section>
@@ -167,16 +180,18 @@ export default function App() {
         <div className="checksum-row"><div className="checksum-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
         <section id="download-mac" className="mac-download" aria-labelledby="mac-download-title">
           <div className="mac-download-heading"><h3 id="mac-download-title">Mac 시험 배포</h3><span className="mac-trial-label">로컬 2D부터</span></div>
-          <p className="mac-download-intro">처음에는 로컬 2D 기능 중심의 시험 배포입니다. 구독 연결·앱 업데이트는 지원하지 않으며, 3D는 Mac 검증 전입니다.</p>
+          <p className="mac-download-intro">Apple Silicon용 v{macReleases[0]?.version}. 로컬 2D와 앱 내부 업데이트를 지원합니다. 0.1.3 이하는 아래 방법으로 새 버전을 한 번 설치하세요.</p>
           {hasMacRelease ? <div className="mac-release-grid">{macReleases.map(item => <article className="mac-release" key={item.architecture} aria-label={`${item.label} 다운로드`}>
-            <h4>{item.label}</h4><p>M 시리즈 Mac용</p>
+            <h4>{item.label} · v{item.version}</h4><p>M 시리즈 Mac용 · 앱 내부 업데이트</p>
             <a className="button button-primary" href={item.downloadUrl} aria-label={`${item.label} DMG 다운로드`}><ArrowDownToLine size={18} aria-hidden="true" />DMG 다운로드</a>
             <dl><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>
           </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon용 DMG를 이곳에 공개합니다.</p>}
           <div className="mac-install-guide">
-            <div><h4>Mac 설치 순서</h4><ol><li>내 Mac에 맞는 DMG를 엽니다.</li><li>Asset Studio를 Applications 폴더로 복사합니다.</li><li>Applications에서 앱을 실행합니다.</li></ol></div>
-            <div className="mac-install-notes"><p>Apple Developer 서명·공증이 없는 시험 빌드입니다. 처음 실행할 때 시스템 설정에서 해당 앱의 실행 허용이 필요할 수 있습니다.</p><p>macOS 12 이상은 설정상 최소값입니다. {hasMacRelease ? '실행 확인은 macOS 15에서 진행했습니다.' : '실행 검증은 macOS 15 환경에서 진행합니다.'}</p><p>Mac의 Codex 구독 연결·관리형 준비와 앱 내부 업데이트는 지원하지 않습니다. 새 버전은 DMG를 직접 설치해 주세요.</p></div>
+            <div><h4>Apple 계정 없이 터미널로 설치</h4><ol><li>기존 앱을 닫고 아래 명령을 터미널에 붙여 넣습니다.</li><li>파일 검증과 설치 위치 안내를 확인하고 y를 입력합니다.</li><li>~/Applications/Asset Studio 0.1.4의 새 앱을 사용합니다.</li></ol><p>스크립트와 DMG의 SHA-256을 확인한 뒤 새 사본을 설치합니다. 기존 앱·프로젝트는 보존하며 관리자 암호는 필요하지 않습니다.</p></div>
+            <div className="mac-install-notes"><h4>브라우저로 DMG를 받은 경우</h4><p>홈 폴더의 Applications 안에 Asset Studio 0.1.4 폴더를 만들고 앱을 복사하세요. DMG 안에서 직접 실행하지 마세요.</p><p>Apple 공증이 없어 확인 경고가 나타날 수 있습니다. 경고를 닫은 뒤 <strong>시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기</strong>를 선택하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>자세한 설치 안내</a></p><p>업데이트 파일은 별도의 키로 서명합니다. Apple 공증과는 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><p>macOS 12는 설정상 최소값입니다. 구독 연결·Codex 자동 준비는 미지원이며, 3D는 Mac 검증 전입니다.</p></div>
           </div>
+          <div className="mac-terminal-install"><div className="checksum-heading"><span>Mac 설치 명령</span><button type="button" onClick={copyMacInstall}><Copy size={15} aria-hidden="true" />{installCopyState === 'copied' ? '복사됨' : '설치 명령 복사'}</button></div><pre><code ref={installCommandElement}>{macInstallCommand}</code></pre><p role="status" aria-live="polite">{installCopyState === 'copied' ? '설치 명령을 복사했습니다. 터미널에 붙여 넣으세요.' : installCopyState === 'failed' ? '명령을 선택했습니다. 직접 복사해 주세요.' : '설치 안내를 읽고 y를 입력하면 진행합니다.'}</p></div>
+          <div className="mac-update-guide"><h4>다음 버전부터는 앱에서 업데이트</h4><p>앱이 새 버전을 자동 확인합니다. 상단 앱 업데이트에서 출처·버전·크기·해시를 확인하고 승인하면 다운로드·검증·설치·재실행합니다. 제작 작업이 끝난 뒤 진행하며, 이전 앱을 백업하고 프로젝트·원본·버전을 보존합니다.</p></div>
         </section>
       </section>
 

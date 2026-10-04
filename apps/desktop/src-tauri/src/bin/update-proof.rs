@@ -1,7 +1,7 @@
 //! Developer-only check of an already built update artifact. No installer runs,
 //! no HTTP or provider requests occur, and the output directory must be new.
 use anyhow::{ensure, Context, Result};
-use asset_desktop::updater::validate_metadata;
+use asset_desktop::updater::{validate_metadata_for, UpdatePlatform};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use minisign_verify::{PublicKey, Signature};
 use serde_json::{json, Value};
@@ -14,13 +14,16 @@ use tauri_plugin_updater::UpdaterExt;
 // opened and the installer is never executed. The comparator override allows
 // verification of the current release without pretending it is an upgrade.
 fn verify_native_download(
+    platform: UpdatePlatform,
     version: &str,
     expected_length: u64,
     expected_digest: &str,
 ) -> Result<Value> {
     ensure!(
-        cfg!(all(windows, target_arch = "x86_64")),
-        "Windows x64 proof only"
+        (platform == UpdatePlatform::WindowsX64 && cfg!(all(windows, target_arch = "x86_64")))
+            || (platform == UpdatePlatform::MacosArm64
+                && cfg!(all(target_os = "macos", target_arch = "aarch64"))),
+        "Proof must run on the matching native platform"
     );
     let mut context = tauri::generate_context!();
     context.config_mut().app.windows.clear();
@@ -32,7 +35,29 @@ fn verify_native_download(
         let updater = app
             .handle()
             .updater_builder()
-            .target("windows-x86_64")
+            .target(platform.key())
+            .endpoints(vec![match platform {
+                UpdatePlatform::WindowsX64 => {
+                    "https://github.com/oocheol/masset/releases/latest/download/latest.json"
+                }
+                UpdatePlatform::MacosArm64 => {
+                    "https://github.com/oocheol/masset/releases/latest/download/latest-macos.json"
+                }
+            }
+            .parse()?])?
+            .pubkey(
+                match platform {
+                    UpdatePlatform::WindowsX64 => {
+                        serde_json::from_str::<Value>(include_str!("../../tauri.conf.json"))?
+                    }
+                    UpdatePlatform::MacosArm64 => {
+                        serde_json::from_str::<Value>(include_str!("../../tauri.macos.conf.json"))?
+                    }
+                }["plugins"]["updater"]["pubkey"]
+                    .as_str()
+                    .context("Public key missing")?
+                    .to_owned(),
+            )
             .version_comparator(|_, _| true)
             .timeout(std::time::Duration::from_secs(30))
             .build()
@@ -46,11 +71,12 @@ fn verify_native_download(
             update.version == version,
             "Public version differs from expected release"
         );
-        let (length, digest) = validate_metadata(
+        let (length, digest) = validate_metadata_for(
+            platform,
             &update.version,
             "0.1.0",
             update.download_url.as_str(),
-            &update.raw_json["platforms"]["windows-x86_64"],
+            &update.raw_json["platforms"][platform.key()],
         )?;
         ensure!(
             length == expected_length && digest == expected_digest,
@@ -107,9 +133,17 @@ fn main() -> Result<()> {
     ensure!(!output.exists(), "Output directory must be new");
     let bytes = fs::read(&installer)?;
     let manifest: Value = serde_json::from_slice(&fs::read(&manifest_path)?)?;
-    let config: Value = serde_json::from_str(include_str!("../../tauri.conf.json"))?;
+    let target = if manifest["platforms"]["darwin-aarch64"].is_object() {
+        UpdatePlatform::MacosArm64
+    } else {
+        UpdatePlatform::WindowsX64
+    };
+    let config: Value = serde_json::from_str(match target {
+        UpdatePlatform::WindowsX64 => include_str!("../../tauri.conf.json"),
+        UpdatePlatform::MacosArm64 => include_str!("../../tauri.macos.conf.json"),
+    })?;
     let version = manifest["version"].as_str().context("version missing")?;
-    let platform = &manifest["platforms"]["windows-x86_64"];
+    let platform = &manifest["platforms"][target.key()];
     let url = platform["url"].as_str().context("URL missing")?;
     let signature = platform["signature"]
         .as_str()
@@ -117,7 +151,7 @@ fn main() -> Result<()> {
     let pubkey = config["plugins"]["updater"]["pubkey"]
         .as_str()
         .context("key missing")?;
-    let (length, digest) = validate_metadata(version, "0.1.0", url, platform)?;
+    let (length, digest) = validate_metadata_for(target, version, "0.1.0", url, platform)?;
     ensure!(
         bytes.len() as u64 == length && format!("{:x}", Sha256::digest(&bytes)) == digest,
         "Installer bytes/digest mismatch"
@@ -139,7 +173,7 @@ fn main() -> Result<()> {
         "tamperedPayloadRejected":tampered_rejected,"versionReplayRejected":version_replay_rejected,
         "scope":"Independent minisign-verify 0.2.5 check of actual local release bytes and authenticated version; excludes the plugin download path, cross-version installer execution and clean-machine behavior"});
     if args.len() == 4 {
-        result["nativePublicDownload"] = verify_native_download(version, length, &digest)?;
+        result["nativePublicDownload"] = verify_native_download(target, version, length, &digest)?;
         result["networkRequests"] = Value::Null; // Redirect request count is not measured.
         result["publicNetworkOperations"] = json!(["releaseMetadata", "installerDownload"]);
     }

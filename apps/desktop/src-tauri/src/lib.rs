@@ -1,5 +1,9 @@
+#[cfg(target_os = "macos")]
+mod macos_update;
 mod process_guard;
 mod project_lease;
+#[cfg(target_os = "macos")]
+mod update_qa;
 pub mod updater;
 pub mod workbench;
 
@@ -200,6 +204,10 @@ pub fn run() {
             };
             let args: Vec<String> = std::env::args().collect();
             let qa_directory = native_qa_directory(&args)?;
+            #[cfg(target_os = "macos")]
+            let update_qa = update_qa::UpdateQa::from_args(&args)?;
+            #[cfg(not(target_os = "macos"))]
+            if args.iter().any(|arg| arg == "--update-smoke") { return Err("Update lifecycle QA is Mac-only".into()); }
             let data = if let Some(directory) = &qa_directory {
                 if directory.exists() {
                     return Err("Native UI QA directory must be new".into());
@@ -207,10 +215,18 @@ pub fn run() {
                 std::fs::create_dir_all(directory)?;
                 directory.join("app-data")
             } else {
-                app.path().app_data_dir()?
+                #[cfg(target_os = "macos")]
+                { match &update_qa { Some(qa) => qa.root.join("app-data"), None => app.path().app_data_dir()? } }
+                #[cfg(not(target_os = "macos"))]
+                { app.path().app_data_dir()? }
             };
             let with_native_model = qa_directory.is_some() && args.iter().any(|arg| arg == "--ui-smoke-3d" || arg == "--with-native-model");
-            app.manage(updater::AppUpdater::new(app.package_info().version.to_string(), qa_directory.is_some()));
+            let updates = updater::AppUpdater::new(app.package_info().version.to_string(), qa_directory.is_some());
+            #[cfg(target_os = "macos")]
+            let updates = match &update_qa { Some(qa) => qa.updater(app.package_info().version.to_string())?, None => updates };
+            app.manage(updates);
+            #[cfg(target_os = "macos")]
+            app.manage(update_qa);
             app.manage(NativeQa(qa_directory, with_native_model));
             let backend = Backend::new(data, examples, worker);
             backend.start();
@@ -218,6 +234,14 @@ pub fn run() {
             Ok(())
         })
         .on_page_load(|webview, payload| {
+            #[cfg(target_os = "macos")]
+            if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                let qa = webview.app_handle().state::<Option<update_qa::UpdateQa>>();
+                if let Some(qa) = qa.as_ref() {
+                    let parameters = serde_json::json!({"fromVersion":qa.from,"toVersion":qa.to});
+                    let _ = webview.eval(format!("window.__ASSET_UPDATE_QA__={parameters};\n{}", include_str!("update_qa.js")));
+                }
+            }
             if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished)
                 && webview.app_handle().state::<NativeQa>().inner().0.is_some()
             {
@@ -228,7 +252,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             workspace_command,
-            native_qa_complete
+            native_qa_complete,
+            #[cfg(target_os = "macos")]
+            update_qa::update_qa_checkpoint
         ])
         .build(tauri::generate_context!())
         .expect("Asset Studio native initialization failed");

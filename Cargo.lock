@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "asset-desktop"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "asset-core",
@@ -93,6 +93,7 @@ dependencies = [
  "asset-scheduler",
  "base64 0.22.1",
  "chrono",
+ "flate2",
  "futures-util",
  "image",
  "libc",
@@ -101,6 +102,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "tar",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -123,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "asset-providers"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "asset-core",
  "base64 0.22.1",

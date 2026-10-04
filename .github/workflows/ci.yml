@@ -118,7 +118,7 @@ jobs:
           workspaces: '. -> target'
       - run: npm ci
       - run: cargo test --workspace --target ${{ matrix.target }}
-      - run: npm run desktop:build -- --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+      - run: npm run desktop:build -- --target ${{ matrix.target }} --config "${{ github.workspace }}/apps/desktop/src-tauri/tauri.macos.ci.conf.json" --bundles ${{ matrix.bundles }}
       - uses: actions/upload-artifact@v4
         with:
           name: unsigned-${{ matrix.platform }}
