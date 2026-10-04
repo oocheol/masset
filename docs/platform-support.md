@@ -1,5 +1,8 @@
 # Platform support and packaging
 
+Mac 0.1.5 adds Apple Silicon Codex subscription connections and managed preparation. Native macOS account/image-tool readiness, one received PNG, project reopen and independent export were verified on 2026-10-04. Signed official runtime/helper discovery, SHA-256-pinned preparation and executable permissions are checked separately from the locally ad-hoc-signed Asset Studio bundle. The historical platform table below is preserved; see [current Mac evidence](releases/v0.1.5-macos.md).
+
+
 0.1.2 packaging configuration updated on 2026-10-03 (Asia/Seoul). Per-version execution evidence is in [verification.md](verification.md) and [release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2.json). The table and native execution history below describe 0.1.0; current installer evidence is recorded separately. A build command or CI configuration is not evidence that a package ran on that OS.
 
 | Platform | Declared minimum | Source/build tooling | Native build | Installation and launch |

@@ -62,9 +62,9 @@ Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입�
 | 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
 | 작업 큐 | 의존 관계, 자원 한도, 취소·복구·부분 재실행 | SQLite에 저장되는 작업 상태 |
 | 독립 내보내기 | 선택한 에셋과 버전을 새 묶음으로 저장 | 실제 파일 + 상대 경로·SHA-256이 있는 `manifest.json` |
-| 구독 이미지 연결 | Windows에서 공식 Codex 준비·로그인·명시적 생성 요청 | 검증 후 저장한 파일과 요청·확인 모델 정보 |
+| 구독 이미지 연결 | Windows·Apple Silicon Mac에서 공식 Codex 준비·로그인·명시적 생성 요청 | 검증 후 저장한 파일과 요청·확인 모델 정보 |
 
-기본 아이콘은 로컬 SVG/PNG 예제입니다. GPT-6.1 Sol(`gpt-6.1-sol`) 추론과 GPT Image 2(`gpt-image-2`) 목표의 구독 경로는 **Windows 0.1.2에서 새 요청 한 번의 수신·저장·재열기·독립 내보내기를 실증**했습니다. 실제 이미지 모델 ID는 응답에서 제공되지 않아 `confirmedModel=null`이며, 모든 계정의 모델 권한을 보장하지 않습니다. 0.1.3 디자인 릴리스에서 새 외부 생성 요청은 하지 않았습니다.
+기본 아이콘은 로컬 SVG/PNG 예제입니다. GPT-6.1 Sol(`gpt-6.1-sol`) 추론과 GPT Image 2(`gpt-image-2`) 목표의 구독 경로는 **Windows 0.1.2와 Mac 0.1.5 구현에서 각각 새 이미지 한 장의 수신·저장·재열기·독립 내보내기를 실증**했습니다. 실제 이미지 모델 ID는 응답에서 제공되지 않아 `confirmedModel=null`이며, 모든 계정의 모델 권한을 보장하지 않습니다.
 
 [공급자 실증](docs/provider-feasibility.md) · [ima2-gen 구조 비교](docs/ima2-gen-comparison.md) · [현재 구현 범위](docs/completion-status.md)
 
@@ -73,7 +73,7 @@ Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입�
 | 플랫폼 | 현재 다운로드 | 현재 범위 |
 | --- | --- | --- |
 | Windows x64 · 0.1.3 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip) | 로컬 2D·절차적 3D·구독 연결·앱 내부 업데이트 |
-| Mac Apple Silicon · 0.1.4 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.4/AssetStudio_0.1.4_macos-arm64.dmg) | M 시리즈용 로컬 2D · 앱 내부 업데이트. Intel 빌드는 제외 |
+| Mac Apple Silicon · 0.1.5 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.5/AssetStudio_0.1.5_macos-arm64.dmg) | M 시리즈용 로컬 2D · GPT 구독 연결 · Codex 준비 · 앱 내부 업데이트. Intel 빌드는 제외 |
 
 **Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 0.1.1/0.1.2 설치 사용자는 앱의 업데이트 패널에서 새 버전을 확인할 수 있습니다. WebView2와 3D용 Blender는 별도 필요하며, 이용자에게 Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 앱 전용 Codex 다운로드는 출처·라이선스·해시를 안내하고 동의 후 진행합니다.
 
@@ -96,9 +96,11 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
 
 브라우저로 DMG를 받았다면 앱을 홈 폴더의 Applications 안에 새 폴더를 만들어 복사하세요. 최초 실행 경고는 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기**로 허용할 수 있습니다. DMG 안에서 직접 실행하지 마세요. 업데이트가 설치 폴더에 쓰기 권한을 필요로 합니다.
 
-Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. Mac 구독 생성·Codex 자동 준비는 미지원이고, Blender 3D는 Mac 실행 검증 전입니다.
+**Mac 구독 연결:** 0.1.5에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 기존 0.1.4 사용자는 앱에서 0.1.5로 업데이트할 수 있습니다.
 
-[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.4 검증 기록](docs/releases/v0.1.4-macos.md) · [Windows 0.1.3 기록](docs/releases/v0.1.3.md)
+Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Blender 3D는 Mac 실행 검증 전입니다.
+
+[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.5 검증 기록](docs/releases/v0.1.5-macos.md) · [Windows 0.1.3 기록](docs/releases/v0.1.3.md)
 
 ## 원본에서 결과 묶음까지
 
@@ -150,7 +152,7 @@ masset/
 │  ├─ core/                   SQLite 프로젝트·버전·해시·내보내기
 │  ├─ scheduler/              영속 큐·의존성·자원 예약·복구
 │  ├─ image-pipeline/         이미지 변환·분할·아틀라스·검사
-│  └─ providers/              공식 Codex RPC·Windows 런타임 준비
+│  └─ providers/              공식 Codex RPC·Windows/Mac 런타임 준비
 ├─ packages/
 │  ├─ contracts/              TypeScript 데이터·명령 계약
 │  └─ ui/                     공용 색상 토큰
