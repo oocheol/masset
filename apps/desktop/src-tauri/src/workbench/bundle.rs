@@ -542,6 +542,7 @@ mod tests {
                         directory.join("unused-installer"),
                     ),
                     planning_cancel: Mutex::new(None),
+                    quality3d_setup: quality3d::SetupState::default(),
                 }),
             };
             backend

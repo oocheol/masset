@@ -650,3 +650,5 @@ kbd { font-variant-numeric: tabular-nums; color: var(--muted); }
 .job-parameters summary { color: var(--paper); }
 .job-parameters pre { color: var(--muted); background: var(--ink); border-color: var(--edge); border-radius: 2px; }
 @media (prefers-reduced-motion: reduce) { button, input, select, textarea { transition: none; } }
+.model-level-select { display:flex; align-items:center; gap:8px; margin-left:12px; color:var(--text-muted,#a9bbc0); font-size:12px; }
+.model-level-select select { max-width:160px; padding:5px 8px; color:var(--text,#dce8ed); background:var(--surface,#142025); border:1px solid var(--border,#33464c); border-radius:6px; }

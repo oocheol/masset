@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 export interface ModelViewportInfo {
   vertices: number;
@@ -133,6 +134,14 @@ export function ModelViewport({ url, wireframe, onInfo }: ModelViewportProps) {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x142025);
+    // Local studio reflections keep metallic PBR materials legible without
+    // downloading an HDR file or changing the imported asset's materials.
+    const room = new RoomEnvironment();
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const studio = pmrem.fromScene(room, 0.04);
+    scene.environment = studio.texture;
+    room.dispose();
+    pmrem.dispose();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 1000);
     camera.up.set(0, 1, 0);
     camera.position.set(7, 5, 8);
@@ -333,6 +342,7 @@ export function ModelViewport({ url, wireframe, onInfo }: ModelViewportProps) {
       materials.clear();
       if (modelMaterials.current === materials) modelMaterials.current = new Map();
       renderer.renderLists.dispose();
+      studio.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

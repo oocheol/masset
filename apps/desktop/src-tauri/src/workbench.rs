@@ -22,6 +22,7 @@ mod commit;
 mod provider;
 mod bundle;
 mod glb;
+mod quality3d;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -50,6 +51,7 @@ struct Inner {
     provider_connection: Mutex<Value>,
     codex_installer: asset_providers::installer::CodexInstaller,
     planning_cancel: Mutex<Option<Arc<AtomicBool>>>,
+    quality3d_setup: quality3d::SetupState,
 }
 struct Runner {
     cancel: Arc<AtomicBool>,
@@ -69,6 +71,7 @@ impl Backend {
             .map(|n| n.get() as u32)
             .unwrap_or(2)
             .clamp(2, 4);
+        limits.ram_mb = quality3d::memory_budget_mb();
         Self {
             inner: Arc::new(Inner {
                 data,
@@ -92,6 +95,7 @@ impl Backend {
                 )),
                 codex_installer,
                 planning_cancel: Mutex::new(None),
+                quality3d_setup: quality3d::SetupState::default(),
             }),
         }
     }
@@ -175,22 +179,28 @@ impl Backend {
     }
     pub fn shutdown(&self) {
         self.inner.stop.store(true, Ordering::SeqCst);
+        self.inner.quality3d_setup.cancel.store(true, Ordering::SeqCst);
         if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
             cancel.store(true, Ordering::SeqCst);
         }
-        let _request = self.inner.requests.lock().unwrap();
-        // A preparation already admitted under this mutex must be observed
-        // before cancellation; otherwise it could start after an early cancel.
-        self.inner.codex_installer.cancel();
-        // Stop admission before observing runners. The lease stays held until
-        // the last local worker actually exits, including during cancellation.
-        let _dispatch = self.inner.dispatch.lock().unwrap();
-        for runner in self.inner.runners.lock().unwrap().values() {
-            runner.cancel.store(true, Ordering::SeqCst);
-            // The worker owns its live process handle and Job Object. A stored
-            // numeric PID may already have been reused after the worker exits.
+        {
+            let _request = self.inner.requests.lock().unwrap();
+            // A preparation already admitted under this mutex must be observed
+            // before cancellation; otherwise it could start after an early cancel.
+            self.inner.codex_installer.cancel();
+            // Stop admission before observing runners. The lease stays held until
+            // the last local worker actually exits, including during cancellation.
+            let _dispatch = self.inner.dispatch.lock().unwrap();
+            for runner in self.inner.runners.lock().unwrap().values() {
+                runner.cancel.store(true, Ordering::SeqCst);
+                // The worker owns its live process handle and Job Object. A stored
+                // numeric PID may already have been reused after the worker exits.
+            }
+            self.release_lease_if_stopped_locked();
         }
-        self.release_lease_if_stopped_locked();
+        // Setup owns a separate process group; wait for cancellation and reaping
+        // before the app exits so a download/pip process cannot be orphaned.
+        self.join_quality3d_setup();
     }
     fn release_lease_if_stopped(&self) {
         if self.inner.stop.load(Ordering::SeqCst) {
@@ -215,6 +225,7 @@ impl Backend {
         if self.inner.codex_installer.busy() {
             bail!("Codex 준비를 완료하거나 취소한 다음 앱을 업데이트해 주세요.");
         }
+        self.ensure_quality3d_setup_idle()?;
         self.ensure_workers_idle()
             .map_err(|_| anyhow!("제작 작업을 완료하거나 취소한 다음 업데이트해 주세요."))
     }
@@ -224,6 +235,7 @@ impl Backend {
         if self.inner.codex_installer.busy() {
             bail!("Codex 준비를 완료하거나 취소한 다음 앱을 업데이트해 주세요.");
         }
+        self.ensure_quality3d_setup_idle()?;
         self.ensure_workers_idle()?;
         self.inner.stop.store(true, Ordering::SeqCst);
         self.release_lease_if_stopped_locked();
@@ -330,6 +342,10 @@ impl Backend {
                 _ => self.provider_setup(&request),
             };
         }
+        if matches!(action, "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup") {
+            if self.inner.stop.load(Ordering::SeqCst) { bail!("작업 백엔드가 종료되었습니다."); }
+            return self.quality3d_setup_request(&request);
+        }
         // Serialize command batches and project selection, while admitted
         // background workers still execute independently under resource limits.
         let _request = self.inner.requests.lock().unwrap();
@@ -347,6 +363,7 @@ impl Backend {
                 platform: std::env::consts::OS.into(),
                 native: true,
             })?),
+            "quality3d" => self.enqueue_quality3d(&request),
             "bootstrap" => {
                 let _initialize = self.inner.initialize.lock().unwrap();
                 if self.current_root().is_none() {
@@ -1128,6 +1145,7 @@ impl Backend {
                 }
             }
             "blender_model" => self.run_blender(root, task, &work, cancel)?,
+            "quality3d" => self.run_quality3d(root, task, &work, cancel)?,
             "image_generate" => self.run_generation(root, task, &work, cancel)?,
             _ => bail!("지원되지 않는 작업 유형입니다."),
         }
@@ -1628,6 +1646,11 @@ fn cache_identity(project: &Project, kind: &str, payload: &Value) -> Result<Opti
             version.to_owned(),
             format!("fixed-blender-worker-sha256:{worker}"),
         )
+    } else if kind == "quality3d" {
+        (
+            "local-image3d-and-blender-quality-v1".to_owned(),
+            format!("verified-quality3d-pipeline:{}", text_field(payload,"pipelineSha256")?),
+        )
     } else {
         (
             "local-raster-0.1.0".to_owned(),
@@ -1695,7 +1718,7 @@ fn record_generated(repo: &mut Repository, mut generated: Asset, task: &Job) -> 
     let project = repo.project()?;
     let frame = generated.versions[0].settings.get("frameIndex");
     let previous = project.assets.iter().find(|asset| {
-        (task.kind=="image_generate" && task.payload.get("singleAsset")==Some(&json!(true)) && task.asset_id.as_deref()==Some(asset.id.as_str())) ||
+        ((task.kind=="image_generate" && task.payload.get("singleAsset")==Some(&json!(true)) || task.kind=="quality3d") && task.asset_id.as_deref()==Some(asset.id.as_str())) ||
         asset.versions.iter().any(|version| {
             version.settings.get("jobId") == Some(&json!(task.id))
                 && version.settings.get("frameIndex") == frame
@@ -1873,6 +1896,7 @@ mod lifecycle_tests {
                         directory.join("appdata/codex-runtimes"),
                     ),
                     planning_cancel: Mutex::new(None),
+                    quality3d_setup: quality3d::SetupState::default(),
                 }),
             };
             backend

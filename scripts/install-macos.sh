@@ -3,12 +3,12 @@
 # Does not need an Apple account, sudo, or a change to system Gatekeeper policy.
 set -euo pipefail
 
-version='0.1.6'
+version='0.1.7'
 filename="AssetStudio_${version}_macos-arm64.dmg"
 download_url="https://github.com/oocheol/masset/releases/download/v${version}/${filename}"
-expected_bytes='29188590'
-expected_sha256='79055cd2fbc81a658d480ebcb4e6418d3f15c793c6803fc86d19914f6fea0eb7'
-install_root="${HOME}/Applications/Asset Studio 0.1.6"
+expected_bytes='33618446'
+expected_sha256='e52ad52ef0a283d243f6d2374db4acf036df91edeffb64ebc7e1ad4581f6696c'
+install_root="${HOME}/Applications/Asset Studio 0.1.7"
 local_dmg=''
 assume_yes=false
 launch_app=true
@@ -16,10 +16,10 @@ check_only=false
 
 usage() {
   cat <<'HELP'
-Install Asset Studio 0.1.6 for Apple Silicon from its verified GitHub release.
+Install Asset Studio 0.1.7 for Apple Silicon from its verified GitHub release.
 Usage: bash install-macos.sh [--yes] [--no-launch] [--check-only]
                              [--destination <absolute-directory>] [--dmg <existing-file>]
-Default destination: ~/Applications/Asset Studio 0.1.6/Asset Studio.app (existing apps are never replaced).
+Default destination: ~/Applications/Asset Studio 0.1.7/Asset Studio.app (existing apps are never replaced).
 This is an Apple-unnotarized trial. The installer verifies the pinned SHA-256 and
 app signature, then copies only the new app without browser quarantine metadata.
 System Gatekeeper policy and existing downloads, apps and projects are unchanged.

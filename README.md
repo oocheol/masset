@@ -23,7 +23,11 @@
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
 
-Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입니다. 이미지 편집, 스프라이트·아틀라스, 절차적 3D, 버전 관리와 독립 파일 내보내기를 한 작업대에서 다룹니다. **Mac 0.1.6은 게임 에셋 묶음과 GPT 구독 연결을 지원하며, Apple 개발자 계정 없이 설치하고 앱 내부에서 업데이트할 수 있습니다.** Windows 공개 버전은 0.1.3을 유지합니다.
+Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입니다. 이미지 편집, 스프라이트·아틀라스, 3D 제작·다듬기, 버전 관리와 독립 파일 내보내기를 한 작업대에서 다룹니다. **Mac 0.1.7은 로컬 이미지→3D와 기존 GLB 다듬기를 추가합니다.** 게임 에셋 묶음·GPT 구독 연결과 Apple 개발자 계정 없이 설치·앱 내부 업데이트하는 기능도 제공합니다. Windows 공개 버전은 0.1.3을 유지합니다.
+
+**0.1.7은 릴리스 후보입니다.** Mac 설치본·로컬 복원·실제 파일 재열기는 검증했으며, 현재 호스트의 디스크 이미지 마운트 완료·해제 문제로 최종 DMG 검증과 공개 배포를 보류했습니다. 아래 공개 다운로드·설치 명령은 0.1.6을 유지합니다. [0.1.7 검증 상태](docs/releases/v0.1.7-macos.md)를 확인하세요.
+
+**3D 만들기**에서 투명 배경의 단일 물체 이미지 또는 GLB를 최대 5개 선택하세요. 이미지마다 모델 하나를 만들고, 기존 GLB는 원본을 남긴 새 버전으로 저장합니다. 게임용·고해상도 형상·LOD, UV 색상 텍스처, 지원되는 경우 메시에서 베이크한 노멀맵, 편집 가능한 `.blend`, 썸네일·턴테이블을 함께 내보냅니다. 이미지 복원은 Apple Silicon·CPython 3.9·최소 16GB 메모리와 Blender가 필요하며, 최초 동의 후 약 1.68GB의 모델 가중치와 의존성을 준비합니다. 이후 CPU에서 로컬로 실행하고 유료 API로 대체하지 않습니다. 구형 오픈 모델 TripoSR을 사용하므로 현재 Tripo Studio H3.1과 같은 품질이나 8K·리깅·쿼드 리토폴로지는 제공하지 않습니다. [사용 방법과 결과 범위](docs/model-quality.md)를 확인하세요.
 
 Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)의 텍스트 구성안을 요청합니다. 2D 이미지·3D 모델·혼합 구성을 고르고, 이름과 설명이 있는 행을 수정·승인해 포함한 항목을 한 번에 큐에 제출하세요. [게임 에셋 묶음 사용 흐름](docs/game-asset-bundles.md)에서 참고 자료 전송 동의, 개별 이미지 수와 고정 3D 레시피를 안내합니다. Mac 네이티브 백엔드에서 실제 구성안을 받아 무기 이미지 5장과 모델 2개를 개별 에셋으로 제작·저장·재열기·내보내기했습니다.
 
@@ -62,6 +66,7 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 | 스프라이트·아틀라스 | 프레임을 나누고 여러 이미지를 묶어 패킹 | 실제 이미지와 프레임 메타데이터 |
 | 게임 에셋 묶음 · Mac 0.1.6 | 게임 설명 → 텍스트 구성안 → 개별 행 편집·승인 → 포함한 행을 한 번에 큐 등록 | 개별 이미지·새 독립 모델 또는 기존 2D의 새 버전 |
 | 절차적 3D · Mac 0.1.6 | 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 치수·베벨·색상 지정 | 개별 GLB, 편집 가능한 `.blend`, 렌더 |
+| 이미지→3D · 모델 다듬기 · Mac 0.1.7 | 투명 이미지의 개별 메시 복원 또는 기존 GLB의 예산·UV·재질 정리 | 원본 보존, 게임용·고해상도·LOD GLB, 텍스처·`.blend`·턴테이블 |
 | 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
 | 작업 큐 | 의존 관계, 자원 한도, 취소·복구·부분 재실행 | SQLite에 저장되는 작업 상태 |
 | 독립 내보내기 | 선택한 에셋과 버전을 새 묶음으로 저장 | 실제 파일 + 상대 경로·SHA-256이 있는 `manifest.json` |
@@ -80,7 +85,7 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 | 플랫폼 | 현재 다운로드 | 현재 범위 |
 | --- | --- | --- |
 | Windows x64 · 0.1.3 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip) | 로컬 2D·절차적 3D·구독 연결·앱 내부 업데이트 |
-| Mac Apple Silicon · 0.1.6 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.6/AssetStudio_0.1.6_macos-arm64.dmg) | M 시리즈용 로컬 2D · GPT 구독 연결 · Codex 준비 · 앱 내부 업데이트. Intel 빌드는 제외 |
+| Mac Apple Silicon · 0.1.6 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.6/AssetStudio_0.1.6_macos-arm64.dmg) | 게임 에셋 묶음 · GPT 구독 연결 · Codex 준비 · 앱 내부 업데이트. 0.1.7 이미지→3D는 릴리스 후보 |
 
 **Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 0.1.1/0.1.2 설치 사용자는 앱의 업데이트 패널에서 새 버전을 확인할 수 있습니다. WebView2와 3D용 Blender는 별도 필요하며, 이용자에게 Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 앱 전용 Codex 다운로드는 출처·라이선스·해시를 안내하고 동의 후 진행합니다.
 
@@ -99,15 +104,15 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
 )
 ```
 
-새 앱은 `~/Applications/Asset Studio 0.1.6/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 0.1.6를 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
+새 앱은 `~/Applications/Asset Studio 0.1.6/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 공개 최신 앱을 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
 
 브라우저로 DMG를 받았다면 앱을 홈 폴더의 Applications 안에 새 폴더를 만들어 복사하세요. 최초 실행 경고는 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기**로 허용할 수 있습니다. DMG 안에서 직접 실행하지 마세요. 업데이트가 설치 폴더에 쓰기 권한을 필요로 합니다.
 
-**Mac 구독 연결:** 0.1.6에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 기존 0.1.4·0.1.5 사용자는 앱에서 0.1.6로 업데이트할 수 있습니다.
+**Mac 구독 연결:** 0.1.6에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 0.1.7은 공개 배포 후 기존 0.1.4~0.1.6에서 앱 내부 업데이트로 받을 수 있습니다.
 
 Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Mac Blender 작업자는 실제 생성·GLB·`.blend` 재열기를 검증했습니다. 새 Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.
 
-[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.6 검증 기록](docs/releases/v0.1.6-macos.md) · [Windows 0.1.3 기록](docs/releases/v0.1.3.md)
+[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.7 검증 기록](docs/releases/v0.1.7-macos.md) · [Windows 0.1.3 기록](docs/releases/v0.1.3.md)
 
 ## 원본에서 결과 묶음까지
 
@@ -231,7 +236,7 @@ NSIS 설치 파일은 승인·해시 검증한 캐시 도구와 저장소 밖의
 
 **0.1.3 검증:** Windows ZIP 복사본의 실제 WebView·12개 이미지·IPC·가이드와 Blender GLB/WebGL을 확인했습니다. 별도 네이티브 CLI 2D 검사, 브라우저 회귀 6개, 공개 다운로드 해시와 포터블 321개 파일 대조가 통과했습니다. Apple Silicon은 실제 DMG 복사 앱의 WebView·IPC와 별도 Backend 2D 검사를 통과했습니다. 브라우저 결과를 네이티브 지원 증거로, 다운로드 서명 검사를 실제 버전 교체 설치 증거로 확대하지 않습니다.
 
-[전체 검증 기록](docs/verification.md) · [Windows 배포 메타데이터](docs/releases/v0.1.3.json) · [Mac 배포 메타데이터](docs/releases/v0.1.6-macos.json)
+[전체 검증 기록](docs/verification.md) · [Windows 배포 메타데이터](docs/releases/v0.1.3.json) · [Mac 0.1.7 생성 검증](docs/releases/v0.1.7-quality3d.json) · [Mac 배포 상태](docs/releases/v0.1.7-macos.md)
 
 ## 기여와 라이선스
 
