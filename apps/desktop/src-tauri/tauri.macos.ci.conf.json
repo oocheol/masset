@@ -1,0 +1,4 @@
+{
+  "build": { "beforeBundleCommand": null },
+  "bundle": { "createUpdaterArtifacts": false, "macOS": { "signingIdentity": "-" } }
+}
