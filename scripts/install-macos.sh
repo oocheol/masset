@@ -6,8 +6,8 @@ set -euo pipefail
 version='0.1.7'
 filename="AssetStudio_${version}_macos-arm64.dmg"
 download_url="https://github.com/oocheol/masset/releases/download/v${version}/${filename}"
-expected_bytes='33618446'
-expected_sha256='e52ad52ef0a283d243f6d2374db4acf036df91edeffb64ebc7e1ad4581f6696c'
+expected_bytes='33477101'
+expected_sha256='84befedf555967f4fd6ae47427c30a23d8236bae99611c864c69edaba20cf125'
 install_root="${HOME}/Applications/Asset Studio 0.1.7"
 local_dmg=''
 assume_yes=false

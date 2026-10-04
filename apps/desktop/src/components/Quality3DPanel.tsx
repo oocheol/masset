@@ -16,7 +16,7 @@ export interface Quality3DPanelProps {
 }
 
 type Mode = 'image' | 'model';
-type Input = {asset: Asset; mode: Mode; artifact: Artifact; thumbnail?: Artifact};
+type Input = {asset: Asset; mode: Mode; artifact: Artifact; thumbnail?: Artifact; highDetail: boolean};
 const IMAGE_FORMATS = ['png', 'webp', 'jpeg', 'jpg'];
 const MAX_INPUTS = 5;
 const MAX_NAME_LENGTH = 72;
@@ -33,11 +33,14 @@ function projectInputs(snapshot: ProjectSnapshot): Input[] {
     const mode: Mode = asset.kind === 'model' ? 'model' : 'image';
     const formats = mode === 'model' ? ['glb'] : IMAGE_FORMATS;
     const eligible = version?.artifacts.filter(item => item.path.trim() && item.bytes > 0 && formats.includes(item.format.toLowerCase()));
-    const artifact = eligible?.find(item => item.role === 'output') ?? eligible?.find(item => item.role === 'source');
+    const qualityFiles = version?.settings.quality3dFiles as {high?: unknown} | undefined;
+    const high = mode === 'model' && typeof qualityFiles?.high === 'string'
+      ? eligible?.find(item => item.id === qualityFiles.high && item.role === 'source') : undefined;
+    const artifact = high ?? eligible?.find(item => item.role === 'output') ?? eligible?.find(item => item.role === 'source');
     if (!artifact) return [];
     const thumbnail = version?.artifacts.find(item => item.role === 'thumbnail' && item.path.trim() && IMAGE_FORMATS.includes(item.format.toLowerCase()))
       ?? (mode === 'image' ? artifact : undefined);
-    return [{asset, mode, artifact, thumbnail}];
+    return [{asset, mode, artifact, thumbnail, highDetail: !!high}];
   }).sort((left, right) => Number(right.artifact.format.toLowerCase() === 'png') - Number(left.artifact.format.toLowerCase() === 'png'));
 }
 
@@ -231,14 +234,14 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
       <div className="quality3d-columns">
         <section className="quality3d-input-section" aria-labelledby={`${id}-inputs`}>
           <div className="quality3d-section-heading"><h4 id={`${id}-inputs`}>프로젝트 입력</h4><span>{inputIds.length} / {MAX_INPUTS}개</span></div>
-          <p className="quality3d-help">{mode === 'image' ? '배경이 투명한 PNG·WebP에 물체 하나를 담아 주세요. 불투명 이미지와 JPEG는 2D 편집기에서 배경을 제거하고 PNG로 저장한 뒤 사용하세요.' : '현재 버전에 GLB 원본 또는 결과 파일이 있는 모델을 선택하세요.'}</p>
+          <p className="quality3d-help">{mode === 'image' ? '배경이 투명한 PNG·WebP에 물체 하나를 담아 주세요. 불투명 이미지와 JPEG는 2D 편집기에서 배경을 제거하고 PNG로 저장한 뒤 사용하세요.' : '현재 버전에 GLB 원본 또는 결과 파일이 있는 모델을 선택하세요. 보존된 고해상도 형상이 있으면 우선 사용합니다.'}</p>
           <label className="quality3d-search"><span className="quality3d-sr-only">프로젝트 입력 검색</span><input type="search" placeholder="에셋 이름 검색" value={search} disabled={working} onChange={event => setSearch(event.target.value)}/></label>
           <div className="quality3d-input-grid" role="group" aria-label="프로젝트 에셋 선택">
             {available.map(input => {
               const checked = inputIds.includes(input.asset.id);
               return <button type="button" className={`quality3d-input ${checked ? 'selected' : ''}`} key={input.asset.id} aria-label={`${input.asset.name} 선택`} aria-pressed={checked} disabled={working || (!checked && inputIds.length >= MAX_INPUTS)} onClick={() => toggleInput(input.asset.id)}>
                 <InputThumbnail input={input} snapshot={snapshot}/>
-                <span className="quality3d-input-info"><strong>{input.asset.name}</strong><small>{input.artifact.format.toUpperCase()} · {input.mode === 'image' ? `${input.asset.width ?? '—'} × ${input.asset.height ?? '—'} px` : `${input.asset.mesh?.triangles?.toLocaleString('ko-KR') ?? '—'} triangles`}</small></span>
+                <span className="quality3d-input-info"><strong>{input.asset.name}</strong><small>{input.artifact.format.toUpperCase()} · {input.mode === 'image' ? `${input.asset.width ?? '—'} × ${input.asset.height ?? '—'} px` : input.highDetail ? '고해상도 형상' : `${input.asset.mesh?.triangles?.toLocaleString('ko-KR') ?? '—'} triangles`}</small></span>
                 <span className="quality3d-selection-check" aria-hidden="true">{checked && <Check size={12}/>}</span>
               </button>;
             })}

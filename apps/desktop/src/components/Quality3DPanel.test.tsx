@@ -198,6 +198,21 @@ const commands = () => page.evaluate(() => window.__QUALITY3D_UI_FIXTURE__.comma
 const requests = () => page.evaluate(() => window.__QUALITY3D_UI_FIXTURE__.requests);
 
 describe('Quality3DPanel UI (mocked native boundary)', () => {
+  it('labels preserved high geometry instead of showing the reduced game triangle count', async () => {
+    const project = snapshot();
+    const original = project.project.assets.find(item => item.id === 'model')!;
+    const version = original.versions[0];
+    version.settings.quality3dFiles = {high: 'model-input', game: 'model-game'};
+    version.artifacts.unshift({id: 'model-game', path: 'fixtures/reduced.glb', format: 'glb', sha256: 'ui-fixture', bytes: 80, role: 'output'});
+    await mount({}, {selectedIds: ['model'], snapshot: project});
+    const input = page.getByRole('button', {name: 'Fixture model 선택', exact: true});
+    await uiExpect(input).toContainText('고해상도 형상');
+    await uiExpect(input).not.toContainText('100 triangles');
+    await modelSubmit().click();
+    expect((await requests())[0].assetIds).toEqual(['model']);
+    expect(await page.evaluate(() => window.__QUALITY3D_UI_FIXTURE__.props.snapshot.project.assets.find(item => item.id === 'model')?.versions[0].artifacts.length)).toBe(3);
+  });
+
   it('uses current source/output artifacts, PNG-first ordering, real thumbnail URLs and initial IDs', async () => {
     await mount({}, {selectedIds: ['jpeg', 'png', 'jpeg', 'unavailable']});
     const choices = page.getByRole('group', {name: '프로젝트 에셋 선택'}).getByRole('button');

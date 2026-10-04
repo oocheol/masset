@@ -437,24 +437,41 @@ impl Backend {
                 .find(|v| v.id == asset.active_version_id)
                 .context("활성 버전이 없습니다.")?;
             let model = asset.kind == AssetKind::Model;
-            let source = version
-                .artifacts
-                .iter()
-                .find(|a| {
-                    a.role == ArtifactRole::Output
-                        && if model {
-                            a.format == "glb"
-                        } else {
-                            ["png", "jpg", "jpeg", "webp"].contains(&a.format.as_str())
-                        }
+            // Refining a previous result must retain detail that was removed
+            // from its game mesh. Only a verified source GLB is eligible.
+            let high_id = version
+                .settings
+                .get("quality3dFiles")
+                .and_then(|v| v.get("high"))
+                .and_then(Value::as_str);
+            let high = if model {
+                version.artifacts.iter().find(|a| {
+                    Some(a.id.as_str()) == high_id
+                        && a.role == ArtifactRole::Source
+                        && a.format == "glb"
+                })
+            } else {
+                None
+            };
+            let source = high
+                .or_else(|| {
+                    version.artifacts.iter().find(|a| {
+                        a.role == ArtifactRole::Output
+                            && if model {
+                                a.format == "glb"
+                            } else {
+                                ["png", "jpg", "jpeg", "webp"].contains(&a.format.as_str())
+                            }
+                    })
                 })
                 .or_else(|| {
                     version.artifacts.iter().find(|a| {
-                        if model {
-                            a.format == "glb"
-                        } else {
-                            ["png", "jpg", "jpeg", "webp"].contains(&a.format.as_str())
-                        }
+                        a.role == ArtifactRole::Source
+                            && if model {
+                                a.format == "glb"
+                            } else {
+                                ["png", "jpg", "jpeg", "webp"].contains(&a.format.as_str())
+                            }
                     })
                 })
                 .context("참고 자료는 PNG·JPEG·WebP 또는 텍스처가 포함된 GLB여야 합니다.")?;
