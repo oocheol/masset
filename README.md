@@ -10,20 +10,20 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.4"><img src="https://img.shields.io/badge/release-0.1.4-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.4"></a>
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.5"><img src="https://img.shields.io/badge/release-0.1.5-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.5"></a>
   <a href="https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
-  <a href="https://github.com/oocheol/masset/releases/download/v0.1.4/AssetStudio_0.1.4_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon_trial-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon 시험 배포"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.5/AssetStudio_0.1.5_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon_trial-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon 시험 배포"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-334c60?style=flat-square&amp;labelColor=101d29" alt="Core license Apache-2.0"></a>
 </p>
 
 <p align="center">
   <a href="https://masset-nu.vercel.app/"><strong>기능 소개 사이트</strong></a> ·
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.4"><strong>다운로드</strong></a> ·
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.5"><strong>다운로드</strong></a> ·
   <a href="#project-structure">프로젝트 구조</a> ·
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
 
-Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입니다. 이미지 편집, 스프라이트·아틀라스, 절차적 3D, 버전 관리와 독립 파일 내보내기를 한 작업대에서 다룹니다. **Mac 0.1.4는 Apple 개발자 계정 없이 설치하고 앱 내부에서 다음 버전으로 업데이트할 수 있는 릴리스**입니다. Windows 공개 버전은 0.1.3을 유지합니다.
+Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 데스크톱 도구입니다. 이미지 편집, 스프라이트·아틀라스, 절차적 3D, 버전 관리와 독립 파일 내보내기를 한 작업대에서 다룹니다. **Mac 0.1.5는 GPT 구독 연결과 공식 Codex 준비를 지원하며, Apple 개발자 계정 없이 설치하고 앱 내부에서 업데이트할 수 있습니다.** Windows 공개 버전은 0.1.3을 유지합니다.
 
 ## 작업대 미리보기
 
@@ -86,13 +86,13 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
   set -eu
   install_tmp="$(mktemp -d)"
   trap 'rm -rf "$install_tmp"' EXIT
-  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.4/install-macos.sh -o "$install_tmp/install-macos.sh"
-  printf '%s  %s\n' 'a5890b72117613d686dcf26e98dd1515b665e589a998ada4613d7be2b002a2be' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
+  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.5/install-macos.sh -o "$install_tmp/install-macos.sh"
+  printf '%s  %s\n' 'fff494de08776b20cb0415e4e47cca32a43acfd1cf2ea664b67eae4e2fa71d01' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
   bash "$install_tmp/install-macos.sh"
 )
 ```
 
-새 앱은 `~/Applications/Asset Studio 0.1.4/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 0.1.4를 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
+새 앱은 `~/Applications/Asset Studio 0.1.5/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 0.1.5를 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
 
 브라우저로 DMG를 받았다면 앱을 홈 폴더의 Applications 안에 새 폴더를 만들어 복사하세요. 최초 실행 경고는 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기**로 허용할 수 있습니다. DMG 안에서 직접 실행하지 마세요. 업데이트가 설치 폴더에 쓰기 권한을 필요로 합니다.
 
@@ -215,7 +215,7 @@ NSIS 설치 파일은 승인·해시 검증한 캐시 도구와 저장소 밖의
 
 **0.1.3 검증:** Windows ZIP 복사본의 실제 WebView·12개 이미지·IPC·가이드와 Blender GLB/WebGL을 확인했습니다. 별도 네이티브 CLI 2D 검사, 브라우저 회귀 6개, 공개 다운로드 해시와 포터블 321개 파일 대조가 통과했습니다. Apple Silicon은 실제 DMG 복사 앱의 WebView·IPC와 별도 Backend 2D 검사를 통과했습니다. 브라우저 결과를 네이티브 지원 증거로, 다운로드 서명 검사를 실제 버전 교체 설치 증거로 확대하지 않습니다.
 
-[전체 검증 기록](docs/verification.md) · [Windows 배포 메타데이터](docs/releases/v0.1.3.json) · [Mac 배포 메타데이터](docs/releases/v0.1.3-macos.json)
+[전체 검증 기록](docs/verification.md) · [Windows 배포 메타데이터](docs/releases/v0.1.3.json) · [Mac 배포 메타데이터](docs/releases/v0.1.5-macos.json)
 
 ## 기여와 라이선스
 
