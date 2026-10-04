@@ -1,6 +1,8 @@
 docs/licenses/** linguist-vendored
 docs/licenses/upstream/objc2-*/** -text
 crates/providers/assets/** linguist-vendored
+# Runtime SHA-256 validation requires exact upstream bytes on Windows too.
+crates/providers/assets/openai-models.json -text
 *.png binary
 *.glb binary
 *.blend binary

@@ -11,7 +11,8 @@
   const originalInvoke=window.__TAURI_INTERNALS__.invoke;
   window.__TAURI_INTERNALS__.invoke=function(command,args,...rest){
     const request=args?.request;
-    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_status')return Promise.resolve({ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',receivedImages:0,rateLimits:[]});
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_setup_status')return Reflect.apply(originalInvoke,this,[command,args,...rest]).then(status=>({...status,runtimeDetected:true,state:'ready'}));
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_status')return Promise.resolve({available:true,ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',checkedAt:new Date().toISOString(),receivedImages:0,rateLimits:[]});
     if(command==='workspace_command'&&gameUiPhase&&request?.action==='plan_assets'){
       const names=['플라스마 소총','레이저 권총','중력 대포','EMP 발사기','광자 검'];
       return Promise.resolve({schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:'images',mode:'new',spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Native UI fixture: five individually named weapons; provider response mocked.',warnings:[],items:names.map(name=>({id:crypto.randomUUID(),name,kind:'image',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'독립 인벤토리 아이콘',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))});
@@ -86,10 +87,11 @@
     // planner response. Real subscription/Blender generation is verified by the
     // independent native game-bundle-proof example, never by this UI fixture.
     gameUiBaseline=await invoke({action:'snapshot'});gameUiPhase=true;
-    const ui=state.gameBundleUi={nativeWebView:true,planResponseMocked:true,submissionIntercepted:true,providerRequests:0,initialRows:0,submittedItems:0,passed:false};
+    const ui=state.gameBundleUi={nativeWebView:true,runtimeReadinessMocked:true,planResponseMocked:true,submissionIntercepted:true,providerRequests:0,initialRows:0,submittedItems:0,passed:false};
     const imageButton=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='이미지 제작');check(imageButton&&!imageButton.disabled,'Image bundle entry missing');imageButton.click();
     const panel=await wait('Native game bundle panel',()=>document.querySelector('.game-bundle-panel'),5000);
     check(document.querySelector('input[name="generation-mode"][value="separate"]')?.checked,'Individual assets must be the default image mode');
+    const connectionCheck=await wait('Native fixture connection check',()=>[...panel.querySelectorAll('.provider-connection button')].find(button=>button.textContent.trim()==='연결 확인'&&!button.disabled),5000);connectionCheck.click();
     const setField=(element,value)=>{check(element,'Bundle field unavailable');Object.getOwnPropertyDescriptor(element.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(element,value);element.dispatchEvent(new Event('input',{bubbles:true}));element.dispatchEvent(new Event('change',{bubbles:true}));};
     setField(panel.querySelector('textarea[aria-label="이미지 설명"]'),'우주 전쟁 게임에 필요한 서로 다른 무기 5개');
     setField(panel.querySelector('input[aria-label="이미지 수"]'),'5');
