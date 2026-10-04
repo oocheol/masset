@@ -9,9 +9,9 @@
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
   const wait=async(label,predicate,timeout)=>{const deadline=Date.now()+timeout;while(Date.now()<deadline){const value=await predicate();if(value)return value;await sleep(150);}throw new Error(`${label} timed out`);};
   const originalInvoke=window.__TAURI_INTERNALS__.invoke;
-  window.__TAURI_INTERNALS__.invoke=function(command,args,...rest){
+  const qaInvoke=function(command,args,...rest){
     const request=args?.request;
-    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_setup_status')return Reflect.apply(originalInvoke,this,[command,args,...rest]).then(status=>({...status,runtimeDetected:true,state:'ready'}));
+    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_setup_status')return Promise.resolve({supported:false,state:'ready',runtimeDetected:true,downloadedBytes:0,totalBytes:0,message:'격리된 화면 검사입니다.',manifest:{version:'native-ui-mock',bytes:0,sha256:'',platform:'native-ui-fixture'}});
     if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_status')return Promise.resolve({available:true,ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',checkedAt:new Date().toISOString(),receivedImages:0,rateLimits:[]});
     if(command==='workspace_command'&&gameUiPhase&&request?.action==='plan_assets'){
       const names=['플라스마 소총','레이저 권총','중력 대포','EMP 발사기','광자 검'];
@@ -25,7 +25,9 @@
     if(command==='workspace_command'&&['update_check','update_install'].includes(args?.request?.action)){updateNetworkActions++;return Promise.reject(new Error('Local native QA refuses update network actions'));}
     return Reflect.apply(originalInvoke,this,[command,args,...rest]);
   };
-  restores.push(()=>{window.__TAURI_INTERNALS__.invoke=originalInvoke;});
+  const previousQaCommand=window.__ASSET_NATIVE_QA_COMMAND__;
+  window.__ASSET_NATIVE_QA_COMMAND__=request=>qaInvoke('workspace_command',{request});
+  restores.push(()=>{if(previousQaCommand)window.__ASSET_NATIVE_QA_COMMAND__=previousQaCommand;else delete window.__ASSET_NATIVE_QA_COMMAND__;});
   const readGlb=data=>{
     const view=new DataView(data);
     check(data.byteLength>=20&&view.getUint32(0,true)===0x46546c67&&view.getUint32(4,true)===2&&view.getUint32(8,true)===data.byteLength,'Invalid GLB 2 header');
@@ -180,6 +182,7 @@
     }
   }catch(error){
     state.error=error instanceof Error?error.message:String(error);state.imageCount=document.querySelectorAll('img').length;
+    if(state.gameBundleUi&&!state.gameBundleUi.passed)state.gameBundleUi.controls=[...document.querySelectorAll('.game-bundle-panel button')].map(button=>({label:button.textContent.trim().slice(0,80),disabled:button.disabled}));
     state.images=[...document.querySelectorAll('img')].slice(0,3).map(image=>({src:image.src,complete:image.complete,width:image.naturalWidth}));state.alert=document.querySelector('[role="alert"]')?.textContent?.slice(0,500);
     if(state.native3D){state.native3D.error=state.error;state.native3D.externalProviderCalls=providerCalls;}
   }finally{state.externalProviderCalls=providerCalls;state.updateNetworkActions=updateNetworkActions;if(state.appUpdater)state.appUpdater.networkActions=updateNetworkActions;if(updateNetworkActions>0)state.error='Native QA attempted an update network action';for(const restore of restores.reverse())restore();}

@@ -5,6 +5,10 @@ import {bootstrapBrowser, browserCommand, getBrowserArtifactUrl, importBrowserFi
 
 export const isNative = '__TAURI_INTERNALS__' in window;
 export async function command<T = ProjectSnapshot>(request: Record<string, unknown>): Promise<T> {
+  // The isolated --ui-smoke process supplies a UI fixture without replacing
+  // Tauri's immutable IPC functions. Normal app windows have neither field.
+  const qa = window as Window & {__ASSET_NATIVE_QA__?: unknown; __ASSET_NATIVE_QA_COMMAND__?: (request: Record<string, unknown>) => Promise<unknown>};
+  if (isNative && qa.__ASSET_NATIVE_QA__ && qa.__ASSET_NATIVE_QA_COMMAND__) return await qa.__ASSET_NATIVE_QA_COMMAND__(request) as T;
   return (isNative ? await invoke('workspace_command', {request}) : await browserCommand(request)) as T;
 }
 export async function bootstrap():Promise<ProjectSnapshot> {

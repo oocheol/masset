@@ -4,7 +4,7 @@
   "platform": "macos-arm64",
   "nativeBackend": true,
   "nativeWindow": false,
-  "sourceCommit": null,
+  "sourceCommit": "a52f52a0697fd24a7c1136f9c222c9880a0b5c72",
   "planner": {
     "model": "gpt-5.5",
     "reasoningEffort": "medium",
