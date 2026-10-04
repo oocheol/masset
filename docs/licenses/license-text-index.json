@@ -92,6 +92,11 @@
       "sha256": "0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7"
     },
     {
+      "path": "texts/0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2.txt",
+      "bytes": 1072,
+      "sha256": "0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2"
+    },
+    {
       "path": "texts/0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f.txt",
       "bytes": 1081,
       "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f"
@@ -300,6 +305,11 @@
       "path": "texts/35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab.txt",
       "bytes": 9724,
       "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab"
+    },
+    {
+      "path": "texts/3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026.txt",
+      "bytes": 10848,
+      "sha256": "3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026"
     },
     {
       "path": "texts/377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9.txt",
@@ -1222,6 +1232,11 @@
       "sha256": "f5e1170ad72f951ba05d763e0234cc6f16108492713f59fc577ebb8cc0ca668e"
     },
     {
+      "path": "texts/f71fd5946d6674af304514dc7b3b4272aa9117052dd347fb3a9dc9679f33d95f.txt",
+      "bytes": 1207,
+      "sha256": "f71fd5946d6674af304514dc7b3b4272aa9117052dd347fb3a9dc9679f33d95f"
+    },
+    {
       "path": "texts/f7715d38a3fa1b4ac97c5729740752505a39cb92ee83ab5b102aeb5eaa7cdea4.txt",
       "bytes": 1057,
       "sha256": "f7715d38a3fa1b4ac97c5729740752505a39cb92ee83ab5b102aeb5eaa7cdea4"
@@ -1255,6 +1270,11 @@
       "path": "texts/fd80a26fbb3f644af1fa994134446702932968519797227e07a1368dea80f0bc.txt",
       "bytes": 1023,
       "sha256": "fd80a26fbb3f644af1fa994134446702932968519797227e07a1368dea80f0bc"
+    },
+    {
+      "path": "texts/fe5c9498374de7953275f83f35565b289f377ceab4a28d04c7da87723e02a372.txt",
+      "bytes": 1058,
+      "sha256": "fe5c9498374de7953275f83f35565b289f377ceab4a28d04c7da87723e02a372"
     },
     {
       "path": "texts/ff138e683771b187f3629c383db72ee7d632009010a36d08e18e8d2a34222ec7.txt",

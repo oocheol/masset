@@ -2,8 +2,8 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {FormEvent, PointerEvent as ReactPointerEvent} from 'react';
 import {Box, ChevronDown, ChevronRight, CircleHelp, Columns2, Copy, Download, FileImage, FilePlus2, Folder, FolderOpen, Grid2X2, Image, Layers, ListFilter, Maximize2, Minus, MoreHorizontal, MousePointer2, Package, Paintbrush, Play, Plus, RefreshCw, RotateCcw, Search, Settings2, SlidersHorizontal, Sparkles, Square, Upload, X, Check, AlertTriangle, Clock3, CheckCircle2, Ban, LoaderCircle, PanelLeftClose, Palette, Link2, Eraser, Circle, ExternalLink} from 'lucide-react';
 import {DEFAULT_SPEC, DEFAULT_STYLE, EXPORT_PRESETS} from '@local-assets/contracts';
-import type {Asset, AssetSpec, AssetVersion, EnvironmentInfo, ImageOperation, Job, ModelParameters, ProjectSnapshot, ProviderConnection, StyleGuide} from '@local-assets/contracts';
-import {artifactUrl, bootstrap, chooseFolder, chooseImports, command, environment, importFiles, isNative, providerLogin, providerStatus} from './lib/bridge';
+import type {Asset, AssetSpec, AssetVersion, EnvironmentInfo, GameBundlePlan, ImageOperation, Job, ModelParameters, ProjectSnapshot, ProviderConnection, StyleGuide} from '@local-assets/contracts';
+import {artifactUrl, bootstrap, chooseFolder, chooseImports, command, environment, importFiles, isNative, planAssets, providerLogin, providerStatus} from './lib/bridge';
 import {subscribeBrowser} from './lib/browser';
 import {messages, shortcutModifier, type Locale} from './lib/i18n';
 import ModelViewport from './components/ModelViewport';
@@ -11,6 +11,7 @@ import {BookOpen} from 'lucide-react';
 import AppUpdatePanel from './components/AppUpdatePanel';
 import UsageGuide from './components/UsageGuide';
 import CodexSetupPanel from './components/CodexSetupPanel';
+import GameBundlePanel, {bundleCounts, bundleModelParameters, GAME_MODEL_TEMPLATES} from './components/GameBundlePanel';
 import {useAppUpdater} from './lib/useAppUpdater';
 
 type View = 'library' | 'canvas' | 'model' | 'compare';
@@ -93,13 +94,12 @@ export default function App() {
   const [style,setStyle] = useState<StyleGuide>({...DEFAULT_STYLE});
   const [assetName,setAssetName] = useState('');
   const [assetTags,setAssetTags] = useState('');
-  const [prompt,setPrompt] = useState('');
-  const [planApproved,setPlanApproved] = useState(true);
   const [connection,setConnection] = useState<ProviderConnection|null>(null);
   const [providerChecking,setProviderChecking] = useState<'status'|'login'|null>(null);
   const [generationPrompt,setGenerationPrompt] = useState('');
   const [generationName,setGenerationName] = useState('');
   const [generationCount,setGenerationCount] = useState(1);
+  const [generationMode,setGenerationMode] = useState<'separate'|'variations'>('separate');
   const [generationApproved,setGenerationApproved] = useState(false);
   const [model,setModel] = useState<ModelParameters>({template:'crate',name:'나무 상자',width:1,depth:1,height:1,color:'#b39674',bevel:.035});
   const [modelCount,setModelCount] = useState(1);
@@ -134,6 +134,7 @@ export default function App() {
   const brushMoved = useRef(false);
   const providerCheckingRef = useRef(false);
   const generationSubmitting = useRef(false);
+  const bundleSubmission = useRef<{key:string;requestId:string}|null>(null);
   const modelInputUnit = useRef(spec.unit);
   const project = snapshot?.project;
   const assets = project?.assets??EMPTY_ASSETS;
@@ -172,11 +173,42 @@ export default function App() {
     catch(err){setConnection(null);setError(err instanceof Error?err.message:String(err));}
     finally{providerCheckingRef.current=false;setProviderChecking(null);}
   },[]);
-  const openGeneration = ()=>{setGenerationApproved(style.approved);setDialog('generate');};
+  const openGeneration = ()=>{setGenerationMode('separate');setGenerationApproved(false);setDialog('generate');};
   const providerPanel = <ProviderPanel connection={connection} checking={providerChecking} busy={busy} onCheck={()=>void checkProvider()} onLogin={()=>void checkProvider(true)} receivedCount={receivedImageVersions.length} validatedCount={validatedImageCount} confirmedModels={confirmedImageModels}/>;
+  const createBundlePlan = useCallback(async(request:Parameters<typeof planAssets>[0])=>{
+    if(!isNative)throw new Error('구성안 작성은 데스크톱의 공식 Codex 연결에서 사용할 수 있습니다.');
+    if(!connection?.ready)throw new Error('공식 런타임 연결을 먼저 확인하세요.');
+    if(generationSubmitting.current)throw new Error('진행 중인 요청이 끝난 뒤 다시 시도하세요.');
+    if(request.referenceAssetIds.length&&!request.referenceUploadApproved)throw new Error('선택한 참고 자료의 외부 전송에 동의하세요.');
+    generationSubmitting.current=true;setBusy(true);setError('');
+    try{
+      // Persist the visible basis and only the explicitly selected references before planning.
+      acceptSnapshot(await command({action:'update',spec,styleGuide:{...style,referenceAssetIds:[...request.referenceAssetIds]}}));
+      return await planAssets(request);
+    }finally{generationSubmitting.current=false;setBusy(false);}
+  },[acceptSnapshot,connection?.ready,spec,style]);
+  const submitBundle = useCallback(async(plan:GameBundlePlan,referenceUploadApproved:boolean,approved:boolean)=>{
+    if(!isNative)throw new Error('에셋 묶음 제작은 데스크톱에서 제출하세요.');
+    if(!connection?.ready)throw new Error('공식 런타임 연결을 먼저 확인하세요.');
+    if(!approved||!plan.styleGuide.approved)throw new Error('개별 항목, 규격과 스타일을 검토한 뒤 승인하세요.');
+    if(plan.projectId!==project?.id)throw new Error('프로젝트가 바뀌었습니다. 구성안을 다시 작성하세요.');
+    if(generationSubmitting.current)throw new Error('진행 중인 요청이 끝난 뒤 다시 시도하세요.');
+    generationSubmitting.current=true;setBusy(true);setError('');
+    try{
+      // Approval changes the saved common basis; bundle admission then receives it unchanged.
+      acceptSnapshot(await command({action:'update',spec:plan.spec,styleGuide:plan.styleGuide}));
+      const key=JSON.stringify({plan,referenceUploadApproved,approved});
+      if(bundleSubmission.current?.key!==key)bundleSubmission.current={key,requestId:crypto.randomUUID()};
+      const next=await command({action:'generate_bundle',requestId:bundleSubmission.current!.requestId,plan,referenceUploadApproved,approved});
+      acceptSnapshot(next);setSpec({...next.project.spec});setStyle({...next.project.styleGuide});
+      const counts=bundleCounts(plan.items);
+      setNotice(`검토한 묶음을 큐에 추가했습니다. 개별 이미지 ${counts.images}개, 새 절차적 모델 ${counts.models}개.${plan.mode==='improve'?' 2D 원본은 보존하고 새 버전으로 제작합니다.':''}`);setDialog(null);
+    }finally{generationSubmitting.current=false;setBusy(false);}
+  },[acceptSnapshot,connection?.ready,project?.id]);
 
   useEffect(()=>{let disposed=false;bootstrap().then(next=>{if(disposed)return;acceptSnapshot(next);setSpec({...next.project.spec});setStyle({...next.project.styleGuide});setSelectedIds(next.project.assets[0]?[next.project.assets[0].id]:[]);}).catch(err=>!disposed&&setError(String(err)));environment().then(info=>!disposed&&setEnv(info)).catch(err=>!disposed&&setError(String(err)));return()=>{disposed=true;};},[acceptSnapshot]);
   useEffect(()=>{if(isNative)return;return subscribeBrowser(()=>{void command({action:'snapshot'}).then(acceptSnapshot).catch(err=>setError(String(err)));});},[acceptSnapshot]);
+  useEffect(()=>{if(isNative&&(dialog==='plan'||dialog==='generate'||dialog==='provider'))void checkProvider();},[dialog,checkProvider]);
   useEffect(()=>{if(!isNative||!activeJobs.length)return;let disposed=false;let timeout:ReturnType<typeof setTimeout>;const tick=async()=>{try{const next=await command({action:'snapshot'});if(!disposed)acceptSnapshot(next);}catch(err){if(!disposed)setError(String(err));}if(!disposed)timeout=setTimeout(tick,800);};timeout=setTimeout(tick,300);return()=>{disposed=true;clearTimeout(timeout);};},[activeJobs.length,acceptSnapshot]);
   useEffect(()=>{if(!notice)return;const id=setTimeout(()=>setNotice(''),6000);return()=>clearTimeout(id);},[notice]);
   useEffect(()=>{if(!selected)return;setAssetName(selected.name);setAssetTags(selected.tags.join(', '));setResize({width:selected.width??512,height:selected.height??512});setCrop({x:0,y:0,width:selected.width??256,height:selected.height??256});setMaskPoints([]);setCompareA(selected.versions[0]?.id??'');setCompareB(selected.activeVersionId);},[selected?.id,selected?.activeVersionId]);
@@ -189,7 +221,7 @@ export default function App() {
 
   const importAssets = useCallback(async()=>{if(!isNative){fileInput.current?.click();return;}setBusy(true);try{const next=await chooseImports();if(next){acceptSnapshot(next);setNotice('원본을 보존해 프로젝트로 가져왔습니다.');}}catch(err){setError(String(err));}finally{setBusy(false);}},[acceptSnapshot]);
   const openProject = useCallback(async(root?:string)=>{if(!isNative){setNotice('내보낸 프로젝트 ZIP을 선택하세요. 마지막 프로젝트는 이 기기에서 자동 복원됩니다.');fileInput.current?.click();return;}try{const chosen=root??await chooseFolder('프로젝트 폴더 열기');if(chosen){const next=await run({action:'open',root:chosen});if(next){setSpec({...next.project.spec});setStyle({...next.project.styleGuide});setSelectedIds(next.project.assets[0]?[next.project.assets[0].id]:[]);}}}catch(err){setError(String(err));}},[run]);
-  useEffect(()=>{const key=(event:KeyboardEvent)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='i'){event.preventDefault();void importAssets();}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='e'){event.preventDefault();setDialog('export');}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='f'){event.preventDefault();searchInput.current?.focus();}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='a'&&event.target instanceof HTMLElement&&!['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)){event.preventDefault();setSelectedIds(filtered.map(a=>a.id));}if(event.key==='Escape'){setDialog(null);setMaskPoints([]);}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[filtered,importAssets]);
+  useEffect(()=>{const key=(event:KeyboardEvent)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='i'){event.preventDefault();if(!busy)void importAssets();}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='e'){event.preventDefault();if(!busy)setDialog('export');}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='f'){event.preventDefault();searchInput.current?.focus();}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='a'&&event.target instanceof HTMLElement&&!['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)){event.preventDefault();setSelectedIds(filtered.map(a=>a.id));}if(event.key==='Escape'){if(!busy)setDialog(null);setMaskPoints([]);}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[busy,filtered,importAssets]);
 
   const selectAsset = (asset:Asset,multi=false) => {setSelectedIds(prev=>multi?(prev.includes(asset.id)?prev.filter(id=>id!==asset.id):[...prev,asset.id]):[asset.id]);setInspector('asset');};
   const openAsset = (asset:Asset) => {setSelectedIds([asset.id]);setView(asset.kind==='model'?'model':'canvas');};
@@ -197,8 +229,15 @@ export default function App() {
   const newProject = async(event:FormEvent)=>{event.preventDefault();try{let root='browser';if(isNative){const chosen=await chooseFolder('새 프로젝트를 저장할 폴더 선택');if(!chosen)return;root=chosen;}const next=await run({action:'create',root,name:projectName},'새 프로젝트를 만들었습니다.');if(next){setSpec({...next.project.spec});setStyle({...next.project.styleGuide});setSelectedIds([]);setDialog(null);setFolder('all');setTag('');setQuery('');}}catch(err){setError(String(err));}};
   const exportAssets = async(event:FormEvent)=>{event.preventDefault();setBusy(true);try{let destination='downloads';if(isNative){const chosen=await chooseFolder('에셋 묶음을 내보낼 폴더 선택');if(!chosen)return;destination=chosen;}const result=await command<{path:string}>({action:'export',destination,assetIds:selectedIds.length?selectedIds:assets.map(a=>a.id),preset:exportPreset,format:exportFormat});setNotice(`실제 파일과 manifest를 내보냈습니다. ${result.path}`);setDialog(null);}catch(err){setError(String(err));}finally{setBusy(false);}};
   const createModels = async(event:FormEvent)=>{event.preventDefault();if(!Number.isInteger(modelCount)||modelCount<1||modelCount>24){setError('모델 수는 1~24개 사이의 정수로 입력하세요.');return;}const canonical=meters(model,spec.unit);if([canonical.width,canonical.depth,canonical.height].some(v=>v<.03||v>100)){setError('실제 모델 치수는 3cm~100m 사이로 입력하세요.');return;}const models=Array.from({length:modelCount},(_,index)=>({...canonical,name:modelCount>1?`${model.name} ${String(index+1).padStart(2,'0')}`:model.name}));const next=await run({action:'model',models},isNative?'Blender 작업 큐에 모델 제작을 추가했습니다.':'브라우저의 로컬 메시 제작 큐에 추가했습니다.');if(next)setDialog(null);};
+  const selectModelTemplate = (template:ModelParameters['template'])=>{
+    const recipe=GAME_MODEL_TEMPLATES.find(item=>item.id===template)!;
+    const canonical=bundleModelParameters(template,template==='crate'?'나무 상자':recipe.name,model.color);
+    const factor=UNIT_FACTORS[spec.unit];
+    setModel({...canonical,width:scaledValue(canonical.width,1/factor),depth:scaledValue(canonical.depth,1/factor),height:scaledValue(canonical.height,1/factor),bevel:scaledValue(canonical.bevel,1/factor)});
+  };
   const createImages = async(event:FormEvent)=>{
     event.preventDefault();if(generationSubmitting.current)return;
+    if(generationMode!=='variations'){setError('서로 다른 에셋은 구성안을 만들고 개별 항목을 검토한 뒤 제출하세요.');return;}
     if(!isNative){setError('데스크톱 전용: GPT Image2 생성은 공식 런타임을 연결한 Tauri 앱에서 제출하세요.');return;}
     if(!connection?.ready){setError('공식 런타임 연결을 먼저 확인하세요.');return;}
     if(!generationApproved){setError('현재 규격과 스타일을 제작 기준으로 승인하세요.');return;}
@@ -208,39 +247,9 @@ export default function App() {
     try{
       const approvedStyle={...style,approved:true};
       acceptSnapshot(await command({action:'update',spec,styleGuide:approvedStyle}));setStyle(approvedStyle);
-      const next=await command({action:'generate',requestId:crypto.randomUUID(),prompt:generationPrompt.trim(),name:generationName.trim()||undefined,count:generationCount});
-      acceptSnapshot(next);setNotice(`GPT Image2 이미지 ${generationCount}개 요청을 작업 큐에 추가했습니다. 수신 결과는 파일과 함께 기록됩니다.`);setDialog(null);
+      const next=await command({action:'generate',requestId:crypto.randomUUID(),mode:'variations',prompt:generationPrompt.trim(),name:generationName.trim()||undefined,count:generationCount});
+      acceptSnapshot(next);setNotice(`동일 에셋의 변형 ${generationCount}개 요청을 작업 큐에 추가했습니다. 수신 결과는 파일과 함께 기록됩니다.`);setDialog(null);
     }catch(err){setError(err instanceof Error?err.message:String(err));}
-    finally{generationSubmitting.current=false;setBusy(false);}
-  };
-  const plan = useMemo(()=>{
-    const hasModel=/상자|컨테이너|crate|테이블|책상|table|선반|shelf|3d|3D/.test(prompt);
-    const template:ModelParameters['template']=/테이블|책상|table/.test(prompt)?'table':/선반|shelf/.test(prompt)?'shelf':'crate';
-    const modelMatch=prompt.match(/(?:상자|컨테이너|crate|테이블|책상|table|선반|shelf)(?:\s*3[Dd])?(?:\s*모델)?\s*(\d+)\s*개/)??prompt.match(/(?:3[Dd]\s*모델|모델)\s*(\d+)\s*개/)??prompt.match(/(?:crate|table|shelf)\s*(\d+)\b/);
-    const iconMatch=prompt.match(/(?:아이콘|이미지|icon|image)\s*(\d+)\s*(?:개)?/);
-    return {hasModel,template,models:hasModel?Number(modelMatch?.[1]??1):0,images:/아이콘|이미지|image|icon|배경|일러스트/.test(prompt)?Number(iconMatch?.[1]??1):0};
-  },[prompt]);
-  const runPlan = async()=>{
-    if(generationSubmitting.current)return;
-    if(!planApproved){setError('스타일 가이드를 승인해야 제작을 시작할 수 있습니다.');return;}
-    if(plan.models<0||plan.models>24||plan.images<0||plan.images>20){setError('한 계획의 모델은 최대 24개, 이미지는 최대 20개입니다. 요청 수를 조정하세요.');return;}
-    if(!plan.models&&!plan.images){setError('제작할 이미지 또는 로컬 모델을 설명하세요.');return;}
-    if(plan.images&&isNative&&!connection?.ready){setError('이미지 제작에 사용할 공식 런타임 연결을 먼저 확인하세요.');return;}
-    if(plan.images&&!isNative&&!plan.models){setDialog('provider');return;}
-    const canonical=meters(model,spec.unit);
-    if(plan.models&&[canonical.width,canonical.depth,canonical.height].some(v=>!Number.isFinite(v)||v<.03||v>100)){setError('실제 모델 치수는 3cm~100m 사이로 입력하세요.');return;}
-    generationSubmitting.current=true;setBusy(true);setError('');let queuedModels=false;
-    try{
-      const approvedStyle={...style,approved:true};
-      acceptSnapshot(await command({action:'update',spec,styleGuide:approvedStyle}));setStyle(approvedStyle);
-      if(plan.models){
-        const name=plan.template==='table'?'테이블':plan.template==='shelf'?'선반':'상자';
-        const models=Array.from({length:plan.models},(_,index)=>({...canonical,template:plan.template,name:`${name} ${index+1}`}));
-        acceptSnapshot(await command({action:'model',models,prompt}));queuedModels=true;
-      }
-      if(plan.images&&isNative)acceptSnapshot(await command({action:'generate',requestId:crypto.randomUUID(),prompt:prompt.trim(),name:'제작 계획 이미지',count:plan.images}));
-      setNotice(!isNative&&plan.images?`로컬 모델 ${plan.models}개를 큐에 추가했습니다. 이미지 ${plan.images}개는 데스크톱 전용으로 제출되지 않았습니다.`:`제작 계획을 큐에 추가했습니다.${plan.models?` 로컬 모델 ${plan.models}개.`:''}${plan.images?` GPT Image2 이미지 요청 ${plan.images}개.`:''}`);setDialog(null);
-    }catch(err){setError(`${queuedModels?'로컬 모델은 큐에 추가되었습니다. 이미지 요청 제출 실패: ':''}${err instanceof Error?err.message:String(err)}`);}
     finally{generationSubmitting.current=false;setBusy(false);}
   };
 
@@ -287,10 +296,10 @@ export default function App() {
       </div>
       {view==='library'&&<>
         <div className="library-heading"><div><div className="location"><FolderOpen size={12}/>{project?.name??'프로젝트'}<ChevronRight size={11}/>{folder==='all'?'라이브러리':folder}</div><h1>{tag?`#${tag}`:kind!=='all'?KIND_LABELS[kind]:folder!=='all'?folder:'에셋 라이브러리'}</h1><p>원본을 보존하고, 필요한 결과만 다시 제작하세요.</p></div><button className="button" onClick={()=>void importAssets()} disabled={busy}><Upload size={14}/>{t.import}<kbd>{shortcutModifier()} I</kbd></button></div>
-        <div className="plan-bar"><span className="plan-symbol"><Sparkles size={18}/></span><div><strong>{t.plan}</strong><span>설명과 규격을 묶음 제작 계획으로 정리합니다.</span></div><button className="button quiet" onClick={()=>{setPlanApproved(style.approved);setDialog('plan');}}>계획 작성<ChevronRight size={13}/></button></div>
+        <div className="plan-bar"><span className="plan-symbol"><Sparkles size={18}/></span><div><strong>{t.plan}</strong><span>게임 설명을 이름과 설명이 있는 개별 에셋 구성안으로 정리합니다.</span></div><button className="button quiet" disabled={busy||!snapshot} onClick={()=>setDialog('plan')}>게임 에셋 만들기<ChevronRight size={13}/></button></div>
         <div className="library-toolbar"><label className="search-input"><Search size={15}/><input ref={searchInput} value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.search} aria-label={t.search}/>{query&&<button aria-label="검색 지우기" onClick={()=>setQuery('')}><X size={13}/></button>}<kbd>{shortcutModifier()} F</kbd></label><div className="toolbar-actions"><button className="button small" onClick={openGeneration}><Sparkles size={13}/>이미지 제작</button><button className="button small" onClick={()=>setDialog('model')}><Box size={13}/>3D 만들기</button><button className="button small" onClick={()=>setDialog('atlas')} disabled={imageAssets.length<1}><Layers size={13}/>아틀라스</button><label className="kind-filter"><ListFilter size={13}/><select value={kind} onChange={e=>setKind(e.target.value)} aria-label="에셋 유형 필터"><option value="all">전체 유형</option><option value="image">이미지</option><option value="model">3D 모델</option><option value="sprite">스프라이트</option><option value="texture">텍스처</option></select></label></div></div>
         <div className="asset-grid-wrap">
-          {!snapshot?<div className="empty-state"><LoaderCircle className="spin" size={28}/><h2>로컬 프로젝트를 준비하고 있습니다.</h2></div>:filtered.length?<div className="asset-grid" role="list" aria-label="에셋 목록">{filtered.map(asset=>{const version=getVersion(asset);const thumb=snapshot?artifactUrl(snapshot,thumbnailArtifact(asset)):'';return <button key={asset.id} className={`asset-card ${selectedIds.includes(asset.id)?'selected':''}`} role="listitem" onClick={event=>selectAsset(asset,event.ctrlKey||event.metaKey||event.shiftKey)} onDoubleClick={()=>openAsset(asset)} title={`${asset.name} · 두 번 클릭해 열기`}><div className={`asset-thumbnail ${asset.kind==='model'?'model-thumbnail':''}`}><span className="selection-checkbox">{selectedIds.includes(asset.id)&&<Check size={11}/>}</span>{thumb?<img src={thumb} alt={asset.name} loading="lazy"/>:<Box size={56} strokeWidth={1}/>}<span className="asset-format">{asset.kind==='model'?'3D':outputArtifact(version)?.format.toUpperCase()??'PNG'}</span>{version?.source==='fixture'&&<span className="fixture-label">로컬 예제</span>}</div><div className="asset-card-info"><div><strong>{asset.name}</strong><span className="version-label">v{version?.number??1}</span></div><small>{asset.kind==='model'?`${asset.mesh?.triangles??'—'} triangles`: `${asset.width??'—'} × ${asset.height??'—'}`}<span>{KIND_LABELS[asset.kind]}</span></small></div></button>;})}</div>:<div className="empty-state"><FolderOpen size={36} strokeWidth={1.2}/><h2>{assets.length?'검색 결과가 없습니다.':'첫 번째 에셋을 가져오세요.'}</h2><p>{assets.length?'검색어나 필터를 바꿔 다시 찾아보세요.':isNative?'PNG, JPEG, WebP 원본을 가져오고 로컬 도구로 수정하세요.':'이미지 원본 또는 GLB를 가져오고 로컬 도구로 수정하세요.'}</p><div><button className="button" onClick={()=>void importAssets()}><Upload size={14}/>파일 가져오기</button>{!assets.length&&<button className="button quiet" onClick={()=>void run({action:'fixture',count:8},'결정론적으로 제작한 로컬 예제를 추가했습니다.')}><Package size={14}/>로컬 예제 추가</button>}</div></div>}
+          {!snapshot?<div className="empty-state"><LoaderCircle className="spin" size={28}/><h2>로컬 프로젝트를 준비하고 있습니다.</h2></div>:filtered.length?<div className="asset-grid" role="list" aria-label="에셋 목록">{filtered.map(asset=>{const version=getVersion(asset);const thumb=snapshot?artifactUrl(snapshot,thumbnailArtifact(asset)):'';return <button key={asset.id} className={`asset-card ${selectedIds.includes(asset.id)?'selected':''}`} role="listitem" onClick={event=>selectAsset(asset,event.ctrlKey||event.metaKey||event.shiftKey)} onDoubleClick={()=>openAsset(asset)} title={`${asset.name} · 두 번 클릭해 열기`}><div className={`asset-thumbnail ${asset.kind==='model'?'model-thumbnail':''}`}><span className="selection-checkbox">{selectedIds.includes(asset.id)&&<Check size={11}/>}</span>{thumb?<img src={thumb} alt={asset.name} loading="lazy"/>:<Box size={56} strokeWidth={1}/>}<span className="asset-format">{asset.kind==='model'?'3D':outputArtifact(version)?.format.toUpperCase()??'PNG'}</span>{version?.source==='fixture'&&<span className="fixture-label">로컬 예제</span>}</div><div className="asset-card-info"><div><strong>{asset.name}</strong><span className="version-label">v{version?.number??1}</span></div><small>{asset.kind==='model'?`${asset.mesh?.triangles??'—'} triangles`: `${asset.width??'—'} × ${asset.height??'—'}`}<span>{KIND_LABELS[asset.kind]}</span></small></div></button>;})}</div>:<div className="empty-state"><FolderOpen size={36} strokeWidth={1.2}/><h2>{assets.length?'검색 결과가 없습니다.':'첫 번째 에셋을 가져오세요.'}</h2><p>{assets.length?'검색어나 필터를 바꿔 다시 찾아보세요.':'이미지 원본 또는 GLB를 가져오고 로컬 도구로 수정하세요.'}</p><div><button className="button" onClick={()=>void importAssets()}><Upload size={14}/>파일 가져오기</button>{!assets.length&&<button className="button quiet" onClick={()=>void run({action:'fixture',count:8},'결정론적으로 제작한 로컬 예제를 추가했습니다.')}><Package size={14}/>로컬 예제 추가</button>}</div></div>}
         </div>
         <div className="library-status"><span>{filtered.length}개 에셋{selectedIds.length?` / ${selectedIds.length}개 선택`:''}</span><span><MousePointer2 size={11}/>{shortcutModifier()} 클릭으로 여러 개 선택 · 두 번 클릭으로 열기</span></div>
       </>}
@@ -323,36 +332,28 @@ export default function App() {
     <footer className="statusbar"><span><span className="connection-dot"/>로컬 저장 · 원본 보존</span><span>{isNative?env?.blenderVersion?`Blender ${env.blenderVersion}`:'Blender 설치 확인 필요':'브라우저 미리보기 / 네이티브 기능은 데스크톱에서 검증'}<button onClick={()=>setLocale(locale==='ko'?'en':'ko')}>{locale==='ko'?'한국어':'English'}<ChevronDown size={10}/></button></span></footer>
 
     {(error||notice)&&<div className={`notification ${error?'error':''}`} role={error?'alert':'status'}>{error?<AlertTriangle size={17}/>:<CheckCircle2 size={17}/>}<span>{error||notice}</span><button aria-label="알림 닫기" onClick={()=>{setError('');setNotice('');}}><X size={15}/></button></div>}
-    {dragging&&<div className="drop-overlay"><Upload size={42}/><strong>원본 파일을 여기에 놓으세요.</strong><span>{isNative?'PNG · JPEG · WebP / 기존 원본은 보존됩니다.':'이미지 · GLB · 프로젝트 ZIP / 기존 원본은 보존됩니다.'}</span></div>}
+    {dragging&&<div className="drop-overlay"><Upload size={42}/><strong>원본 파일을 여기에 놓으세요.</strong><span>{isNative?'PNG · JPEG · WebP · GLB / 기존 원본은 보존됩니다.':'이미지 · GLB · 프로젝트 ZIP / 기존 원본은 보존됩니다.'}</span></div>}
 
-    {dialog&&<div className="dialog-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget)setDialog(null);}}><section className={`dialog dialog-${dialog}`} role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div className="dialog-header"><div><h2 id="dialog-title">{dialog==='project'?'새 프로젝트':dialog==='model'?'절차적 3D 모델 제작':dialog==='atlas'?'스프라이트 아틀라스':dialog==='split'?'스프라이트시트 분할':dialog==='export'?'에셋 묶음 내보내기':dialog==='plan'?'제작 계획 작성':dialog==='generate'?'GPT Image2 이미지 제작':dialog==='provider'?'이미지 생성 연동 상태':dialog==='environment'?'환경 및 지원 정보':dialog==='update'?'앱 업데이트':dialog==='guide'?'사용 가이드':'작업 상세'}</h2><p>{dialog==='model'?'치수와 재질을 지정해 실제 메시를 만듭니다.':dialog==='export'?'결과 파일과 독립적으로 읽을 수 있는 manifest를 함께 저장합니다.':dialog==='plan'?'로컬 규칙으로 제작 항목과 규격을 정리합니다.':dialog==='generate'?'공식 런타임 연결을 확인하고 이미지 요청을 직접 제출합니다.':dialog==='project'?'원본, 수정본, 작업 이력을 프로젝트에 저장합니다.':''}</p></div><IconButton title="대화상자 닫기" onClick={()=>setDialog(null)}><X size={18}/></IconButton></div>
+    {dialog&&<div className="dialog-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget&&!busy)setDialog(null);}}><section className={`dialog dialog-${dialog}`} role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div className="dialog-header"><div><h2 id="dialog-title">{dialog==='project'?'새 프로젝트':dialog==='model'?'절차적 3D 모델 제작':dialog==='atlas'?'스프라이트 아틀라스':dialog==='split'?'스프라이트시트 분할':dialog==='export'?'에셋 묶음 내보내기':dialog==='plan'?'게임 에셋 묶음 구성안':dialog==='generate'?'GPT Image2 이미지 제작':dialog==='provider'?'이미지 생성 연동 상태':dialog==='environment'?'환경 및 지원 정보':dialog==='update'?'앱 업데이트':dialog==='guide'?'사용 가이드':'작업 상세'}</h2><p>{dialog==='model'?'치수와 재질을 지정해 실제 메시를 만듭니다.':dialog==='export'?'결과 파일과 독립적으로 읽을 수 있는 manifest를 함께 저장합니다.':dialog==='plan'?'공식 Codex의 텍스트 구성안을 검토하고 개별 에셋을 승인한 뒤 제작합니다.':dialog==='generate'?'서로 다른 에셋은 개별 구성안을 먼저 검토합니다. 동일 에셋의 변형도 직접 선택할 수 있습니다.':dialog==='project'?'원본, 수정본, 작업 이력을 프로젝트에 저장합니다.':''}</p></div><IconButton title="대화상자 닫기" disabled={busy} onClick={()=>setDialog(null)}><X size={18}/></IconButton></div>
       {dialog==='project'&&<form onSubmit={newProject}><Field label="프로젝트 이름"><input value={projectName} onChange={e=>setProjectName(e.target.value)} required maxLength={100}/></Field><div className="inline-note"><Folder size={17}/>{isNative?'다음 단계에서 빈 저장 폴더를 선택합니다. 기존 원본을 덮어쓰지 않습니다.':'브라우저 미리보기 프로젝트는 이 기기의 IndexedDB에 저장됩니다. 결과물은 ZIP 파일로 내보낼 수 있습니다.'}</div><div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" type="submit" disabled={busy||!projectName.trim()}><FilePlus2 size={14}/>프로젝트 만들기</button></div></form>}
-      {dialog==='model'&&<form onSubmit={createModels}><div className="model-template-list">{([{id:'crate',name:'상자 · 컨테이너',description:'패널과 프레임이 있는 상자'},{id:'table',name:'테이블',description:'상판과 네 개의 다리'},{id:'shelf',name:'선반',description:'측면 프레임과 선반'}] as const).map(item=><button key={item.id} type="button" className={model.template===item.id?'selected':''} onClick={()=>setModel({...model,template:item.id,name:item.id==='crate'?'나무 상자':item.id==='table'?'테이블':'선반'})}><Box size={23}/><strong>{item.name}</strong><small>{item.description}</small>{model.template===item.id&&<Check size={13}/>}</button>)}</div><Field label="모델 이름"><input value={model.name} onChange={e=>setModel({...model,name:e.target.value})} required/></Field><div className="field-triple"><NumberField label={`너비 (${spec.unit})`} value={model.width} onChange={width=>setModel({...model,width})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label={`깊이 (${spec.unit})`} value={model.depth} onChange={depth=>setModel({...model,depth})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label={`높이 (${spec.unit})`} value={model.height} onChange={height=>setModel({...model,height})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/></div><div className="field-pair"><NumberField label={`모서리 베벨 (${spec.unit})`} value={model.bevel} onChange={bevel=>setModel({...model,bevel})} min={0} max={.25/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label="제작 수" value={modelCount} onChange={setModelCount} min={1} max={24}/></div><div className="color-control model-color"><input type="color" value={model.color} onChange={e=>setModel({...model,color:e.target.value})} aria-label="모델 재질 색상"/><span>{model.color}</span><span>Base color</span><div className="mini-palette">{style.palette.map(c=><button key={c} type="button" aria-label={`재질 색상 ${c}`} style={{background:c}} onClick={()=>setModel({...model,color:c})}/>)}</div></div><div className="inline-note"><Box size={17}/>{isNative?env?.blenderPath?'고정된 Blender 템플릿으로 제작합니다. GLB는 미터 · Y-up, Blender 원본은 Z-up입니다.':'Blender가 없으면 작업 큐에 원인을 표시합니다. 환경 정보에서 설치 상태를 확인하세요.':'브라우저에서는 Three.js로 GLB 메시를 제작합니다. Blender 원본과 네이티브 작업 검증은 데스크톱에서 가능합니다.'}</div><div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" disabled={busy} type="submit"><Play size={13}/>모델 제작 시작</button></div></form>}
+      {dialog==='model'&&<form onSubmit={createModels}><div className="model-template-list">{GAME_MODEL_TEMPLATES.filter(item=>isNative||['crate','table','shelf'].includes(item.id)).map(item=><button key={item.id} type="button" className={model.template===item.id?'selected':''} onClick={()=>selectModelTemplate(item.id)}><Box size={23}/><strong>{item.name}</strong><small>{item.description}</small>{model.template===item.id&&<Check size={13}/>}</button>)}</div><Field label="모델 이름"><input value={model.name} onChange={e=>setModel({...model,name:e.target.value})} required/></Field><div className="field-triple"><NumberField label={`너비 (${spec.unit})`} value={model.width} onChange={width=>setModel({...model,width})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label={`깊이 (${spec.unit})`} value={model.depth} onChange={depth=>setModel({...model,depth})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label={`높이 (${spec.unit})`} value={model.height} onChange={height=>setModel({...model,height})} min={.03/UNIT_FACTORS[spec.unit]} max={100/UNIT_FACTORS[spec.unit]} step="any"/></div><div className="field-pair"><NumberField label={`모서리 베벨 (${spec.unit})`} value={model.bevel} onChange={bevel=>setModel({...model,bevel})} min={0} max={.25/UNIT_FACTORS[spec.unit]} step="any"/><NumberField label="제작 수" value={modelCount} onChange={setModelCount} min={1} max={24}/></div><div className="color-control model-color"><input type="color" value={model.color} onChange={e=>setModel({...model,color:e.target.value})} aria-label="모델 재질 색상"/><span>{model.color}</span><span>Base color</span><div className="mini-palette">{style.palette.map(c=><button key={c} type="button" aria-label={`재질 색상 ${c}`} style={{background:c}} onClick={()=>setModel({...model,color:c})}/>)}</div></div><div className="inline-note"><Box size={17}/>{isNative?env?.blenderPath?'고정된 Blender 템플릿으로 제작합니다. GLB는 미터 · Y-up, Blender 원본은 Z-up입니다.':'Blender가 없으면 작업 큐에 원인을 표시합니다. 환경 정보에서 설치 상태를 확인하세요.':'브라우저에서는 Three.js로 GLB 메시를 제작합니다. Blender 원본과 네이티브 작업 검증은 데스크톱에서 가능합니다.'}</div><div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" disabled={busy} type="submit"><Play size={13}/>모델 제작 시작</button></div></form>}
       {dialog==='atlas'&&<form onSubmit={async event=>{event.preventDefault();if(!imageAssets.length)return;const next=await run({action:'atlas',assetIds:imageAssets.map(a=>a.id),options:atlas,frameRate:spriteFrameRate},'아틀라스와 프레임 메타데이터 제작을 시작했습니다.');if(next)setDialog(null);}}><p className="dialog-copy">선택한 2D 에셋 {imageAssets.length}개를 하나의 PNG와 JSON 좌표 정보로 묶습니다.</p><div className="selected-asset-strip">{imageAssets.slice(0,6).map(a=><img key={a.id} src={snapshot?artifactUrl(snapshot,thumbnailArtifact(a)):''} alt={a.name}/>)}</div><div className="field-pair"><NumberField label="아틀라스 너비 px" value={atlas.width} onChange={width=>setAtlas({...atlas,width})} min={64} max={8192}/><NumberField label="아틀라스 높이 px" value={atlas.height} onChange={height=>setAtlas({...atlas,height})} min={64} max={8192}/></div><div className="field-pair"><NumberField label="프레임 사이 여백 px" value={atlas.padding} onChange={padding=>setAtlas({...atlas,padding})} min={0} max={64}/><NumberField label="재생 속도 fps" value={spriteFrameRate} onChange={setSpriteFrameRate} min={1} max={240} step="any"/></div>{!imageAssets.length&&<div className="inline-note warning">먼저 라이브러리에서 2D 에셋을 선택하세요. {shortcutModifier()} 클릭으로 여러 개를 선택합니다.</div>}<div className="dialog-actions"><button type="button" className="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" disabled={busy||!imageAssets.length} type="submit"><Layers size={14}/>아틀라스 제작</button></div></form>}
       {dialog==='split'&&<form onSubmit={async event=>{event.preventDefault();if(!selected)return;const next=await run({action:'split',assetId:selected.id,frameWidth:split.width,frameHeight:split.height,frameRate:spriteFrameRate},'시트를 실제 프레임 파일로 분할합니다.');if(next)setDialog(null);}}><p className="dialog-copy">{selected?.name} · {selected?.width} × {selected?.height} px</p><div className="field-pair"><NumberField label="프레임 너비 px" value={split.width} onChange={width=>setSplit({...split,width})} min={1} max={8192}/><NumberField label="프레임 높이 px" value={split.height} onChange={height=>setSplit({...split,height})} min={1} max={8192}/></div><NumberField label="재생 속도 fps" value={spriteFrameRate} onChange={setSpriteFrameRate} min={1} max={240} step="any"/><div className="inline-note">행 우선 순서로 분할합니다. 시트 크기가 프레임 크기로 나누어져야 합니다. 피벗은 프로젝트 규격을 사용합니다.</div><div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" type="submit" disabled={busy||!selected}><Layers size={14}/>프레임 분할</button></div></form>}
       {dialog==='export'&&<form onSubmit={exportAssets}><div className="export-summary"><Package size={29}/><div><strong>{project?.name??'프로젝트'}</strong><span>{selectedIds.length?`선택한 에셋 ${selectedIds.length}개`:`전체 에셋 ${assets.length}개`} / 결과 파일 + manifest</span></div></div><Field label="대상 프로그램 프리셋"><select value={exportPreset} onChange={e=>{setExportPreset(e.target.value);const p=EXPORT_PRESETS.find(p=>p.id===e.target.value);if(p&&!p.formats.includes(exportFormat))setExportFormat('png');}}>{EXPORT_PRESETS.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></Field><Field label="이미지 파일 형식"><select value={exportFormat} onChange={e=>setExportFormat(e.target.value)}><option value="png">PNG · 투명도 보존</option><option value="webp">WebP · 투명도 보존</option><option value="jpeg">JPEG · 투명 영역 흰색</option></select></Field><div className="export-includes"><div><Check size={13}/>실제 이미지 / GLB 결과물</div><div><Check size={13}/>규격 · 버전 · 파일 해시 manifest</div><div><Check size={13}/>아틀라스 좌표 등 JSON 메타데이터</div></div><div className="inline-note">{isNative?'선택한 폴더 안에 새로운 묶음으로 저장합니다. 기존 원본은 보존됩니다.':'ZIP 파일로 다운로드됩니다. 브라우저 저장소와 독립적으로 결과물을 보관하세요.'}</div><div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>취소</button><button className="button primary" type="submit" disabled={busy||!assets.length}><Download size={14}/>묶음 내보내기</button></div></form>}
-      {dialog==='generate'&&<form onSubmit={createImages}>
-        <Field label="이미지 설명"><textarea rows={4} value={generationPrompt} onChange={e=>setGenerationPrompt(e.target.value)} placeholder="예: 금속 프레임과 맑은 유리가 있는 판타지 회복 물약 아이콘" required/></Field>
-        <div className="generation-fields"><Field label="이미지 이름 (선택)" hint="최대 80자"><input value={generationName} onChange={e=>setGenerationName(e.target.value)} placeholder="이름을 지정하지 않으면 자동 이름 사용" maxLength={80}/></Field><NumberField label="이미지 수" value={generationCount} onChange={setGenerationCount} min={1} max={20}/></div>
+      {dialog==='generate'&&<>
+        <fieldset className="generation-mode" disabled={busy}><legend>이미지 제작 방식</legend><label className="check-row"><input type="radio" name="generation-mode" value="separate" checked={generationMode==='separate'} onChange={()=>{setGenerationMode('separate');setGenerationApproved(false);}}/>서로 다른 에셋 · 개별 구성안 검토 (기본)</label><label className="check-row"><input type="radio" name="generation-mode" value="variations" checked={generationMode==='variations'} onChange={()=>{setGenerationMode('variations');setGenerationApproved(false);}}/>동일 에셋의 여러 변형 · 같은 설명 반복</label></fieldset>
+        {generationMode==='separate'&&snapshot&&<GameBundlePanel snapshot={snapshot} spec={spec} styleGuide={style} selectedAssetIds={selectedIds} native={isNative} busy={busy} providerReady={!!connection?.ready} providerChecking={providerChecking!==null} providerPanel={providerPanel} initialBrief={generationPrompt} initialOutput="images" imageDialog onImport={importAssets} onPlan={createBundlePlan} onSubmit={submitBundle}/>}
+        {generationMode==='variations'&&<form onSubmit={createImages}>
+        <Field label="동일 에셋 설명"><textarea rows={4} value={generationPrompt} onChange={e=>setGenerationPrompt(e.target.value)} placeholder="예: 금속 프레임과 맑은 유리가 있는 판타지 회복 물약 아이콘 하나" required/></Field>
+        <div className="generation-fields"><Field label="이미지 이름 (선택)" hint="최대 80자"><input value={generationName} onChange={e=>setGenerationName(e.target.value)} placeholder="이름을 지정하지 않으면 자동 이름 사용" maxLength={80}/></Field><NumberField label="변형 수" value={generationCount} onChange={setGenerationCount} min={1} max={20}/></div>
         <div className="plan-spec-line"><Palette size={15}/><span>{style.name} · {spec.width} × {spec.height}px · {DOMAIN_LABELS[spec.domain]}</span><div className="mini-palette">{style.palette.map(c=><span key={c} style={{background:c}}/>)}</div></div>
         <label className="check-row approval"><input type="checkbox" checked={generationApproved} onChange={e=>setGenerationApproved(e.target.checked)}/>현재 규격과 스타일을 제작 기준으로 승인합니다.</label>
         {providerPanel}
-        <div className="inline-note"><Sparkles size={17}/><span>{isNative?'제출한 설명과 승인한 제작 기준을 공식 런타임에 전달합니다. 이미지마다 별도 작업을 생성하며 구독 사용량이 발생할 수 있습니다. 정확한 크기·투명도·스타일 일치 여부는 결과 파일에서 검토하세요.':'브라우저 미리보기에서는 이미지 제작 요청이 제출되지 않습니다. 데스크톱 앱에서 연결을 확인하세요.'}</span></div>
-        <div className="dialog-actions"><button className="button" type="button" onClick={()=>setDialog(null)}>닫기</button><button className="button primary" type="submit" disabled={busy||providerChecking!==null||!isNative||!connection?.ready||!generationApproved||!generationPrompt.trim()||!Number.isInteger(generationCount)||generationCount<1||generationCount>20}><Sparkles size={14}/>{busy?'요청 제출 중':'이미지 요청 제출'}</button></div>
+        <div className="inline-note"><Sparkles size={17}/><span>{isNative?`동일 에셋 설명을 ${generationCount}번 사용해 변형을 요청합니다. 서로 다른 아이템 묶음이 필요하면 위에서 개별 구성안 검토를 선택하세요. 구독 사용량이 발생하며 크기·투명도·스타일은 수신 파일에서 검토합니다.`:'브라우저 미리보기에서는 이미지 제작 요청이 제출되지 않습니다. 데스크톱 앱에서 연결을 확인하세요.'}</span></div>
+        <div className="dialog-actions"><button className="button" type="button" disabled={busy} onClick={()=>setDialog(null)}>닫기</button><button className="button primary" type="submit" disabled={busy||providerChecking!==null||!isNative||!connection?.ready||!generationApproved||!generationPrompt.trim()||!Number.isInteger(generationCount)||generationCount<1||generationCount>20}><Sparkles size={14}/>{busy?'요청 제출 중':'동일 에셋 변형 요청 제출'}</button></div>
       </form>}
-      {dialog==='plan'&&<>
-        <Field label="어떤 에셋 묶음이 필요한가요?"><textarea rows={4} value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="예: 같은 스타일의 판타지 아이템 아이콘 20개와 상자 3D 모델 3개"/></Field>
-        <div className="plan-preview"><div className="plan-preview-heading"><strong>정리된 제작 항목</strong><span>로컬 규칙 해석</span></div>
-          {plan.models>0&&<div><Box size={18}/><span><strong>{plan.template==='crate'?'상자 · 컨테이너':plan.template==='table'?'테이블':'선반'} {plan.models}개</strong><small>절차적 메시 · 프로젝트 치수와 스타일 적용</small></span><span className="status-tag ready">로컬 제작</span></div>}
-          {plan.images>0&&<div><Image size={18}/><span><strong>이미지 {plan.images}개</strong><small>{isNative?'GPT Image2 공식 런타임 · 이미지마다 별도 작업':'브라우저에서는 이미지 요청을 제출하지 않습니다.'}</small></span><span className={`status-tag ${isNative&&connection?.ready?'ready':'blocked'}`}>{!isNative?'데스크톱 전용':connection?.ready?'연결 준비':'연결 확인 필요'}</span></div>}
-          {!plan.images&&!plan.models&&<p>상자, 테이블, 선반 또는 이미지와 필요한 개수를 입력하세요.</p>}
-        </div>
-        <div className="plan-spec-line"><Palette size={15}/><span>{style.name} · {spec.width} × {spec.height}px · {DOMAIN_LABELS[spec.domain]}</span><div className="mini-palette">{style.palette.map(c=><span key={c} style={{background:c}}/>)}</div></div>
-        <label className="check-row approval"><input type="checkbox" checked={planApproved} onChange={e=>setPlanApproved(e.target.checked)}/>현재 규격과 스타일을 제작 기준으로 승인합니다.</label>
-        {plan.images>0&&providerPanel}
-        <div className="inline-note">설명에서 템플릿과 개수를 추출합니다. 3D 항목은 로컬 절차적 메시를 만듭니다. {isNative&&plan.images>0?'제출 시 이미지 설명과 승인한 기준을 공식 런타임에 전달하며 구독 사용량이 발생할 수 있습니다.':!isNative&&plan.images>0?'브라우저에서는 표시된 로컬 모델 항목만 제작합니다.':''} 한 계획은 모델 24개, 이미지 20개까지입니다.</div>
-        <div className="dialog-actions"><button className="button" onClick={()=>setDialog('provider')}>공급자 상태</button><button className="button primary" onClick={()=>void runPlan()} disabled={busy||providerChecking!==null||!prompt.trim()||!planApproved||(!plan.models&&!plan.images)||plan.models>24||plan.images>20||(!!plan.images&&isNative&&!connection?.ready)||(!isNative&&!plan.models)}><Play size={13}/>{!isNative?'로컬 제작 시작':'제작 요청 제출'}</button></div>
       </>}
+      {dialog==='plan'&&snapshot&&<GameBundlePanel snapshot={snapshot} spec={spec} styleGuide={style} selectedAssetIds={selectedIds} native={isNative} busy={busy} providerReady={!!connection?.ready} providerChecking={providerChecking!==null} providerPanel={providerPanel} onImport={importAssets} onPlan={createBundlePlan} onSubmit={submitBundle}/>}
       {dialog==='guide'&&<><UsageGuide/><div className="dialog-actions"><button className="button" onClick={()=>setDialog('update')}>앱 업데이트</button><button className="button primary" onClick={()=>setDialog(null)}>닫기</button></div></>}
       {dialog==='update'&&<AppUpdatePanel updater={updater} workBlocked={updateWorkBlocked}/>}
       {dialog==='provider'&&<div className="provider-content">
@@ -367,8 +368,5 @@ export default function App() {
     </section></div>}
   </div>;
 }
-
-
-
 
 

@@ -1,6 +1,6 @@
 # Platform support and packaging
 
-Mac 0.1.5 adds Apple Silicon Codex subscription connections and managed preparation. Native macOS account/image-tool readiness, one received PNG, project reopen and independent export were verified on 2026-10-04. Signed official runtime/helper discovery, SHA-256-pinned preparation and executable permissions are checked separately from the locally ad-hoc-signed Asset Studio bundle. The historical platform table below is preserved; see [current Mac evidence](releases/v0.1.5-macos.md).
+Mac 0.1.6 adds reviewed game asset bundles on top of the Apple Silicon subscription connection and managed Codex preparation introduced in 0.1.5. On 2026-10-04, a real GPT-5.5 text plan produced five separate weapon PNGs and two procedural GLB models through the native Mac backend. Project reopen, independent export and four fresh Blender GLB/.blend reopens passed; reference originals were unchanged. Nine fixed model recipes are available. Arbitrary mesh reconstruction is not supported. See [game bundle evidence](releases/v0.1.6-game-bundle.json) and [current Mac package evidence](releases/v0.1.6-macos.md). The historical platform table below is preserved.
 
 
 0.1.2 packaging configuration updated on 2026-10-03 (Asia/Seoul). Per-version execution evidence is in [verification.md](verification.md) and [release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2.json). The table and native execution history below describe 0.1.0; current installer evidence is recorded separately. A build command or CI configuration is not evidence that a package ran on that OS.
@@ -13,7 +13,7 @@ Mac 0.1.5 adds Apple Silicon Codex subscription connections and managed preparat
 
 Windows 10 1809 is the Tauri 2/WebView2 baseline, not a successfully tested clean-machine minimum for this application. macOS 12.0 is the Tauri configuration value, not a verified minimum for every optional dependency. The recorded runtime is the development host only. Linux, mobile and web SaaS are outside this product's initial scope.
 
-The default 2D pipeline has no dedicated GPU requirement. Procedural Blender templates render on CPU. Blender 5.2.1 LTS on Windows was discovered locally; macOS Blender execution has not been tested. No CUDA-only or image-to-3D weight package is installed or claimed supported.
+The default 2D pipeline has no dedicated GPU requirement. Procedural Blender templates render on CPU. Blender 5.2.1 LTS was discovered on Windows; Mac 0.1.6's six added game recipes and the mixed bundle's two models were generated and reopened with native Blender 5.2.1 LTS. No CUDA-only or image-to-3D weight package is installed or claimed supported.
 
 ## Windows
 

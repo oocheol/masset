@@ -75,7 +75,23 @@ export type ImageOperation =
   | {type: 'color'; hue: number; saturation: number}
   | {type: 'background'; color: string; tolerance: number}
   | {type: 'mask'; points: [number,number][]; radius: number; mode: 'erase' | 'restore'};
-export interface ModelParameters {template: 'crate' | 'table' | 'shelf'; name: string; width: number; depth: number; height: number; color: string; bevel: number;}
+export interface ModelParameters {template: 'crate' | 'table' | 'shelf' | 'sword' | 'rifle' | 'spaceship' | 'barrel' | 'rock' | 'tree'; name: string; width: number; depth: number; height: number; color: string; bevel: number;}
+export interface GameBundleReference {
+  assetId: string; versionId: string; name: string; kind: AssetKind;
+  width: number | null; height: number | null; mesh: Asset['mesh'];
+}
+export interface GameBundleItem {
+  id: string; name: string; kind: AssetKind; prompt: string; purpose: string;
+  referenceAssetIds: string[]; targetAssetId: string | null;
+  modelParameters: ModelParameters | null; enabled: boolean;
+}
+export interface GameBundlePlan {
+  schemaVersion: 1; id: string; projectId: string; plannerModel: 'gpt-5.5'; brief: string;
+  output: 'images' | 'models' | 'mixed'; mode: 'new' | 'improve';
+  spec: AssetSpec; styleGuide: StyleGuide; referenceAssetIds: string[];
+  references: GameBundleReference[]; summary: string;
+  items: GameBundleItem[]; warnings: string[];
+}
 export interface AtlasOptions {width: number; height: number; padding: number;}
 export const DEFAULT_SPEC: AssetSpec = {domain:'game',width:512,height:512,unit:'m',axis:'Y-up',pivot:[0.5,0.5],polygonBudget:10000,pixelArt:false,colorSpace:'sRGB',normalConvention:'OpenGL',naming:'{name}_v{version}',target:'Unity / Godot'};
 export const DEFAULT_STYLE: StyleGuide = {id:'default',name:'차분한 판타지',palette:['#799993','#d4bd8a','#7192bc','#c78272'],lineWeight:2,camera:'orthographic 3/4',lighting:'soft studio',detail:'clean readable silhouette',margin:24,referenceAssetIds:[],approved:true};

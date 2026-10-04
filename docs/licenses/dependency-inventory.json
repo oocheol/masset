@@ -3,8 +3,8 @@
   "target": "aarch64-apple-darwin",
   "includeTools": false,
   "inputs": {
-    "packageLockSha256": "26dfcf3a1540420abcae818e32444363028be72c255bc6e2a58099e5634db1a5",
-    "cargoLockSha256": "e1a3994d30484aba920f42cd57c1370fd8e0d674b0612f37d58dfde209abd94e"
+    "packageLockSha256": "c01b54b34b23369144e87a90f176e7d59c5b7d0b59f4dc06b7b5cd5ba43079a1",
+    "cargoLockSha256": "78ae41f1f9aa9bc20124ba749502e54ad8c6d484d2bf7475faa8a1b0d5c1c5f0"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",
@@ -970,7 +970,8 @@
       "name": "byteorder",
       "version": "1.5.0",
       "scope": [
-        "host-proc-macro-dependency"
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
       ],
       "licenseExpression": "Unlicense OR MIT",
       "upstream": "https://github.com/BurntSushi/byteorder",
@@ -3803,6 +3804,129 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "gltf-derive",
+      "version": "1.4.1",
+      "scope": [
+        "host-proc-macro-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/gltf-rs/gltf",
+      "crateDownload": "https://crates.io/api/v1/crates/gltf-derive/1.4.1/download",
+      "lockSha256": "14070e711538afba5d6c807edb74bcb84e5dbb9211a3bf5dea0dfab5b24f4c51",
+      "upstreamCommit": "0f1e94f5e2307de7336be6d3a65c38c4d34aea08",
+      "upstreamSubdirectory": "gltf-derive",
+      "documents": [
+        {
+          "path": "texts/3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026.txt",
+          "bytes": 10848,
+          "sha256": "3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf-derive@1.4.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/f71fd5946d6674af304514dc7b3b4272aa9117052dd347fb3a9dc9679f33d95f.txt",
+          "bytes": 1207,
+          "sha256": "f71fd5946d6674af304514dc7b3b4272aa9117052dd347fb3a9dc9679f33d95f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf-derive@1.4.1",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "gltf-json",
+      "version": "1.4.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/gltf-rs/gltf",
+      "crateDownload": "https://crates.io/api/v1/crates/gltf-json/1.4.1/download",
+      "lockSha256": "e6176f9d60a7eab0a877e8e96548605dedbde9190a7ae1e80bbcc1c9af03ab14",
+      "upstreamCommit": "0f1e94f5e2307de7336be6d3a65c38c4d34aea08",
+      "upstreamSubdirectory": "gltf-json",
+      "documents": [
+        {
+          "path": "texts/3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026.txt",
+          "bytes": 10848,
+          "sha256": "3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf-json@1.4.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2.txt",
+          "bytes": 1072,
+          "sha256": "0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf-json@1.4.1",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "gltf",
+      "version": "1.4.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/gltf-rs/gltf",
+      "crateDownload": "https://crates.io/api/v1/crates/gltf/1.4.1/download",
+      "lockSha256": "e3ce1918195723ce6ac74e80542c5a96a40c2b26162c1957a5cd70799b8cacf7",
+      "upstreamCommit": "0f1e94f5e2307de7336be6d3a65c38c4d34aea08",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026.txt",
+          "bytes": 10848,
+          "sha256": "3708458dee7f359ac6c9c5558023ed481be87e5372c43ebd7f2ca7ad23c12026",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf@1.4.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2.txt",
+          "bytes": 1072,
+          "sha256": "0e6c282dfcb08a031c37b8f851fe5813fad63612e88a29dbe5121d727d67bbf2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "gltf@1.4.1",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "hashbrown",
       "version": "0.12.3",
       "scope": [
@@ -4966,6 +5090,35 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "inflections",
+      "version": "1.1.1",
+      "scope": [
+        "host-proc-macro-dependency"
+      ],
+      "licenseExpression": "MIT",
+      "upstream": "https://docs.rs/inflections",
+      "crateDownload": "https://crates.io/api/v1/crates/inflections/1.1.1/download",
+      "lockSha256": "a257582fdcde896fd96463bf2d40eefea0580021c0712a0e2b028b60b47a837a",
+      "upstreamCommit": null,
+      "upstreamSubdirectory": null,
+      "documents": [
+        {
+          "path": "texts/fe5c9498374de7953275f83f35565b289f377ceab4a28d04c7da87723e02a372.txt",
+          "bytes": 1058,
+          "sha256": "fe5c9498374de7953275f83f35565b289f377ceab4a28d04c7da87723e02a372",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "inflections@1.1.1",
+            "file": "LICENSE"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "ipnet",
       "version": "2.12.2",
       "scope": [
@@ -5249,6 +5402,47 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "keyboard-types@0.8.3",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "lazy_static",
+      "version": "1.5.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/rust-lang-nursery/lazy-static.rs",
+      "crateDownload": "https://crates.io/api/v1/crates/lazy_static/1.5.1/download",
+      "lockSha256": "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb",
+      "upstreamCommit": "4c1b9a170c157d679592e2682b13cc780c1db814",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "bytes": 10847,
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "lazy_static@1.5.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "bytes": 1023,
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "lazy_static@1.5.1",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -13431,7 +13625,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-desktop",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "licenseExpression": "Apache-2.0",
       "path": "apps/desktop/src-tauri/Cargo.toml"
     },
@@ -13452,7 +13646,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-providers",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "licenseExpression": "Apache-2.0",
       "path": "crates/providers/Cargo.toml"
     },
@@ -13466,8 +13660,8 @@
   ],
   "counts": {
     "npm": 20,
-    "cargo": 311,
-    "licenseTexts": 253,
+    "cargo": 316,
+    "licenseTexts": 257,
     "missing": 0,
     "mplSourceArchives": 5
   },

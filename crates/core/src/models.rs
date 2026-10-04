@@ -441,6 +441,12 @@ pub enum ModelTemplate {
     Crate,
     Table,
     Shelf,
+    Sword,
+    Rifle,
+    Spaceship,
+    Barrel,
+    Rock,
+    Tree,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -20,6 +20,8 @@ use std::{
 use uuid::Uuid;
 mod commit;
 mod provider;
+mod bundle;
+mod glb;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -47,6 +49,7 @@ struct Inner {
     provider_runtime: Mutex<Option<asset_providers::runtime::CodexRuntime>>,
     provider_connection: Mutex<Value>,
     codex_installer: asset_providers::installer::CodexInstaller,
+    planning_cancel: Mutex<Option<Arc<AtomicBool>>>,
 }
 struct Runner {
     cancel: Arc<AtomicBool>,
@@ -88,6 +91,7 @@ impl Backend {
                     "공식 Codex 연결을 확인해 주세요.",
                 )),
                 codex_installer,
+                planning_cancel: Mutex::new(None),
             }),
         }
     }
@@ -171,6 +175,9 @@ impl Backend {
     }
     pub fn shutdown(&self) {
         self.inner.stop.store(true, Ordering::SeqCst);
+        if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
+            cancel.store(true, Ordering::SeqCst);
+        }
         let _request = self.inner.requests.lock().unwrap();
         // A preparation already admitted under this mutex must be observed
         // before cancellation; otherwise it could start after an early cancel.
@@ -299,6 +306,12 @@ impl Backend {
     }
     pub fn request(&self, request: Value) -> Result<Value> {
         let action = text_field(&request, "action")?;
+        if action == "cancel_plan" {
+            if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
+                cancel.store(true, Ordering::SeqCst);
+            }
+            return Ok(json!({"cancelRequested":true}));
+        }
         if matches!(
             action,
             "provider_status"
@@ -437,7 +450,12 @@ impl Backend {
                     bail!("한 번에 최대 128개 파일을 가져올 수 있습니다.")
                 }
                 for path in paths {
-                    self.import_raster(&PathBuf::from(path), AssetSource::Import)?;
+                    let path = PathBuf::from(path);
+                    if path.extension().and_then(|s|s.to_str()).is_some_and(|s|s.eq_ignore_ascii_case("glb")) {
+                        self.import_glb(&path)?;
+                    } else {
+                        self.import_raster(&path, AssetSource::Import)?;
+                    }
                 }
                 self.snapshot()
             }
@@ -726,6 +744,11 @@ impl Backend {
             "provider_login" => self.provider_login(),
             "generate" => {
                 self.enqueue_generation(&request)?;
+                self.snapshot()
+            }
+            "plan_assets" => self.plan_game_assets(&request),
+            "generate_bundle" => {
+                self.enqueue_game_bundle(&request)?;
                 self.snapshot()
             }
             "job_events" => {
@@ -1672,6 +1695,7 @@ fn record_generated(repo: &mut Repository, mut generated: Asset, task: &Job) -> 
     let project = repo.project()?;
     let frame = generated.versions[0].settings.get("frameIndex");
     let previous = project.assets.iter().find(|asset| {
+        (task.kind=="image_generate" && task.payload.get("singleAsset")==Some(&json!(true)) && task.asset_id.as_deref()==Some(asset.id.as_str())) ||
         asset.versions.iter().any(|version| {
             version.settings.get("jobId") == Some(&json!(task.id))
                 && version.settings.get("frameIndex") == frame
@@ -1848,6 +1872,7 @@ mod lifecycle_tests {
                     codex_installer: asset_providers::installer::CodexInstaller::new(
                         directory.join("appdata/codex-runtimes"),
                     ),
+                    planning_cancel: Mutex::new(None),
                 }),
             };
             backend

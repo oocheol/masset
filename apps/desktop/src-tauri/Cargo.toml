@@ -28,6 +28,7 @@ semver = "=1.0.28"
 base64 = "=0.22.1"
 futures-util = "=0.3.34"
 minisign-verify = "=0.2.5"
+gltf = { version = "=1.4.1", default-features = false, features = ["utils", "names"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }

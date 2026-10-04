@@ -74,6 +74,7 @@ export async function browserCommand(request: Record<string, unknown>): Promise<
     reason: '데스크톱 전용: GPT Image2 연결과 생성은 Tauri 앱의 공식 런타임에서 확인하세요.', checkedAt: now(),
   };
   if (request.action === 'generate') throw new Error('데스크톱 전용: 브라우저에서는 GPT Image2 생성 요청을 제출할 수 없습니다.');
+  if (['plan_assets', 'generate_bundle', 'cancel_plan'].includes(String(request.action))) throw new Error('데스크톱 전용: 게임 에셋 구성안과 묶음 제작은 공식 Codex 연결이 있는 Tauri 앱에서 사용할 수 있습니다.');
   await bootstrapBrowser();
   if (request.action === 'snapshot' || request.action === 'bootstrap') return snapshot();
   if (request.action === 'environment') return { blenderPath: null, blenderVersion: null, platform: 'browser', native: false };

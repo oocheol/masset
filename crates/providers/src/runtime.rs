@@ -25,6 +25,9 @@ use std::{
 };
 use thiserror::Error;
 
+#[path = "planning.rs"]
+mod planning;
+
 const MAX_RPC_LINE: usize = 96 * 1024 * 1024;
 const MAX_IMAGE_BYTES: usize = 64 * 1024 * 1024;
 const MAX_PROMPT_BYTES: usize = 64 * 1024;
@@ -72,6 +75,16 @@ const OFFICIAL_CATALOG: &[u8] = include_bytes!("../assets/openai-models.json");
 /// Fixed outer planner selection. Catalog default changes never select a model.
 /// This is separate from REQUESTED_IMAGE_MODEL and never changes billing lanes.
 pub const DEFAULT_REASONING_MODEL: &str = "gpt-6.1-sol";
+/// Declared model for the separate tool-free asset-planning purpose. Callers
+/// explicitly assign it to RuntimeOptions::reasoning_model and expose the
+/// chosen model. Missing configured-catalog membership is an error, never a
+/// fallback to/from the image runtime's DEFAULT_REASONING_MODEL. The official
+/// pinned catalog lists text/image input and no mandatory tool mode; actual
+/// subscription inference eligibility still requires native caller proof.
+pub const ASSET_PLANNING_MODEL: &str = "gpt-5.5";
+/// A pinned supported level for planning, independent of the user's global
+/// model_reasoning_effort and the image runtime's reasoning configuration.
+pub const ASSET_PLANNING_REASONING_EFFORT: &str = "medium";
 // The official builtin AuthMode::Chatgpt default, passed only through the
 // documented public CLI override. This crate never issues HTTP to this URL.
 const OFFICIAL_NATIVE_CODEX_BASE: &str = "https://chatgpt.com/backend-api/codex";
@@ -178,6 +191,13 @@ pub enum RuntimeError {
     UnsupportedOption,
     #[error("The image prompt or reference input is invalid")]
     InvalidInput,
+    #[error("The asset plan is invalid; no assets were generated or enqueued")]
+    InvalidPlan,
+    /// Fixed validation rule only; never carries assistant text or references.
+    #[error("The asset plan failed validation: {rule}; no assets were generated or enqueued")]
+    InvalidPlanRule { rule: &'static str },
+    #[error("The selected reasoning model requires tools; choose an explicitly approved text-only planning model, without automatic fallback")]
+    PlanningModelRequiresTools,
     #[error("The native image artifact is invalid or outside the approved directory")]
     InvalidArtifact,
     #[error("The native turn failed: {failure}; no automatic retry was made")]
@@ -212,6 +232,9 @@ impl RuntimeError {
             Self::ActualModelUnconfirmed => "provider.actual_image_model_unconfirmed",
             Self::UnsupportedOption => "provider.native_option_unverified",
             Self::InvalidInput => "provider.invalid_input",
+            Self::InvalidPlan => "provider.invalid_asset_plan",
+            Self::InvalidPlanRule { .. } => "provider.invalid_asset_plan",
+            Self::PlanningModelRequiresTools => "provider.planning_model_requires_tools",
             Self::InvalidArtifact => "provider.invalid_artifact",
             Self::GenerationFailed { .. } => "provider.generation_failed",
             Self::NoImageProduced => "provider.no_image_produced",
@@ -262,6 +285,8 @@ pub struct FailureHints {
     pub quota_exceeded: bool,
     pub tool_unavailable: bool,
     pub invalid_request: bool,
+    #[serde(default)]
+    pub invalid_schema: bool,
     /// Exact native wording, stronger evidence than broad model text hints.
     #[serde(default)]
     pub chatgpt_account_model_unsupported: bool,
@@ -279,6 +304,7 @@ pub enum UpstreamErrorLabel {
     UnsupportedParameter,
     InvalidParameter,
     InvalidRequestError,
+    InvalidJsonSchema,
     InvalidApiKey,
     AuthenticationError,
     PermissionDenied,
@@ -294,6 +320,65 @@ pub enum UpstreamErrorLabel {
     UnprocessableEntityError,
 }
 
+/// Only known request parameter names, never upstream parameter values or
+/// arbitrary paths. Descendants of a schema parameter collapse to that root.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum UpstreamParameter {
+    OutputSchema,
+    ResponseFormat,
+    ResponseFormatSchema,
+    TextFormat,
+    TextFormatSchema,
+    Model,
+    Tools,
+    ToolChoice,
+    ParallelToolCalls,
+    Input,
+    ReasoningEffort,
+    ReasoningSummary,
+}
+
+impl UpstreamParameter {
+    fn label(self) -> &'static str {
+        match self {
+            Self::OutputSchema => "outputSchema",
+            Self::ResponseFormat => "response_format",
+            Self::ResponseFormatSchema => "response_format.json_schema.schema",
+            Self::TextFormat => "text.format",
+            Self::TextFormatSchema => "text.format.schema",
+            Self::Model => "model",
+            Self::Tools => "tools",
+            Self::ToolChoice => "tool_choice",
+            Self::ParallelToolCalls => "parallel_tool_calls",
+            Self::Input => "input",
+            Self::ReasoningEffort => "reasoning.effort",
+            Self::ReasoningSummary => "reasoning.summary",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum OutputSchemaKeyword {
+    UniqueItems,
+    Contains,
+    MinContains,
+    MaxContains,
+    MinItems,
+    MaxItems,
+    MinLength,
+    MaxLength,
+    Minimum,
+    Maximum,
+    Pattern,
+    AdditionalProperties,
+    Required,
+    AnyOf,
+    Enum,
+    Type,
+}
+
 /// Message/additionalDetails are inspected in memory for fixed boolean hints,
 /// then discarded. URLs, tokens, headers, arbitrary codes and text cannot enter
 /// this persisted contract. A hint is weaker evidence than codex_error_info.
@@ -307,6 +392,10 @@ pub struct TurnFailure {
     pub http_status_code: Option<u16>,
     pub upstream_error_code: Option<UpstreamErrorLabel>,
     pub upstream_error_type: Option<UpstreamErrorLabel>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upstream_parameter: Option<UpstreamParameter>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub invalid_schema_keyword: Option<OutputSchemaKeyword>,
     pub hints: FailureHints,
     pub image_generation_observed: bool,
     pub reported_will_retry: Option<bool>,
@@ -324,10 +413,10 @@ pub struct ImageUsageLimit {
 
 impl std::fmt::Display for TurnFailure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "class={:?}, httpStatus={:?}, upstreamCode={:?}, upstreamType={:?}, modelUnavailableHint={}, authenticationFailureHint={}, quotaExceededHint={}, toolUnavailableHint={}, invalidRequestHint={}, chatgptAccountModelUnsupportedHint={}, imageGenerationObserved={}",
-            self.codex_error_info,self.http_status_code,self.upstream_error_code,self.upstream_error_type,self.hints.model_unavailable,
+        write!(f, "class={:?}, httpStatus={:?}, upstreamCode={:?}, upstreamType={:?}, upstreamParameter={:?}, invalidSchemaKeyword={:?}, modelUnavailableHint={}, authenticationFailureHint={}, quotaExceededHint={}, toolUnavailableHint={}, invalidRequestHint={}, invalidSchemaHint={}, chatgptAccountModelUnsupportedHint={}, imageGenerationObserved={}",
+            self.codex_error_info,self.http_status_code,self.upstream_error_code,self.upstream_error_type,self.upstream_parameter.map(UpstreamParameter::label),self.invalid_schema_keyword,self.hints.model_unavailable,
             self.hints.authentication_failure,self.hints.quota_exceeded,self.hints.tool_unavailable,
-            self.hints.invalid_request,self.hints.chatgpt_account_model_unsupported,self.image_generation_observed)
+            self.hints.invalid_request,self.hints.invalid_schema,self.hints.chatgpt_account_model_unsupported,self.image_generation_observed)
     }
 }
 
@@ -473,10 +562,28 @@ pub struct CodexRuntime {
     active_turn: Option<(String, String)>,
     poisoned: bool,
     catalog_reasoning_models: HashSet<String>,
+    purpose: RuntimePurpose,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum RuntimePurpose {
+    Image,
+    Planning,
 }
 
 impl CodexRuntime {
-    pub fn connect(mut options: RuntimeOptions) -> Result<Self, RuntimeError> {
+    pub fn connect(options: RuntimeOptions) -> Result<Self, RuntimeError> {
+        Self::connect_with_purpose(options, RuntimePurpose::Image)
+    }
+
+    fn connect_with_purpose(
+        mut options: RuntimeOptions,
+        purpose: RuntimePurpose,
+    ) -> Result<Self, RuntimeError> {
+        let setup_deadline =
+            (purpose == RuntimePurpose::Planning).then(|| Instant::now() + Duration::from_secs(60));
+        let max_rpc_timeout = options.rpc_timeout;
+        let remaining_timeout = || planning::timeout_before(max_rpc_timeout, setup_deadline);
         if !options.executable.is_absolute()
             || !options.executable.is_file()
             || !options.output_root.is_absolute()
@@ -496,16 +603,26 @@ impl CodexRuntime {
         }
         // CLI inventory is read through the public executable. Its complete
         // stdout (which may include configuration secrets) is never exposed.
-        let mcp_names = public_mcp_inventory(&options)?;
-        let mut process = RuntimeProcess::spawn(&options, &mcp_names)?;
-        process.rpc("initialize", json!({"clientInfo":{"name":"asset_image_provider","title":"Asset Image Provider","version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true}}), options.rpc_timeout)?;
+        if purpose == RuntimePurpose::Planning {
+            planning::verify_planning_model(options.reasoning_model.as_deref())?;
+        }
+        let mut inventory_options = options.clone();
+        inventory_options.rpc_timeout = remaining_timeout()?;
+        let mcp_names = public_mcp_inventory(&inventory_options, purpose)?;
+        let mut process = RuntimeProcess::spawn(&options, &mcp_names, purpose)?;
+        let (client_name, client_title) = if purpose == RuntimePurpose::Planning {
+            ("asset_text_planner", "Asset Text Planner")
+        } else {
+            ("asset_image_provider", "Asset Image Provider")
+        };
+        process.rpc("initialize", json!({"clientInfo":{"name":client_name,"title":client_title,"version":env!("CARGO_PKG_VERSION")},"capabilities":{"experimentalApi":true}}), remaining_timeout()?)?;
         process.notify("initialized", json!({}))?;
         let config = process.rpc(
             "config/read",
             json!({"includeLayers":false}),
-            options.rpc_timeout,
+            remaining_timeout()?,
         )?;
-        if !controls_verified(&config) {
+        if !controls_verified_for(&config, purpose) {
             return Err(RuntimeError::UnsafeToolConfiguration);
         }
         if !official_provider_configuration(&config) {
@@ -514,35 +631,50 @@ impl CodexRuntime {
         let mcp = process.rpc(
             "mcpServerStatus/list",
             json!({"detail":"toolsAndAuthOnly","limit":100}),
-            options.rpc_timeout,
+            remaining_timeout()?,
         )?;
         if !mcp_disabled(&config, &mcp) {
             return Err(RuntimeError::UnsafeToolConfiguration);
         }
-        let native = process.rpc(
-            "modelProvider/capabilities/read",
-            json!({}),
-            options.rpc_timeout,
-        )?;
+        let native = if purpose == RuntimePurpose::Image {
+            process.rpc(
+                "modelProvider/capabilities/read",
+                json!({}),
+                remaining_timeout()?,
+            )?
+        } else {
+            Value::Null
+        };
         let account = process.rpc(
             "account/read",
             json!({"refreshToken":false}),
-            options.rpc_timeout,
+            remaining_timeout()?,
         )?;
         let (authentication, plan_type) = safe_account(&account);
         if authentication == AuthStatus::ApiKey {
             return Err(RuntimeError::PaidRouteRefused);
         }
-        let catalog_reasoning_models =
-            read_configured_catalog_models(&mut process, options.rpc_timeout)?;
+        let catalog_reasoning_models = read_configured_catalog_models_until(
+            &mut process,
+            options.rpc_timeout,
+            setup_deadline,
+        )?;
         let selected = select_reasoning_model(
             options.reasoning_model.as_deref(),
             &catalog_reasoning_models,
         )?;
         options.reasoning_model = Some(selected.clone());
-        let version = crate::probe_codex(&options.executable)
-            .ok()
-            .and_then(|p| p.version);
+        let version = if purpose == RuntimePurpose::Image {
+            crate::probe_codex(&options.executable)
+                .ok()
+                .and_then(|p| p.version)
+        } else {
+            // Executable version/signature proof belongs to native discovery.
+            // Planning setup only needs the bounded public RPC handshake.
+            planning::verify_queued_notifications(&process)?;
+            remaining_timeout()?;
+            None
+        };
         let mut runtime = Self {
             options,
             process,
@@ -554,8 +686,8 @@ impl CodexRuntime {
                 reasoning_model: Some(selected),
                 reasoning_catalog_commit: OFFICIAL_CATALOG_COMMIT.into(),
                 official_provider_verified: true,
-                native_image_generation: native.get("imageGeneration").and_then(Value::as_bool)
-                    == Some(true),
+                native_image_generation: purpose == RuntimePurpose::Image
+                    && native.get("imageGeneration").and_then(Value::as_bool) == Some(true),
                 controls_verified: true,
                 requested_image_model: REQUESTED_IMAGE_MODEL.into(),
                 confirmed_image_model: None,
@@ -565,9 +697,12 @@ impl CodexRuntime {
             active_turn: None,
             poisoned: false,
             catalog_reasoning_models,
+            purpose,
         };
         // Rate-limit read failure does not mean zero usage or consume credits.
-        let _ = runtime.refresh_usage();
+        if purpose == RuntimePurpose::Image {
+            let _ = runtime.refresh_usage();
+        }
         Ok(runtime)
     }
 
@@ -603,6 +738,9 @@ impl CodexRuntime {
     /// Starts the official managed browser login. Caller may open auth_url in
     /// an approved browser; never persist/log it or exchange/copy tokens.
     pub fn begin_login(&mut self) -> Result<LoginSession, RuntimeError> {
+        if self.purpose == RuntimePurpose::Planning {
+            return Err(RuntimeError::UnsafeToolConfiguration);
+        }
         if self.active_turn.is_some() {
             return Err(RuntimeError::Busy);
         }
@@ -622,6 +760,9 @@ impl CodexRuntime {
     }
 
     pub fn cancel_login(&mut self, login_id: &str) -> Result<(), RuntimeError> {
+        if self.purpose == RuntimePurpose::Planning {
+            return Err(RuntimeError::UnsafeToolConfiguration);
+        }
         if !safe_identifier(login_id) {
             return Err(RuntimeError::InvalidInput);
         }
@@ -647,6 +788,9 @@ impl CodexRuntime {
     ) -> Result<RunningJob, RuntimeError> {
         if canceled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
             return Err(RuntimeError::Interrupted);
+        }
+        if self.purpose != RuntimePurpose::Image {
+            return Err(RuntimeError::UnsafeToolConfiguration);
         }
         validate_native_request(request)?;
         if self.active_turn.is_some() || self.poisoned {
@@ -1235,6 +1379,7 @@ fn upstream_error_label(value: &Value) -> Option<UpstreamErrorLabel> {
         "unsupported_parameter" => Some(UpstreamErrorLabel::UnsupportedParameter),
         "invalid_parameter" => Some(UpstreamErrorLabel::InvalidParameter),
         "invalid_request_error" => Some(UpstreamErrorLabel::InvalidRequestError),
+        "invalid_json_schema" => Some(UpstreamErrorLabel::InvalidJsonSchema),
         "invalid_api_key" => Some(UpstreamErrorLabel::InvalidApiKey),
         "authentication_error" => Some(UpstreamErrorLabel::AuthenticationError),
         "permission_denied" => Some(UpstreamErrorLabel::PermissionDenied),
@@ -1252,11 +1397,87 @@ fn upstream_error_label(value: &Value) -> Option<UpstreamErrorLabel> {
     }
 }
 
+fn upstream_parameter(value: &Value) -> Option<UpstreamParameter> {
+    let parameter = value.as_str()?;
+    if parameter.len() > 256 {
+        return None;
+    }
+    match parameter {
+        "outputSchema" | "output_schema" => Some(UpstreamParameter::OutputSchema),
+        "response_format" => Some(UpstreamParameter::ResponseFormat),
+        "response_format.schema"
+        | "response_format.json_schema"
+        | "response_format.json_schema.schema" => Some(UpstreamParameter::ResponseFormatSchema),
+        "text.format" => Some(UpstreamParameter::TextFormat),
+        "text.format.schema" => Some(UpstreamParameter::TextFormatSchema),
+        "model" => Some(UpstreamParameter::Model),
+        "tools" => Some(UpstreamParameter::Tools),
+        "tool_choice" => Some(UpstreamParameter::ToolChoice),
+        "parallel_tool_calls" => Some(UpstreamParameter::ParallelToolCalls),
+        "input" => Some(UpstreamParameter::Input),
+        "reasoning.effort" => Some(UpstreamParameter::ReasoningEffort),
+        "reasoning.summary" => Some(UpstreamParameter::ReasoningSummary),
+        _ if parameter.starts_with("text.format.schema.") => {
+            Some(UpstreamParameter::TextFormatSchema)
+        }
+        _ if parameter.starts_with("response_format.json_schema.schema.") => {
+            Some(UpstreamParameter::ResponseFormatSchema)
+        }
+        _ if parameter.starts_with("outputSchema.") || parameter.starts_with("output_schema.") => {
+            Some(UpstreamParameter::OutputSchema)
+        }
+        _ => None,
+    }
+}
+
+fn invalid_schema_keyword(text: &str) -> Option<OutputSchemaKeyword> {
+    let words: HashSet<_> = text.split(|c: char| !c.is_ascii_alphabetic()).collect();
+    // Specific schema keywords take precedence over generic JSON envelope
+    // names such as type, which also occur in unrelated upstream metadata.
+    [
+        ("uniqueitems", OutputSchemaKeyword::UniqueItems),
+        ("mincontains", OutputSchemaKeyword::MinContains),
+        ("maxcontains", OutputSchemaKeyword::MaxContains),
+        ("contains", OutputSchemaKeyword::Contains),
+        ("minitems", OutputSchemaKeyword::MinItems),
+        ("maxitems", OutputSchemaKeyword::MaxItems),
+        ("minlength", OutputSchemaKeyword::MinLength),
+        ("maxlength", OutputSchemaKeyword::MaxLength),
+        ("minimum", OutputSchemaKeyword::Minimum),
+        ("maximum", OutputSchemaKeyword::Maximum),
+        ("pattern", OutputSchemaKeyword::Pattern),
+        (
+            "additionalproperties",
+            OutputSchemaKeyword::AdditionalProperties,
+        ),
+        ("required", OutputSchemaKeyword::Required),
+        ("anyof", OutputSchemaKeyword::AnyOf),
+        ("enum", OutputSchemaKeyword::Enum),
+        ("type", OutputSchemaKeyword::Type),
+    ]
+    .into_iter()
+    .find_map(|(word, keyword)| words.contains(word).then_some(keyword))
+}
+
+#[cfg(test)]
 fn parse_upstream_error_labels(
     error: &Value,
 ) -> (Option<UpstreamErrorLabel>, Option<UpstreamErrorLabel>) {
-    let mut code = None;
-    let mut kind = None;
+    let (code, kind, _) = parse_upstream_error_details(error);
+    (code, kind)
+}
+
+fn parse_upstream_error_details(
+    error: &Value,
+) -> (
+    Option<UpstreamErrorLabel>,
+    Option<UpstreamErrorLabel>,
+    Option<UpstreamParameter>,
+) {
+    let direct = error.get("error").unwrap_or(error);
+    let mut code = upstream_error_label(&direct["code"]);
+    let mut kind = upstream_error_label(&direct["type"]);
+    let mut parameter = upstream_parameter(&direct["param"]);
     for key in ["message", "additionalDetails"] {
         let Some(raw) = error.get(key).and_then(Value::as_str) else {
             continue;
@@ -1277,9 +1498,10 @@ fn parse_upstream_error_labels(
             let envelope = value.get("error").unwrap_or(&value);
             code = code.or_else(|| upstream_error_label(&envelope["code"]));
             kind = kind.or_else(|| upstream_error_label(&envelope["type"]));
+            parameter = parameter.or_else(|| upstream_parameter(&envelope["param"]));
         }
     }
-    (code, kind)
+    (code, kind, parameter)
 }
 
 fn classify_turn_failure(
@@ -1368,7 +1590,13 @@ fn classify_turn_failure(
         "not enabled",
         "disabled",
     ]);
-    let (upstream_error_code, upstream_error_type) = parse_upstream_error_labels(error);
+    let (upstream_error_code, upstream_error_type, upstream_parameter) =
+        parse_upstream_error_details(error);
+    let invalid_schema = hint_text.contains("invalid schema")
+        || upstream_error_code == Some(UpstreamErrorLabel::InvalidJsonSchema);
+    let invalid_schema_keyword = invalid_schema
+        .then(|| invalid_schema_keyword(&hint_text))
+        .flatten();
     let chatgpt_account_model_unsupported =
         hint_text.contains("not supported when using codex with a chatgpt account");
     let hints = FailureHints {
@@ -1392,8 +1620,10 @@ fn classify_turn_failure(
         tool_unavailable: hint_text.contains("tool") && unavailable,
         invalid_request: class == NativeFailureClass::BadRequest
             || http_status_code == Some(400)
+            || invalid_schema
             || contains_any(&["invalid request", "bad request", "invalid_request_error"]),
         chatgpt_account_model_unsupported,
+        invalid_schema,
     };
     TurnFailure {
         stage: "native_runtime_error".into(),
@@ -1403,6 +1633,8 @@ fn classify_turn_failure(
         http_status_code,
         upstream_error_code,
         upstream_error_type,
+        upstream_parameter,
+        invalid_schema_keyword,
         hints,
         image_generation_observed,
         reported_will_retry,
@@ -1456,7 +1688,12 @@ fn preserve_image_failure(job: &mut RunningJob, failure: TurnFailure) {
     job.failure = Some(failure);
 }
 
+#[cfg(test)]
 fn controls_verified(value: &Value) -> bool {
+    controls_verified_for(value, RuntimePurpose::Image)
+}
+
+fn controls_verified_for(value: &Value, purpose: RuntimePurpose) -> bool {
     let config = &value["config"];
     config.get("model_provider").and_then(Value::as_str) == Some("openai")
         && config.get("forced_login_method").and_then(Value::as_str) == Some("chatgpt")
@@ -1496,11 +1733,21 @@ fn controls_verified(value: &Value) -> bool {
             .pointer("/orchestrator/mcp/enabled")
             .and_then(Value::as_bool)
             == Some(false)
-        && feature_enabled(&config["features"]["code_mode_host"])
-        && config
-            .pointer("/features/image_generation")
-            .and_then(Value::as_bool)
-            == Some(true)
+        && match purpose {
+            RuntimePurpose::Image => {
+                feature_enabled(&config["features"]["code_mode_host"])
+                    && config
+                        .pointer("/features/image_generation")
+                        .and_then(Value::as_bool)
+                        == Some(true)
+            }
+            RuntimePurpose::Planning => {
+                feature_disabled(&config["features"]["code_mode_host"])
+                    && feature_disabled(&config["features"]["image_generation"])
+                    && config["model_reasoning_effort"].as_str()
+                        == Some(ASSET_PLANNING_REASONING_EFFORT)
+            }
+        }
 }
 
 fn official_provider_configuration(value: &Value) -> bool {
@@ -1555,9 +1802,18 @@ fn prepare_official_catalog(root: &Path) -> Result<PathBuf, RuntimeError> {
 /// Confirms runtime configuration matches the application's static catalog.
 /// This is deliberately not called an account-availability or entitlement
 /// check: model_catalog_json selects a static manager with no server refresh.
+#[cfg(test)]
 fn read_configured_catalog_models(
     process: &mut RuntimeProcess,
     timeout: Duration,
+) -> Result<HashSet<String>, RuntimeError> {
+    read_configured_catalog_models_until(process, timeout, None)
+}
+
+fn read_configured_catalog_models_until(
+    process: &mut RuntimeProcess,
+    timeout: Duration,
+    deadline: Option<Instant>,
 ) -> Result<HashSet<String>, RuntimeError> {
     let source: Value =
         serde_json::from_slice(OFFICIAL_CATALOG).map_err(|_| RuntimeError::Protocol)?;
@@ -1573,7 +1829,7 @@ fn read_configured_catalog_models(
         let response = process.rpc(
             "model/list",
             json!({"includeHidden":false,"limit":100,"cursor":cursor}),
-            timeout,
+            planning::timeout_before(timeout, deadline)?,
         )?;
         let models = response
             .get("data")
@@ -1936,6 +2192,7 @@ mod runtime_tests {
             active_turn: None,
             poisoned: false,
             catalog_reasoning_models: HashSet::from([DEFAULT_REASONING_MODEL.into()]),
+            purpose: RuntimePurpose::Image,
         };
         (actor, sent, root)
     }
@@ -2730,16 +2987,20 @@ fn safe_command(executable: &Path) -> Command {
     command
 }
 
-fn public_mcp_inventory(options: &RuntimeOptions) -> Result<Vec<String>, RuntimeError> {
+fn public_mcp_inventory(
+    options: &RuntimeOptions,
+    purpose: RuntimePurpose,
+) -> Result<Vec<String>, RuntimeError> {
     let mut command = safe_command(&options.executable);
     command.current_dir(&options.output_root);
-    apply_controls(&mut command, options);
+    apply_controls_for(&mut command, options, purpose);
     command
         .args(["mcp", "list", "--json"])
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
     let mut child = command.spawn().map_err(|_| RuntimeError::Unavailable)?;
+    let deadline = Instant::now() + options.rpc_timeout;
     let mut stdout = child.stdout.take().ok_or(RuntimeError::Protocol)?;
     let (tx, rx) = mpsc::sync_channel(1);
     thread::spawn(move || {
@@ -2759,7 +3020,23 @@ fn public_mcp_inventory(options: &RuntimeOptions) -> Result<Vec<String>, Runtime
             return Err(RuntimeError::Timeout);
         }
     };
-    if !child.wait().map_err(|_| RuntimeError::Protocol)?.success() {
+    let status = if purpose == RuntimePurpose::Planning {
+        // A CLI that closes stdout without exiting cannot bypass setup bounds.
+        loop {
+            if let Some(status) = child.try_wait().map_err(|_| RuntimeError::Protocol)? {
+                break status;
+            }
+            if Instant::now() >= deadline {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(RuntimeError::Timeout);
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+    } else {
+        child.wait().map_err(|_| RuntimeError::Protocol)?
+    };
+    if !status.success() {
         return Err(RuntimeError::Protocol);
     }
     let value: Value = serde_json::from_slice(&bytes).map_err(|_| RuntimeError::Protocol)?;
@@ -2798,7 +3075,12 @@ struct RuntimeProcess {
     fixture_cancel_on_method: Option<(&'static str, std::sync::Arc<AtomicBool>)>,
 }
 
+#[cfg(test)]
 fn apply_controls(command: &mut Command, options: &RuntimeOptions) {
+    apply_controls_for(command, options, RuntimePurpose::Image);
+}
+
+fn apply_controls_for(command: &mut Command, options: &RuntimeOptions, purpose: RuntimePurpose) {
     for value in [
         "model_provider=\"openai\"",
         "openai_base_url=\"https://chatgpt.com/backend-api/codex\"",
@@ -2814,12 +3096,10 @@ fn apply_controls(command: &mut Command, options: &RuntimeOptions) {
         "otel.trace_exporter=\"none\"",
         "otel.metrics_exporter=\"none\"",
         "otel.log_user_prompt=false",
-        "features.image_generation=true",
         // Sol's catalog mandates code_mode_only even when the preference flags
         // below are false. It needs the official isolated V8 host. Empty
         // environments and explicit agent/skill/MCP controls keep execution
         // tools out of the registry; the host has no Node/filesystem imports.
-        "features.code_mode_host=true",
         "agents.enabled=false",
         "cloud.skills.enabled=false",
         "skills.bundled.enabled=false",
@@ -2827,6 +3107,26 @@ fn apply_controls(command: &mut Command, options: &RuntimeOptions) {
         "orchestrator.mcp.enabled=false",
     ] {
         command.args(["-c", value]);
+    }
+    match purpose {
+        RuntimePurpose::Image => {
+            command.args([
+                "-c",
+                "features.image_generation=true",
+                "-c",
+                "features.code_mode_host=true",
+            ]);
+        }
+        RuntimePurpose::Planning => {
+            command.args([
+                "-c",
+                "features.image_generation=false",
+                "-c",
+                "features.code_mode_host=false",
+                "-c",
+                "model_reasoning_effort=\"medium\"",
+            ]);
+        }
     }
     for feature in DISABLED_FEATURES {
         command.args(["-c", &format!("features.{feature}=false")]);
@@ -2855,14 +3155,18 @@ impl Drop for RuntimeProcess {
 }
 
 impl RuntimeProcess {
-    fn spawn(options: &RuntimeOptions, mcp_names: &[String]) -> Result<Self, RuntimeError> {
+    fn spawn(
+        options: &RuntimeOptions,
+        mcp_names: &[String],
+        purpose: RuntimePurpose,
+    ) -> Result<Self, RuntimeError> {
         let mut command = safe_command(&options.executable);
         command
             .args(["app-server", "--listen", "stdio://"])
             .current_dir(&options.output_root);
         // strict-config would reject unrelated legacy fields in the user's
         // config. Instead verify all effective security fields via config/read.
-        apply_controls(&mut command, options);
+        apply_controls_for(&mut command, options, purpose);
         // Each is a literal argv value, not shell code. Spaces in server names
         // remain intact. Ambiguous dotted/equal/quoted names fail the inventory.
         for name in mcp_names {
@@ -2891,17 +3195,22 @@ impl RuntimeProcess {
             }
         });
         let (tx, messages) = mpsc::sync_channel(8);
+        let line_limit = if purpose == RuntimePurpose::Planning {
+            planning::MAX_PLANNING_RPC_BYTES
+        } else {
+            MAX_RPC_LINE
+        };
         thread::spawn(move || {
             let mut reader = BufReader::new(stdout);
             loop {
                 let mut line = Vec::new();
                 let read = reader
                     .by_ref()
-                    .take((MAX_RPC_LINE + 1) as u64)
+                    .take((line_limit + 1) as u64)
                     .read_until(b'\n', &mut line);
                 match read {
                     Ok(0) => break,
-                    Ok(_) if line.len() <= MAX_RPC_LINE => match serde_json::from_slice(&line) {
+                    Ok(_) if line.len() <= line_limit => match serde_json::from_slice(&line) {
                         Ok(value) => {
                             if tx.send(Ok(value)).is_err() {
                                 break;

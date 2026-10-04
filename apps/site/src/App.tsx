@@ -29,22 +29,28 @@ const models = [
 const statuses = [
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
+  { feature: 'Mac 0.1.6 게임 에셋 묶음', status: 'Mac 백엔드 제작 확인', tone: 'experimental', detail: 'GPT-5.5에 텍스트 구성안을 요청하고, 개별 이름·설명·참고 자료와 포함 여부를 수정해 한 번에 큐에 제출하는 흐름입니다. Mac 네이티브 백엔드에서 개별 PNG 5장과 모델 2개의 제작·저장·재열기·독립 내보내기를 확인했습니다.' },
+  { feature: 'Mac Blender 게임 소품 작업자', status: '작업자·산출물 확인', tone: 'verified', detail: '검·소총·우주선·배럴·바위·나무를 실제 생성하고 GLB·.blend를 별도 Blender 프로세스에서 다시 열었습니다. Mac 작업자 검사이며, 게임 묶음의 데스크톱 전체 흐름과 구분합니다.' },
   { feature: '밝기 기반 노멀맵', status: '실험 기능', tone: 'experimental', detail: '이미지 밝기에서 표면 방향을 근사합니다. 실제 표면 구조를 복원하는 기능은 아닙니다.' },
   { feature: 'GPT-6.1 Sol 추론·GPT Image2 구독 요청', status: 'Windows·Mac 실제 수신 확인', tone: 'verified', detail: 'Windows 0.1.2와 Mac 0.1.5 구현에서 각각 새 PNG 한 장의 수신·저장·재열기·독립 내보내기를 확인했습니다. 실제 이미지 모델 ID와 다른 계정의 권한은 미확인입니다.' },
   { feature: 'Codex가 없는 기기의 관리형 준비', status: 'Mac 공식 패키지 준비 확인', tone: 'verified', detail: 'Apple Silicon 공식 패키지의 크기·해시·OpenAI 서명·실행 권한·등록을 실제 확인했습니다. 다운로드 동의·취소·압축 경로 검사도 통과했습니다. Windows의 신규 다운로드 실증은 별도 기록합니다.' },
-  { feature: 'macOS 로컬 2D·구독 연결·앱 내부 업데이트', status: 'Apple Silicon 실제 확인', tone: 'verified', detail: '0.1.5는 GPT 구독 연결과 공식 Codex 준비를 추가합니다. 0.1.4부터 서명·버전을 검증해 앱을 교체하고 재실행합니다. 프로젝트·원본을 보존하며 3D는 Mac 검증 전입니다.' },
+  { feature: 'macOS 로컬 2D·구독 연결·앱 내부 업데이트', status: 'Apple Silicon 실제 확인', tone: 'verified', detail: '0.1.6은 게임 에셋 묶음과 개별 이미지·모델 제작을 추가합니다. GPT 구독 연결과 공식 Codex 준비를 지원합니다. 0.1.4부터 서명·버전을 검증해 앱을 교체하고 재실행합니다. 프로젝트·원본을 보존합니다. Mac 3D 작업자와 네이티브 백엔드의 게임 묶음 제작을 확인했습니다.' },
 ];
 
 const faqs = [
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
-  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Mac 0.1.4 사용자는 앱에서 0.1.5로 업데이트할 수 있습니다. Mac 0.1.3 이하는 최신 버전을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다. Windows 0.1.0 포터블도 업데이트가 가능한 설치형을 한 번 설치해야 합니다.' },
-  { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64와 Apple Silicon Mac 0.1.5의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
+  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Mac 0.1.4·0.1.5 사용자는 앱에서 0.1.6로 업데이트할 수 있습니다. Mac 0.1.3 이하는 최신 버전을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다. Windows 0.1.0 포터블도 업데이트가 가능한 설치형을 한 번 설치해야 합니다.' },
+  { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64와 Apple Silicon Mac 0.1.6의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
-  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: '상자·테이블·선반 템플릿에서 치수와 색을 지정할 수 있습니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 일반적인 문장 하나로 임의의 3D 물체를 만드는 기능을 보장하지 않습니다.' },
+  { question: '게임 설명에서 개별 에셋을 어떻게 구성하나요?', answer: '게임 에셋 만들기 → 게임 에셋 묶음 구성안에서 2D 이미지, 3D 모델 또는 이미지 + 3D 모델을 고릅니다. 이름·설명·용도와 포함 여부를 수정하고 규격·스타일을 승인한 뒤 검토한 에셋 묶음 제작으로 한 번에 큐에 등록하는 흐름입니다. Mac 네이티브 백엔드에서 개별 이미지 5장과 모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.', link: `${sourceUrl}/blob/master/docs/game-asset-bundles.md`, label: '게임 에셋 묶음 안내' },
+  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5 (gpt-5.5)는 공식 Codex 카탈로그의 텍스트 플래너로, 도구 실행 없이 이름과 개별 설명을 제안하도록 요청합니다. GPT-6.1 Sol (gpt-6.1-sol)은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트입니다. 3D는 로컬 Blender의 고정 레시피가 담당합니다. 실제 GPT-5.5 구성안 수신을 Mac 네이티브 백엔드에서 확인했습니다.' },
+  { question: '요청 이미지 수는 모델까지 합친 수인가요?', answer: '요청 이미지 수는 이미지·스프라이트·텍스처 행의 정확한 수이며, 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 이름과 설명이 다른 오브젝트 하나를 개별 PNG로 요청합니다. 구성안에서 행을 추가·삭제하거나 제외한 뒤에는 포함한 이미지·모델 행 수가 실제 제출 수입니다.' },
+  { question: '참고 이미지나 GLB는 어떻게 사용하나요?', answer: 'PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개를 직접 선택하고, 이미지·미리보기·메타데이터의 외부 전송에 동의합니다. GLB는 측정한 메시 치수·정점 수·삼각형 수와 이미 있는 썸네일로 참고합니다. 임의 모델의 형상을 재구성·편집하거나 원본 메시를 코드로 실행하는 기능은 제공하지 않습니다.' },
+  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Mac 0.1.6은 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 고정 레시피를 제공합니다. 각 모델 행에서 너비·깊이·높이·베벨·재질 색상을 수정해 새 독립 에셋을 만듭니다. 결과는 GLB, Blender .blend, 썸네일과 턴테이블입니다. 참고 모델의 임의 형상 복원은 지원하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
   { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
-  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.5는 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 실제 Mac에서 새 PNG 한 장의 수신·저장·재열기·내보내기를 확인했습니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Blender 3D는 아직 Mac에서 검증하지 않았습니다.' },
+  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.6은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Mac Blender 작업자는 새 게임 레시피의 실제 생성과 GLB·.blend 재열기를 검증했습니다. Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
@@ -141,7 +147,7 @@ export default function App() {
             <figcaption><span>실제 앱 UI의 브라우저 미리보기 화면</span><span>이미지 편집 · 라이브러리 · 버전 · 작업 큐</span></figcaption>
           </figure>
           <div className="workbench-details">
-            <dl className="editing-list"><div><dt><Image size={22} aria-hidden="true" />이미지를 새 버전으로</dt><dd>PNG·JPEG·WebP의 크기, 자르기, 색상과 배경 마스크를 조정합니다. 이전 버전과 비교하고 원하는 결과를 고르세요.</dd></div><div><dt><Layers size={22} aria-hidden="true" />프레임에서 아틀라스까지</dt><dd>이미지를 프레임으로 분할하고 한 장에 묶습니다. 좌표·피벗·재생 속도가 담긴 JSON도 함께 남습니다.</dd></div></dl>
+            <dl className="editing-list"><div><dt><Image size={22} aria-hidden="true" />이미지를 새 버전으로</dt><dd>PNG·JPEG·WebP의 크기, 자르기, 색상과 배경 마스크를 조정합니다. 이전 버전과 비교하고 원하는 결과를 고르세요.</dd></div><div><dt><Layers size={22} aria-hidden="true" />프레임에서 아틀라스까지</dt><dd>이미지를 프레임으로 분할하고 한 장에 묶습니다. 좌표·피벗·재생 속도가 담긴 JSON도 함께 남습니다.</dd></div><div><dt><Box size={22} aria-hidden="true" />게임 설명에서 개별 에셋으로</dt><dd>Mac 0.1.6 게임 에셋 묶음에서 이미지·모델·혼합 구성을 검토합니다. 2D 개선은 원본을 남긴 새 버전으로, 3D는 고정 레시피의 새 독립 모델로 저장합니다.</dd></div></dl>
             <aside className="workspace-note"><PackageOpen size={26} aria-hidden="true" /><h3>다음 작업도 이어서.</h3><p>프로젝트와 작업 큐를 로컬에 저장합니다. 자원별 처리, 취소·복구·캐시로 반복 제작을 관리하세요.</p><p>큰 글씨와 앱 안의 사용 가이드로 시작할 수 있습니다. Node.js·Rust 설치는 필요 없습니다.</p><a className="text-link" href="#download">내 컴퓨터에 작업대 준비 <ArrowDownToLine size={17} aria-hidden="true" /></a></aside>
           </div>
         </div>
@@ -149,11 +155,11 @@ export default function App() {
 
       <section className="workflow-section" aria-labelledby="workflow-title">
         <div className="page-width workflow-layout">
-          <div><h2 id="workflow-title">만든 결과는<br />파일로 남습니다.</h2><p>외부 AI 계정 없이 로컬 편집부터 시작하세요.</p></div>
+          <div><h2 id="workflow-title">게임 설명에서<br />개별 에셋까지.</h2><p>Mac 0.1.6 게임 에셋 묶음입니다. Mac 네이티브 백엔드에서 GPT-5.5 구성안과 개별 PNG 5장·GLB 모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/game-asset-bundles.md`}>묶음 제작 안내 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           <ol className="workflow-steps">
-            <li><span className="step-number" aria-hidden="true">1</span><div><h3>가져오기</h3><p>PNG·JPEG·WebP 원본과 프로젝트 규격을 준비합니다.</p></div></li>
-            <li><span className="step-number" aria-hidden="true">2</span><div><h3>다듬고 확인하기</h3><p>2D를 새 버전으로 변환하거나, 치수로 3D 소품을 만듭니다.</p></div></li>
-            <li><span className="step-number" aria-hidden="true">3</span><div><h3>파일로 꺼내기</h3><p>이미지, 아틀라스와 JSON, GLB와 .blend를 내보냅니다.</p></div></li>
+            <li><span className="step-number" aria-hidden="true">1</span><div><h3>게임 설명 · 참고 자료</h3><p>출력 구성을 고르고 필요한 이미지 수를 입력하세요. PNG·JPEG·WebP와 GLB를 합쳐 최대 5개를 선택하고 외부 전송에 동의합니다.</p></div></li>
+            <li><span className="step-number" aria-hidden="true">2</span><div><h3>개별 항목 검토</h3><p>GPT-5.5의 텍스트 구성안에서 이름·설명·용도와 포함 여부를 수정합니다. 이미지 수와 모델 수를 따로 확인하고, 모델의 레시피·치수·베벨·색상을 정하세요.</p></div></li>
+            <li><span className="step-number" aria-hidden="true">3</span><div><h3>승인 후 큐 제출</h3><p>검토한 에셋 묶음 제작으로 포함한 행 전체를 한 번에 등록합니다. 각 2D 행은 오브젝트 하나의 개별 PNG를 요청하며, 실제 결과를 확인한 뒤 내보냅니다.</p></div></li>
           </ol>
         </div>
       </section>
@@ -161,12 +167,12 @@ export default function App() {
       <section id="outputs" className="outputs-section section-space page-width" aria-labelledby="outputs-title">
         <div className="section-heading"><div><h2 id="outputs-title">치수로 만들고,<br />파일로 확인하세요.</h2><p>상자·테이블·선반. 실제 생성한 Blender 소품의 렌더입니다.</p></div><a className="text-link" href={`${sourceUrl}/tree/master/examples/procedural`}>예제 산출물 보기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
         <div className="model-gallery">{models.map(model => <figure className="model-specimen" key={model.type}><div className="model-file"><Box size={15} aria-hidden="true" /><span>{model.filename}</span></div><img src={model.src} alt={`${model.name} 템플릿으로 실제 생성한 Blender 3D 렌더`} width="512" height="512" loading="lazy" /><figcaption><div><h3>{model.name}</h3><span>{model.type}</span></div><p>{model.text}</p></figcaption></figure>)}</div>
-        <div className="output-note"><Box size={23} strokeWidth={1.5} aria-hidden="true" /><p>치수와 색을 바꿔 만드는 기본 소품.<br className="mobile-break" /> GLB, .blend, 썸네일과 턴테이블을 함께 저장합니다.</p><span>Blender 5.2.1 필요</span></div>
+        <div className="output-note"><Box size={23} strokeWidth={1.5} aria-hidden="true" /><p>Mac 0.1.6의 고정 레시피: 상자·테이블·선반·검·소총·우주선·배럴·바위·나무.<br />너비·깊이·높이·베벨·색상을 바꿔 새 독립 모델을 만들고 GLB, .blend, 썸네일과 턴테이블을 저장합니다.</p><span>Blender 5.2.1 필요</span></div>
       </section>
 
       <section className="status-section section-space" aria-labelledby="status-title">
         <div className="page-width status-layout">
-          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>Windows v{release.version} · Mac v{macReleases[0]?.version}의 기능별 확인 범위입니다. Windows와 Mac의 지원 상태를 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+          <div className="status-intro"><h2 id="status-title">확인한 만큼,<br />정확하게.</h2><p>공개 Windows v{release.version} · Mac v{macReleases[0]?.version}의 기능별 확인 범위입니다. 작업자 산출물 검사와 네이티브 데스크톱 전체 흐름을 구분해 적었습니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>검증 기록 읽기 <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           <dl className="status-list">{statuses.map(item => <div key={item.feature} className="status-item"><dt>{item.feature}<span className={`status-label ${item.tone}`}>{item.tone === 'verified' && <Check size={13} aria-hidden="true" />}{item.status}</span></dt><dd>{item.detail}</dd></div>)}</dl>
         </div>
       </section>
@@ -180,15 +186,15 @@ export default function App() {
         <div className="checksum-row"><div className="checksum-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState === 'copied' ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}{copyState === 'copied' ? '복사됨' : '해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p className="copy-result" role="status" aria-live="polite">{copyState === 'copied' ? 'SHA-256 해시를 복사했습니다.' : copyState === 'failed' ? '해시를 선택했습니다. 선택한 텍스트를 직접 복사해 주세요.' : ''}</p></div>
         <section id="download-mac" className="mac-download" aria-labelledby="mac-download-title">
           <div className="mac-download-heading"><h3 id="mac-download-title">Mac 시험 배포</h3><span className="mac-trial-label">GPT 구독 연결 추가</span></div>
-          <p className="mac-download-intro">Apple Silicon용 v{macReleases[0]?.version}. 로컬 2D·GPT 구독 연결·공식 Codex 준비·앱 내부 업데이트를 지원합니다. 0.1.4 사용자는 앱에서 업데이트하고, 0.1.3 이하는 아래 방법으로 새 버전을 한 번 설치하세요.</p>
+          <p className="mac-download-intro">Apple Silicon용 v{macReleases[0]?.version}. 게임 에셋 묶음·로컬 2D·GPT 구독 연결·공식 Codex 준비·앱 내부 업데이트를 지원합니다. 0.1.4·0.1.5 사용자는 앱에서 업데이트하고, 0.1.3 이하는 아래 방법으로 새 버전을 한 번 설치하세요.</p>
           {hasMacRelease ? <div className="mac-release-grid">{macReleases.map(item => <article className="mac-release" key={item.architecture} aria-label={`${item.label} 다운로드`}>
             <h4>{item.label} · v{item.version}</h4><p>M 시리즈 Mac용 · GPT 구독 연결 · 앱 내부 업데이트</p>
             <a className="button button-primary" href={item.downloadUrl} aria-label={`${item.label} DMG 다운로드`}><ArrowDownToLine size={18} aria-hidden="true" />DMG 다운로드</a>
             <dl><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>
           </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon용 DMG를 이곳에 공개합니다.</p>}
           <div className="mac-install-guide">
-            <div><h4>Apple 계정 없이 터미널로 설치</h4><ol><li>기존 앱을 닫고 아래 명령을 터미널에 붙여 넣습니다.</li><li>파일 검증과 설치 위치 안내를 확인하고 y를 입력합니다.</li><li>~/Applications/Asset Studio 0.1.5의 새 앱을 사용합니다.</li></ol><p>스크립트와 DMG의 SHA-256을 확인한 뒤 새 사본을 설치합니다. 기존 앱·프로젝트는 보존하며 관리자 암호는 필요하지 않습니다.</p></div>
-            <div className="mac-install-notes"><h4>브라우저로 DMG를 받은 경우</h4><p>홈 폴더의 Applications 안에 Asset Studio 0.1.5 폴더를 만들고 앱을 복사하세요. DMG 안에서 직접 실행하지 마세요.</p><p>Apple 공증이 없어 확인 경고가 나타날 수 있습니다. 경고를 닫은 뒤 <strong>시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기</strong>를 선택하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>자세한 설치 안내</a></p><p>업데이트 파일은 별도의 키로 서명합니다. Apple 공증과는 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><p>macOS 12는 설정상 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. 3D는 Mac 검증 전입니다.</p></div>
+            <div><h4>Apple 계정 없이 터미널로 설치</h4><ol><li>기존 앱을 닫고 아래 명령을 터미널에 붙여 넣습니다.</li><li>파일 검증과 설치 위치 안내를 확인하고 y를 입력합니다.</li><li>~/Applications/Asset Studio 0.1.6의 새 앱을 사용합니다.</li></ol><p>스크립트와 DMG의 SHA-256을 확인한 뒤 새 사본을 설치합니다. 기존 앱·프로젝트는 보존하며 관리자 암호는 필요하지 않습니다.</p></div>
+            <div className="mac-install-notes"><h4>브라우저로 DMG를 받은 경우</h4><p>홈 폴더의 Applications 안에 Asset Studio 0.1.6 폴더를 만들고 앱을 복사하세요. DMG 안에서 직접 실행하지 마세요.</p><p>Apple 공증이 없어 확인 경고가 나타날 수 있습니다. 경고를 닫은 뒤 <strong>시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기</strong>를 선택하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>자세한 설치 안내</a></p><p>업데이트 파일은 별도의 키로 서명합니다. Apple 공증과는 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><p>macOS 12는 설정상 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. Mac Blender 작업자는 검증했으며, Mac 네이티브 백엔드의 게임 묶음 제작을 확인했습니다.</p></div>
           </div>
           <div className="mac-terminal-install"><div className="checksum-heading"><span>Mac 설치 명령</span><button type="button" onClick={copyMacInstall}><Copy size={15} aria-hidden="true" />{installCopyState === 'copied' ? '복사됨' : '설치 명령 복사'}</button></div><pre><code ref={installCommandElement}>{macInstallCommand}</code></pre><p role="status" aria-live="polite">{installCopyState === 'copied' ? '설치 명령을 복사했습니다. 터미널에 붙여 넣으세요.' : installCopyState === 'failed' ? '명령을 선택했습니다. 직접 복사해 주세요.' : '설치 안내를 읽고 y를 입력하면 진행합니다.'}</p></div>
           <div className="mac-update-guide"><h4>다음 버전부터는 앱에서 업데이트</h4><p>앱이 새 버전을 자동 확인합니다. 상단 앱 업데이트에서 출처·버전·크기·해시를 확인하고 승인하면 다운로드·검증·설치·재실행합니다. 제작 작업이 끝난 뒤 진행하며, 이전 앱을 백업하고 프로젝트·원본·버전을 보존합니다.</p></div>

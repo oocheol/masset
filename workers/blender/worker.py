@@ -25,6 +25,8 @@ from mathutils import Vector
 
 TRIANGLE_BUDGET = 10_000
 INPUT_BYTES = 16_384
+GAME_TEMPLATES = frozenset({"sword", "rifle", "spaceship", "barrel", "rock", "tree"})
+TEMPLATES = frozenset({"crate", "table", "shelf"}) | GAME_TEMPLATES
 KEYS = {"template", "name", "width", "depth", "height", "color", "bevel"}
 STYLE_KEYS = {"id", "name", "palette", "lineWeight", "camera", "lighting", "detail", "margin", "referenceAssetIds", "approved"}
 CAMERA_ALIASES = {
@@ -143,7 +145,7 @@ def read_parameters(path: Path) -> dict:
                             parse_constant=lambda _: (_ for _ in ()).throw(ValueError("Non-finite JSON number")))
     if not isinstance(parameters, dict) or set(parameters) != KEYS:
         raise ValueError("ModelParameters requires exactly template, name, width, depth, height, color, bevel")
-    if parameters["template"] not in {"crate", "table", "shelf"}:
+    if not isinstance(parameters["template"], str) or parameters["template"] not in TEMPLATES:
         raise ValueError("Unsupported procedural template")
     name = parameters["name"]
     if not isinstance(name, str) or not 1 <= len(name.strip()) <= 80:
@@ -245,6 +247,191 @@ def box(name: str, center: tuple, dimensions: tuple, mat, bevel: float):
     return obj
 
 
+def fixed_solid(name: str, vertices: list, faces: list, mat, dimensions: tuple, bevel: float):
+    """Bake one closed solid from trusted recipe coordinates, never input code.
+
+    Recipe space is X/Y [-.5, .5], Z [0, 1]. All vertex/index lists below
+    originate in these fixed functions; the job supplies only bounded scalars.
+    """
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata([tuple(c * scale for c, scale in zip(point, dimensions)) for point in vertices], [], faces)
+    mesh.update()
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    shortest_edge = min(edge.calc_length() for edge in bm.edges)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(mat)
+    if bevel > 0:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        modifier = obj.modifiers.new("Baked recipe edge bevel", "BEVEL")
+        # Preserve small features even for extreme but valid aspect ratios.
+        modifier.width = min(bevel, shortest_edge / 4, min(dimensions) / 4)
+        modifier.segments = 2
+        modifier.affect = "EDGES"
+        modifier.limit_method = "NONE"
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+    for polygon in obj.data.polygons:
+        polygon.use_smooth = False
+    return obj
+
+
+def profile_solid(name, outline, limits, plane, mat, dimensions, bevel):
+    """Cap and extrude a fixed simple polygon along its perpendicular axis."""
+    axes = {"XY": (0, 1, 2), "XZ": (0, 2, 1), "YZ": (1, 2, 0)}[plane]
+    vertices = []
+    for level in limits:
+        for u, v in outline:
+            point = [0.0, 0.0, 0.0]
+            point[axes[0]], point[axes[1]], point[axes[2]] = u, v, level
+            vertices.append(tuple(point))
+    count = len(outline)
+    faces = [tuple(reversed(range(count))), tuple(range(count, count * 2))]
+    faces.extend((i, (i + 1) % count, (i + 1) % count + count, i + count) for i in range(count))
+    return fixed_solid(name, vertices, faces, mat, dimensions, bevel)
+
+
+def radial_solid(name, levels, radii, center, axis, mat, dimensions, bevel, sides=12):
+    """Closed faceted body; a zero-radius tip uses one vertex, no zero-area cap."""
+    axial, first, second = {"X": (0, 1, 2), "Y": (1, 0, 2), "Z": (2, 0, 1)}[axis]
+    vertices, rings, faces = [], [], []
+    for level, radius in levels:
+        ring = []
+        for index in range(sides if radius else 1):
+            angle = math.tau * index / sides
+            point = [0.0, 0.0, 0.0]
+            point[axial] = level
+            point[first] = center[0] + radii[0] * radius * math.cos(angle)
+            point[second] = center[1] + radii[1] * radius * math.sin(angle)
+            ring.append(len(vertices))
+            vertices.append(tuple(point))
+        rings.append(ring)
+    if len(rings[0]) > 1:
+        faces.append(tuple(reversed(rings[0])))
+    if len(rings[-1]) > 1:
+        faces.append(tuple(rings[-1]))
+    for lower, upper in zip(rings, rings[1:]):
+        for index in range(sides):
+            following = (index + 1) % sides
+            if len(upper) == 1:
+                faces.append((lower[index], lower[following], upper[0]))
+            elif len(lower) == 1:
+                faces.append((lower[0], upper[following], upper[index]))
+            else:
+                faces.append((lower[index], lower[following], upper[following], upper[index]))
+    return fixed_solid(name, vertices, faces, mat, dimensions, bevel)
+
+
+def build_game_recipe(parameters: dict, base, detail, accent) -> list:
+    """Audited, deterministic game prop silhouettes. No text/code interpreter."""
+    dimensions = tuple(float(parameters[key]) for key in ("width", "depth", "height"))
+    bevel = float(parameters["bevel"])
+    parts = []
+
+    def add_box(name, center, size, mat=base):
+        parts.append(box(name, tuple(c * s for c, s in zip(center, dimensions)),
+                         tuple(c * s for c, s in zip(size, dimensions)), mat, bevel))
+
+    def profile(name, outline, limits, plane, mat=base):
+        parts.append(profile_solid(name, outline, limits, plane, mat, dimensions, bevel))
+
+    def radial(name, levels, radii, center=(0, 0), axis="Z", mat=base, sides=12):
+        parts.append(radial_solid(name, levels, radii, center, axis, mat, dimensions, bevel, sides))
+
+    template = parameters["template"]
+    if template == "sword":
+        add_box("Sword pommel", (0, 0, .045), (.24, .90, .09), accent)
+        add_box("Sword hilt", (0, 0, .17), (.15, .66, .22), detail)
+        for index, z in enumerate((.11, .17, .23)):
+            add_box(f"Sword grip binding {index + 1}", (0, 0, z), (.17, .70, .022), base)
+        add_box("Sword crossguard", (0, 0, .295), (1.0, 1.0, .075), accent)
+        # Four-sided diamond blade, with a raised ridge and a single pointed tip.
+        radial("Sword blade", ((.315, 1), (.82, .80), (1, 0)), (.115, .23), sides=4)
+    elif template == "rifle":
+        profile("Rifle stock", ((-.5, .39), (-.5, .70), (-.30, .66), (-.13, .60),
+                                (-.16, .49), (-.36, .45)), (-.24, .24), "XZ", detail)
+        add_box("Rifle receiver", (-.065, 0, .58), (.42, .62, .26))
+        profile("Rifle pistol grip", ((-.11, .49), (.035, .49), (0, .05), (-.12, 0), (-.17, .09)),
+                (-.25, .25), "XZ", detail)
+        profile("Rifle magazine", ((.05, .50), (.18, .49), (.20, .13), (.09, .10)),
+                (-.22, .22), "XZ", detail)
+        add_box("Rifle foreend", (.235, 0, .58), (.31, .76, .20), accent)
+        radial("Rifle barrel", ((.14, 1), (.49, 1)), (.17, .045), (0, .60), "X")
+        radial("Rifle muzzle", ((.455, 1), (.50, 1)), (.20, .065), (0, .60), "X", detail)
+        add_box("Rifle rear sight", (-.065, 0, .89), (.045, .30, .22), accent)
+        add_box("Rifle front sight", (.42, 0, .75), (.035, .28, .19), detail)
+    elif template == "spaceship":
+        profile("Spaceship hull", ((-.12, .45), (.12, .45), (.22, .16), (.13, -.26),
+                                   (0, -.5), (-.13, -.26), (-.22, .16)), (.16, .55), "XY")
+        for side, label in ((-1, "left"), (1, "right")):
+            profile(f"Spaceship {label} wing", tuple((side * x, y) for x, y in
+                    ((.10, .04), (.50, .28), (.48, .39), (.14, .27))), (.20, .34), "XY", accent)
+            radial(f"Spaceship {label} engine", ((.20, 1), (.46, 1)), (.075, .15),
+                   (side * .26, .17), "Y", detail)
+            radial(f"Spaceship {label} engine nozzle", ((.43, 1), (.50, 1)), (.09, .17),
+                   (side * .26, .17), "Y", accent)
+        profile("Spaceship cockpit", ((0, -.27), (.075, -.12), (.075, .12), (-.075, .12), (-.075, -.12)),
+                (.50, .70), "XY", detail)
+        profile("Spaceship tail fin", ((.23, .49), (.44, .49), (.43, 1), (.31, .78)),
+                (-.025, .025), "YZ", accent)
+    elif template == "barrel":
+        radial("Barrel staved body", ((0, .82), (.08, .88), (.28, .98), (.50, 1),
+                                     (.72, .98), (.92, .88), (.985, .82)), (.48, .48), sides=16)
+        for label, low, high in (("lower", .17, .24), ("upper", .76, .83)):
+            radial(f"Barrel {label} band", ((low, 1), (high, 1)), (.50, .50), mat=detail, sides=16)
+        # The lid overlaps below the rim, but its visible cap and ring vertices
+        # are distinct from the body cap (no coplanar render/seam ambiguity).
+        radial("Barrel lid", ((.965, 1), (1, 1)), (.405, .405), mat=accent, sides=16)
+    elif template == "rock":
+        # Fixed low-resolution icosphere and analytic distortion; no random seed,
+        # modifiers, sculpt input, external mesh or generated program is consumed.
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=2, radius=1.0)
+        bm.verts.index_update()
+        vertices = []
+        for vertex in bm.verts:
+            x, y, z = vertex.co
+            radius = 1 + .13 * math.sin(3 * x + 2 * y - z) + .07 * math.cos(4 * y + z)
+            vertices.append(((x * radius + .11 * z) * .42, y * radius * .43,
+                             (max(-.70, z * radius) + .70) * .50))
+        faces = [tuple(vertex.index for vertex in face.verts) for face in bm.faces]
+        bm.free()
+        rock = fixed_solid("Rock faceted body", vertices, faces, base, dimensions, bevel)
+        rock.data.materials.append(detail)
+        rock.data.materials.append(accent)
+        for polygon in rock.data.polygons:
+            polygon.material_index = 1 if polygon.normal.z < -.25 else (2 if polygon.normal.z > .55 else 0)
+        parts.append(rock)
+    elif template == "tree":
+        radial("Tree trunk", ((0, 1), (.12, .85), (.50, .52), (.62, .38)), (.13, .13), mat=detail, sides=8)
+        radial("Tree lower crown", ((.28, 1), (.69, 0)), (.50, .50))
+        radial("Tree middle crown", ((.45, 1), (.86, 0)), (.38, .38), mat=accent)
+        radial("Tree upper crown", ((.64, 1), (1, 0)), (.26, .26))
+    else:
+        raise ValueError("Unsupported fixed game recipe")
+    return parts
+
+
+def fit_game_bounds(model, dimensions):
+    """Keep bevelled tips and faceted silhouettes in the exact canonical box."""
+    vertices = model.data.vertices
+    mins = [min(vertex.co[i] for vertex in vertices) for i in range(3)]
+    maxs = [max(vertex.co[i] for vertex in vertices) for i in range(3)]
+    for vertex in vertices:
+        for axis, wanted in enumerate(dimensions):
+            span = maxs[axis] - mins[axis]
+            if not math.isfinite(span) or span <= 0:
+                raise ValueError("Fixed recipe produced empty dimensions")
+            offset = wanted / 2 if axis < 2 else 0
+            vertex.co[axis] = (vertex.co[axis] - mins[axis]) * wanted / span - offset
+    model.data.update()
+
+
 def build_model(parameters: dict, style: dict | None = None):
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
@@ -293,7 +480,7 @@ def build_model(parameters: dict, style: dict | None = None):
             add("Long apron", (0, y * (d / 2 - leg), h - top - rail / 2), (w - 2 * leg, rail, rail), detail)
         for x in (-1, 1):
             add("Short apron", (x * (w / 2 - leg), 0, h - top - rail / 2), (rail, d - 2 * leg, rail), detail)
-    else:
+    elif parameters["template"] == "shelf":
         side = w * 0.085
         panel = h * 0.055
         back = d * 0.065
@@ -303,16 +490,24 @@ def build_model(parameters: dict, style: dict | None = None):
         for level in range(4):
             z = panel / 2 + level * (h - panel) / 3
             add("Shelf board", (0, -back / 2, z), (w - 2 * side, d - back, panel), accent)
+    else:
+        parts = build_game_recipe(parameters, base, detail, accent)
 
+    feature_names = [obj.name for obj in parts]
     bpy.ops.object.select_all(action="DESELECT")
     for obj in parts:
         obj.select_set(True)
     bpy.context.view_layer.objects.active = parts[0]
-    bpy.ops.object.join()
+    if len(parts) > 1:
+        bpy.ops.object.join()
     model = bpy.context.active_object
     model.name = parameters["name"]
     bpy.context.scene.cursor.location = (0, 0, 0)
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    if parameters["template"] in GAME_TEMPLATES:
+        fit_game_bounds(model, (w, d, h))
+        model["assetStudioRecipe"] = "fixed-game-geometry-v1"
+        model["assetStudioFeatures"] = json.dumps(feature_names, ensure_ascii=True)
     model["assetStudioModel"] = True
     model["assetStudioTemplate"] = parameters["template"]
     model["assetStudioUnit"] = "m"
@@ -328,6 +523,11 @@ def build_model(parameters: dict, style: dict | None = None):
         model["assetStudioReferenceAssetIds"] = json.dumps(style["referenceAssetIds"], ensure_ascii=True)
     bm = bmesh.new()
     bm.from_mesh(model.data)
+    if parameters["template"] in GAME_TEMPLATES:
+        # Float32 mesh storage can collapse microscopic bevel edges on allowed
+        # 100m/.03m aspect ratios. Dissolve only degenerate edges/faces; never
+        # weld different overlapping components or change the requested box.
+        bmesh.ops.dissolve_degenerate(bm, dist=min(w, d, h) * 1e-7, edges=list(bm.edges))
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
     bm.to_mesh(model.data)
     bm.free()

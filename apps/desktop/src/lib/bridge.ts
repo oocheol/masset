@@ -1,10 +1,14 @@
 import {invoke, convertFileSrc} from '@tauri-apps/api/core';
 import {open} from '@tauri-apps/plugin-dialog';
-import type {Artifact, ProjectSnapshot, EnvironmentInfo, ProviderConnection} from '@local-assets/contracts';
+import type {Artifact, ProjectSnapshot, EnvironmentInfo, ProviderConnection, GameBundlePlan} from '@local-assets/contracts';
 import {bootstrapBrowser, browserCommand, getBrowserArtifactUrl, importBrowserFiles} from './browser';
 
 export const isNative = '__TAURI_INTERNALS__' in window;
 export async function command<T = ProjectSnapshot>(request: Record<string, unknown>): Promise<T> {
+  // The isolated --ui-smoke process supplies a UI fixture without replacing
+  // Tauri's immutable IPC functions. Normal app windows have neither field.
+  const qa = window as Window & {__ASSET_NATIVE_QA__?: unknown; __ASSET_NATIVE_QA_COMMAND__?: (request: Record<string, unknown>) => Promise<unknown>};
+  if (isNative && qa.__ASSET_NATIVE_QA__ && qa.__ASSET_NATIVE_QA_COMMAND__) return await qa.__ASSET_NATIVE_QA_COMMAND__(request) as T;
   return (isNative ? await invoke('workspace_command', {request}) : await browserCommand(request)) as T;
 }
 export async function bootstrap():Promise<ProjectSnapshot> {
@@ -19,6 +23,10 @@ export function providerStatus():Promise<ProviderConnection> {
 export function providerLogin():Promise<ProviderConnection> {
   return command<ProviderConnection>({action:'provider_login'});
 }
+export function planAssets(request: {action: 'plan_assets'; brief: string; output: GameBundlePlan['output']; mode: GameBundlePlan['mode']; count?: number; referenceAssetIds: string[]; referenceUploadApproved: boolean}):Promise<GameBundlePlan> {
+  if (!isNative) return Promise.reject(new Error('게임 에셋 구성안은 데스크톱의 GPT 구독 연결에서 만들 수 있습니다.'));
+  return command<GameBundlePlan>(request);
+}
 export async function chooseFolder(title:string):Promise<string|null> {
   if (!isNative) return null;
   const path = await open({directory:true,multiple:false,title});
@@ -26,7 +34,7 @@ export async function chooseFolder(title:string):Promise<string|null> {
 }
 export async function chooseImports():Promise<ProjectSnapshot|null> {
   if(!isNative) return null;
-  const paths = await open({title:'이미지 원본 가져오기',multiple:true,filters:[{name:'이미지',extensions:['png','jpg','jpeg','webp']}]});
+  const paths = await open({title:'참고 이미지·3D 모델 가져오기',multiple:true,filters:[{name:'이미지·3D 모델',extensions:['png','jpg','jpeg','webp','glb']}]});
   if(!paths) return null;
   return command({action:'import',paths:typeof paths === 'string'?[paths]:paths});
 }

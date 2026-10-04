@@ -70,7 +70,7 @@
       "tamperedPayloadRejected": true,
       "versionReplayRejected": true
     },
-    "publicDownloadVerified": false,
+    "publicDownloadVerified": true,
     "lifecycle": {
       "verified": true,
       "platform": "macos-arm64",
@@ -91,7 +91,17 @@
       "decodedImages": 12,
       "providerOperations": 0
     },
-    "publicCandidateDownloadVerified": true
+    "publicCandidateDownloadVerified": true,
+    "nativePublicDownload": {
+      "bytes": 28060098,
+      "installerExecuted": false,
+      "payloadSignatureAndVersionVerified": true,
+      "plugin": "tauri-plugin-updater 2.13.1",
+      "publicMetadataChecked": true,
+      "sameVersionComparatorOverride": true,
+      "scope": "Actual official Tauri check/download of current public release; download verification only, no cross-version install",
+      "sha256": "12aa507f41e273010a60382f69e65fc679d507371e18193574aa2880513cb94e"
+    }
   },
   "native": {
     "dmgMountCopyBundleSeal": true,

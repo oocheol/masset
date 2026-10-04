@@ -13,7 +13,7 @@ export async function packageMacUpdate(archive, output, version) {
   const decoded = Buffer.from(signature, 'base64').toString('utf8');
   if (!decoded.split('\n').some(line => line.startsWith('trusted comment: ') && line.split('\t').includes(`version:${version}`))) throw new Error('Tauri signature has no matching authenticated version');
   const filename = `AssetStudio_${version}_macos-arm64.app.tar.gz`;
-  const metadata = {version, notes:'Apple Silicon Mac: GPT 구독 연결과 공식 Codex 준비를 지원합니다. 기존 앱을 백업한 뒤 교체·재실행하며 프로젝트와 원본을 보존합니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
+  const metadata = {version, notes:'Apple Silicon Mac: 게임 설명과 참고 자료로 개별 2D 이미지·3D 모델 묶음을 구성·검토·제작합니다. 이미지 수는 서로 다른 개별 에셋 수이며, 기존 2D 개선은 원본을 보존한 새 버전으로 저장합니다. 기존 앱을 백업한 뒤 교체·재실행합니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
     url:`https://github.com/oocheol/masset/releases/download/v${version}/${filename}`, signature,
     bytes:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex'),
   }}};
