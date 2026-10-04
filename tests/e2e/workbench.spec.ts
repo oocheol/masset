@@ -132,8 +132,8 @@ test('resize writes a new version, survives reload, and exports original bytes p
 test('selected fixture icons produce an atlas with valid frames in the downloaded bundle', async ({page}, testInfo) => {
   const cards = page.getByRole('listitem');
   await cards.nth(0).click();
-  await cards.nth(1).click({modifiers: ['Control']});
-  await cards.nth(2).click({modifiers: ['Control']});
+  await cards.nth(1).click({modifiers: ['ControlOrMeta']});
+  await cards.nth(2).click({modifiers: ['ControlOrMeta']});
   await page.getByRole('button', {name: '아틀라스', exact: true}).click();
   const dialog = page.getByRole('dialog', {name: '스프라이트 아틀라스'});
   await expect(dialog).toContainText('2D 에셋 3개');

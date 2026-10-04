@@ -207,7 +207,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             let update_qa = update_qa::UpdateQa::from_args(&args)?;
             #[cfg(not(target_os = "macos"))]
-            anyhow::ensure!(!args.iter().any(|arg| arg == "--update-smoke"), "Update lifecycle QA is Mac-only");
+            if args.iter().any(|arg| arg == "--update-smoke") { return Err("Update lifecycle QA is Mac-only".into()); }
             let data = if let Some(directory) = &qa_directory {
                 if directory.exists() {
                     return Err("Native UI QA directory must be new".into());
