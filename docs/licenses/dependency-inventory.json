@@ -4,7 +4,7 @@
   "includeTools": false,
   "inputs": {
     "packageLockSha256": "d8ed4f9cb6913dd3c8665ad4554bbfaea77ee7eb46d1085b578d95b03e03e09b",
-    "cargoLockSha256": "882ae7cc981dd05dba28d32cacfa6d1f9dca21845c9b336b1b49a29d27da3c9b"
+    "cargoLockSha256": "66e478036bec2c206677c94b0fcbfbb8a9e58a1d71bc8afdd901a6b41aa23c0d"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",

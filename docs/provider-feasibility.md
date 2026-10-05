@@ -114,7 +114,7 @@ Windows에서는 명시적으로 지정된 실행 파일을 우선하며 검증 
 ```powershell
 . .\scripts\with-native-env.ps1
 cargo test -p asset-providers
-cargo build -p asset-desktop --bin provider-proof
+cargo build -p asset-desktop --features native-proof --bin provider-proof
 # 기본은 연결 진단만 수행. 반드시 새 폴더 지정.
 .\target\debug\provider-proof.exe --output C:\masset\output\provider-probe-new
 # 외부 생성은 명시적 실행이며 구독 한도를 소비할 수 있음.

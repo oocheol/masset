@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "scope": "Native Windows CPU worker installation and independently reopened raw inference artifacts",
+  "verifiedAt": "2026-10-05T15:32:25.686237+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "hardware": {
+    "system": "Windows",
+    "machine": "AMD64",
+    "pythonVersion": "3.12.10",
+    "ramBytes": 68553670656,
+    "logicalProcessors": 12,
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12400F"
+  },
+  "runtimeRoot": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\app-data\\image3d\\triposr-cpu-v1",
+  "interpreterPath": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\app-data\\image3d\\triposr-cpu-v1\\venv\\python.exe",
+  "pythonVersion": "3.12.10",
+  "isolationMode": "embedded",
+  "systemPythonRequired": false,
+  "cudaRequired": false,
+  "paidProviderUsed": false,
+  "installVerified": true,
+  "inferenceVerified": true,
+  "cleanMachineRuntimeTested": false,
+  "prerequisite": "Microsoft Visual C++ 2015-2022 x64 runtime / System32 MSVCP140.dll",
+  "embeddedPython": {
+    "bytes": 11133606,
+    "digestMetadataUrl": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip.sigstore",
+    "filename": "python-3.12.10-embed-amd64.zip",
+    "license": "PSF-2.0",
+    "sha256": "4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3",
+    "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+    "version": "3.12.10"
+  },
+  "workerRuntimeLock": {
+    "basename": "runtime-lock-windows.json",
+    "sha256": "dc977dff8d9d2988634b81608a02e349246a43e53f713843c7ed1887f442d72d",
+    "bytes": 31534
+  },
+  "modelId": "stabilityai/TripoSR",
+  "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+  "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+  "modelSha256": "429e2c6b22a0923967459de24d67f05962b235f79cde6b032aa7ed2ffcd970ee",
+  "pins": {
+    "Jinja2": "3.1.6",
+    "MarkupSafe": "2.1.5",
+    "Pillow": "10.1.0",
+    "PyYAML": "6.0.2",
+    "antlr4-python3-runtime": "4.9.3",
+    "certifi": "2025.1.31",
+    "charset-normalizer": "3.4.0",
+    "colorama": "0.4.6",
+    "einops": "0.7.0",
+    "filelock": "3.13.1",
+    "fsspec": "2023.12.2",
+    "huggingface-hub": "0.17.3",
+    "idna": "3.10",
+    "imageio": "2.34.0",
+    "lazy-loader": "0.3",
+    "mpmath": "1.3.0",
+    "networkx": "3.2.1",
+    "numpy": "1.26.4",
+    "omegaconf": "2.3.0",
+    "packaging": "24.2",
+    "pip": "24.3.1",
+    "regex": "2024.5.15",
+    "requests": "2.32.3",
+    "safetensors": "0.4.2",
+    "scikit-image": "0.22.0",
+    "scipy": "1.12.0",
+    "setuptools": "75.8.0",
+    "sympy": "1.12",
+    "tifffile": "2024.2.12",
+    "tokenizers": "0.15.2",
+    "torch": "2.2.2+cpu",
+    "tqdm": "4.66.5",
+    "transformers": "4.35.2",
+    "trimesh": "4.0.5",
+    "typing-extensions": "4.10.0",
+    "urllib3": "2.2.3",
+    "wheel": "0.45.1"
+  },
+  "nativeTests": {
+    "run": 33,
+    "passed": 32,
+    "skipped": 1,
+    "skipReason": "Windows symlink privilege is not assumed",
+    "elapsedSeconds": 8.1,
+    "log": "C:\\masset\\workers\\image3d\\output\\native-tests-windows-lock-recovery-aac261ed.log",
+    "logSha256": "2fa8e0025983e235167da9dce104df169dc82ef52734e9c9124e523a91c62a11",
+    "additionalChecks": [
+      "competing process owner rejected",
+      "abruptly killed owner releases Windows OS lock and retry succeeds",
+      "inactive lock receipt does not claim setup in progress"
+    ]
+  },
+  "rawInference": {
+    "verified": true,
+    "outputDir": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-draft-001\\project\\cache\\620e50f5-ed04-4bc6-b9d9-ba3a06616d32-14ad568e-bccd-41cc-9158-e5b2d234c5d4\\reconstruction",
+    "artifacts": [
+      {
+        "basename": "mesh.glb",
+        "sha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+        "bytes": 163204
+      },
+      {
+        "basename": "prepared-input.png",
+        "sha256": "6dde9465b3ce7d9be3636789341e569f2affe076725eb2a6816f9734e6b74be9",
+        "bytes": 64865
+      },
+      {
+        "basename": "generation.json",
+        "sha256": "a3f788ff14f86c90705374d4b0ac226cd7ab5b22c427668f632b59690f3691a1",
+        "bytes": 7175
+      }
+    ],
+    "modelId": "stabilityai/TripoSR",
+    "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+    "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+    "device": "cpu",
+    "quality": "draft",
+    "cpuThreads": 2,
+    "elapsedSeconds": 49.094,
+    "peakRssBytes": 3659747328,
+    "hardware": {
+      "system": "Windows",
+      "machine": "AMD64",
+      "pythonVersion": "3.12.10",
+      "ramBytes": 68553670656,
+      "logicalProcessors": 12,
+      "cpu": "12th Gen Intel(R) Core(TM) i5-12400F"
+    },
+    "geometry": {
+      "vertexCount": 2909,
+      "triangleCount": 5738,
+      "bounds": [
+        [
+          -0.4205029704706805,
+          0.0,
+          -0.4213873565104501
+        ],
+        [
+          0.4205029704706805,
+          1.0,
+          0.4213873565104501
+        ]
+      ],
+      "extents": [
+        0.841005940941361,
+        1.0,
+        0.8427747130209002
+      ],
+      "nonplanar": true,
+      "vertexColors": true,
+      "uniqueVertexColors": 2909,
+      "watertight": true,
+      "coordinateSystem": "right-handed-glTF-Y-up",
+      "upAxis": "Y",
+      "units": "meters",
+      "normalizedHeightMeters": 1.0,
+      "floorCentered": true,
+      "physicalScaleEstimated": false,
+      "sourceCoordinateSystem": "TripoSR-Z-up",
+      "sourceToGlbRotation": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "sourceToGlbScale": 1.3584998733381375,
+      "sourceToGlbTranslation": [
+        0.0629068761824321,
+        0.5040665603735377,
+        0.058392636874873505
+      ],
+      "minimumTriangleAreaSquareMeters": 4.599335398287034e-11,
+      "trianglesBelow1eMinus12SquareMeters": 0,
+      "vertexColorSpace": "linear RGB",
+      "vertexColorComponentType": "FLOAT32",
+      "minimumExportedTriangleAreaSquareMeters": 4.5919379097426804e-11
+    },
+    "colorEncoding": {
+      "decoderColorInterpretation": "sRGB, matching upstream direct PNG display",
+      "exportColorSpace": "linear RGB",
+      "attribute": "COLOR_0",
+      "componentType": "FLOAT32",
+      "alpha": 1.0,
+      "transfer": "IEC 61966-2-1 inverse sRGB",
+      "sampleSource": "float32 renderer.query_triplane at original model-space vertices",
+      "uint8QuantizationBeforeExport": false,
+      "roundTripMaxAbsoluteError": 8.940696716308594e-08,
+      "meanPredictedSrgb": [
+        0.10181345045566559,
+        0.27406400442123413,
+        0.4256143271923065
+      ],
+      "meanExportedLinear": [
+        0.01862202398478985,
+        0.08400499820709229,
+        0.20025666058063507
+      ]
+    },
+    "meshCleanup": {
+      "method": "remove faces at or below scale-relative numeric area tolerance; remove unreferenced vertices",
+      "normalizedAreaToleranceSquareMeters": 1e-12,
+      "sourceAreaTolerance": 5.418521431931476e-13,
+      "sourceHeight": 0.7361060678958893,
+      "removedTriangleCount": 0,
+      "removedUnreferencedVertexCount": 0,
+      "originalTriangleCount": 5738,
+      "originalVertexCount": 2909,
+      "removedSurfaceAreaFraction": 0.0,
+      "maximumRemovedFaceFraction": 0.01,
+      "maximumRemovedSurfaceAreaFraction": 1e-08,
+      "windingConsistentBefore": true,
+      "windingConsistentAfter": true,
+      "watertightBefore": true,
+      "watertightAfter": true,
+      "facesReoriented": false,
+      "verticesMerged": false,
+      "holesFilled": false
+    },
+    "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+    "sourcePreserved": true,
+    "checks": [
+      "exact artifact SHA-256 and sizes",
+      "GLB 2.0 structure with actual COLOR_0",
+      "nonplanar, finite, nondegenerate triangles",
+      "outward consistent winding",
+      "Y-up floor-centered one-metre height",
+      "original image hash preserved",
+      "offline CPU provenance",
+      "measured peak RSS below 8 GiB"
+    ],
+    "eventExtraction": {
+      "sourceLog": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-draft-001\\project\\cache\\620e50f5-ed04-4bc6-b9d9-ba3a06616d32-14ad568e-bccd-41cc-9158-e5b2d234c5d4\\image3d.log",
+      "sourceLogSha256": "bb5af5b29a37778c54c78eecf22700e4e32d2bc1d2995009066b9e828bbca5c8",
+      "events": "C:\\masset\\workers\\image3d\\output\\native-draft-001-worker-events.jsonl",
+      "jsonEventCount": 10,
+      "diagnosticLineCount": 5,
+      "originalLogPreserved": true
+    },
+    "verifiedAt": "2026-10-05T15:32:25.686237+00:00"
+  },
+  "notes": [
+    "Mac proof and lock remain preserved separately",
+    "The owned transparent fixture is an existing image, not a fresh GPT generation",
+    "This proof covers the worker, with desktop project/release acceptance reported separately",
+    "Measured worker duration excludes the separate Blender finishing stages"
+  ],
+  "nativeTestHistory": [
+    {
+      "run": 31,
+      "passed": 30,
+      "skipped": 1,
+      "skipReason": "Windows symlink privilege is not assumed",
+      "elapsedSeconds": 3.316,
+      "log": "C:\\masset\\workers\\image3d\\output\\native-tests-windows-20261006-0033.log",
+      "logSha256": "e7254348c49db6771dccc72b7d342de6bb874e93a0f31cc7af9a0c3fc5668ede"
+    }
+  ]
+}

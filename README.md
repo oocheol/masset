@@ -10,24 +10,24 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.8"><img src="https://img.shields.io/badge/release-0.1.8-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.8"></a>
-  <a href="https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.9"><img src="https://img.shields.io/badge/release-0.1.9-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.9"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.9/AssetStudio_0.1.9_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
   <a href="https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-334c60?style=flat-square&amp;labelColor=101d29" alt="Core license Apache-2.0"></a>
 </p>
 
 <p align="center">
   <a href="https://masset-nu.vercel.app/"><strong>기능 소개 사이트</strong></a> ·
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.8"><strong>다운로드</strong></a> ·
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.9"><strong>다운로드</strong></a> ·
   <a href="#project-structure">프로젝트 구조</a> ·
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
 
-Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **Windows·Mac 0.1.8은 게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows는 이미지 제작을 기본으로 하고, Apple Silicon Mac은 GPT 참고 이미지에서 로컬 TripoSR와 Blender로 3D도 제작합니다. 두 플랫폼에서 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용할 수 있습니다.
+Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.9와 Apple Silicon Mac 0.1.8에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
 
-**Windows와 Mac 모두 0.1.8을 배포합니다.** Windows 설치형·포터블의 네이티브 실행, 프로젝트 폴더 읽기, Blender GLB 생성·다듬기·재열기와 공개 업데이트 다운로드 검증을 통과했습니다. Mac은 DMG 설치·실행, GPT 구성안·개별 PNG 수신, 로컬 GLB 제작을 확인한 기존 배포본을 유지합니다. [게임 제작 흐름](docs/game-production.md) · [Windows 검증](docs/releases/v0.1.8-windows.md) · [Mac 검증](docs/releases/v0.1.8-macos.md)
+**Windows는 0.1.9, Mac은 0.1.8을 배포합니다.** Windows CPU에서 실제 이미지→3D 메시 생성, Blender 처리, 프로젝트 저장·재열기·독립 내보내기를 확인했습니다. Mac은 DMG 설치·실행, GPT 구성안·개별 PNG 수신과 로컬 GLB 제작을 확인한 기존 배포본을 유지합니다. [게임 제작 흐름](docs/game-production.md) · [Windows 검증](docs/releases/v0.1.9-windows.md) · [Mac 검증](docs/releases/v0.1.8-macos.md)
 
-**3D 만들기**에서 투명 배경의 단일 물체 이미지 또는 GLB를 최대 5개 선택하세요. 이미지마다 모델 하나를 만들고, 기존 GLB는 원본을 남긴 새 버전으로 저장합니다. 게임용·고해상도 형상·LOD, UV 색상 텍스처, 지원되는 경우 메시에서 베이크한 노멀맵, 편집 가능한 `.blend`, 썸네일·턴테이블을 함께 내보냅니다. 이미지 복원은 Apple Silicon·CPython 3.9·최소 16GB 메모리와 Blender가 필요하며, 최초 동의 후 약 1.68GB의 모델 가중치와 의존성을 준비합니다. 이후 CPU에서 로컬로 실행하고 유료 API로 대체하지 않습니다. 구형 오픈 모델 TripoSR을 사용하므로 현재 Tripo Studio H3.1과 같은 품질이나 8K·리깅·쿼드 리토폴로지는 제공하지 않습니다. [사용 방법과 결과 범위](docs/model-quality.md)를 확인하세요.
+**3D 만들기**에서 투명 배경의 단일 물체 이미지 또는 GLB를 최대 5개 선택하세요. 이미지마다 모델 하나를 만들고, 기존 GLB는 원본을 남긴 새 버전으로 저장합니다. 게임용·고해상도 형상·LOD, UV 색상 텍스처, 지원되는 경우 메시에서 베이크한 노멀맵, 편집 가능한 `.blend`, 썸네일·턴테이블을 함께 내보냅니다. 이미지 복원은 Windows x64 또는 Apple Silicon, 최소 16GB 메모리와 Blender가 필요합니다. Windows는 CPython 3.12.10을 앱 전용 공간에 준비하므로 시스템 Python이나 CUDA가 필요하지 않습니다. 최초 동의 후 Python·CPU 라이브러리·모델을 약 1.89GiB 내려받으며 Microsoft Visual C++ x64 런타임이 필요합니다. Mac은 CPython 3.9를 사용합니다. 준비 후 CPU에서 로컬로 실행하고 유료 API로 대체하지 않습니다. 구형 TripoSR을 사용하며 최신 Tripo Studio와 같은 품질이나 8K·리깅·쿼드 리토폴로지는 제공하지 않습니다. [사용 방법과 결과 범위](docs/model-quality.md)를 확인하세요.
 
 Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)의 텍스트 구성안을 요청합니다. 2D 이미지·3D 모델·혼합 구성을 고르고, 이름과 설명이 있는 행을 수정·승인해 포함한 항목을 한 번에 큐에 제출하세요. [게임 에셋 묶음 사용 흐름](docs/game-asset-bundles.md)에서 참고 자료 전송 동의, 개별 이미지 수와 고정 3D 레시피를 안내합니다. Mac 네이티브 백엔드에서 실제 구성안을 받아 무기 이미지 5장과 모델 2개를 개별 에셋으로 제작·저장·재열기·내보내기했습니다.
 
@@ -65,9 +65,9 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 | 이미지 편집 | PNG/WebP/JPEG 가져오기, 크기·색상·배경·마스크 처리 | 원본과 구분된 새 이미지 버전 |
 | 스프라이트·아틀라스 | 프레임을 나누고 여러 이미지를 묶어 패킹 | 실제 이미지와 프레임 메타데이터 |
 | 게임 에셋 묶음 · Mac 0.1.6 | 게임 설명 → 텍스트 구성안 → 개별 행 편집·승인 → 포함한 행을 한 번에 큐 등록 | 개별 이미지·새 독립 모델 또는 기존 2D의 새 버전 |
-| 게임 프로젝트 제작 · Windows·Mac 0.1.8 | 게임 설명·루트 폴더 분석 → 개별 제작 → 결과 확인·검수 | 새 게임 결과 폴더, 개별 PNG·해시 명세, 최대 120개. 이미지→3D는 Apple Silicon Mac |
+| 게임 프로젝트 제작 · Windows 0.1.9 · Mac 0.1.8 | 게임 설명·루트 폴더 분석 → 개별 제작 → 결과 확인·검수 | 새 게임 결과 폴더, 개별 PNG·GLB·해시 명세, 최대 120개 |
 | 절차적 3D · Mac 0.1.6 | 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 치수·베벨·색상 지정 | 개별 GLB, 편집 가능한 `.blend`, 렌더 |
-| 이미지→3D · 모델 다듬기 · Mac 0.1.7 | 투명 이미지의 개별 메시 복원 또는 기존 GLB의 예산·UV·재질 정리 | 원본 보존, 게임용·고해상도·LOD GLB, 텍스처·`.blend`·턴테이블 |
+| 이미지→3D · 모델 다듬기 · Windows·Mac | 투명 이미지의 개별 메시 복원 또는 기존 GLB의 예산·UV·재질 정리 | 원본 보존, 게임용·고해상도·LOD GLB, 텍스처·`.blend`·턴테이블 |
 | 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
 | 작업 큐 | 의존 관계, 자원 한도, 취소·복구·부분 재실행 | SQLite에 저장되는 작업 상태 |
 | 독립 내보내기 | 선택한 에셋과 버전을 새 묶음으로 저장 | 실제 파일 + 상대 경로·SHA-256이 있는 `manifest.json` |
@@ -79,16 +79,16 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 
 Mac 0.1.6 묶음의 **요청 이미지 수**는 이미지·스프라이트·텍스처 행을 합친 정확한 수입니다. 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 오브젝트 하나를 개별 PNG로 요청하며, 구성안을 수정한 뒤에는 포함한 행의 현재 수가 제출 수입니다. 참고 자료는 PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개까지 선택하고 외부 전송에 명시적으로 동의합니다. GLB는 측정한 메시 메타데이터와 이미 있는 썸네일로 참고합니다. Mac 0.1.8의 모델 개선 도구도 원본을 보존한 새 버전으로 저장합니다.
 
-**GPT-5.5는 도구 실행 없이 텍스트 구성안을 제안하는 플래너**, **GPT-6.1 Sol은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트**입니다. Mac 0.1.8의 기본 제작은 GPT 참고 이미지에서 로컬 TripoSR와 Blender로 3D를 만듭니다. 공개 0.1.6 묶음의 모델은 Blender 고정 레시피를 사용합니다. 모델 설정이나 카탈로그 등록을 실제 플래너 응답의 성공으로 표시하지 않습니다.
+**GPT-5.5는 도구 실행 없이 텍스트 구성안을 제안하는 플래너**, **GPT-6.1 Sol은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트**입니다. Windows 0.1.9와 Mac 0.1.8의 기본 제작은 GPT 참고 이미지에서 로컬 TripoSR와 Blender로 3D를 만듭니다. 공개 0.1.6 묶음의 모델은 Blender 고정 레시피를 사용합니다. 모델 설정이나 카탈로그 등록을 실제 플래너 응답의 성공으로 표시하지 않습니다.
 
 ## 다운로드와 시작하기
 
 | 플랫폼 | 현재 다운로드 | 현재 범위 |
 | --- | --- | --- |
-| Windows x64 · 0.1.8 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio-windows-x64-portable.zip) | 프로젝트 기반 2D 제작 · GLB 다듬기 · 기본 소품 · 구독 연결 · 앱 내부 업데이트 |
+| Windows x64 · 0.1.9 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.9/AssetStudio_0.1.9_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.9/AssetStudio-windows-x64-portable.zip) | 프로젝트 기반 2D·이미지→3D 제작 · GLB 다듬기 · 구독 연결 · 앱 내부 업데이트 |
 | Mac Apple Silicon · 0.1.8 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_macos-arm64.dmg) | 프로젝트 기반 개별 2D·3D 제작 · GPT 구독 연결 · 결과 검수 · 앱 내부 업데이트 |
 
-**Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 0.1.1~0.1.3 설치 사용자는 앱의 업데이트 패널에서 0.1.8을 확인할 수 있습니다. WebView2와 3D용 Blender는 별도 필요하며, 이용자에게 Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 앱 전용 Codex 다운로드는 출처·라이선스·해시를 안내하고 동의 후 진행합니다. 이미지에서 TripoSR로 3D를 추정하는 경로는 현재 Mac 전용이며 Windows 제작 화면은 지원되는 이미지 모드로 시작합니다.
+**Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 설치 사용자는 앱의 업데이트 패널에서 0.1.9를 확인하세요. WebView2와 3D용 Blender는 별도 필요하며, Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 이미지→3D는 **로컬 3D 준비**에서 다운로드 정보를 확인하고 동의하면 사용할 수 있습니다. 제작 화면에서 이미지·3D·혼합을 선택할 수 있고, Python·모델은 앱 전용 공간에 준비합니다.
 
 ### Mac 설치
 

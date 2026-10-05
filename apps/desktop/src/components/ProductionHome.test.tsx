@@ -65,7 +65,12 @@ function plan(overrides: Partial<ProductionPlan> = {}): ProductionPlan {
 }
 function local(overrides: Partial<Local3DStatus> = {}): Local3DStatus {
   return {supported: true, installed: true, busy: false, state: 'ready', message: 'UI 모형: 로컬 모델 준비 완료', stage: 'ready', modelId: 'UI-fixture-TripoSR',
-    modelRevision: 'ui-fixture', device: 'cpu', pythonVersion: '3.11', weightBytes: 1_680_000_000, memoryMb: 16384, minimumMemoryMb: 8192, blenderReady: true, ...overrides};
+    modelRevision: 'ui-fixture', device: 'cpu', pythonVersion: '3.11', weightBytes: 1_680_000_000, memoryMb: 16384, minimumMemoryMb: 16384, blenderReady: true, ...overrides};
+}
+function windowsDownload(): NonNullable<Local3DStatus['download']> {
+  return {totalBytes: 2034000316, runtime: 'CPython 3.12.10 · PyTorch 2.2.2 CPU · TripoSR',
+    sources: ['Python.org', 'PyTorch CPU', 'PyPI', 'GitHub', 'Hugging Face'], licenses: ['PSF-2.0', 'MIT', 'BSD', 'Apache-2.0', 'MPL-2.0', 'HPND'],
+    manifestUrl: 'https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json', modelSha256: '4'.repeat(64)};
 }
 function connection(overrides: Partial<ProviderConnection> = {}): ProviderConnection {
   return {available: true, authenticated: true, ready: true, runtimeVersion: 'ui-fixture', reasoningModel: 'gpt-5.5', catalogSource: 'application_pinned_catalog',
@@ -137,7 +142,7 @@ beforeAll(async () => {
       export const command = async request => {
         fixture.commands.push(request); const action = request.action; const requestedProject = fixture.props.snapshot.project.id; let response;
         if (action === 'production_state') response = structuredClone(fixture.state);
-        else if (action === 'quality3d_status') response = structuredClone(fixture.local);
+        else if (action === 'quality3d_status' || action === 'quality3d_open_download_info' || action === 'quality3d_open_runtime_guide') response = structuredClone(fixture.local);
         else if (action === 'quality3d_prepare') response = structuredClone(fixture.prepare);
         else if (action === 'quality3d_cancel_setup') response = structuredClone(fixture.cancel);
         else if (action === 'game_connect') response = {...structuredClone(fixture.state), connection: {...${JSON.stringify(scan())}, root: request.root}, plan: null};
@@ -198,7 +203,7 @@ async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixturePro
   if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('quality3d_status')) {
     if (fixture.failures.quality3d_status > 0) await uiExpect(page.locator('.production-local').getByRole('alert')).toBeVisible();
     else if (fixture.local.supported) await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeEnabled();
-    else await uiExpect(page.getByText('이 제작 화면의 이미지→3D는 현재 Mac 전용입니다. 이 환경에서는 이미지 제작을 이용하세요.', {exact: true})).toBeVisible();
+    else await uiExpect(page.getByText('이 기기에서는 이미지→3D를 지원하지 않습니다. Windows x64 또는 Apple Silicon Mac 앱에서 사용하세요. 이 환경에서는 이미지 제작을 이용할 수 있습니다.', {exact: true})).toBeVisible();
   }
 }
 const analyzeButton = () => page.getByRole('button', {name: '필요한 에셋 분석', exact: true});
@@ -219,11 +224,13 @@ async function analyze(output: ProductionPlan['output'] = 'mixed') {
 }
 
 describe('ProductionHome UI (mocked desktop boundary)', () => {
-  it('keeps mixed output on a supported Mac desktop boundary and forwards provider/import controls', async () => {
-    await mount();
+  it.each([{platform: 'Windows x64', pythonVersion: '3.12.10'}, {platform: 'Apple Silicon Mac', pythonVersion: '3.9.6'}])('keeps mixed output on a supported $platform desktop boundary and forwards provider/import controls', async ({platform, pythonVersion}) => {
+    await mount({local: local({pythonVersion, message: `UI 모형: ${platform} 로컬 모델 준비 완료`})});
     await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
     await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeEnabled();
     await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeEnabled();
+    await uiExpect(page.locator('.production-local')).toContainText(platform);
+    await uiExpect(page.locator('body')).not.toContainText('현재 Mac 전용');
     expect((await commands()).map(request => request.action).sort()).toEqual(['production_state', 'quality3d_status']);
     await uiExpect(analyzeButton()).toBeDisabled(); await uiExpect(startButton()).toBeDisabled();
     await page.getByRole('button', {name: 'GPT 연결 확인', exact: true}).click();
@@ -409,9 +416,11 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     await uiExpect(page.getByText(/120개를 초과한 계획/)).toBeVisible(); expect(await commands('production_start')).toEqual([]);
   });
 
-  it('requires explicit local download preparation and ready state before starting a model plan', async () => {
+  it('requires explicit Windows local download preparation and ready state before starting a model plan', async () => {
     const template = plan(); template.items[0].kind = 'model';
-    await mount({template, local: local({installed: false, state: 'missing', message: 'UI 모형: 준비 필요'})}); await analyze('models');
+    await mount({template, local: local({installed: false, state: 'missing', pythonVersion: '3.12.10', message: 'UI 모형: Windows x64 로컬 모델 준비 필요'})}); await analyze('models');
+    await uiExpect(page.locator('.production-local')).toContainText('Windows x64 로컬 모델 준비 필요');
+    await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeEnabled();
     await uiExpect(startButton()).toBeDisabled();
     const downloadConsent = page.getByRole('checkbox', {name: /TripoSR 가중치와 의존성 다운로드에 동의합니다/});
     await uiExpect(page.getByRole('button', {name: '로컬 3D 준비', exact: true})).toBeDisabled();
@@ -427,7 +436,30 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     await uiExpect(startButton()).toBeDisabled(); expect(await commands('production_start')).toEqual([]);
   });
 
-  it('defaults unsupported Windows desktop to images, blocks model choices and starts only after explicit image approval', async () => {
+  it('shows Windows total download and reviewable source/version/license details before consent without preparing automatically', async () => {
+    const download = windowsDownload();
+    await mount({local: local({installed: false, state: 'missing', pythonVersion: null, download})});
+    const downloadConsent = page.getByRole('checkbox', {name: /TripoSR 가중치와 의존성 다운로드에 동의합니다/});
+    await uiExpect(downloadConsent).toHaveAccessibleName(/Python 포함 · 총 약 1\.89 GiB/);
+    await uiExpect(downloadConsent).not.toBeChecked();
+    await uiExpect(page.getByRole('button', {name: '로컬 3D 준비', exact: true})).toBeDisabled();
+    const details = page.locator('.production-download-info');
+    await uiExpect(details).not.toHaveAttribute('open');
+    await details.locator('summary').click();
+    for (const value of [download.runtime, '2,034,000,316 바이트', 'Python.org', 'PyTorch CPU', 'PyPI', 'GitHub', 'Hugging Face', 'PSF-2.0', 'MPL-2.0']) await uiExpect(details).toContainText(value);
+    await details.getByRole('button', {name: '파일별 버전·출처·SHA-256 보기', exact: true}).click();
+    await uiExpect.poll(async () => (await commands('quality3d_open_download_info')).length).toBe(1);
+    expect(await commands('quality3d_open_download_info')).toEqual([{action: 'quality3d_open_download_info'}]);
+    await uiExpect(details).toContainText('Microsoft Visual C++ x64 실행 라이브러리 필요');
+    await details.getByRole('button', {name: 'Windows 실행 라이브러리 안내', exact: true}).click();
+    await uiExpect.poll(async () => (await commands('quality3d_open_runtime_guide')).length).toBe(1);
+    expect(await commands('quality3d_open_runtime_guide')).toEqual([{action: 'quality3d_open_runtime_guide'}]);
+    expect(await commands('quality3d_prepare')).toEqual([]);
+    await uiExpect(downloadConsent).not.toBeChecked();
+    await uiExpect(startButton()).toBeDisabled();
+  });
+
+  it('defaults an unsupported platform to images, blocks model choices and starts only after explicit image approval', async () => {
     await mount({local: local({supported: false, installed: false, state: 'unsupported', blenderReady: false})});
     await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeChecked();
     await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeEnabled();
@@ -634,7 +666,8 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
   });
 
   it('keeps readable controls and responsive content without horizontal overflow at 390px', async () => {
-    await page.setViewportSize({width: 390, height: 844}); await mount(); await analyze();
+    await page.setViewportSize({width: 390, height: 844}); await mount({local: local({download: windowsDownload()})}); await analyze();
+    await page.locator('.production-download-info summary').click();
     const overflow = await page.locator('.production-home').evaluate(element => element.scrollWidth > element.clientWidth);
     expect(overflow).toBe(false);
     const smallText = await page.locator('.production-home').evaluate(element => [...element.querySelectorAll('button, p, label, small, li, legend, summary, .production-badge')]

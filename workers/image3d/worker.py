@@ -39,10 +39,54 @@ def hardware(root):
                 result[key] = int(value) if key == "ramBytes" else value
             except Exception:
                 pass
+    elif sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        class MemoryStatus(ctypes.Structure):
+            _fields_ = [("length", wintypes.DWORD), ("load", wintypes.DWORD),
+                        *[(name, ctypes.c_ulonglong) for name in ("totalPhysical", "availablePhysical", "totalPageFile",
+                                                               "availablePageFile", "totalVirtual", "availableVirtual", "availableExtendedVirtual")]]
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.GlobalMemoryStatusEx.argtypes = [ctypes.POINTER(MemoryStatus)]
+        kernel.GlobalMemoryStatusEx.restype = wintypes.BOOL
+        memory = MemoryStatus()
+        memory.length = ctypes.sizeof(memory)
+        if kernel.GlobalMemoryStatusEx(ctypes.byref(memory)):
+            result["ramBytes"] = int(memory.totalPhysical)
+        result["logicalProcessors"] = os.cpu_count()
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0") as key:
+                result["cpu"] = winreg.QueryValueEx(key, "ProcessorNameString")[0].strip()
+        except OSError:
+            pass
     return result
 
 
 def peak_memory():
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        class ProcessMemoryCounters(ctypes.Structure):
+            _fields_ = [("cb", wintypes.DWORD), ("pageFaultCount", wintypes.DWORD),
+                        *[(name, ctypes.c_size_t) for name in ("peakWorkingSetSize", "workingSetSize", "quotaPeakPagedPoolUsage",
+                                                             "quotaPagedPoolUsage", "quotaPeakNonPagedPoolUsage", "quotaNonPagedPoolUsage",
+                                                             "pagefileUsage", "peakPagefileUsage")]]
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        psapi = ctypes.WinDLL("psapi", use_last_error=True)
+        kernel.GetCurrentProcess.argtypes = []
+        kernel.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(ProcessMemoryCounters), wintypes.DWORD]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+        counters = ProcessMemoryCounters()
+        counters.cb = ctypes.sizeof(counters)
+        if not psapi.GetProcessMemoryInfo(kernel.GetCurrentProcess(), ctypes.byref(counters), counters.cb):
+            raise WorkerError("memory_probe", "Cannot measure native Windows peak working set")
+        return int(counters.peakWorkingSetSize)
     try:
         import resource
         value = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -261,8 +305,12 @@ def main():
             command = [str(runtime_python(root)), "-I", "-B", str(MODULE_ROOT / "worker.py"),
                        "--runtime-root", str(root), "--input", str(args.input.absolute()),
                        "--output-dir", str(output), "--_runtime-child"]
-            # Replace the launcher process on this Mac release. The coordinator
-            # retains the same PID/process group for cancellation and RSS limits.
+            # Windows exec creates a replacement process instead of a Unix PID
+            # overlay. Keep the launcher alive so the coordinator's Job Object
+            # contains both processes until inference completes or is cancelled.
+            if os.name == "nt":
+                return subprocess.run(command, cwd=str(root), env=clean_env(root, job["cpuThreads"])).returncode
+            # Mac retains the same PID/process group for cancellation/RSS limits.
             os.chdir(root)
             os.execve(command[0], command, clean_env(root, job["cpuThreads"]))
         if Path(sys.prefix).resolve() != (root / "venv").resolve():

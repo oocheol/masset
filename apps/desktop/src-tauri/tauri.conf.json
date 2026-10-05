@@ -65,6 +65,7 @@
       "../../../workers/image3d/runtime_probe.py": "workers/image3d/runtime_probe.py",
       "../../../workers/image3d/upstream_patch.py": "workers/image3d/upstream_patch.py",
       "../../../workers/image3d/runtime-lock.json": "workers/image3d/runtime-lock.json",
+      "../../../workers/image3d/runtime-lock-windows.json": "workers/image3d/runtime-lock-windows.json",
       "../../../workers/image3d/LICENSE": "workers/image3d/LICENSE",
       "../../../workers/image3d/README.md": "workers/image3d/README.md",
       "../../../workers/image3d/licenses/": "workers/image3d/licenses/",

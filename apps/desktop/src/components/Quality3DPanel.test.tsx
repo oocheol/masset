@@ -65,6 +65,11 @@ function status(overrides: Partial<Local3DStatus> = {}): Local3DStatus {
     modelId: 'UI-fixture-TripoSR', modelRevision: 'ui-fixture', device: 'cpu', pythonVersion: '3.11', weightBytes: 1680000000,
     memoryMb: 16384, minimumMemoryMb: 16384, blenderReady: true, ...overrides};
 }
+function windowsDownload(): NonNullable<Local3DStatus['download']> {
+  return {totalBytes: 2034000316, runtime: 'CPython 3.12.10 · PyTorch 2.2.2 CPU · TripoSR',
+    sources: ['Python.org', 'PyTorch CPU', 'PyPI', 'GitHub', 'Hugging Face'], licenses: ['PSF-2.0', 'MIT', 'BSD', 'Apache-2.0', 'MPL-2.0', 'HPND'],
+    manifestUrl: 'https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json', modelSha256: '4'.repeat(64)};
+}
 
 let browser: Browser;
 let context: BrowserContext;
@@ -150,6 +155,7 @@ beforeAll(async () => {
             fixture.status = structuredClone(fixture.prepareStatus);
             return structuredClone(fixture.status);
           }
+          if (request.action === 'quality3d_open_download_info' || request.action === 'quality3d_open_runtime_guide') return structuredClone(fixture.status);
           if (request.action === 'quality3d_cancel_setup') {
             fixture.status = structuredClone(fixture.cancelStatus);
             return structuredClone(fixture.status);
@@ -228,11 +234,13 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     await uiExpect(page.getByLabel('삼각형 예산', {exact: true})).toHaveValue('10000');
   });
 
-  it('submits five distinct image IDs and exactly the shared request fields, leaving suffixes to the parent', async () => {
+  it.each([{platform: 'Windows x64', pythonVersion: '3.12.10'}, {platform: 'Apple Silicon Mac', pythonVersion: '3.9.6'}])('submits five distinct image IDs on a ready $platform runtime and exactly the shared request fields', async ({platform, pythonVersion}) => {
     const ids = ['png', 'jpeg', 'webp', 'png-2', 'jpeg-2'];
     const project = snapshot();
     project.project.spec.polygonBudget = 100000;
-    await mount({}, {selectedIds: ids, snapshot: project});
+    await mount({status: status({pythonVersion, message: `UI 모형: ${platform} 로컬 모델 준비 완료`})}, {selectedIds: ids, snapshot: project});
+    await uiExpect(page.locator('.quality3d-runtime-message')).toContainText(platform);
+    await uiExpect(page.locator('body')).not.toContainText('이 Mac의 시스템 Python');
     await page.getByLabel('결과 이름', {exact: true}).fill('  Local batch  ');
     await page.getByLabel('형상 추정 품질', {exact: true}).selectOption('high');
     await page.getByLabel('높이 (m)', {exact: true}).fill('0.03');
@@ -300,6 +308,17 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     expect(await requests()).toEqual([]);
   });
 
+  it('blocks preparation on unsupported platforms and explains supported desktop platforms', async () => {
+    await mount({status: status({supported: false, state: 'unsupported', installed: false, message: 'UI 모형: 지원하지 않는 플랫폼'})});
+    await uiExpect(consent()).toBeDisabled();
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeDisabled();
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(page.getByText('이 기기에서는 이미지→3D를 지원하지 않습니다. Windows x64 또는 Apple Silicon Mac 앱에서 사용하세요.', {exact: true})).toBeVisible();
+    await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+    expect(await commands()).toEqual([{action: 'quality3d_status'}]);
+    expect(await requests()).toEqual([]);
+  });
+
   it('requires both an installed runtime and Blender for image reconstruction', async () => {
     await mount({status: status({installed: false})});
     await uiExpect(submitButton()).toBeDisabled();
@@ -331,8 +350,10 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     await uiExpect(modelSubmit()).toBeDisabled();
   });
 
-  it('requires explicit download consent and polls only preparing, stopping at ready', async () => {
-    await mount({status: status({state: 'missing', installed: false})});
+  it('requires explicit Windows download consent and polls only preparing, stopping at ready', async () => {
+    await mount({status: status({state: 'missing', installed: false, pythonVersion: '3.12.10', message: 'UI 모형: Windows x64 로컬 모델 준비 필요'})});
+    await uiExpect(page.locator('.quality3d-runtime-message')).toContainText('Windows x64 로컬 모델 준비 필요');
+    await uiExpect(page.locator('body')).not.toContainText('현재 Apple Silicon Mac에서 지원');
     const prepare = page.getByRole('button', {name: '로컬 모델 준비', exact: true});
     await uiExpect(consent()).not.toBeChecked();
     await uiExpect(prepare).toBeDisabled();
@@ -349,6 +370,30 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     const stopped = await commands();
     await page.clock.runFor(6000);
     expect(await commands()).toEqual(stopped);
+  });
+
+  it('shows Windows total download and reviewable source/version/license details before consent while preserving the Mac fallback', async () => {
+    const download = windowsDownload();
+    await mount({status: status({state: 'missing', installed: false, pythonVersion: null, download})});
+    await uiExpect(consent()).toHaveAccessibleName(/Python·TripoSR 모델·의존성\(총 약 1\.89 GiB\)/);
+    await uiExpect(consent()).not.toBeChecked();
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeDisabled();
+    const details = page.locator('.quality3d-download-info');
+    await uiExpect(details).not.toHaveAttribute('open');
+    await details.locator('summary').click();
+    for (const value of [download.runtime, '2,034,000,316 바이트', 'Python.org', 'PyTorch CPU', 'PyPI', 'GitHub', 'Hugging Face', 'PSF-2.0', 'MPL-2.0']) await uiExpect(details).toContainText(value);
+    await details.getByRole('button', {name: '파일별 버전·출처·SHA-256 보기', exact: true}).click();
+    await uiExpect.poll(commands).toEqual([{action: 'quality3d_status'}, {action: 'quality3d_open_download_info'}]);
+    await uiExpect(details).toContainText('Microsoft Visual C++ x64 실행 라이브러리 필요');
+    await details.getByRole('button', {name: 'Windows 실행 라이브러리 안내', exact: true}).click();
+    await uiExpect.poll(commands).toEqual([{action: 'quality3d_status'}, {action: 'quality3d_open_download_info'}, {action: 'quality3d_open_runtime_guide'}]);
+    await uiExpect(consent()).not.toBeChecked();
+    expect(await requests()).toEqual([]);
+    await page.evaluate(() => {window.__QUALITY3D_UI_FIXTURE__.status.download = null; window.__QUALITY3D_UI_FIXTURE__.status.pythonVersion = '3.9.6';});
+    await page.getByRole('button', {name: '준비 상태 다시 확인', exact: true}).click();
+    await uiExpect(page.locator('.quality3d-download-info')).toHaveCount(0);
+    await uiExpect(consent()).toHaveAccessibleName('TripoSR 가중치(약 1.68 GB)와 의존성의 1회 다운로드에 동의합니다.');
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeDisabled();
   });
 
   it('cancels setup and ignores a stale in-flight poll instead of restarting it', async () => {
@@ -433,7 +478,7 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     await mount({failSubmit: true});
     await uiExpect(page.locator('.quality3d-limits')).not.toHaveAttribute('open');
     await page.getByText('결과와 처리 시간 안내', {exact: true}).click();
-    for (const text of ['Tripo Studio H3.1', '8K', '뒷면은 추정', '몇 분 이상', 'Python 3.9', '자동 리깅', '쿼드 리토폴로지', '.blend', '턴테이블']) {
+    for (const text of ['Tripo Studio H3.1', '8K', '뒷면은 추정', '몇 분 이상', 'Windows x64', 'Apple Silicon Mac', '자동 리깅', '쿼드 리토폴로지', '.blend', '턴테이블']) {
       await uiExpect(page.getByText(text, {exact: false}).first()).toBeVisible();
     }
     await submitButton().click();
@@ -496,5 +541,24 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     await page.evaluate(() => {window.__QUALITY3D_UI_UNMOUNT__();});
     await page.clock.runFor(6000);
     expect(await commands()).toEqual([{action: 'quality3d_status'}]);
+  });
+
+  it('keeps preparation controls readable without horizontal overflow at 390px', async () => {
+    await page.setViewportSize({width: 390, height: 844});
+    await mount({status: status({state: 'missing', installed: false, message: 'UI 모형: Windows x64 로컬 모델 준비 필요', download: windowsDownload()})});
+    await page.locator('.quality3d-download-info summary').click();
+    const overflow = await page.locator('.quality3d-panel').evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      return {wide: element.scrollWidth > element.clientWidth, elements: [...element.querySelectorAll('*')]
+        .filter(child => child.getClientRects().length && child.getBoundingClientRect().right > bounds.right + 1)
+        .map(child => ({className: child.className, text: child.textContent?.slice(0, 90)}))};
+    });
+    expect(overflow.wide, JSON.stringify(overflow.elements)).toBe(false);
+    const smallText = await page.locator('.quality3d-panel').evaluate(element => [...element.querySelectorAll('button, p, label, small, legend, summary, .quality3d-local-tag, .quality3d-section-heading > span')]
+      .filter(child => child.getClientRects().length && parseFloat(getComputedStyle(child).fontSize) < 14).map(child => child.textContent));
+    expect(smallText).toEqual([]);
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeDisabled();
+    await consent().check();
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeEnabled();
   });
 });

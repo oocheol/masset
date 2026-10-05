@@ -89,7 +89,10 @@ try {
     }
     $qaCliVersion = (Get-Content -Raw -LiteralPath (Join-Path $qaWorkspace 'node_modules\@tauri-apps\cli\package.json') | ConvertFrom-Json).version
     if ($Distribution -eq 'Nsis' -and $qaCliVersion -ne '2.12.1') { throw 'The NSIS download inventory is pinned to Tauri CLI 2.12.1; update its source/version/hash record before using a different CLI.' }
-    Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-cli', '--release')
+    # Build the shipped binaries once with embedded production assets. Proof
+    # executables are built explicitly by QA; they are not installer programs.
+    Invoke-Checked 'npm.cmd' @('run', 'build')
+    Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-desktop', '--bin', 'asset-cli', '--release', '--features', 'tauri/custom-protocol')
     $qaBundleDirectory = Join-Path $qaWorkspace 'target\release\bundle\nsis'
     $qaBeforeBundles = @{}
     if (Test-Path -LiteralPath $qaBundleDirectory) {
@@ -103,8 +106,14 @@ try {
         $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
     }
     if ($Distribution -eq 'Nsis' -and -not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'A private updater signing key is required for an update-enabled NSIS release.' }
-    if ($Distribution -eq 'Portable') { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--no-bundle') }
-    else { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--bundles', 'nsis') }
+    if ($Distribution -eq 'Nsis') {
+        Invoke-Checked 'npm.cmd' @('run', 'tauri', '--workspace', '@local-assets/desktop', '--', 'bundle', '--bundles', 'nsis')
+        $qaInstallerScript = Join-Path $qaWorkspace 'target\release\nsis\x64\installer.nsi'
+        $qaInstallerScriptText = Get-Content -Raw -LiteralPath $qaInstallerScript
+        if ($qaInstallerScriptText -match '(?im)^\s*File\b[^\r\n]*\b(?:codex-setup-proof|image3d-proof|provider-proof|update-proof)\.exe\b') {
+            throw 'Developer proof executables must not be included in a public installer.'
+        }
+    }
     $qaAfterBuildPlanText = & 'node.exe' (Join-Path $qaWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $qaWorkspace '--plan' '--expected-plan' $qaFrozenResourcePath '--check-windows-notices'
     if ($LASTEXITCODE -ne 0) { throw 'Resource sources/configuration or Windows notices changed during the native build. Preserve this failed build; do not package it.' }
     $qaResourceManifest = $qaAfterBuildPlanText | ConvertFrom-Json
@@ -136,7 +145,7 @@ Read docs/windows-quickstart.md for the Korean usage guide; related provider/pla
 This unsigned build is not a completed clean-machine install/upgrade/uninstall certification.
 Microsoft WebView2 is required. Native DLL dependencies must be audited separately; no runtime is downloaded by this build path.
 Blender is optional and must be installed separately with consent. Its GPL worker source/license are included.
-The image-to-3D worker source/notices are included; its local model is not bundled. Windows image-to-3D support remains unverified and disabled.
+Windows x64 image-to-3D uses an app-managed CPython3.12 CPU runtime. The first preparation requires explicit download consent (~1.89GiB); model weights are not bundled. Blender, at least 16GB RAM and Microsoft Visual C++ 2015-2022 x64 runtime are required. See docs/model-quality.md and the release's native verification record.
 Resolved dependency license texts and copyright notices are in docs/licenses/THIRD_PARTY_LICENSES.txt.
 The backend QA CLI remains a developer test binary and is not included in this portable application.
 '@ | Set-Content -LiteralPath (Join-Path $qaPortableDirectory 'PORTABLE-README.txt') -Encoding utf8

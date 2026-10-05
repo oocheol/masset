@@ -101,7 +101,7 @@ jobs:
           ARCHIVES=("target/${TARGET}/release/bundle/macos/"*.app.tar.gz)
           test "${#ARCHIVES[@]}" -eq 1
           node scripts/package-macos-update.mjs "${ARCHIVES[0]}" "output/macos/${TARGET}/release"
-          cargo run -p asset-desktop --release --target "${TARGET}" --bin update-proof -- "output/macos/${TARGET}/release/"*.app.tar.gz "output/macos/${TARGET}/release/latest-macos.json" "output/macos/${TARGET}/signature-proof"
+          cargo run -p asset-desktop --release --target "${TARGET}" --features native-proof --bin update-proof -- "output/macos/${TARGET}/release/"*.app.tar.gz "output/macos/${TARGET}/release/latest-macos.json" "output/macos/${TARGET}/signature-proof"
       - name: Notarize and staple the final signed DMG
         if: inputs.distribution == 'notarized'
         shell: bash

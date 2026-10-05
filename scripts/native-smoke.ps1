@@ -80,8 +80,8 @@ try {
             throw 'Native report did not establish this Windows process, rendered DOM, 12 fixture assets, decoded asset-protocol images and real native IPC.'
         }
         $qaProduction = $qaReport.webview.productionUi
-        if ($qaProduction.passed -ne $true -or $qaProduction.nativeRootScan -ne $true -or $qaProduction.windowsImageOnlyDefault -ne $true -or $qaProduction.unsupportedReconstructionBlocked -ne $true -or $qaProduction.localStatusMocked -ne $false -or $qaProduction.plannerResponseMocked -ne $true -or $qaProduction.submissionIntercepted -ne $true -or $qaProduction.realGeneration -ne $false -or $qaProduction.providerRequests -ne 0) {
-            throw 'Native production UI must scan the real fixture project, default Windows to images, block unsupported reconstruction, and keep generation intercepted.'
+        if ($qaProduction.passed -ne $true -or $qaProduction.nativeRootScan -ne $true -or $qaProduction.windowsMixedDefault -ne $true -or $qaProduction.windowsReconstructionAvailable -ne $true -or $qaProduction.nativeLocalStatus.supported -ne $true -or $qaProduction.localStatusMocked -ne $false -or $qaProduction.plannerResponseMocked -ne $true -or $qaProduction.submissionIntercepted -ne $true -or $qaProduction.realGeneration -ne $false -or $qaProduction.providerRequests -ne 0) {
+            throw 'Native production UI must scan the real project, expose Windows reconstruction choices using actual local capability, and keep fixture generation intercepted.'
         }
         $qaSummary.productionProjectScanVerified = $true
         $qaSummary.windowsProductionModeVerified = $true

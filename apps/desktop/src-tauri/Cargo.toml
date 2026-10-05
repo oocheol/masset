@@ -5,6 +5,30 @@ edition.workspace = true
 license.workspace = true
 default-run = "asset-desktop"
 
+[features]
+# Required explicitly for developer proofs; the Tauri bundler excludes them.
+native-proof = []
+
+[[bin]]
+name = "codex-setup-proof"
+path = "src/bin/codex-setup-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "image3d-proof"
+path = "src/bin/image3d-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "provider-proof"
+path = "src/bin/provider-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "update-proof"
+path = "src/bin/update-proof.rs"
+required-features = ["native-proof"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -17,7 +41,7 @@ asset-scheduler = { path = "../../../crates/scheduler" }
 asset-providers = { path = "../../../crates/providers" }
 asset-image-pipeline = { path = "../../../crates/image-pipeline" }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["float_roundtrip"] }
 anyhow = "1"
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -31,7 +55,9 @@ minisign-verify = "=0.2.5"
 gltf = { version = "=1.4.1", default-features = false, features = ["utils", "names"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_System_Diagnostics_ToolHelp", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+reqwest = { version = "=0.13.5", default-features = false, features = ["blocking", "rustls"] }
+zip = { version = "=4.6.1", default-features = false, features = ["deflate-flate2"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

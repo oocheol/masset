@@ -86,7 +86,88 @@ async function qualityBundle() {
   return {...fixture, version, asset, save: () => writeFile(join(fixture.root, 'manifest.json'), JSON.stringify(fixture.manifest))};
 }
 
+function coloredSourceGlb(triangleCount, raw, mutation) {
+  const original = tetrahedronGlb(false, false, triangleCount);
+  const oldJsonLength = original.readUInt32LE(12);
+  const json = JSON.parse(original.toString('utf8', 20, 20 + oldJsonLength));
+  const oldBinary = original.subarray(28 + oldJsonLength);
+  const binary = Buffer.concat([oldBinary, Buffer.alloc(64)]);
+  for (let vertex = 0; vertex < 4; vertex++) [0.1, 0.2, 0.3, 1].forEach((value, component) => binary.writeFloatLE(value, oldBinary.length + vertex * 16 + component * 4));
+  json.bufferViews.push({buffer: 0, byteOffset: oldBinary.length, byteLength: 64});
+  json.accessors.push({bufferView: json.bufferViews.length - 1, componentType: 5126, count: 4, type: 'VEC4'});
+  const primitive = json.meshes[0].primitives[0];
+  primitive.attributes.COLOR_0 = json.accessors.length - 1;
+  delete primitive.attributes.TEXCOORD_0;
+  if (raw) { delete primitive.material; delete primitive.attributes.NORMAL; delete json.materials; }
+  json.buffers[0].byteLength = binary.length;
+  mutation?.(json, binary, oldBinary.length);
+  const encoded = Buffer.from(JSON.stringify(json));
+  const padded = Buffer.alloc(Math.ceil(encoded.length / 4) * 4, 32); encoded.copy(padded);
+  const bytes = Buffer.alloc(28 + padded.length + binary.length);
+  bytes.write('glTF'); bytes.writeUInt32LE(2, 4); bytes.writeUInt32LE(bytes.length, 8);
+  bytes.writeUInt32LE(padded.length, 12); bytes.writeUInt32LE(0x4e4f534a, 16); padded.copy(bytes, 20);
+  bytes.writeUInt32LE(binary.length, 20 + padded.length); bytes.writeUInt32LE(0x004e4942, 24 + padded.length); binary.copy(bytes, 28 + padded.length);
+  return bytes;
+}
+
+async function reconstructionBundle(mutation) {
+  const fixture = await qualityBundle();
+  const raw = coloredSourceGlb(8, true, mutation);
+  await add(fixture.root, fixture.manifest, 'mesh.glb', raw, 'glb');
+  const artifact = fixture.manifest.files.at(-1);
+  Object.assign(artifact, {id: 'raw-id', role: 'source'});
+  fixture.version.artifacts.push(artifact);
+  fixture.version.source = 'local_image3d';
+  Object.assign(fixture.version.settings, {sourceKind: 'image3d', localReconstruction: {
+    artifacts: [{basename: 'mesh.glb', bytes: raw.length, sha256: digest(raw)}],
+    geometry: {vertexColors: true, vertexColorSpace: 'linear RGB', vertexCount: 4, triangleCount: 8},
+    colorEncoding: {exportColorSpace: 'linear RGB', componentType: 'FLOAT32'},
+  }});
+  const high = coloredSourceGlb(8, false);
+  await writeFile(join(fixture.root, 'high.glb'), high);
+  Object.assign(fixture.version.artifacts.find(file => file.id === 'high-id'), {bytes: high.length, sha256: digest(high)});
+  await fixture.save();
+  return fixture;
+}
+
 describe('independent export artifact verifier', () => {
+  it('decodes receipt-bound raw and high vertex-color sources while preserving game and LOD checks', async () => {
+    const fixture = await reconstructionBundle();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.valid).toBe(true);
+    expect(report.files.find(file => file.path === 'mesh.glb')).toMatchObject({meshRole: 'raw-reconstruction', mesh: {vertices: 4, triangles: 8, derivedNormalMeshes: 1}});
+    expect(report.files.find(file => file.path === 'game.glb').checks).toContain('finite-normals-uv');
+  });
+
+  it.each(['receipt', 'source', 'count'])('rejects mismatched reconstruction provenance: %s', async mode => {
+    const fixture = await reconstructionBundle();
+    if (mode === 'receipt') fixture.version.settings.localReconstruction.artifacts[0].sha256 = '0'.repeat(64);
+    if (mode === 'source') fixture.version.source = 'procedural';
+    if (mode === 'count') fixture.version.settings.localReconstruction.geometry.vertexCount = 5;
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.files.find(file => file.path === 'mesh.glb').valid).toBe(false);
+  });
+
+  it.each(['missing', 'nan', 'range'])('rejects invalid source vertex colors: %s', async mode => {
+    const fixture = await reconstructionBundle((json, binary, offset) => {
+      if (mode === 'missing') delete json.meshes[0].primitives[0].attributes.COLOR_0;
+      if (mode === 'nan') binary.writeFloatLE(NaN, offset);
+      if (mode === 'range') binary.writeFloatLE(1.2, offset);
+    });
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.files.find(file => file.path === 'mesh.glb').valid).toBe(false);
+  });
+
+  it.each(['uv', 'material'])('keeps game requirements strict despite source receipts: %s', async mode => {
+    const fixture = await reconstructionBundle();
+    const game = coloredSourceGlb(4, mode === 'material');
+    await writeFile(join(fixture.root, 'game.glb'), game);
+    Object.assign(fixture.version.artifacts.find(file => file.id === 'game-id'), {bytes: game.length, sha256: digest(game)});
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.files.find(file => file.path === 'game.glb').valid).toBe(false);
+  });
   it('decodes a PNG and checks its pixels and digest without opening SQLite', async () => {
     const {root} = await bundle(png());
     const report = await verifyArtifacts(root);

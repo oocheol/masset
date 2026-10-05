@@ -828,7 +828,7 @@ fn open_official_login(value: &str) -> Result<()> {
     open_trusted_browser(value)
 }
 
-fn open_trusted_browser(value: &str) -> Result<()> {
+pub(super) fn open_trusted_browser(value: &str) -> Result<()> {
     #[cfg(windows)]
     {
         use windows_sys::Win32::UI::Shell::ShellExecuteW;

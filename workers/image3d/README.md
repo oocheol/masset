@@ -4,8 +4,11 @@ This worker reconstructs **one existing transparent object image** with the olde
 TripoSR single-image model. It runs locally on CPU and exports actual vertex-colored
 geometry. Modern Tripo Studio quality, UV textures, rigging and measured physical
 scale are not claimed. This release is verified on Apple M4 Pro, 24 GiB RAM,
-macOS arm64 and **system CPython 3.9.6**. Setup accepts Mac arm64 CPython 3.9 only;
-Python 3.10–3.12 and Windows are unverified and rejected by this release.
+macOS arm64 and **system CPython 3.9.6**. Windows x86_64 CPU is independently
+verified on an Intel Core i5-12400F with **managed CPython 3.12.10** and a separate
+CP312 dependency lock. Its actual raw inference artifacts are reopened and checked;
+installation alone never establishes inference support. Native worker evidence is
+separate from complete desktop packaging/project acceptance.
 
 ## CLI
 
@@ -29,18 +32,65 @@ real path, so `interpreterPath` remains verifiable. Setup requires the real root
   --output-dir /absolute/new-output-directory
 ```
 
-Setup uses Python's standard `venv`/`ensurepip`, verified public HTTPS downloads
-and a local wheelhouse. It needs no uv, Codex runtime, Git, CUDA compiler, paid API
-or credentials. All dependencies and compatible Mac CP39 wheels are fixed in
-`runtime-lock.json`. ANTLR 4.9.3 is the sole source dependency: its pinned official
+On Mac, setup uses Python's standard `venv`/`ensurepip`. Windows desktop setup
+prepares the official **CPython 3.12.10 x64 embedded distribution**, so users do
+not need to install Python. The coordinator supplies its hash-verified archive:
+
+```powershell
+& 'C:\absolute\python312-embedded-v1\python.exe' -I -B workers/image3d/setup.py `
+  --runtime-root C:\absolute\data\image3d\triposr-cpu-v1 `
+  --python-executable C:\absolute\python312-embedded-v1\python.exe `
+  --managed-embedded `
+  --embedded-archive C:\absolute\python-3.12.10-embed-amd64.zip
+
+& 'C:\absolute\data\image3d\triposr-cpu-v1\venv\python.exe' -I -B workers/image3d/status.py `
+  --runtime-root C:\absolute\data\image3d\triposr-cpu-v1
+```
+
+The managed Windows interpreter is `venv/python.exe`, with `sys.prefix` equal to
+the owned `venv` root. Its explicit `python312._pth` contains only `python312.zip`,
+the interpreter directory and `Lib/site-packages`, with site initialization enabled.
+Setup zipimports one hash-verified pip wheel and installs all packages offline
+with `--target` into that directory. It uses no `get-pip.py` or system installation.
+Both pip installation steps use `--no-compile`; inference runs with `-I -B`, so
+setup needs no byte-compilation subprocesses or generated dependency bytecode.
+Status and inference recheck the retained official ZIP and every embedded file,
+including the rewritten path configuration. Unknown top-level interpreter files,
+archive path traversal, duplicate entries and links are rejected. The original
+ZIP and its license remain preserved. Standard installed CPython 3.12 x64 also
+supports the standalone CLI's ordinary `venv` path; desktop uses the managed path.
+
+Windows requires an existing **Microsoft Visual C++ 2015–2022 x64 runtime**.
+Static PE-import inspection of the pinned Torch CPU wheel found `MSVCP140.dll`
+imports in c10, torch_cpu, torch_python and fbgemm. That DLL is absent from the
+Python/Torch archives; Python supplies only `VCRUNTIME140.dll` and
+`VCRUNTIME140_1.dll`. Setup checks the System32 prerequisite before model/wheel
+downloads and returns `msvc_runtime_missing` with the [official Microsoft guide](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
+when absent. It never downloads or installs a redistributable automatically.
+Native proof on a development PC does not establish installation on a clean PC.
+
+Both platforms use verified public HTTPS downloads and a local wheelhouse. Setup
+needs no uv, Codex runtime, Git, CUDA compiler, paid API or credentials. All Mac
+CP39 dependencies remain fixed in the unchanged `runtime-lock.json`. Windows
+CP312 dependencies are fixed independently in `runtime-lock-windows.json`.
+Its official PyTorch **2.2.2+cpu** wheel has no CUDA requirement. Tokenizers 0.15.2
+provides the required CP312 wheel; Transformers 4.35.2 is the smallest compatible
+version update. The model, DINO revision and audited inference source are identical
+to Mac. ANTLR 4.9.3 is the sole source dependency: its pinned official
 117,034-byte pure-Python archive is built offline with pinned setuptools/wheel.
-Nothing compiles native extensions locally. Public Python/Hugging Face downloads
+Nothing compiles native extensions locally. Public Python/PyTorch/Hugging Face downloads
 happen only during setup, with no inherited proxies or credential files.
 
 Setup refuses populated unmanaged directories. Owned incomplete installations can
 be retried; partial downloads are retained and not treated as usable models. An
-active `.setup-lock` prevents competing installers. If setup was forcibly killed,
-the coordinator must confirm that process has ended before removing its owned lock.
+active `.setup-lock` prevents competing installers. Windows holds a nonblocking
+one-byte OS lock for the process lifetime; an abrupt process death releases it
+automatically. The PID receipt file remains in place, and a retry replaces its
+stale PID only after obtaining the lock. Status checks the live OS lock instead
+of treating a leftover file as active setup. Keeping the file avoids a delete/open
+race between competing installers. Mac retains its existing exclusive-marker
+behavior: after a forced kill, the coordinator must confirm the process ended
+before removing its owned marker.
 No user original is overwritten or deleted.
 
 Job JSON has exactly these keys:
@@ -69,7 +119,10 @@ Quality controls extraction grid resolution: draft 64, standard 128, high 192.
 All use the same float32 checkpoint and 512-pixel conditioning image, density
 threshold 25, foreground ratio 0.85 and 8,192-point decoder chunks. CPU threads
 must be integer 1–4; PyTorch interop threads are fixed at one. Parent scheduling
-reserves 8 GiB per job; measured native peaks were below 3.7 GB. Parent handles
+reserves 8 GiB per job; recorded Mac native peaks were below 3.7 GB. Windows measures
+actual peak working-set bytes with `GetProcessMemoryInfo`, and host RAM with
+`GlobalMemoryStatusEx`. The Windows launcher waits for its isolated child so both
+remain in the coordinator's Job Object until completion or cancellation. Parent handles
 cancellation, elapsed-time limits and the minimum host RAM policy.
 
 ## Output and events
@@ -146,6 +199,22 @@ its cached pinned JSON directly. The checkpoint uses
 Only the exact trusted official checkpoint can reach this loader. CPU is selected
 explicitly; no MPS/native GPU support is claimed.
 
+The Windows download inventory totals **2,034,000,316 bytes** before installation:
+314,371,180 bytes for 37 dependency archives, 11,133,606 bytes for embedded Python,
+31,241,354 bytes for the code archive, 1,677,246,742 bytes for the checkpoint, and
+7,434 bytes for pinned model/DINO configuration and cards. Existing verified files
+are reused without downloading. The installed runtime, wheelhouse and checkpoint
+require more disk space than download size. Every external archive's source,
+version, exact bytes, SHA-256 and package license are in the Windows lock.
+
+`tools/build_windows_lock.py` refreshes **metadata only**, using official PyPI
+JSON, PyTorch CPU-index hashes, official HTTP HEAD sizes and the Python release
+Sigstore message digest. It does not download executables, wheels or models.
+The digest's retrieval is separate from verification of the Sigstore certificate
+chain; downloaded bytes must independently match the pinned SHA-256. Review the
+lock before release and obtain any consent required by the coordinator before
+running setup.
+
 Pinned sources:
 
 * [TripoSR code](https://github.com/VAST-AI-Research/TripoSR/tree/107cefdc244c39106fa830359024f6a2f1c78871),
@@ -176,8 +245,12 @@ texts and full package metadata, including NumPy/SciPy/PyTorch bundled library
 notices. Supplementary pinned ANTLR/tokenizers/safetensors texts cover packages
 whose wheels omit them. The full runtime provenance records archive hashes,
 installed dependencies and these sources.
+Managed embedded Python retains its complete PSF license in `venv/LICENSE.txt`;
+its archive and source digest reference are recorded in runtime provenance.
 
 `tests/native-proof.json` records actual Mac results and compact artifact paths.
+`tests/native-proof-windows.json` separately records the Windows CPU installation,
+native tests and independent raw-artifact verification. The Mac proof is preserved.
 Tests do not assert browser or untested native platform support:
 
 ```sh
@@ -186,6 +259,31 @@ Tests do not assert browser or untested native platform support:
   --output-dir workers/image3d/output/native-game-high-linear-final \
   --events workers/image3d/output/native-game-high-linear-final-events.jsonl
 ```
+
+On Windows, the owned transparent blue-sphere fixture produced **2,909 vertices
+and 5,738 triangles** at draft resolution in **49.094 seconds**, using two CPU
+threads. Actual peak working set was **3,659,747,328 bytes**, below the 8 GiB job
+reservation. The raw GLB is finite, nonplanar, outward-wound and watertight, with
+linear float32 vertex colors, Y-up orientation and a floor-centered one-metre
+normalized height. The original input hash is unchanged. The independent verifier
+checks file sizes/hashes, actual GLB accessors/buffers and reopened geometry; it
+does not rely on a completed process or saved status alone.
+
+Windows native tests ran **33 cases: 32 passed, one skipped** because symlink
+creation privilege is not assumed. Tests include the actual Windows memory API,
+missing VC-runtime handling, embedded archive/path protection, platform/Python
+mismatch rejection, rejection of a second live setup owner, lock recovery after
+abrupt child-process termination, CPU extraction, color conversion, original-file preservation
+and offline networking. The pinned Torch wheel's PE-import audit is recorded
+under `output/windows-torch-dll-audit.json`. The development PC has the required
+VC++ runtime; a clean-PC installation is not claimed. No fresh GPT request was
+made for this worker proof. Root coordinator reports separately cover Blender,
+desktop persistence and release installation.
+
+Desktop job logs combine JSON stdout with diagnostic stderr. For independent
+checking, the Windows proof retains that mixed log and derives a separate JSONL
+event stream, recording the source-log SHA-256 and excluded diagnostic-line count.
+The verifier's default event contract remains strict JSONL.
 
 The native test artifacts were generated directly by system-Python-created
 environments on this Mac. Initial draft/high fixtures and the preserved generated

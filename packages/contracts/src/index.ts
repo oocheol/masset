@@ -53,6 +53,10 @@ export interface Local3DStatus {
   message: string; stage: string; modelId: string; modelRevision: string;
   device: 'cpu'; pythonVersion: string | null; weightBytes: number;
   memoryMb: number; minimumMemoryMb: number; blenderReady: boolean;
+  download?: {
+    totalBytes: number; runtime: string; sources: string[];
+    licenses: string[]; manifestUrl: string; modelSha256: string;
+  } | null;
 }
 export interface Quality3DRequest {
   assetIds: string[]; name: string; quality: 'draft' | 'standard' | 'high';

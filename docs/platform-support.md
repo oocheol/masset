@@ -1,5 +1,11 @@
 # Platform support and packaging
 
+## 0.1.9 Windows reconstruction
+
+Windows x64 supports the production screen's image-to-3D pipeline with an app-managed official CPython3.12.10 runtime. After explicit consent, setup downloads 2,034,000,316bytes of Python, pinned CPU wheels, audited TripoSR code and model files to dedicated app data and verifies SHA-256 before use. No system Python, CUDA, compiler or paid API is required. At least 16GB RAM, separately installed Blender and Microsoft Visual C++ 2015–2022 x64 runtime are required. Missing MSVCP140.dll is reported before downloading the model. Windows physical RAM is queried through GlobalMemoryStatusEx; inference reserves 8GiB and runs with 2 CPU threads.
+
+The original Apple Silicon CPython3.9 runtime lock and Mac 0.1.8 installers remain unchanged. The Windows and Mac update channels remain separate. The [runtime lock](../workers/image3d/runtime-lock-windows.json) lists exact sources, versions, hashes, sizes and licenses; the [model guide](model-quality.md) explains inputs and limitations. The 0.1.8 scope below is historical.
+
 ## 0.1.8 platform scope
 
 Windows x64 and Apple Silicon Mac share version 0.1.8 and the game-project production screen. Windows supports project scanning, individual 2D production, procedural Blender models and refinement of an imported GLB. The TripoSR image-to-3D runtime remains Apple Silicon-only; no model weights or Python environment are bundled with the Windows installer. Intel Mac builds are not distributed.

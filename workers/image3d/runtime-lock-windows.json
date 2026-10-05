@@ -1,0 +1,753 @@
+{
+  "bundledLicenseFiles": {
+    "licenses/ANTLR-BSD-3-Clause.txt": {
+      "bytes": 2699,
+      "sha256": "b1b379fcaf3219593a4c433feb1b35c780bed23fafaae440b1ae2771a9521e3a"
+    },
+    "licenses/DINO-Apache-2.0.txt": {
+      "bytes": 11324,
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    "licenses/Safetensors-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "licenses/Tokenizers-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "licenses/TripoSR-MIT.txt": {
+      "bytes": 1080,
+      "sha256": "ade0a66629bdd7e01e46b3296b3851cff0fd27989bca53da470ad6e96ed620fb"
+    },
+    "licenses/sources.json": {
+      "bytes": 1274,
+      "sha256": "c430681ede6f1251b30b9f30712bd2c5a0c204280c1f010dfc0f72191d83350a"
+    }
+  },
+  "bundledLicenseSources": {
+    "ANTLR-BSD-3-Clause.txt": {
+      "bytes": 2699,
+      "sha256": "b1b379fcaf3219593a4c433feb1b35c780bed23fafaae440b1ae2771a9521e3a",
+      "url": "https://raw.githubusercontent.com/antlr/antlr4/e4c1a74c66bd5290364ea2b36c97cd724b247357/LICENSE.txt"
+    },
+    "DINO-Apache-2.0.txt": {
+      "bytes": 11324,
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+      "url": "https://raw.githubusercontent.com/facebookresearch/dino/7c446df5b9f45747937fb0d72314eb9f7b66930a/LICENSE"
+    },
+    "Safetensors-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "url": "https://raw.githubusercontent.com/huggingface/safetensors/833d3d54f7f7f177f954fadd56e92ff3f52a43dd/LICENSE"
+    },
+    "Tokenizers-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "url": "https://raw.githubusercontent.com/huggingface/tokenizers/701a73b869602b5639589d197e805349cdba3223/LICENSE"
+    },
+    "TripoSR-MIT.txt": {
+      "bytes": 1080,
+      "sha256": "ade0a66629bdd7e01e46b3296b3851cff0fd27989bca53da470ad6e96ed620fb",
+      "url": "https://raw.githubusercontent.com/VAST-AI-Research/TripoSR/107cefdc244c39106fa830359024f6a2f1c78871/LICENSE"
+    }
+  },
+  "codeArchive": {
+    "bytes": 31241354,
+    "sha256": "bcb414550dcfcb9f5ea6a7b9c12f2bbff889f5b4a564a493178393360d9034ec",
+    "url": "https://codeload.github.com/VAST-AI-Research/TripoSR/tar.gz/107cefdc244c39106fa830359024f6a2f1c78871"
+  },
+  "codeFiles": {
+    "image3d_adapter.py": {
+      "bytes": 1563,
+      "sha256": "70561af0e4dbd6c9988b022e8b009353e43277139dae1f1c41a9e14dc92f341a"
+    },
+    "tsr/models/isosurface.py": {
+      "bytes": 1930,
+      "sha256": "ea88a83314f4810dbcfe86e53fc2549b441fdaf4f2348cc73f938fdc19987fa9"
+    },
+    "tsr/models/nerf_renderer.py": {
+      "bytes": 5673,
+      "sha256": "afe8c12c964078b2c6bb3922d2e30969aa59f7edbacb8cb73d2c3df839dc785f"
+    },
+    "tsr/models/network_utils.py": {
+      "bytes": 3473,
+      "sha256": "b3d48e86be9ca3f3abc1bfd774f640fd350e4365843d804e2a3145e7692e1419"
+    },
+    "tsr/models/tokenizers/image.py": {
+      "bytes": 2002,
+      "sha256": "671b4d43634ece4d4299ac22fe1a531d49b03e3e9b25a72e8c4145471f470c2a"
+    },
+    "tsr/models/tokenizers/triplane.py": {
+      "bytes": 1237,
+      "sha256": "44811fbd53013d6f49e229ecfd0717f89dd8ebeb71608aeb1f8e5ed1d5e8e378"
+    },
+    "tsr/models/transformer/attention.py": {
+      "bytes": 26341,
+      "sha256": "347c1a707257cb4eb664ebe9ecd16db7b6006131e74925c049245d2c0101ba7e"
+    },
+    "tsr/models/transformer/basic_transformer_block.py": {
+      "bytes": 13202,
+      "sha256": "ced8ce4c5c5bbc13368130bc15dee1717cc6bc7f35699f64d03aeec185b1198e"
+    },
+    "tsr/models/transformer/transformer_1d.py": {
+      "bytes": 9325,
+      "sha256": "fd83a71d59d04ef0a45dbadcc63f9d56d354ebc011a40f5589eb1786a1dd15f4"
+    },
+    "tsr/system.py": {
+      "bytes": 6411,
+      "sha256": "68da8dc579eb835985a5d1136b01cb0c13606154f89f2489f921e48c73a415dc"
+    },
+    "tsr/utils.py": {
+      "bytes": 15192,
+      "sha256": "4480dc6f097a93b748ed16000c1bbc9480cfe2cad147d43b5b80d003fb7b7d15"
+    }
+  },
+  "embeddedPython": {
+    "bytes": 11133606,
+    "digestMetadataUrl": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip.sigstore",
+    "filename": "python-3.12.10-embed-amd64.zip",
+    "license": "PSF-2.0",
+    "sha256": "4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3",
+    "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+    "version": "3.12.10"
+  },
+  "originalCodeFiles": {
+    "tsr/models/isosurface.py": {
+      "bytes": 1926,
+      "sha256": "94c9a2ec27f8fe3c2fb57558ef28be253eb77074d2c171d49a41cf73d95d6f5e"
+    },
+    "tsr/models/nerf_renderer.py": {
+      "bytes": 5673,
+      "sha256": "afe8c12c964078b2c6bb3922d2e30969aa59f7edbacb8cb73d2c3df839dc785f"
+    },
+    "tsr/models/network_utils.py": {
+      "bytes": 3473,
+      "sha256": "b3d48e86be9ca3f3abc1bfd774f640fd350e4365843d804e2a3145e7692e1419"
+    },
+    "tsr/models/tokenizers/image.py": {
+      "bytes": 2116,
+      "sha256": "f6da23124dfabe6a1f8d0d27693d0cece6574de68be15487a77781b6a9d73195"
+    },
+    "tsr/models/tokenizers/triplane.py": {
+      "bytes": 1237,
+      "sha256": "44811fbd53013d6f49e229ecfd0717f89dd8ebeb71608aeb1f8e5ed1d5e8e378"
+    },
+    "tsr/models/transformer/attention.py": {
+      "bytes": 26341,
+      "sha256": "347c1a707257cb4eb664ebe9ecd16db7b6006131e74925c049245d2c0101ba7e"
+    },
+    "tsr/models/transformer/basic_transformer_block.py": {
+      "bytes": 13202,
+      "sha256": "ced8ce4c5c5bbc13368130bc15dee1717cc6bc7f35699f64d03aeec185b1198e"
+    },
+    "tsr/models/transformer/transformer_1d.py": {
+      "bytes": 9325,
+      "sha256": "fd83a71d59d04ef0a45dbadcc63f9d56d354ebc011a40f5589eb1786a1dd15f4"
+    },
+    "tsr/system.py": {
+      "bytes": 6608,
+      "sha256": "7aec93e421394ad7c746b6d63a0189532b57b26af9a199fc75ac3bb7c993c94f"
+    },
+    "tsr/utils.py": {
+      "bytes": 15172,
+      "sha256": "d9d1a645fef7ea489615bff3471fd01a4941a2c0e138c5dff5daae619563279b"
+    }
+  },
+  "packages": {
+    "Jinja2": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/Jinja2/3.1.6/json",
+      "requiresPython": ">=3.7",
+      "version": "3.1.6",
+      "wheels": [
+        {
+          "bytes": 134899,
+          "filename": "jinja2-3.1.6-py3-none-any.whl",
+          "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "url": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl"
+        }
+      ]
+    },
+    "MarkupSafe": {
+      "license": "BSD-3-Clause",
+      "metadataUrl": "https://pypi.org/pypi/MarkupSafe/2.1.5/json",
+      "requiresPython": ">=3.7",
+      "version": "2.1.5",
+      "wheels": [
+        {
+          "bytes": 17127,
+          "filename": "MarkupSafe-2.1.5-cp312-cp312-win_amd64.whl",
+          "sha256": "823b65d8706e32ad2df51ed89496147a42a2a6e01c13cfb6ffb8b1e92bc910bb",
+          "url": "https://files.pythonhosted.org/packages/3f/14/c3554d512d5f9100a95e737502f4a2323a1959f6d0d01e0d0997b35f7b10/MarkupSafe-2.1.5-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "Pillow": {
+      "license": "HPND",
+      "metadataUrl": "https://pypi.org/pypi/Pillow/10.1.0/json",
+      "requiresPython": ">=3.8",
+      "version": "10.1.0",
+      "wheels": [
+        {
+          "bytes": 2609160,
+          "filename": "Pillow-10.1.0-cp312-cp312-win_amd64.whl",
+          "sha256": "eaed6977fa73408b7b8a24e8b14e59e1668cfc0f4c40193ea7ced8e210adf996",
+          "url": "https://files.pythonhosted.org/packages/32/e4/978865107d097dd9cb650331676d8dc29ed9fcd0aaab46486e9d6e5123f0/Pillow-10.1.0-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "PyYAML": {
+      "license": "MIT",
+      "metadataUrl": "https://pypi.org/pypi/PyYAML/6.0.2/json",
+      "requiresPython": ">=3.8",
+      "version": "6.0.2",
+      "wheels": [
+        {
+          "bytes": 156338,
+          "filename": "PyYAML-6.0.2-cp312-cp312-win_amd64.whl",
+          "sha256": "7e7401d0de89a9a855c839bc697c079a4af81cf878373abd7dc625847d25cbd8",
+          "url": "https://files.pythonhosted.org/packages/0c/e8/4f648c598b17c3d06e8753d7d13d57542b30d56e6c2dedf9c331ae56312e/PyYAML-6.0.2-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "antlr4-python3-runtime": {
+      "license": "BSD",
+      "metadataUrl": "https://pypi.org/pypi/antlr4-python3-runtime/4.9.3/json",
+      "requiresPython": "",
+      "source": {
+        "bytes": 117034,
+        "filename": "antlr4-python3-runtime-4.9.3.tar.gz",
+        "sha256": "f224469b4168294902bb1efa80a8bf7855f24c99aef99cbefc1bcd3cce77881b",
+        "url": "https://files.pythonhosted.org/packages/3e/38/7859ff46355f76f8d19459005ca000b6e7012f2f1ca597746cbcd1fbfe5e/antlr4-python3-runtime-4.9.3.tar.gz"
+      },
+      "version": "4.9.3",
+      "wheels": []
+    },
+    "certifi": {
+      "license": "MPL-2.0",
+      "metadataUrl": "https://pypi.org/pypi/certifi/2025.1.31/json",
+      "requiresPython": ">=3.6",
+      "version": "2025.1.31",
+      "wheels": [
+        {
+          "bytes": 166393,
+          "filename": "certifi-2025.1.31-py3-none-any.whl",
+          "sha256": "ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe",
+          "url": "https://files.pythonhosted.org/packages/38/fc/bce832fd4fd99766c04d1ee0eead6b0ec6486fb100ae5e74c1d91292b982/certifi-2025.1.31-py3-none-any.whl"
+        }
+      ]
+    },
+    "charset-normalizer": {
+      "license": "MIT",
+      "metadataUrl": "https://pypi.org/pypi/charset-normalizer/3.4.0/json",
+      "requiresPython": ">=3.7.0",
+      "version": "3.4.0",
+      "wheels": [
+        {
+          "bytes": 102187,
+          "filename": "charset_normalizer-3.4.0-cp312-cp312-win_amd64.whl",
+          "sha256": "b197e7094f232959f8f20541ead1d9862ac5ebea1d58e9849c1bf979255dfac9",
+          "url": "https://files.pythonhosted.org/packages/3e/67/7b72b69d25b89c0b3cea583ee372c43aa24df15f0e0f8d3982c57804984b/charset_normalizer-3.4.0-cp312-cp312-win_amd64.whl"
+        },
+        {
+          "bytes": 49446,
+          "filename": "charset_normalizer-3.4.0-py3-none-any.whl",
+          "sha256": "fe9f97feb71aa9896b81973a7bbada8c49501dc73e58a10fcef6663af95e5079",
+          "url": "https://files.pythonhosted.org/packages/bf/9b/08c0432272d77b04803958a4598a51e2a4b51c06640af8b8f0f908c18bf2/charset_normalizer-3.4.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "colorama": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/colorama/0.4.6/json",
+      "requiresPython": "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7",
+      "version": "0.4.6",
+      "wheels": [
+        {
+          "bytes": 25335,
+          "filename": "colorama-0.4.6-py2.py3-none-any.whl",
+          "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+          "url": "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl"
+        }
+      ]
+    },
+    "einops": {
+      "license": "MIT",
+      "metadataUrl": "https://pypi.org/pypi/einops/0.7.0/json",
+      "requiresPython": ">=3.8",
+      "version": "0.7.0",
+      "wheels": [
+        {
+          "bytes": 44599,
+          "filename": "einops-0.7.0-py3-none-any.whl",
+          "sha256": "0f3096f26b914f465f6ff3c66f5478f9a5e380bb367ffc6493a68143fbbf1fd1",
+          "url": "https://files.pythonhosted.org/packages/29/0b/2d1c0ebfd092e25935b86509a9a817159212d82aa43d7fb07eca4eeff2c2/einops-0.7.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "filelock": {
+      "license": "The Unlicense (Unlicense)",
+      "metadataUrl": "https://pypi.org/pypi/filelock/3.13.1/json",
+      "requiresPython": ">=3.8",
+      "version": "3.13.1",
+      "wheels": [
+        {
+          "bytes": 11740,
+          "filename": "filelock-3.13.1-py3-none-any.whl",
+          "sha256": "57dbda9b35157b05fb3e58ee91448612eb674172fab98ee235ccb0b5bee19a1c",
+          "url": "https://files.pythonhosted.org/packages/81/54/84d42a0bee35edba99dee7b59a8d4970eccdd44b99fe728ed912106fc781/filelock-3.13.1-py3-none-any.whl"
+        }
+      ]
+    },
+    "fsspec": {
+      "license": "BSD",
+      "metadataUrl": "https://pypi.org/pypi/fsspec/2023.12.2/json",
+      "requiresPython": ">=3.8",
+      "version": "2023.12.2",
+      "wheels": [
+        {
+          "bytes": 168979,
+          "filename": "fsspec-2023.12.2-py3-none-any.whl",
+          "sha256": "d800d87f72189a745fa3d6b033b9dc4a34ad069f60ca60b943a63599f5501960",
+          "url": "https://files.pythonhosted.org/packages/70/25/fab23259a52ece5670dcb8452e1af34b89e6135ecc17cd4b54b4b479eac6/fsspec-2023.12.2-py3-none-any.whl"
+        }
+      ]
+    },
+    "huggingface-hub": {
+      "license": "Apache",
+      "metadataUrl": "https://pypi.org/pypi/huggingface-hub/0.17.3/json",
+      "requiresPython": ">=3.8.0",
+      "version": "0.17.3",
+      "wheels": [
+        {
+          "bytes": 295010,
+          "filename": "huggingface_hub-0.17.3-py3-none-any.whl",
+          "sha256": "545eb3665f6ac587add946e73984148f2ea5c7877eac2e845549730570c1933a",
+          "url": "https://files.pythonhosted.org/packages/aa/f3/3fc97336a0e90516901befd4f500f08d691034d387406fdbde85bea827cc/huggingface_hub-0.17.3-py3-none-any.whl"
+        }
+      ]
+    },
+    "idna": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/idna/3.10/json",
+      "requiresPython": ">=3.6",
+      "version": "3.10",
+      "wheels": [
+        {
+          "bytes": 70442,
+          "filename": "idna-3.10-py3-none-any.whl",
+          "sha256": "946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3",
+          "url": "https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl"
+        }
+      ]
+    },
+    "imageio": {
+      "license": "BSD-2-Clause",
+      "metadataUrl": "https://pypi.org/pypi/imageio/2.34.0/json",
+      "requiresPython": ">=3.8",
+      "version": "2.34.0",
+      "wheels": [
+        {
+          "bytes": 313420,
+          "filename": "imageio-2.34.0-py3-none-any.whl",
+          "sha256": "08082bf47ccb54843d9c73fe9fc8f3a88c72452ab676b58aca74f36167e8ccba",
+          "url": "https://files.pythonhosted.org/packages/02/25/66533a8390e3763cf8254dee143dbf8a830391ea60d2762512ba7f9ddfbe/imageio-2.34.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "lazy-loader": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/lazy-loader/0.3/json",
+      "requiresPython": ">=3.7",
+      "version": "0.3",
+      "wheels": [
+        {
+          "bytes": 9087,
+          "filename": "lazy_loader-0.3-py3-none-any.whl",
+          "sha256": "1e9e76ee8631e264c62ce10006718e80b2cfc74340d17d1031e0f84af7478554",
+          "url": "https://files.pythonhosted.org/packages/a1/c3/65b3814e155836acacf720e5be3b5757130346670ac454fee29d3eda1381/lazy_loader-0.3-py3-none-any.whl"
+        }
+      ]
+    },
+    "mpmath": {
+      "license": "BSD",
+      "metadataUrl": "https://pypi.org/pypi/mpmath/1.3.0/json",
+      "requiresPython": "",
+      "version": "1.3.0",
+      "wheels": [
+        {
+          "bytes": 536198,
+          "filename": "mpmath-1.3.0-py3-none-any.whl",
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "url": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "networkx": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/networkx/3.2.1/json",
+      "requiresPython": ">=3.9",
+      "version": "3.2.1",
+      "wheels": [
+        {
+          "bytes": 1647772,
+          "filename": "networkx-3.2.1-py3-none-any.whl",
+          "sha256": "f18c69adc97877c42332c170849c96cefa91881c99a7cb3e95b7c659ebdc1ec2",
+          "url": "https://files.pythonhosted.org/packages/d5/f0/8fbc882ca80cf077f1b246c0e3c3465f7f415439bdea6b899f6b19f61f70/networkx-3.2.1-py3-none-any.whl"
+        }
+      ]
+    },
+    "numpy": {
+      "license": "Copyright (c) 2005-2023, NumPy Developers. All rights reserved.  Redistribution and use in source an",
+      "metadataUrl": "https://pypi.org/pypi/numpy/1.26.4/json",
+      "requiresPython": ">=3.9",
+      "version": "1.26.4",
+      "wheels": [
+        {
+          "bytes": 15517754,
+          "filename": "numpy-1.26.4-cp312-cp312-win_amd64.whl",
+          "sha256": "08beddf13648eb95f8d867350f6a018a4be2e5ad54c8d8caed89ebca558b2818",
+          "url": "https://files.pythonhosted.org/packages/16/2e/86f24451c2d530c88daf997cb8d6ac622c1d40d19f5a031ed68a4b73a374/numpy-1.26.4-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "omegaconf": {
+      "license": "BSD License",
+      "metadataUrl": "https://pypi.org/pypi/omegaconf/2.3.0/json",
+      "requiresPython": ">=3.6",
+      "version": "2.3.0",
+      "wheels": [
+        {
+          "bytes": 79500,
+          "filename": "omegaconf-2.3.0-py3-none-any.whl",
+          "sha256": "7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b",
+          "url": "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "packaging": {
+      "license": "Apache Software License; BSD License",
+      "metadataUrl": "https://pypi.org/pypi/packaging/24.2/json",
+      "requiresPython": ">=3.8",
+      "version": "24.2",
+      "wheels": [
+        {
+          "bytes": 65451,
+          "filename": "packaging-24.2-py3-none-any.whl",
+          "sha256": "09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759",
+          "url": "https://files.pythonhosted.org/packages/88/ef/eb23f262cca3c0c4eb7ab1933c3b1f03d021f2c48f54763065b6f0e321be/packaging-24.2-py3-none-any.whl"
+        }
+      ]
+    },
+    "pip": {
+      "license": "MIT",
+      "metadataUrl": "https://pypi.org/pypi/pip/24.3.1/json",
+      "requiresPython": ">=3.8",
+      "version": "24.3.1",
+      "wheels": [
+        {
+          "bytes": 1822182,
+          "filename": "pip-24.3.1-py3-none-any.whl",
+          "sha256": "3790624780082365f47549d032f3770eeb2b1e8bd1f7b2e02dace1afa361b4ed",
+          "url": "https://files.pythonhosted.org/packages/ef/7d/500c9ad20238fcfcb4cb9243eede163594d7020ce87bd9610c9e02771876/pip-24.3.1-py3-none-any.whl"
+        }
+      ]
+    },
+    "regex": {
+      "license": "Apache Software License",
+      "metadataUrl": "https://pypi.org/pypi/regex/2024.5.15/json",
+      "requiresPython": ">=3.8",
+      "version": "2024.5.15",
+      "wheels": [
+        {
+          "bytes": 268471,
+          "filename": "regex-2024.5.15-cp312-cp312-win_amd64.whl",
+          "sha256": "673b5a6da4557b975c6c90198588181029c60793835ce02f497ea817ff647cb2",
+          "url": "https://files.pythonhosted.org/packages/8b/ee/05f14a99a81f1a897a9146f3f565efb116ad6412f875f52e895c02666825/regex-2024.5.15-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "requests": {
+      "license": "Apache-2.0",
+      "metadataUrl": "https://pypi.org/pypi/requests/2.32.3/json",
+      "requiresPython": ">=3.8",
+      "version": "2.32.3",
+      "wheels": [
+        {
+          "bytes": 64928,
+          "filename": "requests-2.32.3-py3-none-any.whl",
+          "sha256": "70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6",
+          "url": "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl"
+        }
+      ]
+    },
+    "safetensors": {
+      "license": "Apache Software License",
+      "metadataUrl": "https://pypi.org/pypi/safetensors/0.4.2/json",
+      "requiresPython": ">=3.7",
+      "version": "0.4.2",
+      "wheels": [
+        {
+          "bytes": 270711,
+          "filename": "safetensors-0.4.2-cp312-none-win_amd64.whl",
+          "sha256": "dcff0243e1737a21f83d664c63fed89d1f532c23fc6830d0427279fabd789ccb",
+          "url": "https://files.pythonhosted.org/packages/7c/22/27ba66710dda4cdca147ad5d8666d9cf0e2035c0aecb5f4de4e6b0e1bc49/safetensors-0.4.2-cp312-none-win_amd64.whl"
+        }
+      ]
+    },
+    "scikit-image": {
+      "license": "Files: * Copyright: 2009-2022 the scikit-image team License: BSD-3-Clause  Files: doc/source/themes/",
+      "metadataUrl": "https://pypi.org/pypi/scikit-image/0.22.0/json",
+      "requiresPython": ">=3.9",
+      "version": "0.22.0",
+      "wheels": [
+        {
+          "bytes": 25004857,
+          "filename": "scikit_image-0.22.0-cp312-cp312-win_amd64.whl",
+          "sha256": "722b970aa5da725dca55252c373b18bbea7858c1cdb406e19f9b01a4a73b30b2",
+          "url": "https://files.pythonhosted.org/packages/dc/35/e6327ae498c6f557cb0a7c3fc284effe7958d2d1c43fb61cd77804fc2c4f/scikit_image-0.22.0-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "scipy": {
+      "license": "Copyright (c) 2001-2002 Enthought, Inc. 2003-2024, SciPy Developers. All rights reserved.  Redistrib",
+      "metadataUrl": "https://pypi.org/pypi/scipy/1.12.0/json",
+      "requiresPython": ">=3.9",
+      "version": "1.12.0",
+      "wheels": [
+        {
+          "bytes": 45816713,
+          "filename": "scipy-1.12.0-cp312-cp312-win_amd64.whl",
+          "sha256": "e646d8571804a304e1da01040d21577685ce8e2db08ac58e543eaca063453e1c",
+          "url": "https://files.pythonhosted.org/packages/f3/31/91a2a3c5eb85d2bfa86d7c98f2df5d77dcdefb3d80ca9f9037ad04393acf/scipy-1.12.0-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "setuptools": {
+      "license": "MIT License",
+      "metadataUrl": "https://pypi.org/pypi/setuptools/75.8.0/json",
+      "requiresPython": ">=3.9",
+      "version": "75.8.0",
+      "wheels": [
+        {
+          "bytes": 1228782,
+          "filename": "setuptools-75.8.0-py3-none-any.whl",
+          "sha256": "e3982f444617239225d675215d51f6ba05f845d4eec313da4418fdbb56fb27e3",
+          "url": "https://files.pythonhosted.org/packages/69/8a/b9dc7678803429e4a3bc9ba462fa3dd9066824d3c607490235c6a796be5a/setuptools-75.8.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "sympy": {
+      "license": "BSD",
+      "metadataUrl": "https://pypi.org/pypi/sympy/1.12/json",
+      "requiresPython": ">=3.8",
+      "version": "1.12",
+      "wheels": [
+        {
+          "bytes": 5742435,
+          "filename": "sympy-1.12-py3-none-any.whl",
+          "sha256": "c3588cd4295d0c0f603d0f2ae780587e64e2efeedb3521e46b9bb1d08d184fa5",
+          "url": "https://files.pythonhosted.org/packages/d2/05/e6600db80270777c4a64238a98d442f0fd07cc8915be2a1c16da7f2b9e74/sympy-1.12-py3-none-any.whl"
+        }
+      ]
+    },
+    "tifffile": {
+      "license": "BSD",
+      "metadataUrl": "https://pypi.org/pypi/tifffile/2024.2.12/json",
+      "requiresPython": ">=3.9",
+      "version": "2024.2.12",
+      "wheels": [
+        {
+          "bytes": 224461,
+          "filename": "tifffile-2024.2.12-py3-none-any.whl",
+          "sha256": "870998f82fbc94ff7c3528884c1b0ae54863504ff51dbebea431ac3fa8fb7c21",
+          "url": "https://files.pythonhosted.org/packages/cd/0b/33610b4d0d1bb83a6bfd20ed838f52e02a44e9b439116cd4f3d424e81a80/tifffile-2024.2.12-py3-none-any.whl"
+        }
+      ]
+    },
+    "tokenizers": {
+      "license": "Apache Software License",
+      "metadataUrl": "https://pypi.org/pypi/tokenizers/0.15.2/json",
+      "requiresPython": ">=3.7",
+      "version": "0.15.2",
+      "wheels": [
+        {
+          "bytes": 2180523,
+          "filename": "tokenizers-0.15.2-cp312-none-win_amd64.whl",
+          "sha256": "38d7ab43c6825abfc0b661d95f39c7f8af2449364f01d331f3b51c94dcff7221",
+          "url": "https://files.pythonhosted.org/packages/c9/ea/5800f4941a713b2feed955b6a256aacc1ca68a6699916d2668622c075d38/tokenizers-0.15.2-cp312-none-win_amd64.whl"
+        }
+      ]
+    },
+    "torch": {
+      "binaryMetadataUrl": "https://download.pytorch.org/whl/cpu/torch/",
+      "license": "BSD-3",
+      "metadataUrl": "https://pypi.org/pypi/torch/2.2.2/json",
+      "requiresPython": ">=3.8.0",
+      "version": "2.2.2+cpu",
+      "wheels": [
+        {
+          "bytes": 200738440,
+          "filename": "torch-2.2.2+cpu-cp312-cp312-win_amd64.whl",
+          "sha256": "2b0cf041f878607a361116945f82ce2dba4b7a747151da7619a63cb5fccb72df",
+          "url": "https://download.pytorch.org/whl/cpu/torch-2.2.2%2Bcpu-cp312-cp312-win_amd64.whl"
+        }
+      ]
+    },
+    "tqdm": {
+      "license": "MPL-2.0 AND MIT",
+      "metadataUrl": "https://pypi.org/pypi/tqdm/4.66.5/json",
+      "requiresPython": ">=3.7",
+      "version": "4.66.5",
+      "wheels": [
+        {
+          "bytes": 78351,
+          "filename": "tqdm-4.66.5-py3-none-any.whl",
+          "sha256": "90279a3770753eafc9194a0364852159802111925aa30eb3f9d85b0e805ac7cd",
+          "url": "https://files.pythonhosted.org/packages/48/5d/acf5905c36149bbaec41ccf7f2b68814647347b72075ac0b1fe3022fdc73/tqdm-4.66.5-py3-none-any.whl"
+        }
+      ]
+    },
+    "transformers": {
+      "license": "Apache 2.0 License",
+      "metadataUrl": "https://pypi.org/pypi/transformers/4.35.2/json",
+      "requiresPython": ">=3.8.0",
+      "version": "4.35.2",
+      "wheels": [
+        {
+          "bytes": 7920648,
+          "filename": "transformers-4.35.2-py3-none-any.whl",
+          "sha256": "9dfa76f8692379544ead84d98f537be01cd1070de75c74efb13abcbc938fbe2f",
+          "url": "https://files.pythonhosted.org/packages/12/dd/f17b11a93a9ca27728e12512d167eb1281c151c4c6881d3ab59eb58f4127/transformers-4.35.2-py3-none-any.whl"
+        }
+      ]
+    },
+    "trimesh": {
+      "license": "The MIT License (MIT)  Copyright (c) 2023 Michael Dawson-Haggerty  Permission is hereby granted, fre",
+      "metadataUrl": "https://pypi.org/pypi/trimesh/4.0.5/json",
+      "requiresPython": ">=3.7",
+      "version": "4.0.5",
+      "wheels": [
+        {
+          "bytes": 688495,
+          "filename": "trimesh-4.0.5-py3-none-any.whl",
+          "sha256": "d139a9108fc7d68a9cd3f5788528eadc20f25a10ae915922b4a2768e0b23d943",
+          "url": "https://files.pythonhosted.org/packages/c4/28/f3c55fad13f908fdbedd763ed63bd07f409c32ef40bb0381d6107738fed3/trimesh-4.0.5-py3-none-any.whl"
+        }
+      ]
+    },
+    "typing-extensions": {
+      "license": "Python Software Foundation License",
+      "metadataUrl": "https://pypi.org/pypi/typing-extensions/4.10.0/json",
+      "requiresPython": ">=3.8",
+      "version": "4.10.0",
+      "wheels": [
+        {
+          "bytes": 33926,
+          "filename": "typing_extensions-4.10.0-py3-none-any.whl",
+          "sha256": "69b1a937c3a517342112fb4c6df7e72fc39a38e7891a5730ed4985b5214b5475",
+          "url": "https://files.pythonhosted.org/packages/f9/de/dc04a3ea60b22624b51c703a84bbe0184abcd1d0b9bc8074b5d6b7ab90bb/typing_extensions-4.10.0-py3-none-any.whl"
+        }
+      ]
+    },
+    "urllib3": {
+      "license": "MIT License",
+      "metadataUrl": "https://pypi.org/pypi/urllib3/2.2.3/json",
+      "requiresPython": ">=3.8",
+      "version": "2.2.3",
+      "wheels": [
+        {
+          "bytes": 126338,
+          "filename": "urllib3-2.2.3-py3-none-any.whl",
+          "sha256": "ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac",
+          "url": "https://files.pythonhosted.org/packages/ce/d9/5f4c13cecde62396b0d3fe530a50ccea91e7dfc1ccf0e09c228841bb5ba8/urllib3-2.2.3-py3-none-any.whl"
+        }
+      ]
+    },
+    "wheel": {
+      "license": "MIT License",
+      "metadataUrl": "https://pypi.org/pypi/wheel/0.45.1/json",
+      "requiresPython": ">=3.8",
+      "version": "0.45.1",
+      "wheels": [
+        {
+          "bytes": 72494,
+          "filename": "wheel-0.45.1-py3-none-any.whl",
+          "sha256": "708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248",
+          "url": "https://files.pythonhosted.org/packages/0b/2c/87f3254fd8ffd29e4c02732eee68a83a1d3c346ae39bc6822dcbcb697f2b/wheel-0.45.1-py3-none-any.whl"
+        }
+      ]
+    }
+  },
+  "runtimeFiles": {
+    "dino/README.md": {
+      "bytes": 3261,
+      "sha256": "b6f423a18490fff28fa9a80fb2ba13c2e970c14dc532a63249e3cb3ce58c8c49",
+      "url": "https://huggingface.co/facebook/dino-vitb16/resolve/f205d5d8e640a89a2b8ef0369670dfc37cc07fc2/README.md"
+    },
+    "dino/config.json": {
+      "bytes": 454,
+      "sha256": "b87c0270b97db085fd82cf114a761fd0f62ae7914fbd407c752a2260646b689c",
+      "url": "https://huggingface.co/facebook/dino-vitb16/resolve/f205d5d8e640a89a2b8ef0369670dfc37cc07fc2/config.json"
+    },
+    "dino/preprocessor_config.json": {
+      "bytes": 244,
+      "sha256": "44298553bf686c8c3d1b128f24fae01f76235f66bda5516f1c6c0c57bba1b47f",
+      "url": "https://huggingface.co/facebook/dino-vitb16/resolve/f205d5d8e640a89a2b8ef0369670dfc37cc07fc2/preprocessor_config.json"
+    },
+    "licenses/ANTLR-BSD-3-Clause.txt": {
+      "bytes": 2699,
+      "sha256": "b1b379fcaf3219593a4c433feb1b35c780bed23fafaae440b1ae2771a9521e3a"
+    },
+    "licenses/DINO-Apache-2.0.txt": {
+      "bytes": 11324,
+      "sha256": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a"
+    },
+    "licenses/Safetensors-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "licenses/Tokenizers-Apache-2.0.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "licenses/TripoSR-LICENSE.txt": {
+      "bytes": 1080,
+      "sha256": "ade0a66629bdd7e01e46b3296b3851cff0fd27989bca53da470ad6e96ed620fb"
+    },
+    "licenses/TripoSR-MIT.txt": {
+      "bytes": 1080,
+      "sha256": "ade0a66629bdd7e01e46b3296b3851cff0fd27989bca53da470ad6e96ed620fb"
+    },
+    "licenses/sources.json": {
+      "bytes": 1274,
+      "sha256": "c430681ede6f1251b30b9f30712bd2c5a0c204280c1f010dfc0f72191d83350a"
+    },
+    "model/README.md": {
+      "bytes": 2488,
+      "sha256": "5c12ef5b850c6ee2aa7454b1a264f6f8dfa95164384dbb1ab374acd917aa558b",
+      "url": "https://huggingface.co/stabilityai/TripoSR/resolve/5b521936b01fbe1890f6f9baed0254ab6351c04a/README.md"
+    },
+    "model/config.yaml": {
+      "bytes": 987,
+      "sha256": "74ca708ce086bf68e97709ea6b3d91f14717921c04691e84043f0eb8fcc68e62",
+      "url": "https://huggingface.co/stabilityai/TripoSR/resolve/5b521936b01fbe1890f6f9baed0254ab6351c04a/config.yaml"
+    },
+    "model/model.ckpt": {
+      "bytes": 1677246742,
+      "sha256": "429e2c6b22a0923967459de24d67f05962b235f79cde6b032aa7ed2ffcd970ee",
+      "url": "https://huggingface.co/stabilityai/TripoSR/resolve/5b521936b01fbe1890f6f9baed0254ab6351c04a/model.ckpt"
+    }
+  },
+  "schemaVersion": 1,
+  "target": {
+    "device": "cpu",
+    "machine": "AMD64",
+    "pythonMajorMinor": [
+      3,
+      12
+    ],
+    "system": "Windows"
+  }
+}

@@ -12,6 +12,34 @@ const CODE_REVISION: &str = "107cefdc244c39106fa830359024f6a2f1c78871";
 const MINIMUM_MEMORY_MB: u64 = 16 * 1024;
 const IMAGE_MEMORY_MB: u64 = 8 * 1024;
 
+pub(super) fn reconstruction_supported() -> bool {
+    cfg!(any(all(target_os = "macos", target_arch = "aarch64"), all(target_os = "windows", target_arch = "x86_64")))
+}
+
+fn runtime_lock_name() -> &'static str {
+    if cfg!(windows) { "runtime-lock-windows.json" } else { "runtime-lock.json" }
+}
+
+fn windows_runtime_missing() -> bool {
+    #[cfg(windows)]
+    { !super::python_windows::vc_runtime_available() }
+    #[cfg(not(windows))]
+    { false }
+}
+
+fn display_stage(stage: &str) -> &str {
+    match stage {
+        "python-download" | "interpreter" => "Python 준비",
+        "python-verify" => "Python 검증",
+        "download" => "파일 다운로드·검증",
+        "model" => "모델 준비",
+        "dependencies" => "실행 라이브러리 설치",
+        "verify" => "CPU 실행 검증",
+        "ready" => "준비 완료",
+        _ => stage,
+    }
+}
+
 #[derive(Default)]
 pub(super) struct SetupState {
     pub(super) cancel: AtomicBool,
@@ -34,6 +62,16 @@ struct Request {
 }
 
 fn physical_memory_mb() -> u64 {
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
+        let mut memory: MEMORYSTATUSEX = unsafe { std::mem::zeroed() };
+        memory.dwLength = std::mem::size_of::<MEMORYSTATUSEX>() as u32;
+        // Windows fills the length-tagged native structure owned by this call.
+        if unsafe { GlobalMemoryStatusEx(&mut memory) } != 0 {
+            return memory.ullTotalPhys / (1024 * 1024);
+        }
+    }
     #[cfg(target_os = "macos")]
     {
         let mut memory = 0u64;
@@ -56,7 +94,7 @@ fn physical_memory_mb() -> u64 {
 }
 
 pub(super) fn memory_budget_mb() -> u64 {
-    // Reserve at least half the Mac's physical memory for the OS and other apps.
+    // Reserve at least half the physical memory for the OS and other apps.
     // Other platforms retain the existing conservative scheduler ceiling.
     let memory = physical_memory_mb();
     if memory >= MINIMUM_MEMORY_MB {
@@ -66,6 +104,7 @@ pub(super) fn memory_budget_mb() -> u64 {
     }
 }
 
+#[cfg(not(windows))]
 fn python() -> Option<PathBuf> {
     [
         "/usr/bin/python3",
@@ -165,7 +204,7 @@ fn worker_failure(path: &Path) -> Option<&'static str> {
             "multiple_objects" => Some("한 이미지에 분리된 물체가 여러 개 있습니다. 물체별로 자르거나 배경 마스크를 수정한 뒤 다시 선택하세요."),
             "empty_foreground" => Some("보이는 물체가 있는 투명 배경 이미지를 선택하세요."),
             "source_changed" => Some("참고 이미지의 해시가 변경됐습니다. 새 사본을 가져온 뒤 다시 선택하세요."),
-            "python_unsupported" => Some("이번 로컬 모델에는 Apple Silicon용 CPython 3.9가 필요합니다. 시스템 Python 버전을 확인해 주세요."),
+            "python_unsupported" => Some("로컬 모델의 Python 실행 환경이 맞지 않습니다. Windows에서는 앱 전용 Python을 준비하고, Mac에서는 CPython 3.9를 확인해 주세요."),
             "runtime_integrity" => Some("로컬 모델 또는 실행 환경의 검증이 실패했습니다. 로컬 모델 준비 상태를 확인해 주세요."),
             "invalid_image" => Some("이미지는 16~8192px, 최대 1,600만 픽셀·64MiB의 단일 PNG·JPEG·WebP여야 합니다."),
             _ => None,
@@ -202,7 +241,7 @@ impl Backend {
             ("image3d", "runtime_common.py"),
             ("image3d", "image3d_adapter.py"),
             ("image3d", "glb_color.py"),
-            ("image3d", "runtime-lock.json"),
+            ("image3d", runtime_lock_name()),
         ] {
             digest.update(folder.as_bytes());
             digest.update(name.as_bytes());
@@ -223,7 +262,7 @@ impl Backend {
             .context("3D 작업자 경로가 없습니다.")?;
         let path = workers.join(folder).join(name);
         if !path.is_file() {
-            bail!("정밀 3D 작업자가 설치되지 않았습니다. 최신 Mac 앱을 설치해 주세요.");
+            bail!("정밀 3D 작업자가 설치되지 않았습니다. 최신 앱을 설치해 주세요.");
         }
         Ok(path)
     }
@@ -233,6 +272,7 @@ impl Backend {
     }
 
     fn quality3d_ready(&self) -> Option<Value> {
+        if windows_runtime_missing() { return None; }
         let path = self.quality3d_runtime().join("ready.json");
         if fs::metadata(&path).ok()?.len() > 1024 * 1024 {
             return None;
@@ -248,6 +288,19 @@ impl Backend {
         {
             return None;
         }
+        let interpreter = Path::new(ready["interpreterPath"].as_str()?).canonicalize().ok()?;
+        let expected = self.quality3d_runtime().join(if cfg!(windows) { "venv/python.exe" } else { "venv/bin/python" }).canonicalize().ok()?;
+        let platform = if cfg!(windows) { "Windows" } else { "Darwin" };
+        let machine = if cfg!(windows) { "amd64" } else { "arm64" };
+        if interpreter != expected || ready["platform"] != platform
+            || ready["machine"].as_str()?.to_ascii_lowercase() != machine
+            || ready["device"] != "cpu" {
+            return None;
+        }
+        let lock = self.quality3d_worker("image3d", runtime_lock_name()).ok()?;
+        if ready["provenance"]["workerRuntimeLock"]["sha256"] != asset_core::sha256_file(&lock).ok()?.0 {
+            return None;
+        }
         Some(ready)
     }
 
@@ -259,7 +312,7 @@ impl Backend {
     }
 
     pub(super) fn quality3d_status(&self) -> Value {
-        let supported = cfg!(all(target_os = "macos", target_arch = "aarch64"));
+        let supported = reconstruction_supported();
         let busy = self.inner.quality3d_setup.busy.load(Ordering::SeqCst);
         let ready = self.quality3d_ready();
         let installed = ready.is_some();
@@ -276,7 +329,7 @@ impl Backend {
             "missing"
         };
         let message = if !supported {
-            "이번 로컬 이미지→3D 경로는 Apple Silicon Mac에서 검증합니다. Windows·Intel은 추후 확인합니다.".into()
+            "로컬 이미지→3D는 Windows x64와 Apple Silicon Mac에서 사용할 수 있습니다. 이 운영체제·아키텍처는 지원하지 않습니다.".into()
         } else if busy {
             "로컬 3D 모델과 실행 환경을 준비하고 있습니다. 이미지 파일은 전송하지 않습니다.".into()
         } else if installed {
@@ -284,19 +337,44 @@ impl Backend {
                 .into()
         } else if !progress.1.is_empty() {
             progress.1
+        } else if windows_runtime_missing() {
+            "먼저 Microsoft Visual C++ 2015–2022 x64 런타임을 준비해 주세요. 설치 후 로컬 3D 상태를 다시 확인하면 모델을 준비할 수 있습니다.".into()
         } else {
-            "최초 한 번 모델 가중치 약 1.68GB와 실행 라이브러리를 내려받습니다. 이후 생성은 CPU에서 로컬로 실행합니다.".into()
+            if cfg!(windows) {
+                "앱 전용 Python과 모델·라이브러리 약 1.89GiB를 한 번 준비합니다. Python 별도 설치 없이 이후 CPU에서 로컬로 생성합니다.".into()
+            } else {
+                "최초 한 번 모델 가중치 약 1.68GB와 실행 라이브러리를 내려받습니다. Mac CPython 3.9를 사용하며 이후 CPU에서 로컬로 생성합니다.".into()
+            }
         };
         json!({"supported":supported,"installed":installed,"busy":busy,"state":state,"message":message,
-            "stage":progress.0,"modelId":MODEL_ID,"modelRevision":MODEL_REVISION,"device":"cpu",
+            "stage":display_stage(&progress.0),"modelId":MODEL_ID,"modelRevision":MODEL_REVISION,"device":"cpu",
             "pythonVersion":ready.as_ref().and_then(|v| v["pythonVersion"].as_str()),
             "weightBytes":1677246742u64,"memoryMb":physical_memory_mb(),"minimumMemoryMb":MINIMUM_MEMORY_MB,
-            "blenderReady":self.inner.blender.is_some()})
+            "blenderReady":self.inner.blender.is_some(),
+            "download":if cfg!(windows) { json!({"totalBytes":2034000316u64,
+                "runtime":"CPython 3.12.10 · PyTorch 2.2.2 CPU · TripoSR",
+                "sources":["Python.org","PyTorch CPU","PyPI","GitHub","Hugging Face"],
+                "licenses":["PSF-2.0","MIT","BSD","Apache-2.0","MPL-2.0","HPND"],
+                "manifestUrl":"https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json",
+                "modelSha256":MODEL_SHA256}) } else { Value::Null }})
     }
 
     pub(super) fn quality3d_setup_request(&self, request: &Value) -> Result<Value> {
         match text_field(request, "action")? {
             "quality3d_status" => Ok(self.quality3d_status()),
+            "quality3d_open_download_info" => {
+                let url = if cfg!(windows) {
+                    "https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json"
+                } else {
+                    "https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock.json"
+                };
+                super::provider::open_trusted_browser(url)?;
+                Ok(self.quality3d_status())
+            }
+            "quality3d_open_runtime_guide" => {
+                super::provider::open_trusted_browser("https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist")?;
+                Ok(self.quality3d_status())
+            }
             "quality3d_cancel_setup" => {
                 self.inner
                     .quality3d_setup
@@ -306,8 +384,8 @@ impl Backend {
             }
             "quality3d_prepare" => {
                 let _admission = self.inner.requests.lock().unwrap();
-                if !cfg!(all(target_os = "macos", target_arch = "aarch64")) {
-                    bail!("로컬 이미지→3D는 현재 Apple Silicon Mac 검증 경로입니다.");
+                if !reconstruction_supported() {
+                    bail!("로컬 이미지→3D는 Windows x64와 Apple Silicon Mac을 지원합니다.");
                 }
                 if request["confirmed"] != true {
                     bail!("모델·라이브러리 다운로드에 동의해 주세요.");
@@ -322,7 +400,6 @@ impl Backend {
                     bail!("로컬 이미지→3D에는 최소 16GB 메모리가 필요합니다. 기존 모델 다듬기는 계속 사용할 수 있습니다.");
                 }
                 self.ensure_workers_idle()?;
-                let interpreter = python().context("Apple Silicon용 CPython 3.9가 필요합니다. 시스템 Python 또는 설치한 Python 버전을 확인해 주세요.")?;
                 let script = self.quality3d_worker("image3d", "setup.py")?;
                 if self.inner.quality3d_setup.busy.swap(true, Ordering::SeqCst) {
                     return Ok(self.quality3d_status());
@@ -335,7 +412,7 @@ impl Backend {
                     ("실행 환경 준비".into(), String::new());
                 let backend = self.clone();
                 let handle = thread::spawn(move || {
-                    let outcome = backend.prepare_quality3d(&interpreter, &script);
+                    let outcome = backend.prepare_quality3d(&script);
                     if let Err(error) = outcome {
                         let cancelled = backend.inner.quality3d_setup.cancel.load(Ordering::SeqCst);
                         *backend.inner.quality3d_setup.progress.lock().unwrap() = (
@@ -357,20 +434,31 @@ impl Backend {
         }
     }
 
-    fn prepare_quality3d(&self, python: &Path, script: &Path) -> Result<()> {
+    fn prepare_quality3d(&self, script: &Path) -> Result<()> {
+        #[cfg(windows)]
+        let (python, embedded_archive) = super::python_windows::prepare(
+            &self.inner.data.join("image3d/python312-embedded-v1"),
+            || self.inner.quality3d_setup.cancel.load(Ordering::SeqCst) || self.inner.stop.load(Ordering::SeqCst),
+            |stage, message| { *self.inner.quality3d_setup.progress.lock().unwrap() = (stage.into(), message); },
+        )?;
+        #[cfg(not(windows))]
+        let python = python().context("Apple Silicon용 CPython 3.9가 필요합니다. 시스템 Python 버전을 확인해 주세요.")?;
         let log_root = self.inner.data.join("image3d/setup-logs");
         fs::create_dir_all(&log_root)?;
         let log_path = log_root.join(format!("{}.log", Uuid::new_v4()));
         let output = fs::File::create(&log_path)?;
-        let mut command = Command::new(python);
+        let mut command = Command::new(&python);
         command
+            .args(["-I", "-B"])
             .arg(script)
             .arg("--runtime-root")
             .arg(self.quality3d_runtime())
             .arg("--python-executable")
-            .arg(python)
+            .arg(&python)
             .stdout(output.try_clone()?)
             .stderr(output);
+        #[cfg(windows)]
+        command.arg("--managed-embedded").arg("--embedded-archive").arg(embedded_archive);
         process_environment(&mut command);
         let mut child = crate::process_guard::spawn_guarded(&mut command)?;
         let start = Instant::now();
@@ -766,6 +854,28 @@ impl Backend {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn generation_geometry_numbers_survive_project_json_roundtrips() {
+        // Values from the first actual Windows receipt. Approximate parsing
+        // changed these by one ULP after project persistence, invalidating an
+        // otherwise hash-identical generation artifact and its recorded proof.
+        let input = br#"{"sourceToGlbScale":1.3584998733381375,"area":4.5919379097426804e-11,"color":0.10181345045566559,"error":8.940696716308594e-08}"#;
+        let original: Value = serde_json::from_slice(input).unwrap();
+        let mut persisted = original.clone();
+        for _ in 0..4 {
+            persisted = serde_json::from_slice(&serde_json::to_vec(&persisted).unwrap()).unwrap();
+            assert_eq!(persisted, original);
+        }
+    }
+    #[cfg(windows)]
+    #[test]
+    fn windows_cpu_budget_uses_native_physical_memory() {
+        assert!(reconstruction_supported());
+        let memory = physical_memory_mb();
+        assert!(memory > 0, "Windows native memory query failed");
+        assert_eq!(memory_budget_mb(), if memory >= MINIMUM_MEMORY_MB { (memory / 2).min(16 * 1024) } else { 2048 });
+        assert_eq!(runtime_lock_name(), "runtime-lock-windows.json");
+    }
     fn request() -> Request {
         serde_json::from_value(json!({"action":"quality3d","assetIds":["image1"],"name":"Weapon","quality":"standard","heightMeters":1.,"maxTriangles":10000,"textureResolution":1024,"preserveMaterials":true})).unwrap()
     }

@@ -30,6 +30,7 @@ const LOCAL_LABELS: Record<Local3DStatus['state'], string> = {
   missing: '준비 필요', preparing: '준비 중', ready: '준비 완료', error: '준비 오류', cancelled: '준비 취소됨', unsupported: '사용 불가',
 };
 const ENGINE_LABELS = {godot: 'Godot', unity: 'Unity', unreal: 'Unreal', unknown: '엔진 미확인'};
+const DOWNLOAD_MANIFEST_URL = 'https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json';
 
 // Never render bridge exceptions. Server-provided descriptions can also contain
 // provider diagnostics, so discard sensitive strings rather than partially masking them.
@@ -280,6 +281,8 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     && localStatus.minimumMemoryMb > 0 && localStatus.memoryMb >= localStatus.minimumMemoryMb;
   const localReady = !!localStatus?.supported && localStatus.installed && localStatus.state === 'ready' && !localStatus.busy
     && localStatus.blenderReady && memoryReady && !localError && !localLoading;
+  const download = localStatus?.download && Number.isSafeInteger(localStatus.download.totalBytes) && localStatus.download.totalBytes > 0 ? localStatus.download : null;
+  const downloadSize = download ? `${(download.totalBytes / (1024 ** 3)).toLocaleString('ko-KR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} GiB` : null;
   const selectionValid = referenceIds.length <= 5 && referenceIds.every(assetId => references.some(reference => reference.asset.id === assetId));
   const running = state.runs.some(activeRun);
   const alreadyStarted = !!plan && state.runs.some(run => run.planId === plan.id);
@@ -442,7 +445,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     finally {finish(captured, name);}
   }
 
-  async function prepareLocal(action: 'quality3d_status' | 'quality3d_prepare' | 'quality3d_cancel_setup') {
+  async function prepareLocal(action: 'quality3d_status' | 'quality3d_prepare' | 'quality3d_cancel_setup' | 'quality3d_open_download_info' | 'quality3d_open_runtime_guide') {
     if (action === 'quality3d_prepare' && (!downloadApproved || !localStatus?.supported || !memoryReady || localStatus.busy || localStatus.state === 'preparing' || localReady || localLoading)) return;
     if (action === 'quality3d_cancel_setup' && localStatus?.state !== 'preparing') return;
     const name = `local:${action}`;
@@ -453,7 +456,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     try {
       const next = await command<Local3DStatus>(action === 'quality3d_prepare' ? {action, confirmed: true} : {action});
       if (currentScope(captured)) {setLocalStatus(next); setLocalLoading(false); if (action === 'quality3d_prepare') setDownloadApproved(false);}
-    } catch (cause) {if (currentScope(captured)) setLocalError(safeError(cause, '로컬 3D 준비 요청을 확인하지 못했습니다. 준비 상태를 다시 확인하세요.'));}
+    } catch (cause) {if (currentScope(captured)) setLocalError(safeError(cause, action === 'quality3d_open_download_info' || action === 'quality3d_open_runtime_guide' ? '안내 페이지를 열지 못했습니다. 기본 브라우저 설정을 확인하세요.' : '로컬 3D 준비 요청을 확인하지 못했습니다. 준비 상태를 다시 확인하세요.'));}
     finally {finish(captured, name);}
   }
 
@@ -507,7 +510,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
           <fieldset className="production-output" disabled={draftsDisabled || !desktop} aria-describedby={modelUnavailable ? `${id}-model-limit` : undefined}><legend>만들 에셋</legend>
             {([{value: 'images', label: '이미지', icon: <FileImage size={20}/>}, {value: 'models', label: '3D 모델', icon: <Box size={20}/>}, {value: 'mixed', label: '이미지 + 3D', icon: <Layers size={20}/>} ] as const).map(choice => <label key={choice.value} className={output === choice.value ? 'selected' : ''}><input type="radio" name={`${id}-output`} value={choice.value} checked={output === choice.value} disabled={choice.value !== 'images' && desktop && localStatus?.supported !== true} onChange={() => {invalidateDraft(); setOutput(choice.value);}}/>{choice.icon}<span>{choice.label}</span></label>)}
           </fieldset>
-          {modelUnavailable && <p id={`${id}-model-limit`} className="production-message warning" role="status">이 제작 화면의 이미지→3D는 현재 Mac 전용입니다. 이 환경에서는 이미지 제작을 이용하세요.</p>}
+          {modelUnavailable && <p id={`${id}-model-limit`} className="production-message warning" role="status">이 기기에서는 이미지→3D를 지원하지 않습니다. Windows x64 또는 Apple Silicon Mac 앱에서 사용하세요. 이 환경에서는 이미지 제작을 이용할 수 있습니다.</p>}
           <div className="production-reference-actions"><button className="production-button" type="button" onClick={() => void importReferences()} disabled={!desktop || working}><Download size={17}/>{operation === 'import' ? '참고 파일 가져오는 중' : '참고 이미지·모델 추가'}</button><span className="production-muted">선택 사항</span></div>
           <details className="production-references" ref={referenceSection}><summary>참고 에셋 선택 <span>선택 사항 · {referenceIds.length}/5</span></summary>
             <p className="production-muted">가져오거나 실제 제작한 에셋 중 최대 5개를 선택하세요. 미리보기 없는 모델은 메타데이터만 참고합니다.</p>
@@ -541,11 +544,24 @@ export default function ProductionHome({snapshot, native, connection, providerCh
           {modelUnavailable && (output !== 'images' || incompatiblePlan) && <div className="production-message warning" role="status"><p>기존 계획과 입력은 보존합니다. 이 환경에서 제작할 이미지 전용 계획으로 전환한 뒤 다시 분석하세요.</p><button className="production-button" type="button" disabled={working || running} onClick={switchToImagePlan}>이미지 전용으로 전환</button></div>}
           {needsLocal && !modelUnavailable && <section className="production-local" aria-labelledby={`${id}-local`}><div className="production-heading"><h3 id={`${id}-local`}><Box size={18}/>3D 제작 준비</h3><span className="production-badge" role="status">{!desktop ? '데스크톱 전용' : localLoading ? '확인 중' : localError ? '확인 필요' : localStatus ? localReady ? '준비 완료' : LOCAL_LABELS[localStatus.state] === '준비 완료' ? '준비 확인 필요' : LOCAL_LABELS[localStatus.state] : '확인 필요'}</span></div>
             <p>GPT로 개념 이미지를 만든 뒤, 로컬 TripoSR로 3D 모델을 재구성합니다. 형상과 텍스처는 제작 결과에서 확인하세요.</p>
+            <p className="production-muted">Windows x64 · Apple Silicon Mac 지원. 최소 메모리 16 GB와 Blender가 필요합니다. 아래에서 로컬 모델을 한 번 준비하세요.</p>
+            {download && <p>최초 준비 용량은 총 약 {downloadSize}입니다. Python도 앱이 함께 준비하므로 따로 설치할 필요가 없습니다.</p>}
             {desktop && localStatus && <p role="status">{safeText(localStatus.message, '이 기기의 로컬 3D 준비 상태를 확인하세요.')}</p>}
             {desktop && localStatus && !memoryReady && <p className="production-message warning">기기의 메모리가 로컬 모델의 요구량을 충족하는지 확인하세요.</p>}
             {desktop && localStatus?.state === 'ready' && !localStatus.blenderReady && <p className="production-message warning">3D 결과를 준비하려면 Blender 연결이 필요합니다. 에셋 작업실에서 환경을 확인하세요.</p>}
             {localError && <p className="production-message warning" role="alert">{localError}</p>}
-            {!localReady && localStatus?.state !== 'preparing' && <label className="production-download-consent"><input type="checkbox" checked={downloadApproved} disabled={!desktop || working || localLoading || !localStatus?.supported || !memoryReady || localStatus.busy} onChange={event => setDownloadApproved(event.target.checked)}/><span>TripoSR 가중치와 의존성 다운로드에 동의합니다.{localStatus && localStatus.weightBytes > 0 ? ` (가중치 약 ${(localStatus.weightBytes / 1_000_000_000).toLocaleString('ko-KR', {maximumFractionDigits: 2})} GB)` : ''}</span></label>}
+            {download && <details className="production-download-info"><summary>다운로드 정보</summary>
+              <p>실행 환경: {safeText(download.runtime, '실행 환경 정보 확인 필요')}</p>
+              <p>전체 용량: {download.totalBytes.toLocaleString('ko-KR')} 바이트 (약 {downloadSize})</p>
+              <p>공식 출처: {download.sources.map(source => safeText(source, '출처 확인 필요', 120)).join(' · ')}</p>
+              <p>라이선스: {download.licenses.map(license => safeText(license, '라이선스 확인 필요', 120)).join(' · ')}</p>
+              <p>Microsoft Visual C++ x64 실행 라이브러리 필요</p>
+              <button className="production-text-button" type="button" disabled={!desktop || working || localLoading} onClick={() => void prepareLocal('quality3d_open_runtime_guide')}>Windows 실행 라이브러리 안내</button>
+              {download.manifestUrl === DOWNLOAD_MANIFEST_URL && (desktop
+                ? <button className="production-text-button" type="button" disabled={working || localLoading} onClick={() => void prepareLocal('quality3d_open_download_info')}>파일별 버전·출처·SHA-256 보기</button>
+                : <a className="production-text-button" href={DOWNLOAD_MANIFEST_URL} target="_blank" rel="noopener noreferrer">파일별 버전·출처·SHA-256 보기</a>)}
+            </details>}
+            {!localReady && localStatus?.state !== 'preparing' && <label className="production-download-consent"><input type="checkbox" checked={downloadApproved} disabled={!desktop || working || localLoading || !localStatus?.supported || !memoryReady || localStatus.busy} onChange={event => setDownloadApproved(event.target.checked)}/><span>TripoSR 가중치와 의존성 다운로드에 동의합니다.{download ? ` (Python 포함 · 총 약 ${downloadSize})` : localStatus && localStatus.weightBytes > 0 ? ` (가중치 약 ${(localStatus.weightBytes / 1_000_000_000).toLocaleString('ko-KR', {maximumFractionDigits: 2})} GB)` : ''}</span></label>}
             <div className="production-local-actions">{!localReady && localStatus?.state !== 'preparing' && <button className="production-button" type="button" disabled={!desktop || working || localLoading || !downloadApproved || !localStatus?.supported || !memoryReady || localStatus.busy} onClick={() => void prepareLocal('quality3d_prepare')}><Download size={16}/>로컬 3D 준비</button>}
               {localStatus?.state === 'preparing' && <button className="production-button" type="button" disabled={!desktop || working} onClick={() => void prepareLocal('quality3d_cancel_setup')}><Square size={16}/>준비 취소</button>}
               <button className="production-text-button" type="button" disabled={!desktop || working || localLoading} onClick={() => void prepareLocal('quality3d_status')}><RefreshCw size={16}/>3D 상태 다시 확인</button>

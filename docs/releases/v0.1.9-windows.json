@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.9",
+  "platform": "windows-x64",
+  "checkedAt": "2026-10-05T16:35:33.414Z",
+  "status": "native-and-public-download-verified",
+  "sourceBaselineCommit": "3932b8346bb2d89b3b3530e3fe6d180d2b3ed7c9",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.9",
+  "macReleasePreserved": "0.1.8",
+  "feature": "Windows production image-to-3D",
+  "runtime": {
+    "python": "3.12.10",
+    "torch": "2.2.2+cpu",
+    "modelId": "stabilityai/TripoSR",
+    "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+    "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+    "downloadBytes": 2034000316,
+    "systemPythonRequired": false,
+    "cudaRequired": false,
+    "vcRuntimeRequired": true,
+    "minimumMemoryMb": 16384,
+    "cpuThreads": 2,
+    "reservedRamMb": 8192
+  },
+  "nativeImage3d": {
+    "passed": true,
+    "quality": "standard",
+    "elapsedSeconds": 170.9423464,
+    "inferenceSeconds": 57.188,
+    "peakRssBytes": 3663228928,
+    "triangleCounts": {
+      "game": 9793,
+      "highDetail": 23244,
+      "lod1": 4792,
+      "original": 23244
+    },
+    "projectReopened": true,
+    "sourcePreserved": true,
+    "rawGlbSha256": "e5a4fd6a5f8a84d23ae174debf79b54679a8517b12b6f9743d27dd36d08ac88b",
+    "source": {
+      "assetId": "d9238dcf-e9d3-41e6-8604-32d4a554234f",
+      "bytes": 18339,
+      "originalVersionId": "0995986b-6732-4507-b08b-474a7a515bf9",
+      "path": "C:\\masset\\apps\\desktop\\src-tauri\\../../../workers/image3d/fixtures/blue-sphere.png",
+      "sha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4"
+    },
+    "report": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-standard-002\\image3d-proof.json",
+      "bytes": 56412,
+      "sha256": "5718069a214ca32e4c81e1e73de83e63726180b6b8da6904ffe29662ca8fd03c"
+    },
+    "independent": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-standard-002\\independent-review\\independent-review.json",
+      "bytes": 3690,
+      "sha256": "77b9ea2ae3f4da7964de33073b1ecdacac2deced8966d9bf3dab0ec021add6fc"
+    },
+    "roleAwareExport": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-standard-002\\independent-review\\independent-export-role-aware-02.json",
+      "bytes": 13061,
+      "sha256": "0b0e1aa432700014d7606e085c872923e2ae45ae48ca9ffbdbfc75298dd58224"
+    }
+  },
+  "productionModel": {
+    "passed": true,
+    "realGptGeneration": false,
+    "fixtureImage": true,
+    "deliveryFiles": 5,
+    "sourceOriginalPreserved": true,
+    "gameOriginalPreserved": true,
+    "quality": "high",
+    "elapsedSeconds": 177.3508538,
+    "inferenceSeconds": 73.672,
+    "peakRssBytes": 3659202560,
+    "rawTriangles": 57252,
+    "report": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-production-high-005\\production-image3d-proof.json",
+      "bytes": 9645,
+      "sha256": "ce24371975504cd27a295bf0c819f3a4a2deb7cdafd2d67d3d6c8c9d9ba0be12"
+    }
+  },
+  "checks": {
+    "rustPassed": 215,
+    "rustIgnored": 5,
+    "frontendPassed": 151,
+    "frontendSkipped": 3,
+    "finalArtifactVerifierPassed": 25,
+    "browserFlowsPassed": 6,
+    "managedWorkerPassed": 32,
+    "managedWorkerSkipped": 1
+  },
+  "boundaries": {
+    "freshGptGeneration": false,
+    "cleanMachineTested": false,
+    "installerLifecycleTested": false,
+    "windowsAuthenticodeSigned": false,
+    "derivedGameMeshWatertightCertified": false,
+    "macNativeBuildPerformedInThisWindowsRun": false
+  },
+  "sourceBuildCommit": "4a7ef253afe66412f59d0cd6ded3cd3e22c7b085",
+  "integratedMasterCommit": "0020699508f4971162463f19990f4e587e716bcd",
+  "package": {
+    "installer": {
+      "filename": "AssetStudio_0.1.9_x64-setup.exe",
+      "bytes": 11044738,
+      "sha256": "952241c2ca8b2417b769aee94b9d9bbb1ada8c02d843577bedebbb8a0511d373"
+    },
+    "portable": {
+      "filename": "AssetStudio-windows-x64-portable.zip",
+      "bytes": 10772211,
+      "sha256": "35a07370ce729d33e8c3122933414fef4d2e93d70e345a744968a0f77d67970d"
+    },
+    "portableFilesVerified": 376,
+    "installerResourcesVerified": 369,
+    "developerProofExecutablesExcluded": true,
+    "installedExecutableSha256": "b2e98b5c1aee0743198361b054e7260bdc8723c06004b8f5087d826d1ce87ee7",
+    "portableExecutableSha256": "5cae3908e30b3592928940b2125199e4e5bec0203cd7d300e542fa8d5091bbc1",
+    "officialTauriBundleStampOnly": true,
+    "installerAudit": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\installer-shipping-audit\\installer-audit.json",
+      "bytes": 120561,
+      "sha256": "b222520fc5e048f0556cbab3b03c1d62f7363b79dd4aa78ee705f00bc605decc"
+    }
+  },
+  "packagedNativeImage3d": {
+    "passed": true,
+    "resourcesRoot": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\installer-shipping-audit\\extracted",
+    "quality": "standard",
+    "elapsedSeconds": 143.2969455,
+    "nativeJobElapsedSeconds": 142.2715781,
+    "inferenceSeconds": 51.266,
+    "peakRssBytes": 3659911168,
+    "rawVertices": 11644,
+    "rawTriangles": 23244,
+    "sourcePreserved": true,
+    "projectReopened": true,
+    "projectFilesVerified": 16,
+    "exportFilesVerified": 17,
+    "report": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-packaged-standard-006\\image3d-proof.json",
+      "bytes": 64395,
+      "sha256": "f6dcdd6095e23032025d8115cf9a8ef218f5581061697ca6d0f2c021346e0b9a"
+    },
+    "scope": "Actual installed-package workers and frozen hashes through the native backend, consented managed CPU runtime, Blender, project reopening and export. CC0 fixture; no fresh GPT request.",
+    "independent": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-packaged-standard-006\\independent-review-001\\independent-packaged-review.json",
+      "bytes": 6808,
+      "sha256": "69329e6794e7efa2cbe942c488683e271fe849ac78be5f2a65400eba51e36054"
+    }
+  },
+  "nativeWindow": {
+    "portablePassed": true,
+    "installedPackagePassed": true,
+    "windowsProductionModeVerified": true,
+    "actualGlbFetchedAndRendered": true,
+    "defaultFramebufferDrawCalls": 12,
+    "decodedFixtureImages": 12,
+    "portable": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-window-portable-shipping.qa.json",
+      "bytes": 1575,
+      "sha256": "99266aad496f5892f6154ae038d05b9c38800ce7cf40d7fe4b8dade80936ce29"
+    },
+    "installedPackage": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\native-window-installer-shipping.qa.json",
+      "bytes": 1394,
+      "sha256": "2ab49f84bae6e22d76d4f6c9a25305d002daa3a8b8070fad22ff675f6c82c07b"
+    }
+  },
+  "updater": {
+    "localSignatureAndSignedVersionVerified": true,
+    "tamperedPayloadRejected": true,
+    "versionReplayRejected": true,
+    "local": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\updater-local-shipping\\update-proof.json",
+      "bytes": 660,
+      "sha256": "425d0945c9a786beea915f43749eab1e6f65cda0a7f39f22ffc4277e6d801e88"
+    },
+    "installerExecuted": false,
+    "publicNativePluginProof": {
+      "path": "C:\\masset\\output\\windows-image3d\\run-20261005-150923-ccb2bca3\\updater-public-shipping\\update-proof.json",
+      "bytes": 1219,
+      "sha256": "6fdbebffeba225cc9d264a294847c0165c7acdd8be911502e8bad758a31131ba"
+    },
+    "publicNativePluginDownloadVerified": true
+  }
+}
