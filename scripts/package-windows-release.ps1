@@ -47,7 +47,7 @@ Extract the entire folder and run asset-desktop.exe. Keep examples/, workers/, l
 Use the in-app usage guide or docs/windows-quickstart.md. Projects and input originals are preserved.
 Node/Rust development tools are not required. Microsoft WebView2 must already be installed.
 Blender is optional, separate and never downloaded by the app; worker GPL source/license are included.
-The image-to-3D worker source/notices are included; its local model is not bundled. Windows image-to-3D support remains unverified and disabled.
+Windows x64 image-to-3D uses an app-managed CPython3.12 CPU runtime. The first preparation requires explicit download consent (~1.89GiB); model weights are not bundled. Blender, at least 16GB RAM and Microsoft Visual C++ 2015-2022 x64 runtime are required. See docs/model-quality.md and the release's native verification record.
 Windows Authenticode signing and clean-machine support are unverified. Update installer signatures are separate.
 Third-party terms, exact license texts and matching unmodified MPL sources: docs/licenses/.
 Use the signed NSIS installer for the standard installation/update path.

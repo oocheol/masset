@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).absolute().parent))
-from runtime_common import WorkerError, read_json, verify_runtime
+from runtime_common import WorkerError, read_json, setup_lock_active, verify_runtime
 
 
 def status(root):
@@ -20,7 +20,7 @@ def status(root):
             except Exception:
                 return {"state": "error", "installed": False, "message": "Runtime setup metadata is invalid"}
         return {"state": "missing", "installed": False,
-                "message": "Runtime setup is in progress" if (root / ".setup-lock").exists() else "Pinned CPU runtime is not installed"}
+                "message": "Runtime setup is in progress" if setup_lock_active(root / ".setup-lock") else "Pinned CPU runtime is not installed"}
     try:
         ready = verify_runtime(root)
         result = {k: ready[k] for k in ("interpreterPath", "pythonVersion", "modelId", "modelRevision",

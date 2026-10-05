@@ -2,11 +2,15 @@
 
 Latest update: 2026-10-05 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
 
-## Current 0.1.8 records
+## Current Windows 0.1.9 and Mac 0.1.8 records
+
+The [Windows 0.1.9 record](releases/v0.1.9-windows.md) covers app-managed CPython 3.12.10, hash-pinned PyTorch CPU dependencies and real local TripoSR image reconstruction. Native generation, Blender processing, exact generation metadata, project reopen and export were verified on Windows x64. The model download requires explicit consent; system Python and CUDA are not required. Blender, at least 16GB RAM and Microsoft Visual C++ x64 runtime are prerequisites. No new live GPT request or clean-machine installation is certified by these local reconstruction checks. Mac remains the independently verified 0.1.8 release below.
+
+## Historical 0.1.8 records
 
 The [Windows 0.1.8 release record](releases/v0.1.8-windows.md) covers the Windows native package, project-path regression, copied application, packaged GLB workers and updater payload. The [Mac 0.1.8 release record](releases/v0.1.8-macos.md) and its [distribution evidence](releases/v0.1.8-distribution.json) record the independently built Apple Silicon app. Windows uses the existing Windows updater key; the published Mac packages and separate update channel are retained.
 
-Windows TripoSR image reconstruction is unsupported. New Windows release checks make no additional live-provider request and do not establish a clean-machine installation or replacement of a user's existing application. The older sections below retain their original version-specific scope.
+Windows TripoSR image reconstruction was unsupported in 0.1.8. That release made no additional live-provider request and did not establish a clean-machine installation or replacement of a user's existing application. The older sections below retain their original version-specific scope.
 
 ## 0.1.2 macOS trial publication
 

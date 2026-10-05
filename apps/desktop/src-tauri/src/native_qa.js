@@ -15,8 +15,7 @@
     if(command==='workspace_command'&&productionPhase&&request?.action==='production_state'&&productionState)return Promise.resolve(structuredClone(productionState));
     if(command==='workspace_command'&&productionPhase&&request?.action==='production_plan'){
       check(productionState?.connection&&request.uploadApproved===true,'Production root/consent unavailable');
-      const imageOnly=state.ipcEnvironment.platform!=='macos';
-      if(imageOnly)check(request.output==='images','Unsupported native platform must plan only images');
+      const imageOnly=request.output==='images';
       const names=imageOnly?['Fuel Cell','Mining Tool']:['Fuel Cell','Basalt Asteroid'];
       productionState.plan={schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:request.output,mode:'new',gameRoot:productionState.connection.root,fingerprint:productionState.connection.fingerprint,spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Isolated native UI fixture; two separate game assets.',warnings:['UI-only fixture: no real provider or model execution.'],items:names.map((name,index)=>({id:crypto.randomUUID(),name,kind:index&&!imageOnly?'model':'sprite',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'Independent game asset',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))};
       return Promise.resolve(structuredClone(productionState));
@@ -86,9 +85,16 @@
     gameUiBaseline=await invoke({action:'snapshot'});productionPhase=true;
     const productionUi=state.productionUi={defaultGenerationHome:true,nativeRootScan:true,plannerResponseMocked:true,localStatusMocked:state.ipcEnvironment.platform==='macos',submissionIntercepted:true,providerRequests:0,realGeneration:false,passed:false};
     if(state.ipcEnvironment.platform==='windows'){
-      await wait('Windows image default',()=>document.querySelector('.production-home input[type="radio"][value="images"]')?.checked,5000);
-      check(['models','mixed'].every(value=>document.querySelector(`.production-home input[type="radio"][value="${value}"]`)?.disabled),'Windows reconstruction choices must be disabled');
-      productionUi.windowsImageOnlyDefault=true;productionUi.unsupportedReconstructionBlocked=true;
+      const localStatus=await invoke({action:'quality3d_status'});
+      check(localStatus.supported===true&&localStatus.memoryMb>0,'Windows native CPU reconstruction capability unavailable');
+      await wait('Windows mixed default',()=>document.querySelector('.production-home input[type="radio"][value="mixed"]')?.checked,5000);
+      check(['models','mixed'].every(value=>document.querySelector(`.production-home input[type="radio"][value="${value}"]`)?.disabled===false),'Windows reconstruction choices must be available');
+      check(!document.querySelector('.production-home')?.textContent.includes('현재 Mac 전용'),'Obsolete Windows restriction remains');
+      productionUi.windowsMixedDefault=true;productionUi.windowsReconstructionAvailable=true;productionUi.nativeLocalStatus=localStatus;
+      // This UI fixture still intercepts generation; actual model inference is
+      // verified separately by the production backend image3d proof harness.
+      document.querySelector('.production-home input[type="radio"][value="images"]').click();
+      await wait('Windows image selection',()=>document.querySelector('.production-home input[type="radio"][value="images"]')?.checked,5000);
     }
     const rootButton=await wait('Production folder connect',()=>[...document.querySelectorAll('.production-home button')].find(b=>b.textContent.trim()==='게임 프로젝트 루트 연결'&&!b.disabled),5000);rootButton.click();
     await wait('Real project root scan',()=>productionState?.connection?.engine==='godot'&&document.querySelector('.production-project-name'),5000);

@@ -25,6 +25,8 @@ mod production;
 mod project_scan;
 mod provider;
 mod quality3d;
+#[cfg(windows)]
+mod python_windows;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -349,7 +351,7 @@ impl Backend {
         }
         if matches!(
             action,
-            "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup"
+            "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup" | "quality3d_open_download_info" | "quality3d_open_runtime_guide"
         ) {
             if self.inner.stop.load(Ordering::SeqCst) {
                 bail!("작업 백엔드가 종료되었습니다.");

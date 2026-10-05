@@ -136,7 +136,7 @@ Read docs/windows-quickstart.md for the Korean usage guide; related provider/pla
 This unsigned build is not a completed clean-machine install/upgrade/uninstall certification.
 Microsoft WebView2 is required. Native DLL dependencies must be audited separately; no runtime is downloaded by this build path.
 Blender is optional and must be installed separately with consent. Its GPL worker source/license are included.
-The image-to-3D worker source/notices are included; its local model is not bundled. Windows image-to-3D support remains unverified and disabled.
+Windows x64 image-to-3D uses an app-managed CPython3.12 CPU runtime. The first preparation requires explicit download consent (~1.89GiB); model weights are not bundled. Blender, at least 16GB RAM and Microsoft Visual C++ 2015-2022 x64 runtime are required. See docs/model-quality.md and the release's native verification record.
 Resolved dependency license texts and copyright notices are in docs/licenses/THIRD_PARTY_LICENSES.txt.
 The backend QA CLI remains a developer test binary and is not included in this portable application.
 '@ | Set-Content -LiteralPath (Join-Path $qaPortableDirectory 'PORTABLE-README.txt') -Encoding utf8

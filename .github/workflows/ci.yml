@@ -36,6 +36,8 @@ jobs:
       - run: npm test
       - name: Blender data and Windows path boundaries (no Blender runtime)
         run: python -m unittest discover -s workers/blender-quality/tests -p "test_*.py"
+      - name: Image reconstruction platform and consent boundaries (no model download)
+        run: python -m unittest discover -s workers/image3d/tests -p "test_worker.py"
       - run: npm run build
       - run: npm run site:build
       - run: npx playwright test

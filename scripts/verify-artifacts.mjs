@@ -1,7 +1,7 @@
 /** Independent, read-only export inspection. No app database or worker code is loaded. */
 import { createHash } from 'node:crypto';
 import { readFile, realpath, stat } from 'node:fs/promises';
-import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { basename, dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { PNG } from 'pngjs';
 import { Box3 } from 'three';
@@ -76,7 +76,7 @@ function inspectPng(bytes) {
   };
 }
 
-function glbJson(bytes) {
+function glbJson(bytes, source = null) {
   if (bytes.length < 28 || bytes.toString('ascii', 0, 4) !== 'glTF' || bytes.readUInt32LE(4) !== 2 || bytes.readUInt32LE(8) !== bytes.length) fail('Invalid GLB 2.0 container');
   let offset = 12, json = null;
   while (offset < bytes.length) {
@@ -93,13 +93,17 @@ function glbJson(bytes) {
   for (const buffer of json.buffers ?? []) if (buffer.uri) fail('Export GLB references an external buffer');
   for (const image of json.images ?? []) if (image.uri && !image.uri.startsWith('data:image/png;base64,')) fail('Export GLB references an external or unsupported texture');
   for (const mesh of json.meshes ?? []) for (const primitive of mesh.primitives ?? []) {
-    if (!Number.isInteger(primitive.material) || primitive.material < 0 || primitive.material >= (json.materials ?? []).length) fail('GLB primitive has no valid declared material reference');
+    if (!(source?.role === 'raw-reconstruction' && primitive.material === undefined) && (!Number.isInteger(primitive.material) || primitive.material < 0 || primitive.material >= (json.materials ?? []).length)) fail('GLB primitive has no valid declared material reference');
+    if (source?.vertexColors) {
+      const color = json.accessors?.[primitive.attributes?.COLOR_0];
+      if (!color || !['VEC3', 'VEC4'].includes(color.type) || (source.role === 'raw-reconstruction' && (color.componentType !== 5126 || color.normalized))) fail('Reconstruction source lacks declared FLOAT32 vertex colors');
+    }
   }
   return json;
 }
 
-export async function inspectGlb(bytes) {
-  const json = glbJson(bytes);
+export async function inspectGlb(bytes, source = null) {
+  const json = glbJson(bytes, source);
   const loader = new GLTFLoader();
   loader.manager.setURLModifier((uri) => {
     if (!uri.startsWith('blob:') && !uri.startsWith('data:image/png;base64,')) fail('GLTFLoader attempted external resource access');
@@ -108,21 +112,29 @@ export async function inspectGlb(bytes) {
   const gltf = await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), '');
   gltf.scene.updateMatrixWorld(true);
   const bounds = new Box3().setFromObject(gltf.scene);
-  let meshes = 0, indexedMeshes = 0, vertices = 0, triangles = 0, degenerateTriangles = 0, maxNormalDeviation = 0;
+  let meshes = 0, indexedMeshes = 0, vertices = 0, triangles = 0, degenerateTriangles = 0, maxNormalDeviation = 0, derivedNormalMeshes = 0;
   const materials = new Set();
   gltf.scene.traverse((object) => {
     if (!object.isMesh) return;
     meshes++;
     const geometry = object.geometry, position = geometry.getAttribute('position');
-    const normal = geometry.getAttribute('normal'), uv = geometry.getAttribute('uv'), index = geometry.getIndex();
-    if (!position || position.itemSize !== 3 || !position.count || !normal || normal.itemSize !== 3 || normal.count !== position.count || !uv || uv.itemSize !== 2 || uv.count !== position.count) fail('GLB mesh lacks matching positions, normals, or UVs');
+    let normal = geometry.getAttribute('normal');
+    const uv = geometry.getAttribute('uv'), color = geometry.getAttribute('color'), index = geometry.getIndex();
+    if (!normal && source?.role === 'raw-reconstruction') {
+      geometry.computeVertexNormals();
+      normal = geometry.getAttribute('normal');
+      derivedNormalMeshes++;
+    }
+    if (!position || position.itemSize !== 3 || !position.count || !normal || normal.itemSize !== 3 || normal.count !== position.count || (!source?.vertexColors && !uv) || (uv && (uv.itemSize !== 2 || uv.count !== position.count))) fail('GLB mesh lacks matching positions, normals, or UVs');
+    if (source?.vertexColors && (!color || ![3, 4].includes(color.itemSize) || color.count !== position.count || !index)) fail('Reconstruction source lacks matching indexed vertex colors');
     const faceVertexCount = index ? index.count : position.count;
     if (!faceVertexCount || faceVertexCount % 3 !== 0) fail('GLB mesh does not contain complete triangles');
     if (index) indexedMeshes++;
-    for (const attribute of [position, normal, uv]) {
+    for (const attribute of [position, normal, uv, source?.vertexColors ? color : null].filter(Boolean)) {
       const getters = ['getX', 'getY', 'getZ', 'getW'];
       for (let i = 0; i < attribute.count; i++) for (let component = 0; component < attribute.itemSize; component++) {
         if (!Number.isFinite(attribute[getters[component]](i))) fail('GLB attribute contains non-finite values');
+        if (attribute === color && (attribute[getters[component]](i) < 0 || attribute[getters[component]](i) > 1)) fail('GLB vertex color is outside the linear RGB range');
       }
     }
     for (let i = 0; i < normal.count; i++) {
@@ -149,7 +161,7 @@ export async function inspectGlb(bytes) {
   const pivotDeclared = (json.nodes ?? []).some(node => node.extras?.assetStudioPivot === 'bottom-center');
   const tolerance = Math.max(...dimensions) * 1e-4;
   if (pivotDeclared && (Math.abs(min[1]) > tolerance || Math.abs(min[0]+max[0]) > tolerance || Math.abs(min[2]+max[2]) > tolerance)) fail('GLB bottom-center pivot declaration differs from its world-space bounds');
-  return {loader: 'Three.js GLTFLoader', meshes, indexedMeshes, vertices, triangles, materials: materials.size, dimensions, boundsMin: min, boundsMax: max, axis: 'Y-up (glTF convention)', coordinateUnit: 'm (glTF convention)', pivot: pivotDeclared ? 'bottom-center verified' : 'no explicit pivot declaration', degenerateTriangles, maxNormalDeviation, images: (json.images ?? []).length};
+  return {loader: 'Three.js GLTFLoader', meshes, indexedMeshes, vertices, triangles, materials: materials.size, dimensions, boundsMin: min, boundsMax: max, axis: 'Y-up (glTF convention)', coordinateUnit: 'm (glTF convention)', pivot: pivotDeclared ? 'bottom-center verified' : 'no explicit pivot declaration', degenerateTriangles, maxNormalDeviation, derivedNormalMeshes, images: (json.images ?? []).length};
 }
 
 function declarations(manifest) {
@@ -186,10 +198,18 @@ function qualityMeshDeclaration(entry) {
     if (artifact?.format !== 'glb' || artifact.role !== (role === 'high' ? 'source' : 'output')) fail('Quality GLB role references a missing or incompatible artifact');
   }
   const role = roles.find(role => files[role] === entry.id);
-  if (!role) fail('Quality GLB has no declared mesh role');
+  const reconstruction = settings.sourceKind === 'image3d' && entry.version.source === 'local_image3d' ? settings.localReconstruction : null;
+  const colored = reconstruction?.colorEncoding?.exportColorSpace === 'linear RGB' && reconstruction.colorEncoding.componentType === 'FLOAT32' && reconstruction.geometry?.vertexColorSpace === 'linear RGB' && reconstruction.geometry.vertexColors === true;
+  if (!role) {
+    const receipts = reconstruction?.artifacts?.filter(candidate => candidate.basename === 'mesh.glb');
+    const receipt = receipts?.length === 1 ? receipts[0] : null;
+    const geometry = reconstruction?.geometry;
+    if (entry.role !== 'source' || !colored || !receipt || basename(entry.path.replaceAll('\\', '/')) !== receipt.basename || receipt.sha256 !== entry.sha256 || receipt.bytes !== entry.bytes || !Number.isSafeInteger(geometry.triangleCount) || geometry.triangleCount < 1 || !Number.isSafeInteger(geometry.vertexCount) || geometry.vertexCount < 4) fail('Quality GLB has no declared mesh role or matching reconstruction receipt');
+    return {role: 'raw-reconstruction', triangles: geometry.triangleCount, vertices: geometry.vertexCount, vertexColors: true};
+  }
   const triangles = settings.qualityReport?.triangleCounts?.[role === 'high' ? 'highDetail' : role];
   if (!Number.isSafeInteger(triangles) || triangles < 1) fail('Quality GLB triangle count is missing');
-  return {role, triangles};
+  return {role, triangles, vertexColors: role === 'high' && colored};
 }
 
 function atlasFrames(metadata) {
@@ -268,10 +288,12 @@ export async function verifyArtifacts(input) {
         if (entry.active && entry.role === 'output' && entry.asset?.kind !== 'model' && entry.asset?.width && entry.asset?.height && (image.width !== entry.asset.width || image.height !== entry.asset.height)) fail('Active output dimensions differ from asset metadata');
         if (image.borderPixels && entry.role === 'output' && entry.asset?.kind !== 'model') report.warnings.push(`${entry.path}: visible border pixels; inspect intentional tiling/crop separately`);
       } else if (format === 'glb') {
-        const model = await inspectGlb(bytes); item.mesh = model; item.checks.push('independent-gltf-loader', 'triangle-nonplanar-geometry', 'indices-checked-when-present', 'finite-normals-uv', 'materials');
         const quality = qualityMeshDeclaration(entry);
+        const model = await inspectGlb(bytes, quality); item.mesh = model; item.checks.push('independent-gltf-loader', 'triangle-nonplanar-geometry', 'indices-checked-when-present', quality?.vertexColors ? 'finite-normals-linear-vertex-colors' : 'finite-normals-uv', quality?.role === 'raw-reconstruction' ? 'reconstruction-receipt' : 'materials');
+        if (model.derivedNormalMeshes) item.checks.push('raw-source-normals-derived-from-geometry');
         if (quality) {
           if (quality.triangles !== model.triangles) fail(`GLB triangle count differs from ${quality.role} quality metadata`);
+          if (quality.vertices && quality.vertices !== model.vertices) fail('GLB vertex count differs from reconstruction metadata');
           item.meshRole = quality.role;
           item.checks.push('quality-role-triangle-count');
         }

@@ -26,8 +26,10 @@ sys.path.insert(0, str(Path(__file__).absolute().parent))
 from runtime_common import (CODE_REVISION, CPU_THREADS, DINO_REVISION, MODEL_ID,
                             MODEL_REVISION, MODEL_SHA256, MODULE_ROOT, SCHEMA_VERSION,
                             WorkerError, atomic_json, check_file, clean_env, emit,
-                            file_receipt, lock_data, read_json, run_json, runtime_python,
-                            utc_now, verify_runtime)
+                            embedded_files, file_receipt, lock_data, lock_path,
+                            read_json, release_windows_setup_lock, require_windows_vc_runtime,
+                            run_json, runtime_python, utc_now, validate_interpreter,
+                            verify_runtime, windows_setup_lock)
 from upstream_patch import patch_source
 
 PRINT_LOCK = threading.Lock()
@@ -41,7 +43,8 @@ def progress(stage, message, **fields):
 def approved_url(url):
     parsed = urllib.parse.urlparse(url)
     host = parsed.hostname or ""
-    allowed = host in {"pypi.org", "files.pythonhosted.org", "codeload.github.com", "huggingface.co"}
+    allowed = host in {"pypi.org", "files.pythonhosted.org", "codeload.github.com", "huggingface.co",
+                       "download.pytorch.org", "download-r2.pytorch.org", "www.python.org"}
     allowed = allowed or host.endswith((".huggingface.co", ".hf.co", ".xethub.hf.co"))
     if parsed.scheme != "https" or not allowed or parsed.username or parsed.password:
         raise WorkerError("download_origin", "Runtime download requires an approved public HTTPS origin")
@@ -200,26 +203,60 @@ def build_antlr(root, entry):
             "sourceUrl": source["url"], "locallyBuiltPurePython": True}
 
 
-def install_dependencies(root, lock):
+def pip_from_wheel(python, wheel, arguments):
+    # The pip wheel is verified against official metadata before this command.
+    # Zipimport avoids get-pip.py, ensurepip and a system-wide installation.
+    code = "import sys;sys.path.insert(0,sys.argv.pop(1));from pip._internal.cli.main import main;sys.exit(main(sys.argv[1:]))"
+    return [python, "-I", "-B", "-c", code, str(wheel), *arguments]
+
+
+def install_embedded_python(root, lock, source):
+    entry = lock["embeddedPython"]
+    files = embedded_files(source, entry)
+    retained = root / "downloads" / entry["filename"]
+    if retained.exists():
+        check_file(retained, entry)
+    else:
+        write_verified(retained, source.read_bytes(), entry)
+    folder = root / "venv"
+    folder.mkdir(exist_ok=True)
+    for name, data in files.items():
+        write_verified(folder / name, data, file_bytes(data))
+    (folder / "Lib" / "site-packages").mkdir(parents=True, exist_ok=True)
+
+
+def install_dependencies(root, lock, managed=False):
     python = str(runtime_python(root))
-    tags = run_json([python, "-I", "-B", "-c",
-                     "import json; from pip._vendor.packaging.tags import sys_tags; print(json.dumps([str(t) for t in sys_tags()]))"], root)
+    tag_code = "import json; from pip._vendor.packaging.tags import sys_tags; print(json.dumps([str(t) for t in sys_tags()]))"
+    if managed:
+        pip_entry = wheel_for(lock["packages"]["pip"], ["py3-none-any"])
+        pip_wheel = root / "wheelhouse" / pip_entry["filename"]
+        download(pip_entry, pip_wheel)
+        tags = run_json([python, "-I", "-B", "-c", "import sys;sys.path.insert(0,sys.argv[1]);" + tag_code,
+                         str(pip_wheel)], root)
+    else:
+        tags = run_json([python, "-I", "-B", "-c", tag_code], root)
     selected = {name: wheel_for(entry, tags) for name, entry in lock["packages"].items() if "source" not in entry}
-    progress("dependencies", "Downloading exact compatible wheels from public PyPI", packageCount=len(selected))
+    progress("dependencies", "Downloading exact compatible wheels from public PyPI and the official PyTorch CPU index", packageCount=len(selected))
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = [pool.submit(download, entry, root / "wheelhouse" / entry["filename"]) for entry in selected.values()]
         for future in futures:
             future.result()
     bootstrap = [str(root / "wheelhouse" / selected[name]["filename"]) for name in ("pip", "setuptools", "wheel")]
-    call([python, "-I", "-B", "-m", "pip", "--isolated", "--disable-pip-version-check", "install",
-          "--no-index", "--no-deps", "--no-cache-dir", *bootstrap], root, "bootstrap.log")
+    pip_arguments = ["--isolated", "--disable-pip-version-check", "install", "--no-index", "--no-deps", "--no-cache-dir", "--no-compile"]
+    target = ["--target", str(root / "venv" / "Lib" / "site-packages")] if managed else []
+    if managed:
+        command = pip_from_wheel(python, pip_wheel, [*pip_arguments, *target, *bootstrap])
+    else:
+        command = [python, "-I", "-B", "-m", "pip", *pip_arguments, *bootstrap]
+    call(command, root, "bootstrap.log")
     selected["antlr4-python3-runtime"] = build_antlr(root, lock["packages"]["antlr4-python3-runtime"])
     requirements = root / "requirements-installed.txt"
     requirements.write_text("".join(name + "==" + lock["packages"][name]["version"] + " --hash=sha256:" + entry["sha256"] + "\n"
                                     for name, entry in sorted(selected.items())), encoding="utf-8")
     progress("dependencies", "Installing isolated, hash-verified dependencies")
     call([python, "-I", "-B", "-m", "pip", "--isolated", "--disable-pip-version-check", "install",
-          "--no-index", "--no-deps", "--require-hashes", "--no-cache-dir", "--find-links", str(root / "wheelhouse"),
+          "--no-index", "--no-deps", "--require-hashes", "--no-cache-dir", "--no-compile", *target, "--find-links", str(root / "wheelhouse"),
           "-r", str(requirements)], root, "dependencies.log")
     call([python, "-I", "-B", "-m", "pip", "--isolated", "--disable-pip-version-check", "check"], root, "dependency-check.log")
     return selected
@@ -229,10 +266,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runtime-root", type=Path, required=True)
     parser.add_argument("--python-executable", type=Path, required=True)
+    parser.add_argument("--managed-embedded", action="store_true", help="Use the pinned Windows embedded distribution instead of venv/ensurepip")
+    parser.add_argument("--embedded-archive", type=Path, help="Absolute path to the coordinator's hash-verified official embedded Python ZIP")
     args = parser.parse_args()
     started = time.monotonic()
     root = args.runtime_root.absolute()
     acquired = False
+    lock_handle = None
     try:
         if root.is_symlink() or (root.exists() and not root.is_dir()):
             raise WorkerError("runtime_path", "runtime-root must be a real directory")
@@ -245,12 +285,16 @@ def main():
                 raise WorkerError("runtime_path", "This directory belongs to another runtime version")
         else:
             atomic_json(marker, {"schemaVersion": SCHEMA_VERSION, "modelId": MODEL_ID, "modelRevision": MODEL_REVISION})
-        try:
-            with (root / ".setup-lock").open("x") as handle:
-                handle.write(str(os.getpid()))
+        if os.name == "nt":
+            lock_handle = windows_setup_lock(root / ".setup-lock")
             acquired = True
-        except FileExistsError:
-            raise WorkerError("setup_running", "Another setup owns this runtime; check its progress or interrupted setup lock") from None
+        else:
+            try:
+                with (root / ".setup-lock").open("x") as handle:
+                    handle.write(str(os.getpid()))
+                acquired = True
+            except FileExistsError:
+                raise WorkerError("setup_running", "Another setup owns this runtime; check its progress or interrupted setup lock") from None
         for folder in ("private/tmp", "private/cache", "private/hf", "downloads", "wheelhouse", "licenses"):
             (root / folder).mkdir(parents=True, exist_ok=True)
         lock = lock_data()
@@ -262,7 +306,7 @@ def main():
             ready["provenance"]["runtimeFiles"] = lock["runtimeFiles"]
             ready["provenance"]["licenses"] = proof["licenses"]
             ready["provenance"]["bundledLicenseSources"] = lock.get("bundledLicenseSources", {})
-            ready["provenance"]["workerRuntimeLock"] = file_receipt(MODULE_ROOT / "runtime-lock.json")
+            ready["provenance"]["workerRuntimeLock"] = file_receipt(lock_path())
             atomic_json(root / "ready.json", ready)
             atomic_json(root / "setup-state.json", {"state": "ready", "message": "Pinned runtime installation verified", "installed": True})
             emit("completed", state="ready", installed=True, message="Pinned runtime already verified",
@@ -273,20 +317,28 @@ def main():
         if not args.python_executable.is_absolute() or not args.python_executable.is_file():
             raise WorkerError("python_unsupported", "python-executable must be an absolute installed CPython path")
         base = run_json([str(args.python_executable), "-I", "-B", "-c",
-                         "import json,platform,sys; print(json.dumps({'implementation':platform.python_implementation(), 'version':list(sys.version_info[:3]), 'platform':platform.system(), 'machine':platform.machine(), 'executable':sys.executable}))"], root)
-        if base["implementation"] != "CPython" or tuple(base["version"][:2]) != (3, 9):
-            raise WorkerError("python_unsupported", "This release requires standard CPython 3.9 on Mac arm64. Python 3.10–3.12 have not been verified; use /usr/bin/python3 when it is version 3.9")
-        if (base["platform"], base["machine"].lower()) != ("Darwin", "arm64"):
-            raise WorkerError("platform_unsupported", "This runtime release has native proof only for Mac arm64 with CPython 3.9")
-        progress("interpreter", "Creating isolated venv with the supplied interpreter", pythonVersion=".".join(map(str, base["version"])))
-        if not runtime_python(root).exists():
-            call([str(args.python_executable), "-I", "-B", "-m", "venv", str(root / "venv")], root, "venv.log")
+                         "import json,platform,struct,sys; print(json.dumps({'implementation':platform.python_implementation(), 'version':list(sys.version_info[:3]), 'platform':platform.system(), 'machine':platform.machine(), 'pointerBits':struct.calcsize('P')*8, 'executable':sys.executable}))"], root)
+        validate_interpreter(base, lock)
+        require_windows_vc_runtime()
+        if args.managed_embedded:
+            if base["platform"] != "Windows" or "embeddedPython" not in lock:
+                raise WorkerError("platform_unsupported", "Managed embedded Python is supported only by the Windows dependency lock")
+            if args.embedded_archive is None or not args.embedded_archive.is_absolute() or not args.embedded_archive.is_file():
+                raise WorkerError("python_unsupported", "Managed setup requires an absolute official embedded Python ZIP path")
+            progress("interpreter", "Preparing isolated, hash-verified embedded Python", pythonVersion=lock["embeddedPython"]["version"])
+            install_embedded_python(root, lock, args.embedded_archive)
+        else:
+            if args.embedded_archive is not None:
+                raise WorkerError("python_unsupported", "embedded-archive requires managed-embedded")
+            progress("interpreter", "Creating isolated venv with the supplied interpreter", pythonVersion=".".join(map(str, base["version"])))
+            if not runtime_python(root).exists():
+                call([str(args.python_executable), "-I", "-B", "-m", "venv", str(root / "venv")], root, "venv.log")
         install_code(root, lock)
         progress("model", "Caching pinned TripoSR weights, model configuration and DINO configuration")
         for relative, entry in lock["runtimeFiles"].items():
             if "url" in entry:
                 download(entry, root / relative)
-        selected = install_dependencies(root, lock)
+        selected = install_dependencies(root, lock, managed=args.managed_embedded)
         progress("verify", "Verifying native CPU imports, dependency versions and mesh extraction")
         proof = run_json([str(runtime_python(root)), "-I", "-B", str(MODULE_ROOT / "runtime_probe.py"),
                           "--runtime-root", str(root), "--collect-licenses"], root, timeout=180)
@@ -297,13 +349,15 @@ def main():
                  "baseInterpreterPath": base["executable"], "modelId": MODEL_ID, "modelRevision": MODEL_REVISION,
                  "codeRevision": CODE_REVISION, "modelSha256": MODEL_SHA256, "device": "cpu", "cpuThreads": CPU_THREADS,
                  "installVerified": True, "inferenceVerified": False, "installedAt": utc_now(),
+                 "isolationMode": "embedded" if args.managed_embedded else "venv",
                  "dependencies": proof["dependencies"], "platform": proof["platform"], "machine": proof["machine"],
                  "provenance": {"codeArchive": lock["codeArchive"], "runtimeFiles": lock["runtimeFiles"],
                                 "codeFiles": lock["codeFiles"], "originalCodeFiles": lock["originalCodeFiles"],
                                 "dinoModelId": "facebook/dino-vitb16", "dinoRevision": DINO_REVISION,
                                 "dependencyArchives": selected, "licenses": proof["licenses"],
                                 "bundledLicenseSources": lock.get("bundledLicenseSources", {}),
-                                "workerRuntimeLock": file_receipt(MODULE_ROOT / "runtime-lock.json"),
+                                "workerRuntimeLock": file_receipt(lock_path()),
+                                "embeddedPython": lock.get("embeddedPython") if args.managed_embedded else None,
                                 "patches": ["local DINO config", "offline local-only checkpoint loader with weights_only=True",
                                             "no rembg import/background removal", "CPU scikit-image marching-cubes adapter"]},
                  "installProof": {k: proof[k] for k in ("cpuTensorVerified", "marchingCubesVerified", "upstreamImportsVerified")}}
@@ -323,7 +377,10 @@ def main():
         return 1
     finally:
         if acquired:
-            (root / ".setup-lock").unlink(missing_ok=True)
+            if lock_handle is not None:
+                release_windows_setup_lock(lock_handle)
+            else:
+                (root / ".setup-lock").unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

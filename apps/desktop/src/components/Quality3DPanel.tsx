@@ -21,6 +21,7 @@ const IMAGE_FORMATS = ['png', 'webp', 'jpeg', 'jpg'];
 const MAX_INPUTS = 5;
 const MAX_NAME_LENGTH = 72;
 const INVALID_NAME_CHARACTERS = /[\u0000-\u001f\u007f-\u009f/\\:*?"<>|]/;
+const DOWNLOAD_MANIFEST_URL = 'https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json';
 const STATE_LABELS: Record<Local3DStatus['state'], string> = {
   missing: '준비 필요', preparing: '준비 중', ready: '준비 완료', error: '준비 오류',
   cancelled: '준비 취소됨', unsupported: '사용 불가',
@@ -141,6 +142,8 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
   const working = busy || submitting;
   const setupBlocked = working || loading || operation !== null || preparing || !!status?.busy;
   const setupAllowed = desktop && !!status?.supported && memoryReady && !runtimeReady && !setupBlocked && downloadConsent;
+  const download = status?.download && Number.isSafeInteger(status.download.totalBytes) && status.download.totalBytes > 0 ? status.download : null;
+  const downloadSize = download ? `${(download.totalBytes / (1024 ** 3)).toLocaleString('ko-KR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} GiB` : null;
   const selectionError = !inputIds.length ? '프로젝트에서 입력 에셋을 1~5개 선택하세요.'
     : inputIds.length > MAX_INPUTS ? '한 번에 최대 5개까지 선택할 수 있습니다. 선택을 줄이세요.'
     : selected.some(input => !input) ? '선택한 입력의 현재 파일을 사용할 수 없습니다. 다른 에셋을 선택하세요.'
@@ -154,8 +157,9 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
     : INVALID_NAME_CHARACTERS.test(name.trim()) || ['.', '..'].includes(name.trim()) ? '결과 이름에는 경로 문자나 제어 문자를 사용할 수 없습니다.'
     : !height.trim() || !Number.isFinite(heightMeters) || heightMeters < .03 || heightMeters > 100 ? '높이는 0.03~100 m 범위로 입력하세요.'
     : !triangles.trim() || !Number.isInteger(maxTriangles) || maxTriangles < 1000 || maxTriangles > triangleLimit ? `삼각형 예산은 1,000~${triangleLimit.toLocaleString('ko-KR')} 범위의 정수로 입력하세요.` : '');
-  const browserMessage = mode === 'image' ? '브라우저에서는 사용할 수 없습니다. 이미지에서3D는 Apple Silicon Mac 데스크톱 앱에서 실행하세요.' : '브라우저에서는 사용할 수 없습니다. 모델다듬기는 Blender가 준비된 데스크톱 앱에서 실행하세요.';
+  const browserMessage = mode === 'image' ? '이미지에서3D는 Windows x64 또는 Apple Silicon Mac 데스크톱 앱에서 실행하세요.' : '모델다듬기는 Blender가 준비된 데스크톱 앱에서 실행하세요.';
   const environmentError = !desktop ? browserMessage
+    : mode === 'image' && status?.supported === false ? '이 기기에서는 이미지→3D를 지원하지 않습니다. Windows x64 또는 Apple Silicon Mac 앱에서 사용하세요.'
     : !blenderReady ? 'Blender 준비가 필요합니다. 환경 정보에서 설치 상태를 확인하세요.'
     : preparing || operation === 'prepare' || operation === 'cancel' ? '로컬 모델 준비가 끝난 뒤 작업을 시작하세요.'
     : status?.busy ? '로컬 3D 작업이 사용 중입니다. 현재 작업이 끝난 뒤 시작하세요.'
@@ -179,7 +183,7 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
     setSubmitError('');
   }
 
-  async function updateStatus(action: 'quality3d_status' | 'quality3d_prepare' | 'quality3d_cancel_setup') {
+  async function updateStatus(action: 'quality3d_status' | 'quality3d_prepare' | 'quality3d_cancel_setup' | 'quality3d_open_download_info' | 'quality3d_open_runtime_guide') {
     if (!desktop || operationPending.current !== null || working) return;
     if (action === 'quality3d_prepare' && !setupAllowed) return;
     if (action === 'quality3d_cancel_setup' && !preparing) return;
@@ -193,6 +197,7 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
     } catch {
       if (statusEpoch.current === epoch) setStatusError(action === 'quality3d_cancel_setup'
         ? '준비 취소를 확인하지 못했습니다. 현재 상태를 다시 확인하세요.'
+        : action === 'quality3d_open_download_info' || action === 'quality3d_open_runtime_guide' ? '안내 페이지를 열지 못했습니다. 기본 브라우저 설정을 확인하세요.'
         : '로컬 모델 준비 요청을 처리하지 못했습니다. 상태를 다시 확인하세요.');
     } finally {
       if (operationPending.current === epoch) operationPending.current = null;
@@ -278,13 +283,25 @@ export default function Quality3DPanel({snapshot, selectedIds, native, blenderRe
         <div className="quality3d-section-heading"><h4 id={`${id}-runtime`}>{mode === 'image' ? '로컬 TripoSR 준비' : 'Blender 준비'}</h4><span className={`quality3d-state ${desktop && (mode === 'model' ? blenderReady : runtimeReady) ? 'ready' : ''}`}>
           {!desktop ? '데스크톱 전용' : mode === 'model' ? blenderReady ? '준비 완료' : '준비 필요' : loading ? '확인 중' : statusError || (status?.state === 'ready' && !runtimeReady) ? '확인 필요' : status ? STATE_LABELS[status.state] : '확인 필요'}</span></div>
         {mode === 'image' ? <>
-          <p className="quality3d-help">이미지 재구성은 현재 Apple Silicon Mac에서 지원하며 최소 메모리 16 GB가 필요합니다. 최초 한 번 약 1.68 GB의 가중치와 의존성을 다운로드합니다. CPython 3.9와 Blender가 필요하며, 이 Mac의 시스템 Python 3.9.6에서 검증했습니다.</p>
+          <p className="quality3d-help">Windows x64 · Apple Silicon Mac에서 로컬 CPU로 처리합니다. 최소 메모리 16 GB와 Blender가 필요합니다.</p>
+          <p className="quality3d-help">{download ? `Python·모델·의존성을 처음 한 번 총 약 ${downloadSize} 준비합니다. Python을 따로 설치할 필요가 없습니다.` : '처음 한 번 모델 가중치(약 1.68 GB)와 의존성을 준비합니다. 아래 상태 안내를 확인하고 다운로드에 동의하세요.'}</p>
           {runtimeReady && <p className="quality3d-help">준비 완료는 로컬 설치가 검증되었다는 뜻입니다. 생성된 형상과 텍스처 품질은 결과를 보고 확인하세요.</p>}
           {desktop && status && <p className="quality3d-runtime-message" role="status">{preparing && <LoaderCircle size={15} className="quality3d-spin"/>}{safeStatusText(status.message, STATE_LABELS[status.state])}</p>}
           {desktop && preparing && status.stage && <p className="quality3d-runtime-phase" role="status">현재 단계: {safeStatusText(status.stage, '준비 중', 120)}</p>}
           {memoryError && <p className="quality3d-warning">{memoryError}</p>}
           {statusError && <p className="quality3d-warning" role="alert">{statusError}</p>}
-          {!runtimeReady && !preparing && <label className="quality3d-check quality3d-consent"><input type="checkbox" checked={downloadConsent} disabled={!desktop || !status?.supported || !memoryReady || setupBlocked} onChange={event => setDownloadConsent(event.target.checked)}/><span>TripoSR 가중치(약 1.68 GB)와 의존성의 1회 다운로드에 동의합니다.</span></label>}
+          {download && <details className="quality3d-limits quality3d-download-info"><summary>다운로드 정보</summary>
+            <p>실행 환경: {safeStatusText(download.runtime, '실행 환경 정보 확인 필요')}</p>
+            <p>전체 용량: {download.totalBytes.toLocaleString('ko-KR')} 바이트 (약 {downloadSize})</p>
+            <p>공식 출처: {download.sources.map(source => safeStatusText(source, '출처 확인 필요', 120)).join(' · ')}</p>
+            <p>라이선스: {download.licenses.map(license => safeStatusText(license, '라이선스 확인 필요', 120)).join(' · ')}</p>
+            <p>Microsoft Visual C++ x64 실행 라이브러리 필요</p>
+            <button className="quality3d-button" type="button" disabled={!desktop || working || loading || operation !== null} onClick={() => void updateStatus('quality3d_open_runtime_guide')}>Windows 실행 라이브러리 안내</button>
+            {download.manifestUrl === DOWNLOAD_MANIFEST_URL && (desktop
+              ? <button className="quality3d-button" type="button" disabled={working || loading || operation !== null} onClick={() => void updateStatus('quality3d_open_download_info')}>파일별 버전·출처·SHA-256 보기</button>
+              : <a className="quality3d-button" href={DOWNLOAD_MANIFEST_URL} target="_blank" rel="noopener noreferrer">파일별 버전·출처·SHA-256 보기</a>)}
+          </details>}
+          {!runtimeReady && !preparing && <label className="quality3d-check quality3d-consent"><input type="checkbox" checked={downloadConsent} disabled={!desktop || !status?.supported || !memoryReady || setupBlocked} onChange={event => setDownloadConsent(event.target.checked)}/><span>{download ? `Python·TripoSR 모델·의존성(총 약 ${downloadSize})의 1회 다운로드에 동의합니다.` : 'TripoSR 가중치(약 1.68 GB)와 의존성의 1회 다운로드에 동의합니다.'}</span></label>}
           <div className="quality3d-runtime-actions">
             {!runtimeReady && !preparing && <button className="quality3d-button" type="button" disabled={!setupAllowed} onClick={() => void updateStatus('quality3d_prepare')}>{operation === 'prepare' ? <LoaderCircle size={15} className="quality3d-spin"/> : <Download size={15}/>}로컬 모델 준비</button>}
             {preparing && <button className="quality3d-button" type="button" disabled={!desktop || working || operation !== null} onClick={() => void updateStatus('quality3d_cancel_setup')}>{operation === 'cancel' ? <LoaderCircle size={15} className="quality3d-spin"/> : <Ban size={15}/>}준비 취소</button>}

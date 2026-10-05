@@ -606,8 +606,8 @@ impl Backend {
         // Planning must not offer a batch whose reconstruction path cannot run
         // on this native platform. Reject it before reading project references,
         // creating a planning cache, or discovering/calling an official provider.
-        if output != "images" && !cfg!(all(target_os = "macos", target_arch = "aarch64")) {
-            bail!("이 기기에서는 이미지 제작만 지원합니다. '이미지'를 선택하고 다시 분석하세요. 이미지에서 3D 제작은 Apple Silicon Mac 검증 경로입니다.");
+        if output != "images" && !quality3d::reconstruction_supported() {
+            bail!("이 기기에서는 이미지 제작만 지원합니다. '이미지'를 선택하고 다시 분석하세요. 이미지에서 3D 제작은 Windows x64·Apple Silicon Mac에서 지원합니다.");
         }
         let mut state = load_state(root)?;
         let previous = state
@@ -1257,6 +1257,83 @@ fn prepare_foreground(source: &Path, target: &Path) -> Result<Value> {
 mod tests {
     use super::*;
 
+    #[cfg(all(windows, target_arch = "x86_64"))]
+    #[test]
+    #[ignore = "requires a prepared local TripoSR CPU runtime and Blender; no provider requests"]
+    fn windows_native_production_reconstruction_and_delivery() {
+        let data = PathBuf::from(std::env::var_os("ASSET_WINDOWS_IMAGE3D_DATA_ROOT").expect("reserved native proof data"));
+        let output = PathBuf::from(std::env::var_os("ASSET_WINDOWS_IMAGE3D_PRODUCTION_OUTPUT").expect("fresh native proof output"));
+        assert!(data.is_absolute() && output.is_absolute() && !output.exists());
+        fs::create_dir_all(&output).unwrap();
+        let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let backend = Backend::new(data, base.join("../public/examples"), base.join("../../../workers/blender/worker.py"));
+        let status = backend.quality3d_status();
+        assert_eq!(status["supported"], true);
+        assert_eq!(status["installed"], true);
+        assert_eq!(status["blenderReady"], true);
+        assert!(backend.inner.limits.ram_mb >= 8192);
+        let root = output.join("workbench");
+        let game = output.join("한글 게임 프로젝트");
+        fs::create_dir(&game).unwrap();
+        let original_game = game.join("project.godot");
+        fs::write(&original_game, b"[application]\nconfig/name=\"Windows production proof\"\n").unwrap();
+        let original_game_hash = asset_core::sha256_file(&original_game).unwrap();
+        let source = base.join("../../../workers/image3d/fixtures/blue-sphere.png");
+        let source_hash = asset_core::sha256_file(&source).unwrap();
+        backend.request(json!({"action":"create","root":root,"name":"Windows production reconstruction proof"})).unwrap();
+        backend.request(json!({"action":"import","paths":[source]})).unwrap();
+        backend.request(json!({"action":"game_connect","root":game})).unwrap();
+        let image_job_id = Uuid::new_v4().to_string();
+        let mut repo = Repository::open(&root).unwrap();
+        let mut project = repo.project().unwrap();
+        // This is a recorded local fixture, not a newly generated GPT image.
+        // Bind only its QA metadata to the same image-job boundary as production.
+        let concept = &mut project.assets[0].versions[0];
+        concept.artifacts[0].role = ArtifactRole::Output;
+        concept.settings.insert("jobId".into(), json!(image_job_id));
+        concept.settings.insert("localFixtureOnly".into(), json!(true));
+        repo.save_project(&project).unwrap();
+        let mut task = job(&project, "production_model", "Windows production reconstruction", None, JobResource::Blender,
+            json!({"name":"Windows reconstructed sphere","imageJobId":image_job_id,
+            "productionRunId":Uuid::new_v4().to_string(),"productionItemId":Uuid::new_v4().to_string(),
+            "gameRoot":game,"gameOutputFolder":OUTPUT_FOLDER,"quality":"high","heightMeters":1.,
+            "maxTriangles":10000,"textureResolution":1024,"preserveMaterials":true,"sourceKind":"image3d",
+            "spec":project.spec,"resources":{"ramMb":8192,"cpuThreads":2,"diskWeight":2}})).unwrap();
+        task.payload.insert("toolVersion".into(), json!(backend.inner.blender_version));
+        let queue = SchedulerStore::open(&root.join("scheduler.sqlite")).unwrap();
+        queue.enqueue(task.clone()).unwrap();
+        let admitted = queue.claim_ready(&backend.inner.limits).unwrap();
+        assert_eq!(admitted.len(), 1);
+        assert_eq!(admitted[0].id, task.id);
+        let task = admitted[0].clone();
+        let work = output.join("native-work");
+        fs::create_dir(&work).unwrap();
+        let started = Instant::now();
+        backend.run_production_model(&root, &task, &work, &AtomicBool::new(false)).unwrap();
+        queue.complete(&task.id).unwrap();
+        let completed = Repository::open(&root).unwrap().project().unwrap();
+        let (model, version) = asset_for_job(&completed, &task.id).unwrap();
+        assert_eq!(model.kind, AssetKind::Model);
+        assert_eq!(version.source, AssetSource::LocalImage3d);
+        assert_eq!(version.settings["localReconstruction"]["device"], "cpu");
+        let delivery = &version.settings["productionDelivery"];
+        let delivered = PathBuf::from(delivery["path"].as_str().unwrap());
+        assert!(delivered.starts_with(&game));
+        for file in delivery["files"].as_array().unwrap() {
+            let (hash, bytes) = asset_core::sha256_file(&delivered.join(file["path"].as_str().unwrap())).unwrap();
+            assert_eq!(file["sha256"], hash);
+            assert_eq!(file["bytes"], bytes);
+        }
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), source_hash);
+        assert_eq!(asset_core::sha256_file(&original_game).unwrap(), original_game_hash);
+        let report = json!({"passed":true,"platform":"windows","fixtureImage":true,"providerCommands":0,
+            "realGptGeneration":false,"nativeProductionModel":true,"sourceOriginalPreserved":true,
+            "gameOriginalPreserved":true,"modelId":model.id,"jobId":task.id,"elapsedSeconds":started.elapsed().as_secs_f64(),
+            "delivery":delivery,"reconstruction":version.settings["localReconstruction"],"project":root,"work":work});
+        fs::write(output.join("production-image3d-proof.json"), serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+        backend.shutdown();
+    }
+
     #[cfg(windows)]
     #[test]
     fn windows_verbatim_paths_preserve_state_and_managed_delivery() {
@@ -1467,7 +1544,7 @@ mod tests {
         }
     }
 
-    #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+    #[cfg(not(any(all(target_os = "macos", target_arch = "aarch64"), all(target_os = "windows", target_arch = "x86_64"))))]
     #[test]
     fn unsupported_production_plan_preserves_project_before_provider_or_cache_creation() {
         let f = Fixture::new();

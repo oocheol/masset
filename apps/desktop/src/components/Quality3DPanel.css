@@ -8,7 +8,7 @@
 .quality3d-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .quality3d-heading h3 { display: flex; align-items: center; gap: 9px; font-size: 20px; }
 .quality3d-heading p { color: var(--muted); margin-top: 6px; }
-.quality3d-local-tag { color: var(--cyan); font-size: 12px; padding: 5px 9px; border: 1px solid var(--edge); border-radius: 2px; flex: none; }
+.quality3d-local-tag { color: var(--cyan); font-size: 14px; padding: 5px 9px; border: 1px solid var(--edge); border-radius: 2px; flex: none; }
 .quality3d-panel .quality3d-notice { border: 1px solid var(--warning); border-radius: 2px; padding: 12px 15px; margin-bottom: 18px; color: var(--warning); background: var(--ink); }
 .quality3d-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
 .quality3d-modes > button { display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px 16px; min-height: 76px; background: var(--ink); border: 1px solid var(--edge); border-radius: 2px; }
@@ -16,22 +16,22 @@
 .quality3d-modes > button[aria-pressed='true'] > svg { color: var(--cyan); }
 .quality3d-modes > button > span { flex: 1; min-width: 0; }
 .quality3d-modes strong { display: block; font-size: 16px; }
-.quality3d-modes small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.55; }
+.quality3d-modes small { display: block; color: var(--muted); font-size: 14px; margin-top: 3px; line-height: 1.55; }
 .quality3d-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
 .quality3d-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .quality3d-section-heading h4 { font-size: 15px; }
-.quality3d-section-heading > span { color: var(--muted); font-size: 12px; }
+.quality3d-section-heading > span { color: var(--muted); font-size: 14px; }
 .quality3d-panel .quality3d-help { color: var(--muted); font-size: 14px; line-height: 1.7; margin-bottom: 12px; }
 .quality3d-search { display: block; margin: 12px 0; }
 .quality3d-panel input:not([type='checkbox']), .quality3d-panel select { width: 100%; min-height: 40px; height: auto; padding: 8px 10px; background: var(--ink); color: var(--paper); border: 1px solid var(--edge); border-radius: 2px; font-size: 14px; line-height: 1.5; }
-.quality3d-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 9px; max-height: 314px; overflow: auto; overscroll-behavior: contain; padding: 3px; margin: 0 -3px; }
+.quality3d-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 9px; max-height: 314px; overflow: auto; overscroll-behavior: contain; padding: 5px; margin: 0; }
 .quality3d-input { display: flex; flex-direction: column; min-width: 0; text-align: left; background: var(--ink); border: 1px solid var(--edge); border-radius: 2px; padding: 0; position: relative; overflow: hidden; }
 .quality3d-input.selected { border-color: var(--cyan); }
 .quality3d-thumbnail { display: flex; justify-content: center; align-items: center; width: 100%; height: 98px; flex: none; color: var(--muted); background-color: var(--ink); background-image: repeating-conic-gradient(var(--rail) 0% 25%, transparent 0% 50%); background-size: 16px 16px; overflow: hidden; }
 .quality3d-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
 .quality3d-input-info { display: block; width: 100%; min-width: 0; padding: 8px 10px; }
 .quality3d-input-info strong { display: block; font-size: 14px; font-weight: 550; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.quality3d-input-info small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.quality3d-input-info small { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
 .quality3d-selection-check { position: absolute; display: flex; justify-content: center; align-items: center; top: 8px; right: 8px; width: 19px; height: 19px; border: 1px solid var(--edge); border-radius: 2px; background: var(--ink); color: var(--cyan); }
 .quality3d-input.selected .quality3d-selection-check { border-color: var(--cyan); }
 .quality3d-panel .quality3d-empty { grid-column: 1 / -1; padding: 25px 16px; background: var(--ink); border: 1px dashed var(--edge); color: var(--muted); font-size: 14px; }
@@ -39,13 +39,13 @@
 .quality3d-chips > button { display: flex; align-items: center; gap: 7px; max-width: 100%; padding: 4px 7px 4px 4px; border: 1px solid var(--edge); border-radius: 2px; background: var(--ink); }
 .quality3d-chips .quality3d-thumbnail { width: 28px; height: 28px; border-radius: 2px; }
 .quality3d-chips .quality3d-thumbnail svg { width: 19px; height: 19px; }
-.quality3d-chips > button > span:not(.quality3d-thumbnail) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-.quality3d-chips small { color: var(--muted); font-size: 11px; flex: none; }
+.quality3d-chips > button > span:not(.quality3d-thumbnail) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.quality3d-chips small { color: var(--muted); font-size: 14px; flex: none; }
 .quality3d-settings { margin: 0; padding: 0; min-width: 0; border: 0; }
 .quality3d-settings legend { padding: 0; font-size: 15px; font-weight: 600; margin-bottom: 12px; }
 .quality3d-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; margin-bottom: 13px; }
 .quality3d-field > label { font-size: 14px; }
-.quality3d-field small { color: var(--muted); line-height: 1.55; font-size: 12px; }
+.quality3d-field small { color: var(--muted); line-height: 1.55; font-size: 14px; }
 .quality3d-settings-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .quality3d-check { display: flex; align-items: flex-start; gap: 9px; color: var(--paper); font-size: 14px; line-height: 1.65; }
 .quality3d-panel input[type='checkbox'] { width: 17px; height: 17px; margin: 3px 0 0; accent-color: var(--cyan); flex: none; }

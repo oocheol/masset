@@ -3,16 +3,26 @@
 from pathlib import Path
 import hashlib
 import json
+import os
 import socket
+import stat
+import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+import warnings
+import zipfile
 
 ROOT = Path(__file__).absolute().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.dont_write_bytecode = True
-from runtime_common import WorkerError, prepare_output, validate_job, read_json
-from setup import wheel_for
+from runtime_common import (WorkerError, clean_env, embedded_files, embedded_pth, file_receipt,
+                            interpreter_target, lock_path, prepare_output,
+                            require_windows_vc_runtime, setup_lock_active,
+                            validate_interpreter, validate_job, read_json,
+                            release_windows_setup_lock, windows_setup_lock)
+from setup import approved_url, wheel_for
 from status import status
 
 
@@ -113,6 +123,139 @@ class Boundaries(unittest.TestCase):
         self.assertTrue(result["filename"].endswith("arm64.whl"))
         with self.assertRaises(WorkerError):
             wheel_for(entry, ["cp312-cp312-linux_x86_64"])
+
+    def test_platform_locks_preserve_model_and_code_but_select_windows_binaries(self):
+        mac = read_json(lock_path("Darwin"))
+        windows = read_json(lock_path("Windows"))
+        self.assertEqual(interpreter_target(mac)["pythonMajorMinor"], [3, 9])
+        self.assertEqual(interpreter_target(windows)["pythonMajorMinor"], [3, 12])
+        for key in ("codeArchive", "codeFiles", "originalCodeFiles", "runtimeFiles"):
+            self.assertEqual(mac[key], windows[key])
+        self.assertEqual(windows["packages"]["torch"]["version"], "2.2.2+cpu")
+        self.assertEqual(windows["packages"]["tokenizers"]["version"], "0.15.2")
+        self.assertEqual(windows["packages"]["transformers"]["version"], "4.35.2")
+        for name, entry in windows["packages"].items():
+            if "source" not in entry:
+                selected = wheel_for(entry, ["cp312-cp312-win_amd64", "cp312-none-win_amd64", "cp38-abi3-win_amd64", "py3-none-any"])
+                self.assertNotIn("macos", selected["filename"])
+                self.assertNotIn("linux", selected["filename"])
+
+    def test_wrong_platform_python_or_pointer_width_rejected(self):
+        windows = read_json(lock_path("Windows"))
+        base = {"implementation": "CPython", "platform": "Windows", "machine": "AMD64", "version": [3, 12, 10], "pointerBits": 64}
+        validate_interpreter(base, windows)
+        for change in ({"version": [3, 11, 9]}, {"machine": "ARM64"}, {"platform": "Darwin"}, {"pointerBits": 32}, {"implementation": "PyPy"}):
+            with self.subTest(change=change), self.assertRaises(WorkerError):
+                validate_interpreter({**base, **change}, windows)
+
+    def embedded_zip(self, extras=()):
+        archive = self.root / "embedded.zip"
+        with zipfile.ZipFile(archive, "w") as handle:
+            for name in ("python.exe", "python312.dll", "python312.zip", "python312._pth", "LICENSE.txt"):
+                handle.writestr(name, b"unexecuted test data")
+            for name in extras:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", UserWarning)
+                    handle.writestr(name, b"unexecuted test data")
+        return archive, file_receipt(archive)
+
+    def test_embedded_zip_integrity_and_explicit_isolation_paths(self):
+        archive, expected = self.embedded_zip()
+        files = embedded_files(archive, expected)
+        self.assertEqual(files["python312._pth"], embedded_pth())
+        self.assertNotIn(b"..", files["python312._pth"])
+        archive.write_bytes(archive.read_bytes() + b"changed")
+        with self.assertRaisesRegex(WorkerError, "integrity"):
+            embedded_files(archive, expected)
+
+    def test_embedded_zip_rejects_escape_duplicate_and_special_entries(self):
+        for name in ("../escape.exe", "C:/escape.exe", "folder/file.py", "folder\\file.py", "python.exe", "name.", "name "):
+            with self.subTest(name=name):
+                archive, expected = self.embedded_zip([name])
+                with self.assertRaisesRegex(WorkerError, "ZIP entry"):
+                    embedded_files(archive, expected)
+        archive, _ = self.embedded_zip()
+        link = zipfile.ZipInfo("link.exe")
+        link.external_attr = (stat.S_IFLNK | 0o777) << 16
+        with zipfile.ZipFile(archive, "a") as handle:
+            handle.writestr(link, "python.exe")
+        with self.assertRaisesRegex(WorkerError, "ZIP entry"):
+            embedded_files(archive, file_receipt(archive))
+        self.assertFalse((self.root.parent / "escape.exe").exists())
+
+    def test_download_origins_do_not_accept_lookalike_or_cleartext_hosts(self):
+        approved_url("https://download.pytorch.org/whl/cpu/torch.whl")
+        approved_url("https://www.python.org/ftp/python/runtime.zip")
+        for url in ("http://download.pytorch.org/file", "https://download.pytorch.org.attacker.example/file",
+                    "https://www.python.org@attacker.example/file", "https://user:secret@www.python.org/file"):
+            with self.assertRaises(WorkerError):
+                approved_url(url)
+
+    @unittest.skipUnless(sys.platform == "win32", "Native Windows memory API")
+    def test_real_windows_memory_and_hardware_are_measured(self):
+        from worker import hardware, peak_memory
+        self.assertGreater(peak_memory(), 0)
+        self.assertGreater(hardware(self.root)["ramBytes"], 0)
+        self.assertEqual(hardware(self.root)["system"], "Windows")
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows DLL prerequisite")
+    def test_missing_msvc_prerequisite_has_an_actionable_error(self):
+        with patch.dict(os.environ, {"SystemRoot": str(self.root / "missing-system")}), self.assertRaises(WorkerError) as caught:
+            require_windows_vc_runtime()
+        self.assertEqual(caught.exception.code, "msvc_runtime_missing")
+        self.assertIn("MSVCP140.dll", str(caught.exception))
+        self.assertIn("https://learn.microsoft.com", str(caught.exception))
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows process-lifetime byte-range locks")
+    def test_setup_rejects_live_owner_and_recovers_after_abrupt_process_death(self):
+        lock = self.root / ".setup-lock"
+        script = """
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from runtime_common import WorkerError, windows_setup_lock, release_windows_setup_lock
+try:
+    handle = windows_setup_lock(Path(sys.argv[2]))
+except WorkerError as error:
+    print(error.code, flush=True)
+    sys.exit(42)
+print('acquired', flush=True)
+if sys.argv[3] == 'hold':
+    sys.stdin.buffer.read(1)
+release_windows_setup_lock(handle)
+"""
+        command = [sys.executable, "-I", "-B", "-c", script, str(ROOT), str(lock)]
+        owner = subprocess.Popen([*command, "hold"], cwd=str(self.root), env=clean_env(self.root),
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            self.assertEqual(owner.stdout.readline().strip(), b"acquired")
+            self.assertTrue(setup_lock_active(lock))
+            rejected = subprocess.run([*command, "once"], cwd=str(self.root), env=clean_env(self.root),
+                                      capture_output=True, timeout=15)
+            self.assertEqual(rejected.returncode, 42, rejected.stderr)
+            self.assertEqual(rejected.stdout.strip(), b"setup_running")
+            owner.kill()
+            owner.communicate(timeout=15)
+            self.assertTrue(lock.is_file())
+            self.assertFalse(setup_lock_active(lock))
+            retry = subprocess.run([*command, "once"], cwd=str(self.root), env=clean_env(self.root),
+                                   capture_output=True, timeout=15)
+            self.assertEqual(retry.returncode, 0, retry.stderr)
+            self.assertEqual(retry.stdout.strip(), b"acquired")
+            self.assertFalse(setup_lock_active(lock))
+        finally:
+            if owner.poll() is None:
+                owner.kill()
+            owner.communicate(timeout=15)
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows inactive lock receipt")
+    def test_inactive_windows_lock_receipt_does_not_claim_setup_in_progress(self):
+        lock = self.root / ".setup-lock"
+        handle = windows_setup_lock(lock)
+        release_windows_setup_lock(handle)
+        self.assertTrue(lock.exists())
+        self.assertFalse(setup_lock_active(lock))
+        self.assertEqual(status(self.root)["message"], "Pinned CPU runtime is not installed")
 
 
 class NativeCPU(unittest.TestCase):
