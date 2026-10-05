@@ -61,6 +61,7 @@ export function validateGui(report, ownedPid) {
   check(fonts?.smallButtons?.length === 0 && fonts.minimumButtonFont >= 14 && fonts.guideFont >= 16 && fonts.guideOpened === true && fonts.escapeRestoredFocus === true && fonts.horizontalOverflow === false, 'Native readability/guide/focus checks failed');
   check(web.codexOnboarding?.visibleEntry === true && web.codexOnboarding.entryFont >= 14 && web.codexOnboarding.guideSequence === true, 'Native onboarding entry/guide missing');
   check(web.quality3dUi?.passed === true && web.quality3dUi.nativeWebView === true && web.quality3dUi.inputs === 5 && web.quality3dUi.realReconstruction === false && web.quality3dUi.queuedJobs === 0, 'Native quality panel individual-input/UI boundary failed');
+  check(web.productionUi?.passed === true && web.productionUi.defaultGenerationHome === true && web.productionUi.nativeRootScan === true && web.productionUi.realGeneration === false && web.productionUi.providerRequests === 0, 'Native generation home/project scan boundary failed');
   return true;
 }
 

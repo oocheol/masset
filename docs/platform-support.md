@@ -67,7 +67,7 @@ After a successful native build, run backend smoke and independently decode its 
 
 ## macOS
 
-The Mac 0.1.8 candidate opens a generation home for a game brief and an existing project root, followed by GPT planning, independent 2D files and local image-to-3D conversion, automatic delivery and review. See [game project production](game-production.md). Its Mac native generation evidence is separate from the public 0.1.6 download and the unchanged Windows 0.1.3 release.
+The Mac 0.1.8 release opens a generation home for a game brief and an existing project root, followed by GPT planning, independent 2D files and local image-to-3D conversion, automatic delivery and review. See [game project production](game-production.md). Its Mac native generation evidence and DMG acceptance are recorded separately in the 0.1.8 release report. Windows remains at 0.1.3.
 
 Historical 0.1.2 has [Apple Silicon and Intel trial DMGs](https://github.com/oocheol/masset/releases/tag/v0.1.2), built and executed on matching native macOS 15.7.9 runners. [The successful workflow](https://github.com/oocheol/masset/actions/runs/37113522134) records 138 Rust checks per architecture, actual DMG mount/copy, local ad-hoc bundle seal, copied-app WebView/IPC/readability and separate CLI 2D output checks. Anonymous public downloads matched both native package hashes. Exact bytes, source commit and boundaries are in [Mac release metadata](https://github.com/oocheol/masset/blob/master/docs/releases/v0.1.2-macos.json); the table above remains the original 0.1.0 history.
 
