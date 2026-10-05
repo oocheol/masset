@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.9",
+  "status": "locally-installed-native-verified",
+  "fixes": {
+    "productionDeadlineSeconds": 600,
+    "productionNotificationLimit": 65536,
+    "streamBytesLimit": 67108864,
+    "responseJsonBytesLimit": 524288,
+    "automaticRetry": false,
+    "elapsedTimeAndCancelUi": true,
+    "safeActionableErrors": true
+  },
+  "reproduction": {
+    "before": {
+      "elapsedSeconds": 53.499652833,
+      "notifications": 4097,
+      "failure": "provider.runtime_protocol"
+    },
+    "after": {
+      "elapsedSeconds": 80.444610041,
+      "notifications": 6214,
+      "items": 57,
+      "images": 36,
+      "models": 21,
+      "inventory": 199,
+      "originalGameFingerprintUnchanged": true,
+      "generationJobs": 0,
+      "nativeBackend": true,
+      "liveGptPlanner": true
+    }
+  },
+  "tests": {
+    "providerPassed": 74,
+    "providerIgnored": 1,
+    "plannerSubsetPassed": 27,
+    "productionBackendPassed": 8,
+    "frontendPassed": 31,
+    "typecheck": true,
+    "frontendBuild": true
+  },
+  "installation": {
+    "verified": true,
+    "version": "0.1.9",
+    "platform": "macos-arm64",
+    "installedBundleMatchesBuilt": true,
+    "installedBundleSeal": true,
+    "currentWorkersAndDocsMatch": true,
+    "nativeWindow": true,
+    "decodedImages": 12,
+    "originalProjectFiles": 65,
+    "projectsUnchanged": true,
+    "authenticationUnchanged": true,
+    "updateArchiveSignatureVerified": true,
+    "appBinarySha256": "078ead52543119915be07c6d3d83e33bccabcc18ff22246704172381e95237b8",
+    "archive": {
+      "bytes": 31330025,
+      "sha256": "8b33a26b218608722b56d97418b2102e9ba3d6e4500daa1fb972befc2951ca40"
+    }
+  },
+  "publication": {
+    "published": false,
+    "dmgVerified": false,
+    "publicMac": "0.1.8",
+    "publicWindows": "0.1.8",
+    "windowsNewBuildOrTest": false
+  },
+  "installedLiveAnalysis": {
+    "verified": true,
+    "nativeInstalledApp": true,
+    "nativeWebViewAndIpc": true,
+    "liveGptPlanner": true,
+    "version": "0.1.9",
+    "items": 59,
+    "images": 41,
+    "models": 18,
+    "originalMediaFilesPreserved": 29,
+    "originalGameFingerprintUnchanged": true,
+    "jobStatesUnchanged": true,
+    "generationSubmitted": false,
+    "briefRestoredExactly": true,
+    "visiblePlanAndEnabledGenerateButton": true
+  }
+}

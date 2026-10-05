@@ -169,6 +169,11 @@ pub enum RuntimeError {
     Unavailable,
     #[error("The public runtime protocol could not be verified")]
     Protocol,
+    #[error("The asset planning stream exceeded its bounded transport budget ({notifications} notifications, {received_bytes} bytes)")]
+    PlanningStreamLimit {
+        notifications: usize,
+        received_bytes: usize,
+    },
     #[error("The public runtime request was rejected ({code})")]
     RpcRejected { code: i64 },
     #[error("The public runtime request timed out before generation")]
@@ -221,6 +226,7 @@ impl RuntimeError {
         match self {
             Self::Unavailable => "provider.runtime_unavailable",
             Self::Protocol => "provider.runtime_protocol",
+            Self::PlanningStreamLimit { .. } => "provider.planning_stream_limit",
             Self::RpcRejected { .. } => "provider.runtime_request_rejected",
             Self::Timeout => "provider.runtime_timeout",
             Self::AuthenticationRequired => "provider.chatgpt_authentication_required",
