@@ -10,22 +10,22 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.6"><img src="https://img.shields.io/badge/release-0.1.6-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.6"></a>
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.8"><img src="https://img.shields.io/badge/release-0.1.8-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.8"></a>
   <a href="https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
-  <a href="https://github.com/oocheol/masset/releases/download/v0.1.6/AssetStudio_0.1.6_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon_trial-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon 시험 배포"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-334c60?style=flat-square&amp;labelColor=101d29" alt="Core license Apache-2.0"></a>
 </p>
 
 <p align="center">
   <a href="https://masset-nu.vercel.app/"><strong>기능 소개 사이트</strong></a> ·
-  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.6"><strong>다운로드</strong></a> ·
+  <a href="https://github.com/oocheol/masset/releases/tag/v0.1.8"><strong>다운로드</strong></a> ·
   <a href="#project-structure">프로젝트 구조</a> ·
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
 
 Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **Mac 0.1.8은 게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 2D·3D 제작 → 결과 검수**를 기본 화면으로 제공합니다. GPT 구독으로 각 이미지와 3D 참고 이미지를 만들고, 3D는 로컬 TripoSR와 Blender로 변환·검증합니다. 편집 도구는 필요할 때 별도로 엽니다. Windows 공개 버전은 0.1.3을 유지합니다.
 
-**0.1.8은 Mac 릴리스 후보입니다.** 실제 프로젝트 분석, GPT 구성안·개별 PNG 수신, 로컬 GLB 생성, 자동 저장과 독립 Blender 재열기를 확인했습니다. 아래 공개 다운로드·설치 명령은 검증된 0.1.6을 유지합니다. [게임 제작 흐름](docs/game-production.md)과 [최종 설치본 검증 기록](docs/releases/v0.1.8-macos.md)을 확인하세요. 이전 후보의 [DMG 검증 제한](docs/releases/v0.1.7-macos.md)도 별도로 기록합니다.
+**Mac 0.1.8을 정식 배포합니다.** DMG 체크섬·마운트·앱 복사·실행·해제와 네이티브 2D 출력 검증을 통과했습니다. 게임 프로젝트 분석, GPT 구성안·개별 PNG 수신, 로컬 GLB 제작과 독립 Blender 재열기도 확인했습니다. [게임 제작 흐름](docs/game-production.md)과 [배포 검증 기록](docs/releases/v0.1.8-macos.md)을 확인하세요.
 
 **3D 만들기**에서 투명 배경의 단일 물체 이미지 또는 GLB를 최대 5개 선택하세요. 이미지마다 모델 하나를 만들고, 기존 GLB는 원본을 남긴 새 버전으로 저장합니다. 게임용·고해상도 형상·LOD, UV 색상 텍스처, 지원되는 경우 메시에서 베이크한 노멀맵, 편집 가능한 `.blend`, 썸네일·턴테이블을 함께 내보냅니다. 이미지 복원은 Apple Silicon·CPython 3.9·최소 16GB 메모리와 Blender가 필요하며, 최초 동의 후 약 1.68GB의 모델 가중치와 의존성을 준비합니다. 이후 CPU에서 로컬로 실행하고 유료 API로 대체하지 않습니다. 구형 오픈 모델 TripoSR을 사용하므로 현재 Tripo Studio H3.1과 같은 품질이나 8K·리깅·쿼드 리토폴로지는 제공하지 않습니다. [사용 방법과 결과 범위](docs/model-quality.md)를 확인하세요.
 
@@ -65,7 +65,7 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 | 이미지 편집 | PNG/WebP/JPEG 가져오기, 크기·색상·배경·마스크 처리 | 원본과 구분된 새 이미지 버전 |
 | 스프라이트·아틀라스 | 프레임을 나누고 여러 이미지를 묶어 패킹 | 실제 이미지와 프레임 메타데이터 |
 | 게임 에셋 묶음 · Mac 0.1.6 | 게임 설명 → 텍스트 구성안 → 개별 행 편집·승인 → 포함한 행을 한 번에 큐 등록 | 개별 이미지·새 독립 모델 또는 기존 2D의 새 버전 |
-| 게임 프로젝트 제작 · Mac 0.1.8 후보 | 게임 설명·루트 폴더 분석 → 개별 2D·3D 자동 제작 → 결과 확인·검수 | 새 게임 결과 폴더, PNG·GLB·LOD·텍스처·해시 명세, 최대 120개 |
+| 게임 프로젝트 제작 · Mac 0.1.8 | 게임 설명·루트 폴더 분석 → 개별 2D·3D 자동 제작 → 결과 확인·검수 | 새 게임 결과 폴더, PNG·GLB·LOD·텍스처·해시 명세, 최대 120개 |
 | 절차적 3D · Mac 0.1.6 | 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 치수·베벨·색상 지정 | 개별 GLB, 편집 가능한 `.blend`, 렌더 |
 | 이미지→3D · 모델 다듬기 · Mac 0.1.7 | 투명 이미지의 개별 메시 복원 또는 기존 GLB의 예산·UV·재질 정리 | 원본 보존, 게임용·고해상도·LOD GLB, 텍스처·`.blend`·턴테이블 |
 | 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
@@ -86,7 +86,7 @@ Mac 0.1.6 묶음의 **요청 이미지 수**는 이미지·스프라이트·텍�
 | 플랫폼 | 현재 다운로드 | 현재 범위 |
 | --- | --- | --- |
 | Windows x64 · 0.1.3 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio_0.1.3_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.3/AssetStudio-windows-x64-portable.zip) | 로컬 2D·절차적 3D·구독 연결·앱 내부 업데이트 |
-| Mac Apple Silicon · 0.1.6 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.6/AssetStudio_0.1.6_macos-arm64.dmg) | 게임 에셋 묶음 · GPT 구독 연결 · Codex 준비 · 앱 내부 업데이트. 0.1.8 프로젝트 제작과 이미지→3D는 릴리스 후보 |
+| Mac Apple Silicon · 0.1.8 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_macos-arm64.dmg) | 프로젝트 기반 개별 2D·3D 제작 · GPT 구독 연결 · 결과 검수 · 앱 내부 업데이트 |
 
 **Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 0.1.1/0.1.2 설치 사용자는 앱의 업데이트 패널에서 새 버전을 확인할 수 있습니다. WebView2와 3D용 Blender는 별도 필요하며, 이용자에게 Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 앱 전용 Codex 다운로드는 출처·라이선스·해시를 안내하고 동의 후 진행합니다.
 
@@ -99,23 +99,23 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
   set -eu
   install_tmp="$(mktemp -d)"
   trap 'rm -rf "$install_tmp"' EXIT
-  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.6/install-macos.sh -o "$install_tmp/install-macos.sh"
-  printf '%s  %s\n' '0127c9b90f1995a35c36b593ed721a3d4ec798c3216452e8703cc6a75c3747be' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
+  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.8/install-macos.sh -o "$install_tmp/install-macos.sh"
+  printf '%s  %s\n' 'd4c56620274ce0a6238027883e42a46f6f3192d6e452958707f2936c886f4696' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
   bash "$install_tmp/install-macos.sh"
 )
 ```
 
-새 앱은 `~/Applications/Asset Studio 0.1.6/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 공개 최신 앱을 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
+새 앱은 `~/Applications/Asset Studio 0.1.8/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 공개 최신 앱을 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
 
 브라우저로 DMG를 받았다면 앱을 홈 폴더의 Applications 안에 새 폴더를 만들어 복사하세요. 최초 실행 경고는 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기**로 허용할 수 있습니다. DMG 안에서 직접 실행하지 마세요. 업데이트가 설치 폴더에 쓰기 권한을 필요로 합니다.
 
-**Mac 구독 연결:** 0.1.6에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 새 후보는 공개 배포 후 기존 0.1.4~0.1.6에서 앱 내부 업데이트로 받을 수 있습니다.
+**Mac 구독 연결:** 0.1.8에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 0.1.4 이상은 앱 내부 업데이트로 0.1.8을 받을 수 있습니다.
 
 Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Mac Blender 작업자는 실제 생성·GLB·`.blend` 재열기를 검증했습니다. 새 Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.
 
 [Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.7 검증 기록](docs/releases/v0.1.7-macos.md) · [Windows 0.1.3 기록](docs/releases/v0.1.3.md)
 
-## 게임 설명에서 제작과 검수까지 · Mac 0.1.8 후보
+## 게임 설명에서 제작과 검수까지 · Mac 0.1.8
 
 1. **GPT 구독 연결** — 공식 계정과 연결 상태를 확인합니다.
 2. **게임 프로젝트 루트 연결** — 기존 게임 폴더를 선택하고 장르·시점·세계관·스타일을 설명합니다. 참고 이미지·모델도 선택할 수 있습니다.

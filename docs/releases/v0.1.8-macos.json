@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "version": "0.1.8",
-  "status": "macos-local-installed-candidate",
+  "status": "native-dmg-verified-release-ready",
   "checkedAt": "2026-10-04T17:14:52.922Z",
   "environment": {
     "os": "macOS 27.0.1",
@@ -58,7 +58,8 @@
     "originalProjectFiles": 63,
     "projectsUnchanged": true,
     "authenticationUnchanged": true,
-    "stagingBundleRenamed": true
+    "stagingBundleRenamed": true,
+    "scope": "Earlier locally installed candidate; final distribution recorded separately"
   },
   "nativeWindow": {
     "evidence": "output/production/final-v018/native-ui/native-window.json",
@@ -95,18 +96,17 @@
     "windowsVerified": false
   },
   "updater": {
-    "bytes": 31314306,
-    "sha256": "9f10898feed408f3171abe5b55ade80f04d978337fc763fc1138b1c8ec235b15",
+    "bytes": 31314425,
+    "sha256": "95c9b7f3c81b0b27082a30f531c17c3639ddfd75ddd83ead88d12265d0ed3e00",
     "version": "0.1.8",
     "payloadSignatureVerified": true,
     "authenticatedVersionVerified": true,
-    "tamperedPayloadAndVersionRejected": true,
     "actualPublicInstallAndRestartVerified": false
   },
   "publication": {
     "published": false,
-    "dmgAcceptanceVerified": false,
-    "dmgStatus": "Previous candidate host mount issue retained; this version verifies app and updater archive only",
+    "dmgAcceptanceVerified": true,
+    "dmgStatus": "Final DMG mount, copied app, WebView, IPC, backend export and detach passed",
     "publicMac": "0.1.6",
     "publicWindows": "0.1.3",
     "siteSourceChanged": true,
@@ -115,7 +115,8 @@
     "notarization": false,
     "minimumMacos12Verified": false,
     "intelVerified": false,
-    "cleanHardwareVerified": false
+    "cleanHardwareVerified": false,
+    "distributionRecord": "v0.1.8-distribution.json"
   },
   "outputs": [
     {
@@ -333,5 +334,14 @@
         }
       ]
     }
-  ]
+  ],
+  "localCandidateUpdater": {
+    "bytes": 31314306,
+    "sha256": "9f10898feed408f3171abe5b55ade80f04d978337fc763fc1138b1c8ec235b15",
+    "version": "0.1.8",
+    "payloadSignatureVerified": true,
+    "authenticatedVersionVerified": true,
+    "tamperedPayloadAndVersionRejected": true,
+    "actualPublicInstallAndRestartVerified": false
+  }
 }
