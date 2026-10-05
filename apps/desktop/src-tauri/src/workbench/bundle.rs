@@ -22,7 +22,7 @@ const PLANNING_MODEL: &str = "gpt-5.5";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct Reference {
+pub(super) struct Reference {
     asset_id: String,
     version_id: String,
     name: String,
@@ -92,7 +92,7 @@ fn checked_text(text: &str, max: usize, label: &str) -> Result<()> {
     }
     Ok(())
 }
-fn references(project: &Project, ids: &[String]) -> Result<Vec<Reference>> {
+pub(super) fn references(project: &Project, ids: &[String]) -> Result<Vec<Reference>> {
     if ids.len() > 5 || ids.iter().collect::<HashSet<_>>().len() != ids.len() {
         bail!("참고 에셋은 중복 없이 최대 5개까지 선택해 주세요.")
     }
@@ -115,7 +115,7 @@ fn references(project: &Project, ids: &[String]) -> Result<Vec<Reference>> {
         })
         .collect()
 }
-fn reference_artifacts(project: &Project, refs: &[Reference]) -> Result<Value> {
+pub(super) fn reference_artifacts(project: &Project, refs: &[Reference]) -> Result<Value> {
     let mut files = Vec::new();
     for r in refs {
         let a = project
@@ -144,7 +144,7 @@ fn reference_artifacts(project: &Project, refs: &[Reference]) -> Result<Value> {
     }
     Ok(json!(files))
 }
-fn verify_references(root: &Path, refs: &[Reference]) -> Result<()> {
+pub(super) fn verify_references(root: &Path, refs: &[Reference]) -> Result<()> {
     let repo = Repository::open(root)?;
     let project = repo.project()?;
     for reference in refs {
@@ -542,6 +542,7 @@ mod tests {
                         directory.join("unused-installer"),
                     ),
                     planning_cancel: Mutex::new(None),
+                    quality3d_setup: quality3d::SetupState::default(),
                 }),
             };
             backend

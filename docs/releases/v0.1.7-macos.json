@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.7",
+  "status": "native-installed-release-candidate",
+  "publicReleasePublished": false,
+  "baseCommit": "498f369f23b1275bad0f2512012df9a4c1f5cc6f",
+  "builtFromUncommittedChanges": true,
+  "platform": {
+    "os": "macos",
+    "uname": "arm64",
+    "nodeArchitecture": "arm64",
+    "nodeVersion": "v26.7.0",
+    "translated": false,
+    "osVersion": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434"
+  },
+  "originalProjectFiles": 63,
+  "originalProjectHashesUnchanged": true,
+  "appBundleSealVerified": true,
+  "bundledWorkerAndLicenseHashesEqual": true,
+  "nativeUi": {
+    "nativeWindow": true,
+    "decodedImages": 12,
+    "quality3dUi": {
+      "inputs": 5,
+      "nativeWebView": true,
+      "passed": true,
+      "queuedJobs": 0,
+      "realReconstruction": false,
+      "runtimeStatusMocked": true,
+      "settings": {
+        "action": "quality3d",
+        "assetIds": [
+          "064a2d1d-6d1e-436b-807f-467c2751f5ce",
+          "e380305e-1324-4ae4-a5af-60d435cba6d0",
+          "f58643a7-4148-4175-8978-355b603d6aeb",
+          "58c40fde-53df-454c-b59f-0b6ddf8d3853",
+          "71962339-2a1e-4b31-aad4-3479d528c3c7"
+        ],
+        "heightMeters": 1,
+        "maxTriangles": 10000,
+        "name": "moon-crystal 3D",
+        "preserveMaterials": true,
+        "quality": "high",
+        "textureResolution": 1024
+      },
+      "submissionIntercepted": true
+    },
+    "error": null
+  },
+  "actualInstalledWorkerReconstruction": {
+    "verified": true,
+    "quality": "high",
+    "device": "cpu",
+    "triangleCount": 15943,
+    "elapsedSeconds": 13.736,
+    "peakRssBytes": 3621404672,
+    "sourcePreserved": true,
+    "sourceSha256": "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+    "modelId": "stabilityai/TripoSR",
+    "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+    "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871"
+  },
+  "dmg": {
+    "bytes": 33477101,
+    "sha256": "84befedf555967f4fd6ae47427c30a23d8236bae99611c864c69edaba20cf125",
+    "filesystem": "APFS",
+    "checksumVerified": true,
+    "knownAppContentsMatchFinalBuild": true,
+    "mountAndDetachAcceptancePassed": false,
+    "errors": [
+      {
+        "stage": "DMG mount and copied app",
+        "message": "dmg-attach failed; inspect retained command logs"
+      },
+      {
+        "stage": "detach isolated DMG",
+        "message": "dmg-detach failed; inspect retained command logs"
+      }
+    ],
+    "stagedAppMatchesInstalledFinalBuild": true,
+    "verificationState": "blocked-by-host-mount-completion"
+  },
+  "updaterArchive": {
+    "bytes": 30360101,
+    "sha256": "45908a16208f8b58f99bd5e5e25e4af07ed846a572e04ba5f61f46ab7e74190d",
+    "signedVersion": "0.1.7",
+    "localSignatureTamperAndReplayChecksPassed": true,
+    "publicPluginDownloadAndLifecycleVerified": false
+  },
+  "candidateInstallerSha256": "b11e4e2c5d693a05f7f77be0a6951a021fad20b4a99b34d3e21228eb2aad2cea",
+  "tests": {
+    "macRustPassed": 175,
+    "macRustPreviouslyIgnored": 1,
+    "frontendAndArtifactPassed": 68,
+    "localRuntimePassed": 24,
+    "blenderAuditPassed": 8,
+    "independentMixedModelReopenChecks": 109,
+    "independentRefinedModelReopenChecks": 53
+  },
+  "licenseCounts": {
+    "npm": 20,
+    "cargo": 316,
+    "licenseTexts": 257,
+    "missing": 0,
+    "mplSourceArchives": 5
+  },
+  "boundaries": {
+    "modernTripoParity": false,
+    "windowsVerifiedThisRelease": false,
+    "publicWindowsVersion": "0.1.3",
+    "publicMacVersion": "0.1.6",
+    "gpuViewportPixelsVerified": false,
+    "notarizationVerified": false,
+    "siteDeployed": false
+  },
+  "implementationBaseCommit": "e5260c276037177d674d189291b8c8dd15a6c2ce",
+  "preservedHighSelectionIncluded": true,
+  "sourceRefinement": {
+    "nativeBackend": true,
+    "passed": true,
+    "lowTriangles": 980,
+    "restoredTriangles": 1980,
+    "preservedHighUsed": true,
+    "allOriginalAndVersionArtifactsVerified": true,
+    "independentReopenPassed": true,
+    "independentReopenChecks": 53
+  }
+}

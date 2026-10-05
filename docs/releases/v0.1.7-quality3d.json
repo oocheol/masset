@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.7",
+  "platform": "macOS 27.0.1 arm64",
+  "nativeBackend": true,
+  "nativeWindow": false,
+  "cpuDevice": "Apple M4 Pro",
+  "ramBytes": 25769803776,
+  "originalsUnchanged": true,
+  "modelId": "stabilityai/TripoSR",
+  "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+  "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+  "cpuThreads": 2,
+  "quality": "high",
+  "elapsedSeconds": 77.875152667,
+  "cloudInference": false,
+  "providerCalls": 0,
+  "batchInputs": [
+    "/Users/oocheol/Documents/masset/output/game-bundle/native-mixed-live-20261004T043300Z/project/cache/161fa8ae-3b4d-4b05-adc9-d981c9d6f567-f891a26a-b449-45d1-9e1c-4b534c2baa8b/game-asset-0.png",
+    "/Users/oocheol/Documents/masset/output/game-bundle/native-mixed-live-20261004T043300Z/project/outputs/bcbf724b-53e5-4f49-ba5a-0dfa8699b61f/model.glb"
+  ],
+  "originalInputHashes": [
+    [
+      "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+      98944
+    ],
+    [
+      "8cd52c290e8945b86970329f44d430737c82d5b4543c4137c3be2ed90583ed6f",
+      140252
+    ]
+  ],
+  "independentReopen": {
+    "passed": true,
+    "checks": 109,
+    "autoexec": false
+  },
+  "models": [
+    {
+      "id": "2fd74e04-f20b-48a5-a07c-58440131b1e7",
+      "name": "model",
+      "versionCount": 2,
+      "source": "procedural",
+      "mesh": {
+        "dimensions": [
+          2.6666669845581055,
+          1.0,
+          3.555555820465088
+        ],
+        "triangles": 1980,
+        "unit": "m",
+        "vertices": 1576
+      },
+      "qualityFiles": {
+        "game": "0cc25096-cb09-402b-a6e2-2b66b7fcd52b",
+        "high": "b3f2d3a6-533a-4d61-b374-a7ddb2a6602b",
+        "lod1": "b5810fdd-957d-43c0-8ff5-124b86293247"
+      },
+      "warnings": [
+        "LOD1 inherits the game atlas and its interpolated UVs; it has no separate high-detail normal rebake.",
+        "Collapse decimation is not retopology. Watertight volume, CAD/manufacturing suitability, rigging and unseen image geometry are not certified.",
+        "Source contains boundary/non-manifold edges; original high-detail geometry is retained without topology repair."
+      ],
+      "rawGeometry": null,
+      "peakRssBytes": null,
+      "colorEncoding": null,
+      "cleanup": null,
+      "artifacts": [
+        {
+          "bytes": 325492,
+          "format": "glb",
+          "id": "0cc25096-cb09-402b-a6e2-2b66b7fcd52b",
+          "path": "outputs/0cc25096-cb09-402b-a6e2-2b66b7fcd52b/game-ready.model.glb",
+          "role": "output",
+          "sha256": "d95ce85dc475d4c4c0cb5740ece469c47a4b76ce1518f433f7a4bd4229372505"
+        },
+        {
+          "bytes": 206040,
+          "format": "glb",
+          "id": "b3f2d3a6-533a-4d61-b374-a7ddb2a6602b",
+          "path": "outputs/b3f2d3a6-533a-4d61-b374-a7ddb2a6602b/high-detail.glb",
+          "role": "source",
+          "sha256": "3f10c77ff41e3a70058a0970e6bd57f7c88bba40ce414cbeaa408083e5122d78"
+        },
+        {
+          "bytes": 283612,
+          "format": "glb",
+          "id": "b5810fdd-957d-43c0-8ff5-124b86293247",
+          "path": "outputs/b5810fdd-957d-43c0-8ff5-124b86293247/lod1.glb",
+          "role": "output",
+          "sha256": "aa6c9d3475849e3cd5fb7838968280b02cf748a8e563e2dab16642cfa450cec0"
+        },
+        {
+          "bytes": 464993,
+          "format": "blend",
+          "id": "4f7c66a1-598f-4109-956e-b1a51a5bcab2",
+          "path": "outputs/4f7c66a1-598f-4109-956e-b1a51a5bcab2/source.blend",
+          "role": "source",
+          "sha256": "736b24f07e18dd7d39dcf3888e21dad9685b9df0435257b2339fa4da7f65649d"
+        },
+        {
+          "bytes": 124526,
+          "format": "png",
+          "id": "07b93a2a-4743-44a8-be6d-653e4990aec8",
+          "path": "outputs/07b93a2a-4743-44a8-be6d-653e4990aec8/basecolor.png",
+          "role": "output",
+          "sha256": "7dbbdb3dc8663896da99e572bc01848a0f3b16c8148b084c77f61fc2123847da"
+        },
+        {
+          "bytes": 111739,
+          "format": "png",
+          "id": "a3cfade0-d45a-4eef-85d8-061c95b5c6e0",
+          "path": "outputs/a3cfade0-d45a-4eef-85d8-061c95b5c6e0/orm.png",
+          "role": "output",
+          "sha256": "99e50cd04b6b349c43ddec227af11ce552658903404c26e0d6219c0f28e7814d"
+        },
+        {
+          "bytes": 1015782,
+          "format": "png",
+          "id": "05a48aee-b06b-41e1-8a5e-6f925dee67d9",
+          "path": "outputs/05a48aee-b06b-41e1-8a5e-6f925dee67d9/thumbnail.png",
+          "role": "thumbnail",
+          "sha256": "3c327b0d0f06eea38846e14c9b5446fcba83b5cb96dc9ca93dbbcc93b0f3e300"
+        },
+        {
+          "bytes": 20391,
+          "format": "json",
+          "id": "5d79a929-e5b4-4d96-8993-d131826c6437",
+          "path": "outputs/5d79a929-e5b4-4d96-8993-d131826c6437/validation.json",
+          "role": "metadata",
+          "sha256": "33a90f8b3883078ad3c6b51220d05af7e0bdc45ad18c2efba3e40520d11afe1f"
+        },
+        {
+          "bytes": 258351,
+          "format": "png",
+          "id": "a51acfeb-a4c7-47b2-ae5a-0cdf2f506678",
+          "path": "outputs/a51acfeb-a4c7-47b2-ae5a-0cdf2f506678/turntable-00.png",
+          "role": "thumbnail",
+          "sha256": "ea9cf865108a00ec10454ec4684eb2a7dd81bf51d57a969d1e5e0fc271ca9b2a"
+        },
+        {
+          "bytes": 275893,
+          "format": "png",
+          "id": "a739f756-4a94-44ae-ad93-5cbb7d5dcec5",
+          "path": "outputs/a739f756-4a94-44ae-ad93-5cbb7d5dcec5/turntable-01.png",
+          "role": "thumbnail",
+          "sha256": "7cf0f8e65f29801e1f9e3f486b6e4e09287a91cdeae60afabf15235a4c6582e3"
+        },
+        {
+          "bytes": 271038,
+          "format": "png",
+          "id": "ea4abc7b-3d63-430e-9927-5d2fe66f9c81",
+          "path": "outputs/ea4abc7b-3d63-430e-9927-5d2fe66f9c81/turntable-02.png",
+          "role": "thumbnail",
+          "sha256": "d730e7b81ab7d86bcc59dca924e8731e8549da8c903a09e32426cca58c25807e"
+        },
+        {
+          "bytes": 271103,
+          "format": "png",
+          "id": "21855e33-870d-4d4d-88cc-22c8cca69c34",
+          "path": "outputs/21855e33-870d-4d4d-88cc-22c8cca69c34/turntable-03.png",
+          "role": "thumbnail",
+          "sha256": "007e4985f700e0580ded869bfb0b503fe1c7d4d05aa98c73e9a72d84d4fa732e"
+        }
+      ]
+    },
+    {
+      "id": "b96803b9-1f3d-41e4-962e-43542bc1c383",
+      "name": "Native Quality Asset 01",
+      "versionCount": 1,
+      "source": "local_image3d",
+      "mesh": {
+        "dimensions": [
+          0.38428840041160583,
+          1.0,
+          2.1606054306030273
+        ],
+        "triangles": 9799,
+        "unit": "m",
+        "vertices": 9211
+      },
+      "qualityFiles": {
+        "game": "61e729d8-9f26-4785-ba0a-deb39d9c9635",
+        "high": "409d5ef6-db2e-4678-a0f6-e6b37a474b38",
+        "lod1": "cdf342c3-769c-4e9b-9ed6-49648f9dd063"
+      },
+      "warnings": [
+        "Neural vertex-color source has no authored PBR material. Neutral display defaults metallic=0 and roughness=0.6 apply to high/game meshes; vertex colors retain standard glTF linear interpretation. These PBR defaults are not inferred from the image.",
+        "Strongly opposed high/low normal projections were omitted locally; those texels retain the game mesh normal. No color-derived normal detail was synthesized.",
+        "LOD1 inherits the game atlas and its interpolated UVs; it has no separate high-detail normal rebake.",
+        "Collapse decimation is not retopology. Watertight volume, CAD/manufacturing suitability, rigging and unseen image geometry are not certified.",
+        "Source contains boundary/non-manifold edges; original high-detail geometry is retained without topology repair."
+      ],
+      "rawGeometry": {
+        "bounds": [
+          [
+            -0.19214419763987184,
+            0.0,
+            -1.080302683671005
+          ],
+          [
+            0.19214419763987184,
+            1.0,
+            1.080302683671005
+          ]
+        ],
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "extents": [
+          0.3842883952797437,
+          1.0,
+          2.16060536734201
+        ],
+        "floorCentered": true,
+        "minimumExportedTriangleAreaSquareMeters": 1.691101908220211e-09,
+        "minimumTriangleAreaSquareMeters": 1.6908996470015455e-09,
+        "nonplanar": true,
+        "normalizedHeightMeters": 1.0,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 2.2472151272586216,
+        "sourceToGlbTranslation": [
+          -0.0013128566187516066,
+          0.5012310165540618,
+          -0.03334215804079976
+        ],
+        "triangleCount": 15943,
+        "trianglesBelow1eMinus12SquareMeters": 0,
+        "uniqueVertexColors": 7972,
+        "units": "meters",
+        "upAxis": "Y",
+        "vertexColorComponentType": "FLOAT32",
+        "vertexColorSpace": "linear RGB",
+        "vertexColors": true,
+        "vertexCount": 7972,
+        "watertight": false
+      },
+      "peakRssBytes": 3620749312,
+      "colorEncoding": {
+        "alpha": 1.0,
+        "attribute": "COLOR_0",
+        "componentType": "FLOAT32",
+        "decoderColorInterpretation": "sRGB, matching upstream direct PNG display",
+        "exportColorSpace": "linear RGB",
+        "meanExportedLinear": [
+          0.03199946507811546,
+          0.05675398558378219,
+          0.0798950120806694
+        ],
+        "meanPredictedSrgb": [
+          0.1405787616968155,
+          0.19737952947616577,
+          0.242005854845047
+        ],
+        "roundTripMaxAbsoluteError": 8.940696716308596e-08,
+        "sampleSource": "float32 renderer.query_triplane at original model-space vertices",
+        "transfer": "IEC 61966-2-1 inverse sRGB",
+        "uint8QuantizationBeforeExport": false
+      },
+      "cleanup": {
+        "facesReoriented": false,
+        "holesFilled": false,
+        "maximumRemovedFaceFraction": 0.01,
+        "maximumRemovedSurfaceAreaFraction": 1e-08,
+        "method": "remove faces at or below scale-relative numeric area tolerance; remove unreferenced vertices",
+        "normalizedAreaToleranceSquareMeters": 1e-12,
+        "originalTriangleCount": 15944,
+        "originalVertexCount": 7972,
+        "removedSurfaceAreaFraction": 5.804192078615556e-14,
+        "removedTriangleCount": 1,
+        "removedUnreferencedVertexCount": 0,
+        "sourceAreaTolerance": 1.9802074980632157e-13,
+        "sourceHeight": 0.4449952244758606,
+        "verticesMerged": false,
+        "watertightAfter": false,
+        "watertightBefore": true,
+        "windingConsistentAfter": true,
+        "windingConsistentBefore": true
+      },
+      "artifacts": [
+        {
+          "bytes": 6848116,
+          "format": "glb",
+          "id": "61e729d8-9f26-4785-ba0a-deb39d9c9635",
+          "path": "outputs/61e729d8-9f26-4785-ba0a-deb39d9c9635/game-ready.model.glb",
+          "role": "output",
+          "sha256": "1d7a234bfc8b4db92250b2b316f9b570bec58b64439db5c3b11319a2957f0bb4"
+        },
+        {
+          "bytes": 1818348,
+          "format": "glb",
+          "id": "409d5ef6-db2e-4678-a0f6-e6b37a474b38",
+          "path": "outputs/409d5ef6-db2e-4678-a0f6-e6b37a474b38/high-detail.glb",
+          "role": "source",
+          "sha256": "0df6d7f2af992d772f0efe631d92b0c566531e3ead304beb115e0468b2ca1bf2"
+        },
+        {
+          "bytes": 6633412,
+          "format": "glb",
+          "id": "cdf342c3-769c-4e9b-9ed6-49648f9dd063",
+          "path": "outputs/cdf342c3-769c-4e9b-9ed6-49648f9dd063/lod1.glb",
+          "role": "output",
+          "sha256": "1ab988bc1506a3265bca385ee35c6ed958edb59a74f759ea0e7201ddaabcb851"
+        },
+        {
+          "bytes": 7323705,
+          "format": "blend",
+          "id": "585113cc-ac8c-469b-bce4-a1a7d336feb5",
+          "path": "outputs/585113cc-ac8c-469b-bce4-a1a7d336feb5/source.blend",
+          "role": "source",
+          "sha256": "1e697033c0079210487bc918f9f4d22320f26e67133a2e9af10416bc94cb998f"
+        },
+        {
+          "bytes": 2938188,
+          "format": "png",
+          "id": "acfad7d0-045f-4055-98a2-8e25ebe6a3ba",
+          "path": "outputs/acfad7d0-045f-4055-98a2-8e25ebe6a3ba/basecolor.png",
+          "role": "output",
+          "sha256": "f7344068d8c9706b35b8cb011ebccc5668e193338a3b9314136a103a0839db5c"
+        },
+        {
+          "bytes": 2992269,
+          "format": "png",
+          "id": "a34f4be6-897e-4547-a628-de92a79cac31",
+          "path": "outputs/a34f4be6-897e-4547-a628-de92a79cac31/normal.png",
+          "role": "output",
+          "sha256": "db9384d234abf93f2717b720f19cbc23db385ed2c96be3f6f77eaed1b41d7001"
+        },
+        {
+          "bytes": 414854,
+          "format": "png",
+          "id": "eb025297-c5b1-4f39-9b75-3bba975ba48a",
+          "path": "outputs/eb025297-c5b1-4f39-9b75-3bba975ba48a/orm.png",
+          "role": "output",
+          "sha256": "fad49d41ed0335471c6113c2ce3f8e64766ed395a8fce7d5492fcfedba0d5fe7"
+        },
+        {
+          "bytes": 1076649,
+          "format": "png",
+          "id": "747165df-2457-4ce6-a249-aa1cfa4a9180",
+          "path": "outputs/747165df-2457-4ce6-a249-aa1cfa4a9180/thumbnail.png",
+          "role": "thumbnail",
+          "sha256": "9e64cf1a95050612bc8071c013c8b495cfb04fb97c2b0bd8b2498f9c009ff674"
+        },
+        {
+          "bytes": 22166,
+          "format": "json",
+          "id": "ff39a38c-45ad-45c0-98e2-0993d72c144c",
+          "path": "outputs/ff39a38c-45ad-45c0-98e2-0993d72c144c/validation.json",
+          "role": "metadata",
+          "sha256": "faf995a726e166bc2e8bfc1b5e5f392365a0e2f61a7d803aecaea738954201b6"
+        },
+        {
+          "bytes": 280669,
+          "format": "png",
+          "id": "758dfac0-5e05-44f0-b451-79a7d9bfc388",
+          "path": "outputs/758dfac0-5e05-44f0-b451-79a7d9bfc388/turntable-00.png",
+          "role": "thumbnail",
+          "sha256": "009298135d474700e2682fcc26b75af97f58462db863515717d8be8cdfd1b585"
+        },
+        {
+          "bytes": 279134,
+          "format": "png",
+          "id": "8d10a46a-dee5-4c40-9a9d-1ac33b36a9aa",
+          "path": "outputs/8d10a46a-dee5-4c40-9a9d-1ac33b36a9aa/turntable-01.png",
+          "role": "thumbnail",
+          "sha256": "a7fb0fa2b74ec7c6f44283b532f53ffac18a65ea3f00b4d7bf3eabdb75d1008f"
+        },
+        {
+          "bytes": 273615,
+          "format": "png",
+          "id": "50113ca6-d1f3-4fcc-8002-b9e8b7d52a53",
+          "path": "outputs/50113ca6-d1f3-4fcc-8002-b9e8b7d52a53/turntable-02.png",
+          "role": "thumbnail",
+          "sha256": "a42bbe56b45382eecddf93db498267112583f7b24ab191b358b9dd3a9c05f6dc"
+        },
+        {
+          "bytes": 277505,
+          "format": "png",
+          "id": "5fa47238-86ba-4156-bc37-9774e8ed80c0",
+          "path": "outputs/5fa47238-86ba-4156-bc37-9774e8ed80c0/turntable-03.png",
+          "role": "thumbnail",
+          "sha256": "e56cb2bae488d45aa90587402a9607ab0f1e83793f0b8c41471b843e2ddcc180"
+        },
+        {
+          "bytes": 447684,
+          "format": "glb",
+          "id": "b7f06458-11de-4e75-ab1b-992722059eca",
+          "path": "outputs/b7f06458-11de-4e75-ab1b-992722059eca/mesh.glb",
+          "role": "source",
+          "sha256": "f8104fca1acbf1ed42bb7e569c55751ce83e7d5346785a581e9e6143e988b925"
+        },
+        {
+          "bytes": 70767,
+          "format": "png",
+          "id": "8ff7d8d6-2a37-4c06-9dc0-587cae7cc7a6",
+          "path": "outputs/8ff7d8d6-2a37-4c06-9dc0-587cae7cc7a6/prepared-input.png",
+          "role": "source",
+          "sha256": "e6b681e89a7c3bfe74725eec8a44781865beb763cbe01e5d363d35116cf5d9bf"
+        },
+        {
+          "bytes": 6891,
+          "format": "json",
+          "id": "d502bb2f-75cc-47d9-86ff-6f8bbf288f35",
+          "path": "outputs/d502bb2f-75cc-47d9-86ff-6f8bbf288f35/generation.json",
+          "role": "metadata",
+          "sha256": "83062d65cffcb391da0e91fe105d47fd55986476622fd44feb06322a1b5188a0"
+        }
+      ]
+    }
+  ],
+  "boundaries": {
+    "gpuViewportPixelsVerified": false,
+    "modernTripoParity": false,
+    "retopology": false,
+    "rigging": false,
+    "windowsVerified": false
+  }
+}

@@ -1,0 +1,1126 @@
+{
+  "schemaVersion": 1,
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "macosVersion": "27.0.1",
+  "runtimeRoot": "/Users/oocheol/Documents/masset/workers/image3d/.tools/triposr-cpu-v1",
+  "interpreterPath": "/Users/oocheol/Documents/masset/workers/image3d/.tools/triposr-cpu-v1/venv/bin/python",
+  "pythonVersion": "3.9.6",
+  "systemInterpreterUsed": "/usr/bin/python3",
+  "uvRequired": false,
+  "modelId": "stabilityai/TripoSR",
+  "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+  "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+  "modelSha256": "429e2c6b22a0923967459de24d67f05962b235f79cde6b032aa7ed2ffcd970ee",
+  "codeArchive": {
+    "bytes": 31241354,
+    "sha256": "bcb414550dcfcb9f5ea6a7b9c12f2bbff889f5b4a564a493178393360d9034ec",
+    "url": "https://codeload.github.com/VAST-AI-Research/TripoSR/tar.gz/107cefdc244c39106fa830359024f6a2f1c78871"
+  },
+  "pins": {
+    "Jinja2": "3.1.6",
+    "MarkupSafe": "2.1.5",
+    "Pillow": "10.1.0",
+    "PyYAML": "6.0.2",
+    "antlr4-python3-runtime": "4.9.3",
+    "certifi": "2025.1.31",
+    "charset-normalizer": "3.4.0",
+    "colorama": "0.4.6",
+    "einops": "0.7.0",
+    "filelock": "3.13.1",
+    "fsspec": "2023.12.2",
+    "huggingface-hub": "0.17.3",
+    "idna": "3.10",
+    "imageio": "2.34.0",
+    "lazy-loader": "0.3",
+    "mpmath": "1.3.0",
+    "networkx": "3.2.1",
+    "numpy": "1.26.4",
+    "omegaconf": "2.3.0",
+    "packaging": "24.2",
+    "pip": "24.3.1",
+    "regex": "2024.5.15",
+    "requests": "2.32.3",
+    "safetensors": "0.4.2",
+    "scikit-image": "0.22.0",
+    "scipy": "1.12.0",
+    "setuptools": "75.8.0",
+    "sympy": "1.12",
+    "tifffile": "2024.2.12",
+    "tokenizers": "0.14.1",
+    "torch": "2.2.2",
+    "tqdm": "4.66.5",
+    "transformers": "4.35.0",
+    "trimesh": "4.0.5",
+    "typing-extensions": "4.10.0",
+    "urllib3": "2.2.3",
+    "wheel": "0.45.1"
+  },
+  "runtimeLockSha256": "fc70190bb2222304e7dfd0dea82cb80abd26028efe0c41fad271cf6131782c1d",
+  "installProof": {
+    "initialDownloadAndInstallSeconds": 71.642,
+    "initialLog": "/Users/oocheol/Documents/masset/workers/image3d/output/setup-events.jsonl",
+    "separateSystemPythonVenvRoot": "/Users/oocheol/Documents/masset/workers/image3d/.tools/stdlib-install-proof",
+    "replaySeconds": 13.334,
+    "replayLog": "/Users/oocheol/Documents/masset/workers/image3d/output/setup-clean-venv-final-events.jsonl",
+    "replayUsedPreservedVerifiedDownloadCache": true,
+    "inferenceVerifiedAfterInstallOnly": false
+  },
+  "unitTests": {
+    "count": 24,
+    "passed": true,
+    "log": "/Users/oocheol/Documents/masset/workers/image3d/output/test-results-color-final.txt"
+  },
+  "nativeInferences": [
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-draft",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "4db43a1e9f3d5faf5e91925a4690b0bd7ee3059eed155de5264775f928953a36",
+          "bytes": 116384
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "6dde9465b3ce7d9be3636789341e569f2affe076725eb2a6816f9734e6b74be9",
+          "bytes": 64865
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "aaf2a6af49a433bc0214651ff0d4e4e66ada393c8d2dac7ed5f193eb64790ca7",
+          "bytes": 4565
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "draft",
+      "cpuThreads": 4,
+      "elapsedSeconds": 9.337,
+      "peakRssBytes": 3546234880,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 2909,
+        "triangleCount": 5738,
+        "bounds": [
+          [
+            -0.42050298978199147,
+            0.0,
+            -0.42138721366116183
+          ],
+          [
+            0.42050298978199147,
+            1.0,
+            0.42138721366116183
+          ]
+        ],
+        "extents": [
+          0.8410059795639829,
+          1.0,
+          0.8427744273223237
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 2256,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 1.3584995433331848,
+        "sourceToGlbTranslation": [
+          0.06290682041473744,
+          0.504066518899253,
+          0.05839266317665445
+        ]
+      },
+      "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ],
+      "eventsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-draft-events.jsonl",
+      "generationPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-draft/generation.json",
+      "processWallSeconds": 9.78,
+      "colorFormat": "historical direct-uint8 colors, superseded by final linear FLOAT32 exports"
+    },
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-standard",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "201bcb3d2fa03dadc468e1b37da9d986160a8f4625585dbbe14eed3d19a4fb7b",
+          "bytes": 137540
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "e6b681e89a7c3bfe74725eec8a44781865beb763cbe01e5d363d35116cf5d9bf",
+          "bytes": 70767
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "34c23dbc82df29f84a76205c8d3d4273d39dc94a8ce1d35b7b267e851bcb1ab0",
+          "bytes": 4706
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "standard",
+      "cpuThreads": 4,
+      "elapsedSeconds": 6.844,
+      "peakRssBytes": 3619848192,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 3414,
+        "triangleCount": 6828,
+        "bounds": [
+          [
+            -0.19577739109827821,
+            0.0,
+            -1.0723026195552445
+          ],
+          [
+            0.19577739109827821,
+            1.0,
+            1.0723026195552445
+          ]
+        ],
+        "extents": [
+          0.39155478219655643,
+          1.0,
+          2.144605239110489
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 2939,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 2.218674927114088,
+        "sourceToGlbTranslation": [
+          -0.00032359943071891273,
+          0.5010176124312963,
+          -0.034424162284783844
+        ]
+      },
+      "sourceSha256": "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ],
+      "eventsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-standard-events.jsonl",
+      "generationPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-standard/generation.json",
+      "processWallSeconds": 7.21,
+      "colorFormat": "historical direct-uint8 colors, superseded by final linear FLOAT32 exports"
+    },
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-high",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "0fbd1fc4164de3439568101253b8ea3b5b1c5549c70902a00bee90dba1a136ad",
+          "bytes": 1147696
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "6dde9465b3ce7d9be3636789341e569f2affe076725eb2a6816f9734e6b74be9",
+          "bytes": 64865
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "6c69b7b22efa07572c214e5825f1232fbd071d7bede3fcaea4f2a2d513cc601d",
+          "bytes": 4582
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "high",
+      "cpuThreads": 2,
+      "elapsedSeconds": 13.417,
+      "peakRssBytes": 3611623424,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 28730,
+        "triangleCount": 57252,
+        "bounds": [
+          [
+            -0.4285991707441008,
+            0.0,
+            -0.44331630025218494
+          ],
+          [
+            0.4285991707441008,
+            1.0,
+            0.44331630025218494
+          ]
+        ],
+        "extents": [
+          0.8571983414882016,
+          1.0,
+          0.8866326005043699
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 11473,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 1.3666337930454167,
+        "sourceToGlbTranslation": [
+          0.05584163054899166,
+          0.4937016482236881,
+          0.03774579765722705
+        ]
+      },
+      "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ],
+      "eventsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-high-events.jsonl",
+      "generationPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-high/generation.json",
+      "processWallSeconds": 13.82,
+      "colorFormat": "historical direct-uint8 colors, superseded by final linear FLOAT32 exports"
+    },
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-existing-empty-cp39",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "4db43a1e9f3d5faf5e91925a4690b0bd7ee3059eed155de5264775f928953a36",
+          "bytes": 116384
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "6dde9465b3ce7d9be3636789341e569f2affe076725eb2a6816f9734e6b74be9",
+          "bytes": 64865
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "a7bcf0a9a503702643c554bb98cf02a4609de15b441d7502beb4bfc1223f003f",
+          "bytes": 4588
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "draft",
+      "cpuThreads": 1,
+      "elapsedSeconds": 15.057,
+      "peakRssBytes": 3612672000,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 2909,
+        "triangleCount": 5738,
+        "bounds": [
+          [
+            -0.42050298978199147,
+            0.0,
+            -0.42138721366116183
+          ],
+          [
+            0.42050298978199147,
+            1.0,
+            0.42138721366116183
+          ]
+        ],
+        "extents": [
+          0.8410059795639829,
+          1.0,
+          0.8427744273223237
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 2256,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 1.3584995433331848,
+        "sourceToGlbTranslation": [
+          0.06290682041473744,
+          0.504066518899253,
+          0.05839266317665445
+        ]
+      },
+      "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ],
+      "eventsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-existing-empty-events.jsonl",
+      "generationPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-existing-empty-cp39/generation.json",
+      "processWallSeconds": 15.41,
+      "colorFormat": "historical direct-uint8 colors, superseded by final linear FLOAT32 exports"
+    },
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-alias",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "4db43a1e9f3d5faf5e91925a4690b0bd7ee3059eed155de5264775f928953a36",
+          "bytes": 116384
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "6dde9465b3ce7d9be3636789341e569f2affe076725eb2a6816f9734e6b74be9",
+          "bytes": 64865
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "ef17002ed595ab44974ca193b34ea126a813c52d72b4c3716509c29b59068e49",
+          "bytes": 4575
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "draft",
+      "cpuThreads": 4,
+      "elapsedSeconds": 6.12,
+      "peakRssBytes": 3614769152,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 2909,
+        "triangleCount": 5738,
+        "bounds": [
+          [
+            -0.42050298978199147,
+            0.0,
+            -0.42138721366116183
+          ],
+          [
+            0.42050298978199147,
+            1.0,
+            0.42138721366116183
+          ]
+        ],
+        "extents": [
+          0.8410059795639829,
+          1.0,
+          0.8427744273223237
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 2256,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 1.3584995433331848,
+        "sourceToGlbTranslation": [
+          0.06290682041473744,
+          0.504066518899253,
+          0.05839266317665445
+        ]
+      },
+      "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ],
+      "eventsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-alias-events.jsonl",
+      "generationPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-alias/generation.json",
+      "colorFormat": "historical direct-uint8 colors, superseded by final linear FLOAT32 exports"
+    }
+  ],
+  "maxPeakRssBytes": 3621257216,
+  "reservationBytes": 8589934592,
+  "negativeCliCases": [
+    {
+      "case": "opaque",
+      "code": "unsupported_background",
+      "exitCode": 1,
+      "message": "Supply a transparent PNG/WebP containing one isolated object. Opaque JPEGs and backgrounds require explicit preprocessing; automatic background removal is not installed."
+    },
+    {
+      "case": "populated",
+      "code": "output_not_empty",
+      "exitCode": 1,
+      "message": "output-dir must be a new directory or an existing empty directory"
+    }
+  ],
+  "observedSetupFailure": {
+    "code": "runtime_probe",
+    "cause": "Vendored distribution license basenames collided in initial collector",
+    "fixed": "Preserve complete wheel-relative license paths; separate/repeated system-Python setup now passes",
+    "failureLogs": [
+      "/Users/oocheol/Documents/masset/workers/image3d/output/setup-repeat-events.jsonl",
+      "/Users/oocheol/Documents/masset/workers/image3d/output/setup-repeat-fixed-events.jsonl"
+    ],
+    "fixedLog": "/Users/oocheol/Documents/masset/workers/image3d/output/setup-repeat-final-events.jsonl"
+  },
+  "runtimeAlias": {
+    "alias": "/Users/oocheol/Documents/masset/workers/image3d/output/runtime-alias",
+    "statusLog": "/Users/oocheol/Documents/masset/workers/image3d/output/status-alias.json",
+    "workerVerified": true,
+    "canonicalInterpreterPath": "/Users/oocheol/Documents/masset/workers/image3d/.tools/triposr-cpu-v1/venv/bin/python"
+  },
+  "cancellationContract": "Mac worker execve preserves parent-managed PID/process group; parent kills and waits for setup group, then removes only .setup-lock containing its PID",
+  "limits": [
+    "Mac arm64 CPython3.9 only in this release",
+    "No Windows, Intel Mac, Python3.10-3.12 or MPS inference proof",
+    "Older TripoSR model; no modern Tripo Studio parity claim"
+  ],
+  "changedScriptsSha256": {
+    "image3d_adapter.py": "70561af0e4dbd6c9988b022e8b009353e43277139dae1f1c41a9e14dc92f341a",
+    "image_input.py": "bfd815ebc250b17745469ed8678724dfd81333cfbc6001a0e9102a1f0bc9a122",
+    "runtime_common.py": "286c415316bf810cd07c350000988ddc4f05f24954c86428bf90071894c44ba1",
+    "runtime_probe.py": "0d3632211ebfc712429e124de2a768bbf0c7222923c60a107d2eeaf425491830",
+    "setup.py": "a700439bad41c7abc036186d587e92d4d1830a04ddb96a9ebc7188d22481c900",
+    "status.py": "a71f2275538b02efb8e21d77b31c915163815ef0772b4d7d2923f0deba45fd77",
+    "upstream_patch.py": "cc8ff47e9c9dc8e4ea01ba742a44c4faba0e8bd5d31e0180d00ebde40c8fb615",
+    "worker.py": "90ec0512612a6fc31658e25b2fe2f308d9c828b87fed2a64bc149276491266c7",
+    "glb_color.py": "f250da921c115e02e5dc378ef30d3eaede19331018bf35318bc97cf5dae96350"
+  },
+  "updatedAt": "2026-10-04T11:35:08.492944Z",
+  "previousUnitTests": {
+    "count": 18,
+    "passed": true,
+    "log": "/Users/oocheol/Documents/masset/workers/image3d/output/test-results-final.txt"
+  },
+  "finalColorInferences": [
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-standard-linear-final",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "0fb7f51d032af13b125174f50979ca05a6dca38deadfbe572e7e855b6e9a5c9e",
+          "bytes": 192444
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "e6b681e89a7c3bfe74725eec8a44781865beb763cbe01e5d363d35116cf5d9bf",
+          "bytes": 70767
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "bfdac2ed8b77630d79632e6b26d2d38e40427d5f4d0716f01754044502fb7996",
+          "bytes": 6868
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "standard",
+      "cpuThreads": 4,
+      "elapsedSeconds": 6.953,
+      "peakRssBytes": 3618930688,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 3414,
+        "triangleCount": 6828,
+        "bounds": [
+          [
+            -0.19577739109827821,
+            0.0,
+            -1.0723026195552445
+          ],
+          [
+            0.19577739109827821,
+            1.0,
+            1.0723026195552445
+          ]
+        ],
+        "extents": [
+          0.39155478219655643,
+          1.0,
+          2.144605239110489
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 3414,
+        "watertight": true,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 2.218674927114088,
+        "sourceToGlbTranslation": [
+          -0.00032359943071891273,
+          0.5010176124312963,
+          -0.034424162284783844
+        ],
+        "minimumTriangleAreaSquareMeters": 1.4273813153249228e-09,
+        "trianglesBelow1eMinus12SquareMeters": 0,
+        "vertexColorSpace": "linear RGB",
+        "vertexColorComponentType": "FLOAT32",
+        "minimumExportedTriangleAreaSquareMeters": 1.427505978516688e-09
+      },
+      "colorEncoding": {
+        "decoderColorInterpretation": "sRGB, matching upstream direct PNG display",
+        "exportColorSpace": "linear RGB",
+        "attribute": "COLOR_0",
+        "componentType": "FLOAT32",
+        "alpha": 1.0,
+        "transfer": "IEC 61966-2-1 inverse sRGB",
+        "sampleSource": "float32 renderer.query_triplane at original model-space vertices",
+        "uint8QuantizationBeforeExport": false,
+        "roundTripMaxAbsoluteError": 8.940696716308594e-08,
+        "meanPredictedSrgb": [
+          0.1659306138753891,
+          0.22316670417785645,
+          0.26508113741874695
+        ],
+        "meanExportedLinear": [
+          0.04679098352789879,
+          0.07377242296934128,
+          0.09705506265163422
+        ]
+      },
+      "meshCleanup": {
+        "method": "remove faces at or below scale-relative numeric area tolerance; remove unreferenced vertices",
+        "normalizedAreaToleranceSquareMeters": 1e-12,
+        "sourceAreaTolerance": 2.031480458168886e-13,
+        "sourceHeight": 0.4507194757461548,
+        "removedTriangleCount": 0,
+        "removedUnreferencedVertexCount": 0,
+        "originalTriangleCount": 6828,
+        "originalVertexCount": 3414,
+        "removedSurfaceAreaFraction": 0.0,
+        "maximumRemovedFaceFraction": 0.01,
+        "maximumRemovedSurfaceAreaFraction": 1e-08,
+        "windingConsistentBefore": true,
+        "windingConsistentAfter": true,
+        "watertightBefore": true,
+        "watertightAfter": true,
+        "facesReoriented": false,
+        "verticesMerged": false,
+        "holesFilled": false
+      },
+      "sourceSha256": "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ]
+    },
+    {
+      "verified": true,
+      "outputDir": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-high-linear-final",
+      "artifacts": [
+        {
+          "basename": "mesh.glb",
+          "sha256": "f8104fca1acbf1ed42bb7e569c55751ce83e7d5346785a581e9e6143e988b925",
+          "bytes": 447684
+        },
+        {
+          "basename": "prepared-input.png",
+          "sha256": "e6b681e89a7c3bfe74725eec8a44781865beb763cbe01e5d363d35116cf5d9bf",
+          "bytes": 70767
+        },
+        {
+          "basename": "generation.json",
+          "sha256": "cae938ba0660503cf870ed9afb1698e0d8a2f9263bb7812d400875497ffb8101",
+          "bytes": 6881
+        }
+      ],
+      "modelId": "stabilityai/TripoSR",
+      "modelRevision": "5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "codeRevision": "107cefdc244c39106fa830359024f6a2f1c78871",
+      "device": "cpu",
+      "quality": "high",
+      "cpuThreads": 4,
+      "elapsedSeconds": 9.189,
+      "peakRssBytes": 3621257216,
+      "hardware": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "pythonVersion": "3.9.6",
+        "cpu": "Apple M4 Pro",
+        "ramBytes": 25769803776
+      },
+      "geometry": {
+        "vertexCount": 7972,
+        "triangleCount": 15943,
+        "bounds": [
+          [
+            -0.19214419763987184,
+            0.0,
+            -1.080302683671005
+          ],
+          [
+            0.19214419763987184,
+            1.0,
+            1.080302683671005
+          ]
+        ],
+        "extents": [
+          0.3842883952797437,
+          1.0,
+          2.16060536734201
+        ],
+        "nonplanar": true,
+        "vertexColors": true,
+        "uniqueVertexColors": 7972,
+        "watertight": false,
+        "coordinateSystem": "right-handed-glTF-Y-up",
+        "upAxis": "Y",
+        "units": "meters",
+        "normalizedHeightMeters": 1.0,
+        "floorCentered": true,
+        "physicalScaleEstimated": false,
+        "sourceCoordinateSystem": "TripoSR-Z-up",
+        "sourceToGlbRotation": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "sourceToGlbScale": 2.2472151272586216,
+        "sourceToGlbTranslation": [
+          -0.0013128566187516066,
+          0.5012310165540618,
+          -0.03334215804079976
+        ],
+        "minimumTriangleAreaSquareMeters": 1.6908996470015455e-09,
+        "trianglesBelow1eMinus12SquareMeters": 0,
+        "vertexColorSpace": "linear RGB",
+        "vertexColorComponentType": "FLOAT32",
+        "minimumExportedTriangleAreaSquareMeters": 1.6911019082202116e-09
+      },
+      "colorEncoding": {
+        "decoderColorInterpretation": "sRGB, matching upstream direct PNG display",
+        "exportColorSpace": "linear RGB",
+        "attribute": "COLOR_0",
+        "componentType": "FLOAT32",
+        "alpha": 1.0,
+        "transfer": "IEC 61966-2-1 inverse sRGB",
+        "sampleSource": "float32 renderer.query_triplane at original model-space vertices",
+        "uint8QuantizationBeforeExport": false,
+        "roundTripMaxAbsoluteError": 8.940696716308594e-08,
+        "meanPredictedSrgb": [
+          0.1405787616968155,
+          0.19737952947616577,
+          0.242005854845047
+        ],
+        "meanExportedLinear": [
+          0.03199946507811546,
+          0.056753985583782196,
+          0.0798950120806694
+        ]
+      },
+      "meshCleanup": {
+        "method": "remove faces at or below scale-relative numeric area tolerance; remove unreferenced vertices",
+        "normalizedAreaToleranceSquareMeters": 1e-12,
+        "sourceAreaTolerance": 1.9802074980632155e-13,
+        "sourceHeight": 0.4449952244758606,
+        "removedTriangleCount": 1,
+        "removedUnreferencedVertexCount": 0,
+        "originalTriangleCount": 15944,
+        "originalVertexCount": 7972,
+        "removedSurfaceAreaFraction": 5.804192078615556e-14,
+        "maximumRemovedFaceFraction": 0.01,
+        "maximumRemovedSurfaceAreaFraction": 1e-08,
+        "windingConsistentBefore": true,
+        "windingConsistentAfter": true,
+        "watertightBefore": true,
+        "watertightAfter": false,
+        "facesReoriented": false,
+        "verticesMerged": false,
+        "holesFilled": false
+      },
+      "sourceSha256": "03d98393d40b0011eabcbabac6b4890c124aa710dd9373ca182530c3e26eec58",
+      "sourcePreserved": true,
+      "checks": [
+        "exact artifact SHA-256 and sizes",
+        "GLB 2.0 structure with actual COLOR_0",
+        "nonplanar, finite, nondegenerate triangles",
+        "outward consistent winding",
+        "Y-up floor-centered one-metre height",
+        "original image hash preserved",
+        "offline CPU provenance",
+        "measured peak RSS below 8 GiB"
+      ]
+    }
+  ],
+  "verificationSourcesSha256": {
+    "tests/test_worker.py": "e63a638ff007450d20bceef98370c9566d0e01188948f15e476301cbf7df4d90",
+    "tests/verify_artifacts.py": "e4ef6b57c696b06e5dfbfff54b4e4df42c1c50250e09aac04af72a3cee8cc599",
+    "tests/render_color_comparison.py": "023d6f989b815e535cee99ada461af52bc94145ed77130c9d757cca963df7dd8",
+    "tools/compare_native_colors.py": "4d54c1b7ce7a0148e4fd084ac8e1220138589c5458c7d5a27ffa0aa5458059b4",
+    "README.md": "3ab6f14aa58b7cf923fe2eb61297a5a0062a7f5222f762be0453a6dd00f3d68b"
+  },
+  "finalWorkerArtifactsVerified": true,
+  "runtimeStatusProof": {
+    "path": "/Users/oocheol/Documents/masset/workers/image3d/output/status-color-final.json",
+    "bytes": 575,
+    "sha256": "4b28d865fc9597874be811dc2799ba57a30f1f54b5e44e01cc318cb4dd75c772"
+  },
+  "colorComparison": {
+    "measurementsPath": "/Users/oocheol/Documents/masset/workers/image3d/output/native-color-comparison.json",
+    "blenderProofPath": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/blender-color-proof.json",
+    "renderLog": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide-blender.log",
+    "assessment": "Linear conversion removes the washed-out display. High samples the same soft neural shape more densely; hard edges, holes and fine weapon details remain imperfect. No modern Tripo Studio parity claim.",
+    "previewArtifacts": [
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/old-standard.png",
+        "bytes": 165603,
+        "sha256": "36462aa381ad0690cf8d29843113c961348d9a1b49ab0ebbe818b3766e8a973f"
+      },
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/linear-standard.png",
+        "bytes": 167690,
+        "sha256": "6b085baea5be4935689a66a40a19064e055b1ee36ab13285cf0eca039f1ed032"
+      },
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/linear-high.png",
+        "bytes": 161269,
+        "sha256": "23dbaea454fc5ed6e4ecaeda015e9c17643add3666dbaed3572ca1e3b20c2848"
+      },
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/old-standard-lit.png",
+        "bytes": 174020,
+        "sha256": "e031dbe19c624c3e35f730dd3cd5e4732888c6b1d495009fa768a4de4a4ce1f7"
+      },
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/linear-standard-lit.png",
+        "bytes": 170149,
+        "sha256": "59b8ab7c36add0ea2c2990b93cd2b1004a68e53892f50d13df4edaf4253470a4"
+      },
+      {
+        "path": "/Users/oocheol/Documents/masset/workers/image3d/output/color-comparison-wide/linear-high-lit.png",
+        "bytes": 169903,
+        "sha256": "72b8cfe8e6afa29d7c19f2eda69e41d4bad30ce58be885b8a4c2a18f7217166f"
+      }
+    ]
+  },
+  "observedHighGunFailure": {
+    "reason": "one numerical marching-cubes face below 1e-12 normalized square metres",
+    "firstAttemptEvents": "/Users/oocheol/Documents/masset/workers/image3d/output/native-game-high-linear-events.jsonl",
+    "measuredSliversPath": "/Users/oocheol/Documents/masset/workers/image3d/output/high-sliver-measurements.json",
+    "resolvedBy": "bounded scale-relative numeric face removal before querying colors; strict final triangle check retained",
+    "removedTriangleCount": 1,
+    "removedAreaFraction": 5.804192078615556e-14,
+    "watertightAfter": false,
+    "boundaryNote": "a microscopic boundary remains; no holes filled or vertices merged"
+  },
+  "parentNativeBackendProof": {
+    "path": "/Users/oocheol/Documents/masset/output/quality3d/backend-final-high-20261004T112500Z/quality3d-proof.json",
+    "passed": true,
+    "nativeBackend": true,
+    "nativeWindow": false,
+    "originalsUnchanged": true,
+    "elapsedSeconds": 77.875152667,
+    "cloudInference": false
+  },
+  "changedPaths": [
+    "workers/image3d/.gitignore",
+    "workers/image3d/LICENSE",
+    "workers/image3d/README.md",
+    "workers/image3d/fixtures/blue-sphere.png",
+    "workers/image3d/fixtures/make_fixture.py",
+    "workers/image3d/glb_color.py",
+    "workers/image3d/image3d_adapter.py",
+    "workers/image3d/image_input.py",
+    "workers/image3d/licenses/ANTLR-BSD-3-Clause.txt",
+    "workers/image3d/licenses/DINO-Apache-2.0.txt",
+    "workers/image3d/licenses/Safetensors-Apache-2.0.txt",
+    "workers/image3d/licenses/Tokenizers-Apache-2.0.txt",
+    "workers/image3d/licenses/TripoSR-MIT.txt",
+    "workers/image3d/licenses/sources.json",
+    "workers/image3d/runtime-lock.json",
+    "workers/image3d/runtime_common.py",
+    "workers/image3d/runtime_probe.py",
+    "workers/image3d/setup.py",
+    "workers/image3d/status.py",
+    "workers/image3d/tests/native-proof.json",
+    "workers/image3d/tests/render_color_comparison.py",
+    "workers/image3d/tests/test_worker.py",
+    "workers/image3d/tests/verify_artifacts.py",
+    "workers/image3d/tools/build_lock.py",
+    "workers/image3d/tools/compare_native_colors.py",
+    "workers/image3d/upstream_patch.py",
+    "workers/image3d/worker.py"
+  ]
+}

@@ -213,6 +213,10 @@ pub fn run() {
                     return Err("Native UI QA directory must be new".into());
                 }
                 std::fs::create_dir_all(directory)?;
+                let game=directory.join("game-project");
+                std::fs::create_dir(&game)?;
+                std::fs::write(game.join("project.godot"),"[application]\nconfig/name=\"Native UI Game\"\n")?;
+                std::fs::write(game.join("main.tscn"),"[gd_scene format=3]\n[ext_resource path=\"res://assets/missing.png\" type=\"Texture2D\" id=\"1\"]\n")?;
                 directory.join("app-data")
             } else {
                 #[cfg(target_os = "macos")]
@@ -246,7 +250,9 @@ pub fn run() {
                 && webview.app_handle().state::<NativeQa>().inner().0.is_some()
             {
                 let with_native_model = webview.app_handle().state::<NativeQa>().inner().1;
-                let script = format!("window.__ASSET_NATIVE_QA__ = Object.freeze({{withNativeModel:{with_native_model}}});\n{}", include_str!("native_qa.js"));
+                let game_root=webview.app_handle().state::<NativeQa>().inner().0.as_ref().unwrap().join("game-project");
+                let parameters=serde_json::json!({"withNativeModel":with_native_model,"gameProjectRoot":game_root});
+                let script = format!("window.__ASSET_NATIVE_QA__ = Object.freeze({parameters});\n{}", include_str!("native_qa.js"));
                 let _ = webview.eval(&script);
             }
         })

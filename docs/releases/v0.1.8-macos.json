@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.8",
+  "status": "published-native-update-verified",
+  "checkedAt": "2026-10-04T17:14:52.922Z",
+  "environment": {
+    "os": "macOS 27.0.1",
+    "architecture": "arm64",
+    "hardware": "Apple M4 Pro",
+    "memoryGiB": 24,
+    "python": "3.9.6",
+    "blender": "5.2.1 LTS"
+  },
+  "features": {
+    "defaultHome": "game-production",
+    "gameRootScan": "bounded read-only inventory and missing-reference metadata",
+    "planner": "gpt-5.5",
+    "visualAssetLimit": 120,
+    "modelFlow": "GPT concept image -> local TripoSR -> Blender",
+    "editing": "optional"
+  },
+  "nativeGeneration": {
+    "evidence": "output/production/native-live-20261005-01/verification-resumed-2.json",
+    "livePlanner": true,
+    "liveGptImages": true,
+    "liveLocalReconstruction": true,
+    "items": 2,
+    "stages": 3,
+    "duplicateStartPrevented": true,
+    "resumedLocalOnly": true,
+    "gptImageAttempts": 1,
+    "originalGameFilesPreserved": 3,
+    "deliveryHashesVerified": true,
+    "reviewsPersisted": true,
+    "producer": "Native Mac backend proof; separate from mocked installed WebView planning"
+  },
+  "independentReopen": {
+    "evidence": "output/production/native-live-20261005-01/independent-reopen.json",
+    "valid": true,
+    "checks": 56,
+    "failures": 0,
+    "highTriangles": 109899,
+    "gameTriangles": 9769,
+    "lodTriangles": 4771,
+    "blenderAutoExecutionDisabled": true
+  },
+  "installation": {
+    "evidence": "output/production/final-v018/installation.json",
+    "location": "/Applications/Asset Studio.app",
+    "version": "0.1.8",
+    "priorVersionBackedUp": "0.1.7",
+    "backupExtension": ".app.backup",
+    "bundleMatchesBuilt": true,
+    "bundleSealVerified": true,
+    "workersDocsAndLicensesMatch": true,
+    "files": 377,
+    "binarySha256": "a1a4843686a594cd39f468790a896e8a5b906693321e478462f98e53b265bf2c",
+    "originalProjectFiles": 63,
+    "projectsUnchanged": true,
+    "authenticationUnchanged": true,
+    "stagingBundleRenamed": true,
+    "scope": "Earlier locally installed candidate; final distribution recorded separately"
+  },
+  "nativeWindow": {
+    "evidence": "output/production/final-v018/native-ui/native-window.json",
+    "passed": true,
+    "decodedImages": 12,
+    "productionUi": {
+      "defaultGenerationHome": true,
+      "items": 2,
+      "localStatusMocked": true,
+      "nativeRootScan": true,
+      "passed": true,
+      "plannerResponseMocked": true,
+      "providerRequests": 0,
+      "realGeneration": false,
+      "submissionIntercepted": true
+    },
+    "externalProviderCalls": 0,
+    "updateNetworkActions": 0,
+    "gpuViewportPixelsVerified": false
+  },
+  "tests": {
+    "rust": {
+      "passed": 209,
+      "ignored": 1
+    },
+    "frontend": {
+      "passed": 95
+    },
+    "updatePackaging": {
+      "passed": 2
+    },
+    "desktopProductionBuild": true,
+    "siteProductionBuild": true,
+    "windowsVerified": false
+  },
+  "updater": {
+    "bytes": 31314425,
+    "sha256": "95c9b7f3c81b0b27082a30f531c17c3639ddfd75ddd83ead88d12265d0ed3e00",
+    "version": "0.1.8",
+    "payloadSignatureVerified": true,
+    "authenticatedVersionVerified": true,
+    "actualPublicInstallAndRestartVerified": true
+  },
+  "publication": {
+    "published": true,
+    "dmgAcceptanceVerified": true,
+    "dmgStatus": "Final DMG mount, copied app, WebView, IPC, backend export and detach passed",
+    "publicMac": "0.1.8",
+    "publicWindows": "0.1.3",
+    "siteSourceChanged": true,
+    "siteDeployed": false,
+    "appleDeveloperId": false,
+    "notarization": false,
+    "minimumMacos12Verified": false,
+    "intelVerified": false,
+    "cleanHardwareVerified": false,
+    "distributionRecord": "v0.1.8-distribution.json"
+  },
+  "outputs": [
+    {
+      "name": "Fuel Cell",
+      "kind": "sprite",
+      "status": "completed",
+      "review": "approved",
+      "width": 512,
+      "height": 512,
+      "mesh": null,
+      "requestedModel": "gpt-image-2",
+      "confirmedModel": null,
+      "delivered": [
+        {
+          "bytes": 208132,
+          "format": "png",
+          "path": "Fuel Cell.png",
+          "sha256": "95a43474ad6dae6284b5f210f86a9837b8a370dce4c44f7737377e50d9d5d6bb"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "versions/d06d4500-e718-412a-87e9-f5580b352829/subscription-b7550d5e-3359-4ee9-825e-14575c00a286-0.png",
+          "bytes": 1154670,
+          "format": "png",
+          "role": "source",
+          "sha256": "b741fac9d297b31a3422ecadd79186f134fe6264abd067933c7d3cb501e6c4b5"
+        },
+        {
+          "path": "versions/429e7f8a-8411-4097-8cef-2393cc34c6fe/game-asset-b7550d5e-3359-4ee9-825e-14575c00a286-0.png",
+          "bytes": 208132,
+          "format": "png",
+          "role": "output",
+          "sha256": "95a43474ad6dae6284b5f210f86a9837b8a370dce4c44f7737377e50d9d5d6bb"
+        },
+        {
+          "path": "outputs/3f8ad9e6-f570-4193-b339-09d6479dd95f/production-delivery.json",
+          "bytes": 717,
+          "format": "json",
+          "role": "metadata",
+          "sha256": "0f6d576bd894494ca91efe5b3a696b4c748e598c9210001fbc0d4183e530e2fa"
+        }
+      ]
+    },
+    {
+      "name": "Basalt Asteroid",
+      "kind": "model",
+      "status": "completed",
+      "review": "approved",
+      "width": null,
+      "height": null,
+      "mesh": {
+        "dimensions": [
+          0.9517801702022552,
+          0.9999999403953552,
+          1.0175525546073914
+        ],
+        "triangles": 9769,
+        "unit": "m",
+        "vertices": 10852
+      },
+      "requestedModel": "stabilityai/TripoSR",
+      "confirmedModel": "stabilityai/TripoSR@5b521936b01fbe1890f6f9baed0254ab6351c04a",
+      "delivered": [
+        {
+          "bytes": 6250944,
+          "format": "glb",
+          "path": "Basalt Asteroid.glb",
+          "sha256": "96dd7acbd4c1f514ba690d593d98c32f176e576e1af26da7866cc3a79b979ed8"
+        },
+        {
+          "bytes": 6011280,
+          "format": "glb",
+          "path": "lod1.glb",
+          "sha256": "5122a150136bc4f3875e879a458ed8ee49f64c74c8d6c4693365406aa6314d4e"
+        },
+        {
+          "bytes": 2531304,
+          "format": "png",
+          "path": "basecolor.png",
+          "sha256": "b4d70757abb648e857ef35625aa02ca961a2a71b70c2b1f51e1095942386c7c5"
+        },
+        {
+          "bytes": 2733297,
+          "format": "png",
+          "path": "normal.png",
+          "sha256": "09737f9b175850b5955190cb9b2e31c71c623f22aa206408c582c76dacecc264"
+        },
+        {
+          "bytes": 404937,
+          "format": "png",
+          "path": "orm.png",
+          "sha256": "2c5f9b79a73df1c79d5e2077103cf4290896bbfb94079796dd8694a63e36ee76"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "outputs/5e535f92-d72b-4536-8dbf-7f7cebae3c85/game-ready.model.glb",
+          "bytes": 6250944,
+          "format": "glb",
+          "role": "output",
+          "sha256": "96dd7acbd4c1f514ba690d593d98c32f176e576e1af26da7866cc3a79b979ed8"
+        },
+        {
+          "path": "outputs/911b92d5-3c73-443b-9d45-f632d86a940f/high-detail.glb",
+          "bytes": 13187216,
+          "format": "glb",
+          "role": "source",
+          "sha256": "b47e6b06f9d218c1d0cb3db7d7f3db29f5d5f48a3c5f75105a4053c26bc523b8"
+        },
+        {
+          "path": "outputs/4200b86d-93fa-4229-bb54-128f544eb9b4/lod1.glb",
+          "bytes": 6011280,
+          "format": "glb",
+          "role": "output",
+          "sha256": "5122a150136bc4f3875e879a458ed8ee49f64c74c8d6c4693365406aa6314d4e"
+        },
+        {
+          "path": "outputs/c0b110f1-2719-43e2-a6a1-a233a1c99659/source.blend",
+          "bytes": 9214893,
+          "format": "blend",
+          "role": "source",
+          "sha256": "e98efa811be3c5b4ea1bab30ea16b55d60f67c3d34908291a62f6cab1f75533c"
+        },
+        {
+          "path": "outputs/893f061f-a3ce-4471-953a-9d3a7f7e4e00/basecolor.png",
+          "bytes": 2531304,
+          "format": "png",
+          "role": "output",
+          "sha256": "b4d70757abb648e857ef35625aa02ca961a2a71b70c2b1f51e1095942386c7c5"
+        },
+        {
+          "path": "outputs/8d2ea532-f16b-4525-8e41-952faa522c9f/normal.png",
+          "bytes": 2733297,
+          "format": "png",
+          "role": "output",
+          "sha256": "09737f9b175850b5955190cb9b2e31c71c623f22aa206408c582c76dacecc264"
+        },
+        {
+          "path": "outputs/f2da8e85-ed3b-4642-8d92-da3fbdf133bc/orm.png",
+          "bytes": 404937,
+          "format": "png",
+          "role": "output",
+          "sha256": "2c5f9b79a73df1c79d5e2077103cf4290896bbfb94079796dd8694a63e36ee76"
+        },
+        {
+          "path": "outputs/dbb1ee20-0f79-42cc-adbd-006ab732b240/thumbnail.png",
+          "bytes": 1246408,
+          "format": "png",
+          "role": "thumbnail",
+          "sha256": "ea136229970b5958af989bee91ab0e0822b8a58baa6e6bf0c7f225b3f9d69b98"
+        },
+        {
+          "path": "outputs/dc65fab1-d913-47cd-a3fc-b0c8289dbb25/validation.json",
+          "bytes": 22738,
+          "format": "json",
+          "role": "metadata",
+          "sha256": "522b625cf8090143b6834da9b96bc9b4a971f2f2d504597e7106b9992bc48ea0"
+        },
+        {
+          "path": "outputs/10a9ef25-eb4e-4bd6-b0af-e3e46231948a/turntable-00.png",
+          "bytes": 336844,
+          "format": "png",
+          "role": "thumbnail",
+          "sha256": "3323097ec73d02440293933329f8167e363d848871e877e02bec39863ebdd399"
+        },
+        {
+          "path": "outputs/90e379f7-bfcc-40fe-9282-4688385aa2ca/turntable-01.png",
+          "bytes": 339717,
+          "format": "png",
+          "role": "thumbnail",
+          "sha256": "48e99664d9f06c326f710c5266c196940063c6cd94d56115c08cf1fb31c2bf48"
+        },
+        {
+          "path": "outputs/5100d332-0d97-4e7b-8520-72021096f96b/turntable-02.png",
+          "bytes": 335885,
+          "format": "png",
+          "role": "thumbnail",
+          "sha256": "f50ab48de5a08aa0e3654f7a8e5e8c68529e539432bada4734e0cd6fc0bcef9d"
+        },
+        {
+          "path": "outputs/e496edab-69aa-4144-8614-34b34073e833/turntable-03.png",
+          "bytes": 331624,
+          "format": "png",
+          "role": "thumbnail",
+          "sha256": "c949127e5cd5cf2cc96c349d07ba28e7c65fd29171b99847d6cfc80f55effbe9"
+        },
+        {
+          "path": "outputs/3f7940e0-e15d-4bc2-a257-aa9f788e0457/mesh.glb",
+          "bytes": 3080320,
+          "format": "glb",
+          "role": "source",
+          "sha256": "bd476463a7aa0e8562be8358da1936b7f7330f59eaee10881e412d41126400d1"
+        },
+        {
+          "path": "outputs/6cb532bf-8303-44e7-abd2-c8d2f7391c25/prepared-input.png",
+          "bytes": 292701,
+          "format": "png",
+          "role": "source",
+          "sha256": "d99396e578eff0013ad547225ec5b89b122bf3d104edbc63ff8b236dab87621a"
+        },
+        {
+          "path": "outputs/78f0d701-6579-44b6-886d-4dbc65acf3d1/generation.json",
+          "bytes": 6916,
+          "format": "json",
+          "role": "metadata",
+          "sha256": "80d150e65ba7ee80c319099e31c2623b52e1c86fcc86f6769680ecd670617f10"
+        },
+        {
+          "path": "outputs/24bbf4eb-759a-4aea-b56c-1c34da62afd1/production-delivery.json",
+          "bytes": 1411,
+          "format": "json",
+          "role": "metadata",
+          "sha256": "23c82f3af40b071759893700973da308141db596b098f87059a57a85b5d3e7bd"
+        }
+      ]
+    }
+  ],
+  "localCandidateUpdater": {
+    "bytes": 31314306,
+    "sha256": "9f10898feed408f3171abe5b55ade80f04d978337fc763fc1138b1c8ec235b15",
+    "version": "0.1.8",
+    "payloadSignatureVerified": true,
+    "authenticatedVersionVerified": true,
+    "tamperedPayloadAndVersionRejected": true,
+    "actualPublicInstallAndRestartVerified": false
+  }
+}

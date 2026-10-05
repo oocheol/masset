@@ -60,6 +60,8 @@ export function validateGui(report, ownedPid) {
   const fonts = web.readability;
   check(fonts?.smallButtons?.length === 0 && fonts.minimumButtonFont >= 14 && fonts.guideFont >= 16 && fonts.guideOpened === true && fonts.escapeRestoredFocus === true && fonts.horizontalOverflow === false, 'Native readability/guide/focus checks failed');
   check(web.codexOnboarding?.visibleEntry === true && web.codexOnboarding.entryFont >= 14 && web.codexOnboarding.guideSequence === true, 'Native onboarding entry/guide missing');
+  check(web.quality3dUi?.passed === true && web.quality3dUi.nativeWebView === true && web.quality3dUi.inputs === 5 && web.quality3dUi.realReconstruction === false && web.quality3dUi.queuedJobs === 0, 'Native quality panel individual-input/UI boundary failed');
+  check(web.productionUi?.passed === true && web.productionUi.defaultGenerationHome === true && web.productionUi.nativeRootScan === true && web.productionUi.realGeneration === false && web.productionUi.providerRequests === 0, 'Native generation home/project scan boundary failed');
   return true;
 }
 
@@ -200,6 +202,10 @@ async function verify(options) {
       return { source, bundled, bytes: actual.bytes, sha256: actual.sha256 };
     };
     const resourcePairs = [ ['workers/blender/worker.py', 'workers/blender/worker.py'], ['workers/blender/LICENSE', 'workers/blender/LICENSE'], ['LICENSE', 'LICENSE'], ['THIRD_PARTY_NOTICES.md', 'THIRD_PARTY_NOTICES.md'], ['crates/providers/assets/NOTICE', 'licenses/CODEX-CATALOG-NOTICE.txt'], ['crates/providers/assets/OPENAI-CODEX-LICENSE', 'licenses/OPENAI-CODEX-LICENSE.txt'], ['crates/providers/assets/OPENAI-CODEX-NOTICE', 'licenses/OPENAI-CODEX-NOTICE.txt'] ];
+    for (const name of ['setup.py', 'worker.py', 'status.py', 'runtime_common.py', 'image_input.py', 'image3d_adapter.py', 'glb_color.py', 'runtime_probe.py', 'upstream_patch.py', 'runtime-lock.json', 'LICENSE', 'README.md']) resourcePairs.push([`workers/image3d/${name}`, `workers/image3d/${name}`]);
+    for (const name of ['worker.py', 'audit.py', 'LICENSE', 'README.md']) resourcePairs.push([`workers/blender-quality/${name}`, `workers/blender-quality/${name}`]);
+    resourcePairs.push(['docs/model-quality.md', 'docs/model-quality.md']);
+    assert.deepEqual(await inventory(join(resources, 'workers/image3d/licenses')), await inventory(join(REPO, 'workers/image3d/licenses')), 'Pinned image3d licenses differ from the checkout');
     const matched = [];
     for (const pair of resourcePairs) matched.push(await compareResource(...pair));
     const licensesRoot = join(resources, 'docs/licenses');

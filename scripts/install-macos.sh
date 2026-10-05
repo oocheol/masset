@@ -1,14 +1,14 @@
 #!/bin/bash
-# Installs a pinned GitHub trial release into a NEW user-owned app directory.
+# Installs a pinned GitHub release release into a NEW user-owned app directory.
 # Does not need an Apple account, sudo, or a change to system Gatekeeper policy.
 set -euo pipefail
 
-version='0.1.6'
+version='0.1.8'
 filename="AssetStudio_${version}_macos-arm64.dmg"
 download_url="https://github.com/oocheol/masset/releases/download/v${version}/${filename}"
-expected_bytes='29188590'
-expected_sha256='79055cd2fbc81a658d480ebcb4e6418d3f15c793c6803fc86d19914f6fea0eb7'
-install_root="${HOME}/Applications/Asset Studio 0.1.6"
+expected_bytes='34515783'
+expected_sha256='f0b15569c67aaf41f4a31b262a31fccc1a6b3f7f26257ac3565864ad8d2ad176'
+install_root="${HOME}/Applications/Asset Studio 0.1.8"
 local_dmg=''
 assume_yes=false
 launch_app=true
@@ -16,11 +16,11 @@ check_only=false
 
 usage() {
   cat <<'HELP'
-Install Asset Studio 0.1.6 for Apple Silicon from its verified GitHub release.
+Install Asset Studio 0.1.8 for Apple Silicon from its verified GitHub release.
 Usage: bash install-macos.sh [--yes] [--no-launch] [--check-only]
                              [--destination <absolute-directory>] [--dmg <existing-file>]
-Default destination: ~/Applications/Asset Studio 0.1.6/Asset Studio.app (existing apps are never replaced).
-This is an Apple-unnotarized trial. The installer verifies the pinned SHA-256 and
+Default destination: ~/Applications/Asset Studio 0.1.8/Asset Studio.app (existing apps are never replaced).
+This is an Apple-unnotarized release. The installer verifies the pinned SHA-256 and
 app signature, then copies only the new app without browser quarantine metadata.
 System Gatekeeper policy and existing downloads, apps and projects are unchanged.
 HELP
@@ -93,7 +93,7 @@ executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")"
 printf 'Asset Studio %s: native arm64 bundle and ad-hoc seal verified. Apple notarization is absent.\n' "$version"
 if [[ "$check_only" == true ]]; then exit 0; fi
 
-printf 'Install the verified, Apple-unnotarized trial to %s?\n' "$installed_app"
+printf 'Install the verified, Apple-unnotarized release to %s?\n' "$installed_app"
 printf '%s\n' 'Only this new app copy will omit browser quarantine metadata. Existing apps and system security settings are preserved.'
 if [[ "$assume_yes" != true ]]; then
   [[ -r /dev/tty ]] || fail 'An interactive terminal is required. Use --yes only after reviewing the installation notice.'

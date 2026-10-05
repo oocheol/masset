@@ -3,7 +3,7 @@
   window.__ASSET_NATIVE_QA_RUNNING__ = true;
   const withModel = window.__ASSET_NATIVE_QA__?.withNativeModel === true;
   const state = {domReady:false, decodedImages:0, title:document.title}, restores=[];
-  let providerCalls=0,updateNetworkActions=0,gameUiPhase=false,gameUiBaseline=null,gameUiSubmission=null;
+  let providerCalls=0,updateNetworkActions=0,gameUiPhase=false,gameUiBaseline=null,gameUiSubmission=null,qualityUiPhase=false,qualityUiSubmission=null,productionPhase=false,productionState=null,productionSubmission=null;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const invoke=request=>window.__TAURI__.core.invoke('workspace_command',{request});
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
@@ -11,8 +11,26 @@
   const originalInvoke=window.__TAURI_INTERNALS__.invoke;
   const qaInvoke=function(command,args,...rest){
     const request=args?.request;
-    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_setup_status')return Promise.resolve({supported:false,state:'ready',runtimeDetected:true,downloadedBytes:0,totalBytes:0,message:'격리된 화면 검사입니다.',manifest:{version:'native-ui-mock',bytes:0,sha256:'',platform:'native-ui-fixture'}});
-    if(command==='workspace_command'&&gameUiPhase&&request?.action==='provider_status')return Promise.resolve({available:true,ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',checkedAt:new Date().toISOString(),receivedImages:0,rateLimits:[]});
+    if(command==='workspace_command'&&productionPhase&&request?.action==='game_connect')return Reflect.apply(originalInvoke,this,[command,args,...rest]).then(value=>{productionState=structuredClone(value);return value;});
+    if(command==='workspace_command'&&productionPhase&&request?.action==='production_state'&&productionState)return Promise.resolve(structuredClone(productionState));
+    if(command==='workspace_command'&&productionPhase&&request?.action==='production_plan'){
+      check(productionState?.connection&&request.uploadApproved===true,'Production root/consent unavailable');
+      const names=['Fuel Cell','Basalt Asteroid'];
+      productionState.plan={schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:request.output,mode:'new',gameRoot:productionState.connection.root,fingerprint:productionState.connection.fingerprint,spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Isolated native UI fixture; two separate game assets.',warnings:['UI-only fixture: no real provider or model execution.'],items:names.map((name,index)=>({id:crypto.randomUUID(),name,kind:index?'model':'sprite',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'Independent game asset',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))};
+      return Promise.resolve(structuredClone(productionState));
+    }
+    if(command==='workspace_command'&&productionPhase&&request?.action==='production_start'){
+      productionSubmission=structuredClone(request);
+      return Reflect.apply(originalInvoke,this,[command,{request:{action:'snapshot'}},...rest]).then(snapshot=>({snapshot,state:structuredClone(productionState)}));
+    }
+    if(command==='workspace_command'&&(qualityUiPhase||productionPhase)&&request?.action==='quality3d_status')return Promise.resolve({supported:true,installed:true,busy:false,state:'ready',message:'Isolated native UI fixture; reconstruction installation status mocked',stage:'ready',modelId:'stabilityai/TripoSR',modelRevision:'native-ui-mock',device:'cpu',pythonVersion:'native-ui-mock',weightBytes:1677246742,memoryMb:24576,minimumMemoryMb:16384,blenderReady:true});
+    if(command==='workspace_command'&&qualityUiPhase&&request?.action==='quality3d'){
+      qualityUiSubmission=structuredClone(request);
+      return Reflect.apply(originalInvoke,this,[command,{request:{action:'snapshot'}},...rest]);
+    }
+    if(command==='workspace_command'&&['quality3d_prepare','quality3d_cancel_setup','quality3d'].includes(request?.action))return Promise.reject(new Error('Native UI fixture refuses model downloads and reconstruction'));
+    if(command==='workspace_command'&&(gameUiPhase||productionPhase)&&request?.action==='provider_setup_status')return Promise.resolve({supported:false,state:'ready',runtimeDetected:true,downloadedBytes:0,totalBytes:0,message:'격리된 화면 검사입니다.',manifest:{version:'native-ui-mock',bytes:0,sha256:'',platform:'native-ui-fixture'}});
+    if(command==='workspace_command'&&(gameUiPhase||productionPhase)&&request?.action==='provider_status')return Promise.resolve({available:true,ready:true,authenticated:true,authentication:'chatgpt',reasoningModel:'gpt-6.1-sol',requestedModel:'gpt-image-2',confirmedModel:null,runtimeVersion:'native-ui-mock-no-provider',reason:'Isolated UI fixture; no provider call',checkedAt:new Date().toISOString(),receivedImages:0,rateLimits:[]});
     if(command==='workspace_command'&&gameUiPhase&&request?.action==='plan_assets'){
       const names=['플라스마 소총','레이저 권총','중력 대포','EMP 발사기','광자 검'];
       return Promise.resolve({schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:'images',mode:'new',spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Native UI fixture: five individually named weapons; provider response mocked.',warnings:[],items:names.map(name=>({id:crypto.randomUUID(),name,kind:'image',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'독립 인벤토리 아이콘',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))});
@@ -21,7 +39,7 @@
       gameUiSubmission=structuredClone(request);
       return Reflect.apply(originalInvoke,this,[command,{request:{action:'snapshot'}},...rest]);
     }
-    if(command==='workspace_command'&&['provider_status','provider_login','generate','plan_assets','generate_bundle','cancel_plan'].includes(request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
+    if(command==='workspace_command'&&['provider_status','provider_login','generate','plan_assets','generate_bundle','production_plan','production_start','cancel_plan'].includes(request?.action)){providerCalls++;return Promise.reject(new Error('Local native QA refuses provider commands'));}
     if(command==='workspace_command'&&['update_check','update_install'].includes(args?.request?.action)){updateNetworkActions++;return Promise.reject(new Error('Local native QA refuses update network actions'));}
     return Reflect.apply(originalInvoke,this,[command,args,...rest]);
   };
@@ -59,6 +77,27 @@
     return {headerValid:true,meshCount:json.meshes.length,primitiveCount:primitives.length,vertices,triangles,bounds:{min,max,dimensions}};
   };
   try{
+    await wait('Production home default',()=>document.querySelector('.production-home'),15000);
+    check(!document.querySelector('.inspector')&&!document.querySelector('.sidebar'),'Editor must be secondary on startup');
+    gameUiBaseline=await invoke({action:'snapshot'});productionPhase=true;
+    const productionUi=state.productionUi={defaultGenerationHome:true,nativeRootScan:true,plannerResponseMocked:true,localStatusMocked:true,submissionIntercepted:true,providerRequests:0,realGeneration:false,passed:false};
+    const rootButton=await wait('Production folder connect',()=>[...document.querySelectorAll('.production-home button')].find(b=>b.textContent.trim()==='게임 프로젝트 루트 연결'&&!b.disabled),5000);rootButton.click();
+    await wait('Real project root scan',()=>productionState?.connection?.engine==='godot'&&document.querySelector('.production-project-name'),5000);
+    check(productionState.connection.missingReferences.length===1,'Native missing-reference scan failed');
+    const providerButton=[...document.querySelectorAll('.titlebar-actions button')].find(b=>b.textContent.trim()==='구독 연결');providerButton.click();
+    await wait('Mocked subscription ready',()=>document.querySelector('.provider-connection .status-tag.ready'),5000);
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    await wait('Provider dialog close',()=>!document.querySelector('[role="dialog"]'),5000);
+    const brief=document.querySelector('.production-brief textarea');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(brief,'우주 생존 게임에 필요한 개별 2D 아이콘과 3D 소행성');brief.dispatchEvent(new Event('input',{bubbles:true}));
+    document.querySelector('.production-consent input').click();
+    const analyze=document.querySelector('.production-analyze button[type="submit"]');await wait('Production analyze enabled',()=>!analyze.disabled,5000);analyze.click();
+    await wait('Production checklist',()=>document.querySelectorAll('.production-checklist li').length===2,5000);
+    const produce=document.querySelector('.production-start button');await wait('Production start enabled',()=>!produce.disabled,5000);produce.click();
+    await wait('Production submission captured',()=>productionSubmission,5000);
+    check(productionSubmission.uploadApproved===true&&productionSubmission.planId===productionState.plan.id,'Production plan/consent lost');
+    const afterProduction=await invoke({action:'snapshot'});check(afterProduction.project.jobs.length===gameUiBaseline.project.jobs.length,'UI fixture must not enqueue generation');
+    productionUi.items=2;productionUi.passed=true;productionPhase=false;
+    const libraryTab=[...document.querySelectorAll('[role="tab"]')].find(b=>b.textContent.trim()==='보관함');libraryTab.click();
     const decoded=await wait('Native DOM/assets',()=>{
       const images=[...document.querySelectorAll('img')];for(const image of images)image.loading='eager';
       const decoded=images.filter(image=>image.complete&&image.naturalWidth>0&&/asset\.localhost|asset:/.test(image.src));
@@ -112,6 +151,33 @@
     await wait('Native bundle dialog closed',()=>!document.querySelector('.dialog-generate'),5000);
     const afterUi=await invoke({action:'snapshot'});check(afterUi.project.assets.length===gameUiBaseline.project.assets.length&&afterUi.project.jobs.length===gameUiBaseline.project.jobs.length,'UI fixture unexpectedly created native work');
     ui.passed=true;gameUiPhase=false;
+    // Pure UI fixture: no weight download, inference, Blender or queued work.
+    qualityUiPhase=true;
+    const qualityUi=state.quality3dUi={nativeWebView:true,runtimeStatusMocked:true,submissionIntercepted:true,realReconstruction:false,queuedJobs:0,inputs:0,passed:false};
+    const qualityButton=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='3D 만들기');check(qualityButton&&!qualityButton.disabled,'Quality 3D entry unavailable');qualityButton.click();
+    const qualityPanel=await wait('Native quality panel',()=>document.querySelector('.quality3d-panel'),5000);
+    await wait('Quality ready status fixture',()=>qualityPanel.querySelector('.quality3d-state.ready'),5000);
+    for(const chosen of [...qualityPanel.querySelectorAll('.quality3d-input[aria-pressed="true"]')]){chosen.click();await sleep(150);}
+    for(let index=0;index<5;index++){
+      const candidate=[...qualityPanel.querySelectorAll('.quality3d-input')].find(button=>button.getAttribute('aria-pressed')!=='true'&&!button.disabled);check(candidate,'Distinct quality input unavailable');candidate.click();
+      await wait('Quality input selected',()=>qualityPanel.querySelectorAll('.quality3d-input[aria-pressed="true"]').length===index+1,5000);
+    }
+    check(qualityPanel.querySelector('.quality3d-output-summary').textContent.includes('개별 3D 에셋 5개'),'Individual 3D output count not visible');
+    const qualitySubmit=qualityPanel.querySelector('button[type="submit"]');
+    // Blender readiness is obtained from real environment; this isolated UI
+    // check only uses the fixture when Blender is installed on the Mac.
+    if(state.ipcEnvironment.blenderPath){
+      await wait('Quality fixture submission enabled',()=>!qualitySubmit.disabled,5000);qualitySubmit.click();
+      await wait('Quality submission captured',()=>qualityUiSubmission,5000);
+      check(qualityUiSubmission.assetIds.length===5&&new Set(qualityUiSubmission.assetIds).size===5&&qualityUiSubmission.maxTriangles<=gameUiBaseline.project.spec.polygonBudget,'Quality submission lost individual inputs/budget');
+      qualityUi.inputs=qualityUiSubmission.assetIds.length;qualityUi.settings=qualityUiSubmission;
+      await wait('Quality dialog closed',()=>!document.querySelector('.dialog-quality3d'),5000);
+    }else{
+      qualityUi.blenderUnavailable=true;qualityUi.inputs=5;check(qualitySubmit.disabled,'Missing Blender must block quality submission');
+      document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await wait('Quality dialog close',()=>!document.querySelector('.dialog-quality3d'),5000);
+    }
+    const afterQuality=await invoke({action:'snapshot'});check(afterQuality.project.assets.length===gameUiBaseline.project.assets.length&&afterQuality.project.jobs.length===gameUiBaseline.project.jobs.length,'Quality UI fixture created native work');
+    qualityUi.passed=true;qualityUiPhase=false;
     if(withModel){
       const report=state.native3D={requested:true,passed:false,stage:'initial snapshot',assetId:null,generator:'Blender',blenderUsed:false,modelJobSucceeded:false,parameters:null,glbFetch:null,webgl:{context:false,drawCalls:0,defaultFramebufferDrawCalls:0,pixelReadbacks:0,pixelColorVariation:false,pixels:[],visibilityState:document.visibilityState},externalProviderCalls:0,error:null};
       const baseline=await invoke({action:'snapshot'}),oldAssetIds=new Set(baseline.project.assets.map(asset=>asset.id)),oldJobIds=new Set(baseline.project.jobs.map(job=>job.id));
@@ -148,6 +214,10 @@
       }
       report.stage='open model dialog';
       const button=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='3D 만들기');check(button&&!button.disabled,'3D create button unavailable');button.click();
+      await wait('3D route dialog',()=>document.querySelector('.dialog-quality3d')||document.querySelector('.dialog-model'),5000);
+      if(document.querySelector('.dialog-quality3d')){
+        const recipe=[...document.querySelectorAll('.dialog-quality3d button')].find(button=>button.textContent.trim()==='기본 소품 레시피');check(recipe,'Procedural recipe route unavailable');recipe.click();
+      }
       const form=await wait('Model dialog',()=>document.querySelector('.dialog-model form'),5000);
       const inputFor=text=>[...form.querySelectorAll('label')].find(label=>label.querySelector('span')?.textContent===text)?.querySelector('input');
       const setInput=(input,value)=>{check(input,'Model field unavailable');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));};

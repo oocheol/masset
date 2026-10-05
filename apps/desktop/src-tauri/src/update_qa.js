@@ -20,6 +20,9 @@
     return Reflect.apply(originalInvoke, this, [name, args, ...rest]);
   };
   try {
+    // Generation home does not show the fixture library until requested.
+    const library = await wait('Library navigation', () => [...document.querySelectorAll('button')].find(button => ['보관함', '라이브러리'].includes(button.textContent.trim())));
+    library.click();
     await wait('Rendered fixture images', () => [...document.querySelectorAll('img')].filter(img => img.complete && img.naturalWidth > 0).length >= 8);
     report.decodedImages = [...document.querySelectorAll('img')].filter(img => img.complete && img.naturalWidth > 0).length;
     const status = await command({action:'update_status'});

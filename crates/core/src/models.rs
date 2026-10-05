@@ -189,6 +189,7 @@ pub enum AssetSource {
     Import,
     Procedural,
     CodexSubscription,
+    LocalImage3d,
     Fixture,
 }
 

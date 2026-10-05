@@ -17,7 +17,7 @@ export interface ValidationCheck {code: string; status: 'pass' | 'warn' | 'fail'
 export interface ValidationReport {id: string; artifactId: string; createdAt: string; checks: ValidationCheck[]; valid: boolean;}
 export interface Artifact {id: string; path: string; format: string; sha256: string; bytes: number; role: 'source' | 'output' | 'thumbnail' | 'metadata';}
 export interface AssetVersion {
-  id: string; number: number; createdAt: string; prompt: string; source: 'import' | 'procedural' | 'codex_subscription' | 'fixture';
+  id: string; number: number; createdAt: string; prompt: string; source: 'import' | 'procedural' | 'codex_subscription' | 'local_image3d' | 'fixture';
   requestedModel: string | null; confirmedModel: string | null; providerVersion: string | null;
   artifacts: Artifact[]; settings: Record<string, unknown>; validation: ValidationReport | null;
 }
@@ -47,6 +47,18 @@ export interface Project {
 }
 export interface ProjectSnapshot {root: string; project: Project; providers: ProviderCapability[];}
 export interface EnvironmentInfo {blenderPath: string | null; blenderVersion: string | null; platform: string; native: boolean;}
+export interface Local3DStatus {
+  supported: boolean; installed: boolean; busy: boolean;
+  state: 'missing' | 'preparing' | 'ready' | 'error' | 'cancelled' | 'unsupported';
+  message: string; stage: string; modelId: string; modelRevision: string;
+  device: 'cpu'; pythonVersion: string | null; weightBytes: number;
+  memoryMb: number; minimumMemoryMb: number; blenderReady: boolean;
+}
+export interface Quality3DRequest {
+  assetIds: string[]; name: string; quality: 'draft' | 'standard' | 'high';
+  heightMeters: number; maxTriangles: number; textureResolution: 512 | 1024 | 2048;
+  preserveMaterials: boolean;
+}
 export interface ProviderConnection {
   available: boolean; authenticated: boolean; ready: boolean; runtimeVersion: string | null;
   /** Selected planner and catalog membership never establish account inference access. */
@@ -91,6 +103,26 @@ export interface GameBundlePlan {
   spec: AssetSpec; styleGuide: StyleGuide; referenceAssetIds: string[];
   references: GameBundleReference[]; summary: string;
   items: GameBundleItem[]; warnings: string[];
+}
+export interface GameProjectScan {
+  root: string; engine: 'godot' | 'unity' | 'unreal' | 'unknown'; projectName: string;
+  scannedFiles: number; assetCount: number; assets: {path: string; kind: 'image' | 'model' | 'audio' | 'other'}[];
+  missingReferences: {path: string; referencedBy: string}[]; warnings: string[]; fingerprint: string;
+}
+export interface ProductionPlan extends Omit<GameBundlePlan, 'mode'> {
+  gameRoot: string; fingerprint: string; mode: 'new';
+}
+export interface ProductionItemResult {
+  id: string; name: string; kind: AssetKind; jobIds: string[]; assetId: string | null;
+  status: 'pending' | 'running' | 'completed' | 'needs_attention' | 'cancelled';
+  review: 'pending' | 'approved'; outputPath: string | null; error: string | null;
+}
+export interface ProductionRun {
+  id: string; planId: string; brief: string; createdAt: string; outputRoot: string;
+  status: ProductionItemResult['status']; items: ProductionItemResult[];
+}
+export interface ProductionState {
+  connection: GameProjectScan | null; plan: ProductionPlan | null; runs: ProductionRun[];
 }
 export interface AtlasOptions {width: number; height: number; padding: number;}
 export const DEFAULT_SPEC: AssetSpec = {domain:'game',width:512,height:512,unit:'m',axis:'Y-up',pivot:[0.5,0.5],polygonBudget:10000,pixelArt:false,colorSpace:'sRGB',normalConvention:'OpenGL',naming:'{name}_v{version}',target:'Unity / Godot'};
