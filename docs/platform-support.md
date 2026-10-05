@@ -1,5 +1,15 @@
 # Platform support and packaging
 
+## 0.1.8 platform scope
+
+Windows x64 and Apple Silicon Mac share version 0.1.8 and the game-project production screen. Windows supports project scanning, individual 2D production, procedural Blender models and refinement of an imported GLB. The TripoSR image-to-3D runtime remains Apple Silicon-only; no model weights or Python environment are bundled with the Windows installer. Intel Mac builds are not distributed.
+
+Windows installation/update payloads use `latest.json` and the existing Windows signing key. Mac payloads use `latest-macos.json` and a separate signing key. Windows packaging now derives its worker, documentation and license inventory from the same explicit Tauri resource map as NSIS; a frozen resource manifest and ZIP extraction hashes detect omissions or changes between builds.
+
+See the [Windows 0.1.8 release record](releases/v0.1.8-windows.md) and [Mac 0.1.8 release record](releases/v0.1.8-macos.md) for actual artifact checks and remaining platform limits. The earlier records below describe their stated versions.
+
+## Historical 0.1.6 and initial platform evidence
+
 Mac 0.1.6 adds reviewed game asset bundles on top of the Apple Silicon subscription connection and managed Codex preparation introduced in 0.1.5. On 2026-10-04, a real GPT-5.5 text plan produced five separate weapon PNGs and two procedural GLB models through the native Mac backend. Project reopen, independent export and four fresh Blender GLB/.blend reopens passed; reference originals were unchanged. Nine fixed model recipes are available. Arbitrary mesh reconstruction is not supported. See [game bundle evidence](releases/v0.1.6-game-bundle.json) and [current Mac package evidence](releases/v0.1.6-macos.md). The historical platform table below is preserved.
 
 

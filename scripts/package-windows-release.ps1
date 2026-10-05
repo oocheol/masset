@@ -9,6 +9,9 @@ $publishBuild = Get-Content -Raw -LiteralPath $BuildReportPath | ConvertFrom-Jso
 $publishConfig = Get-Content -Raw -LiteralPath (Join-Path $publishWorkspace 'apps\desktop\src-tauri\tauri.conf.json') | ConvertFrom-Json
 $publishVersion = $publishConfig.version
 if ($publishVersion -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' -or $publishBuild.distribution -ne 'nsis') { throw 'A stable version and a signed NSIS build report are required.' }
+if ($publishBuild.appVersion -ne $publishVersion -or -not $publishBuild.resourceManifest.tauriConfigSha256 -or $publishBuild.resourcePlanVerifiedAfterBuild -ne $true) { throw 'A fresh build report with the current application version and post-build frozen resource validation is required.' }
+$publishResourcePlanText = & 'node.exe' (Join-Path $publishWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $publishWorkspace '--plan' '--expected-plan' $BuildReportPath '--check-windows-notices'
+if ($LASTEXITCODE -ne 0) { throw 'Resource paths/source/origin/bytes/digests or Windows notices differ from the frozen native build.' }
 function Get-Evidence([string]$Path) {
     $publishFile = Get-Item -LiteralPath $Path
     [ordered]@{ path=$publishFile.FullName; bytes=$publishFile.Length; sha256=(Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant() }
@@ -23,7 +26,7 @@ $publishId = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '-public-' + [guid
 $publishParent = Join-Path $publishWorkspace ('output\release\' + $publishId)
 New-Item -ItemType Directory -Path $publishParent | Out-Null
 $publishDirectory = Join-Path $publishParent 'AssetStudio-windows-x64'
-New-Item -ItemType Directory -Path (Join-Path $publishDirectory 'examples'),(Join-Path $publishDirectory 'workers\blender'),(Join-Path $publishDirectory 'docs') | Out-Null
+New-Item -ItemType Directory -Path $publishDirectory | Out-Null
 $publishExe = @($publishBuild.binaries | Where-Object { [IO.Path]::GetFileName($_.path) -eq 'asset-desktop.exe' })
 if ($publishExe.Count -ne 1 -or $publishExe[0].architecture -ne 'x64') { throw 'Exactly one recorded AMD64 desktop executable is required.' }
 Copy-Verified $publishExe[0] (Join-Path $publishDirectory 'asset-desktop.exe')
@@ -32,21 +35,19 @@ if ($publishInstaller.Count -ne 1) { throw 'Exactly one recorded NSIS installer 
 $publishSetup = Join-Path $publishParent "AssetStudio_${publishVersion}_x64-setup.exe"
 Copy-Verified $publishInstaller[0] $publishSetup
 Copy-Item -LiteralPath ($publishInstaller[0].path + '.sig') -Destination ($publishSetup + '.sig')
-foreach ($publishWorker in @('worker.py','LICENSE')) { Copy-Item -LiteralPath (Join-Path $publishWorkspace "workers\blender\$publishWorker") -Destination (Join-Path $publishDirectory 'workers\blender') }
-Get-ChildItem -LiteralPath (Join-Path $publishWorkspace 'apps\desktop\public\examples') -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $publishDirectory 'examples') }
+$publishResourceText = & 'node.exe' (Join-Path $publishWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $publishWorkspace '--destination' $publishDirectory '--expected-plan' $BuildReportPath '--check-windows-notices'
+if ($LASTEXITCODE -ne 0) { throw 'Portable Tauri resources failed exclusive copying or digest verification.' }
+$publishResources = $publishResourceText | ConvertFrom-Json
 if (@(Get-ChildItem -LiteralPath (Join-Path $publishDirectory 'examples') -File -Filter '*.png').Count -ne 12) { throw 'Twelve native examples are required.' }
-foreach ($publishNotice in @('LICENSE','THIRD_PARTY_NOTICES.md')) { Copy-Item -LiteralPath (Join-Path $publishWorkspace $publishNotice) -Destination $publishDirectory }
-$publishNotices = Join-Path $publishWorkspace 'docs\licenses'
+$publishNotices = Join-Path $publishDirectory 'docs\licenses'
 if (-not (Test-Path -LiteralPath (Join-Path $publishNotices 'THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Dependency notices are required.' }
-Copy-Item -LiteralPath $publishNotices -Destination (Join-Path $publishDirectory 'docs') -Recurse
-foreach ($publishDocument in @('windows-quickstart.md','platform-support.md','verification.md','provider-feasibility.md','ima2-gen-comparison.md','architecture.md','module-contract.md')) { Copy-Item -LiteralPath (Join-Path $publishWorkspace ('docs\' + $publishDocument)) -Destination (Join-Path $publishDirectory 'docs') }
-foreach ($publishCatalog in @(@('NOTICE','CODEX-CATALOG-NOTICE.txt'),@('OPENAI-CODEX-NOTICE','CODEX-UPSTREAM-NOTICE.txt'),@('OPENAI-CODEX-LICENSE','CODEX-CATALOG-LICENSE.txt'))) { Copy-Item -LiteralPath (Join-Path $publishWorkspace ('crates\providers\assets\' + $publishCatalog[0])) -Destination (Join-Path $publishDirectory $publishCatalog[1]) }
 @'
 Asset Studio Windows x64 portable
-Extract the entire folder and run asset-desktop.exe. Keep examples/ and workers/blender/ beside it.
+Extract the entire folder and run asset-desktop.exe. Keep examples/, workers/, licenses/ and docs/ beside it.
 Use the in-app usage guide or docs/windows-quickstart.md. Projects and input originals are preserved.
 Node/Rust development tools are not required. Microsoft WebView2 must already be installed.
 Blender is optional, separate and never downloaded by the app; worker GPL source/license are included.
+The image-to-3D worker source/notices are included; its local model is not bundled. Windows image-to-3D support remains unverified and disabled.
 Windows Authenticode signing and clean-machine support are unverified. Update installer signatures are separate.
 Third-party terms, exact license texts and matching unmodified MPL sources: docs/licenses/.
 Use the signed NSIS installer for the standard installation/update path.
@@ -67,7 +68,7 @@ $publishReleaseRoot = 'https://github.com/oocheol/masset/releases'
 $publishLatest = [ordered]@{ version=$publishVersion; notes=$ReleaseNotes; pub_date=[DateTimeOffset]::UtcNow.ToString('o'); platforms=[ordered]@{ 'windows-x86_64'=[ordered]@{ url="$publishReleaseRoot/download/v$publishVersion/AssetStudio_${publishVersion}_x64-setup.exe"; signature=[IO.File]::ReadAllText($publishSetup+'.sig').Trim(); bytes=$publishSetupEvidence.bytes; sha256=$publishSetupEvidence.sha256 } } }
 $publishLatest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $publishParent 'latest.json') -Encoding utf8NoBOM
 ($publishSetupEvidence.sha256+'  '+[IO.Path]::GetFileName($publishSetup)+"`n"+$publishZipEvidence.sha256+'  '+[IO.Path]::GetFileName($publishZip)+"`n") | Set-Content -LiteralPath (Join-Path $publishParent 'SHA256SUMS.txt') -Encoding utf8NoBOM
-$publishReport = [ordered]@{ version=$publishVersion; createdAt=[DateTimeOffset]::UtcNow.ToString('o'); directory=$publishDirectory; installer=$publishSetupEvidence; zip=$publishZipEvidence; executable=$publishExe[0]; zipFilesVerified=$publishFiles.Count; portableFiles=$publishFiles; sourceBuildReport=[IO.Path]::GetFullPath($BuildReportPath); signatureVerificationPending=$true; nativeChecksPending=$true }
+$publishReport = [ordered]@{ version=$publishVersion; createdAt=[DateTimeOffset]::UtcNow.ToString('o'); directory=$publishDirectory; installer=$publishSetupEvidence; zip=$publishZipEvidence; executable=$publishExe[0]; zipFilesVerified=$publishFiles.Count; portableFiles=$publishFiles; resourceManifest=$publishResources; sourceBuildReport=[IO.Path]::GetFullPath($BuildReportPath); signatureVerificationPending=$true; nativeChecksPending=$true }
 $publishReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $publishParent 'release-candidate.json') -Encoding utf8NoBOM
 $publishReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $publishWorkspace "output\release\windows-x64-$publishVersion-candidate.json") -Encoding utf8NoBOM
 [pscustomobject]$publishReport | Select-Object version,directory,installer,zip,executable,zipFilesVerified | ConvertTo-Json -Depth 6

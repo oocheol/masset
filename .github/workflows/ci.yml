@@ -34,6 +34,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Blender data and Windows path boundaries (no Blender runtime)
+        run: python -m unittest discover -s workers/blender-quality/tests -p "test_*.py"
       - run: npm run build
       - run: npm run site:build
       - run: npx playwright test
@@ -69,7 +71,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build without fetching NSIS tools
         shell: pwsh
-        run: ./scripts/build-windows.ps1 -SkipInstall -SkipChecks
+        run: |
+          node scripts/collect-third-party-notices.mjs --target x86_64-pc-windows-msvc --strict
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./scripts/build-windows.ps1 -SkipInstall -SkipChecks
       - name: Native backend and independent export verification
         shell: pwsh
         run: ./scripts/native-smoke.ps1

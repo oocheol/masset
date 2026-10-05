@@ -1,6 +1,12 @@
 # Verification record
 
-Latest update: 2026-10-04 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
+Latest update: 2026-10-05 (Asia/Seoul). This record separates source implementation, fixture checks, native backend behavior, WebView behavior, packaging and external-provider proof. Results below are scoped to their actual executable/version.
+
+## Current 0.1.8 records
+
+The [Windows 0.1.8 release record](releases/v0.1.8-windows.md) covers the Windows native package, project-path regression, copied application, packaged GLB workers and updater payload. The [Mac 0.1.8 release record](releases/v0.1.8-macos.md) and its [distribution evidence](releases/v0.1.8-distribution.json) record the independently built Apple Silicon app. Windows uses the existing Windows updater key; the published Mac packages and separate update channel are retained.
+
+Windows TripoSR image reconstruction is unsupported. New Windows release checks make no additional live-provider request and do not establish a clean-machine installation or replacement of a user's existing application. The older sections below retain their original version-specific scope.
 
 ## 0.1.2 macOS trial publication
 

@@ -7,6 +7,21 @@ import { inspectGlb } from '../../scripts/verify-artifacts.mjs';
 
 // Browser adapter acceptance only. These tests do not establish Tauri/WebView or live-provider support.
 const externalRequestsByPage = new WeakMap<Page, string[]>();
+
+async function expectProductionHome(page: Page) {
+  await expect(page.getByRole('region', {name: '에셋 제작 홈', exact: true})).toBeVisible({timeout: 30_000});
+  await expect(page.getByRole('tab', {name: '게임 에셋 제작', exact: true})).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('button', {name: '편집 도구', exact: true})).toBeVisible();
+  await expect(page.getByRole('list', {name: '에셋 목록', exact: true})).toHaveCount(0);
+  await expect(page.getByRole('tab', {name: '2D 캔버스', exact: true})).toHaveCount(0);
+}
+
+async function openEditor(page: Page) {
+  await page.getByRole('button', {name: '편집 도구', exact: true}).click();
+  await expect(page.getByRole('tab', {name: '보관함', exact: true})).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('list', {name: '에셋 목록', exact: true}).getByRole('listitem')).toHaveCount(12, {timeout: 30_000});
+}
+
 test.beforeEach(async ({page}) => {
   const externalRequests: string[] = [];
   externalRequestsByPage.set(page, externalRequests);
@@ -15,11 +30,30 @@ test.beforeEach(async ({page}) => {
     if (/^https?:/.test(url) && new URL(url).hostname !== '127.0.0.1') externalRequests.push(`${request.method()} ${new URL(url).hostname}`);
   });
   await page.goto('/');
-  await expect(page.getByRole('listitem')).toHaveCount(12, {timeout: 30_000});
+  await expectProductionHome(page);
+});
+
+test.afterEach(async ({page}, testInfo) => {
+  const externalRequests = externalRequestsByPage.get(page) ?? [];
+  await writeFile(testInfo.outputPath('browser-network-boundary.json'), JSON.stringify({externalRequests}, null, 2));
+  expect(externalRequests).toEqual([]);
 });
 
 test('workstation renders actual fixtures and keeps provider requests desktop-only', async ({page}, testInfo) => {
-  for (const name of ['에셋 라이브러리', '2D 캔버스', '3D 뷰포트', '버전 비교']) await expect(page.getByRole('tab', {name})).toBeVisible();
+  const production = page.getByRole('region', {name: '에셋 제작 홈', exact: true});
+  await expect(production.getByRole('heading', {name: '게임에 필요한 에셋을 한 번에', exact: true})).toBeVisible();
+  await expect(production.getByRole('complementary', {name: 'GPT 연결 상태', exact: true}).getByRole('status')).toHaveText('데스크톱 전용');
+  await expect(production.getByRole('button', {name: 'GPT 연결하기', exact: true})).toBeDisabled();
+  await expect(production.getByRole('button', {name: '게임 프로젝트 루트 연결', exact: true})).toBeDisabled();
+  await expect(production.getByRole('textbox', {name: '게임 설명', exact: true})).toBeDisabled();
+  await expect(production.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
+  await expect(production.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeDisabled();
+  await expect(production.getByRole('checkbox', {name: '분석·제작을 위한 외부 전송에 동의합니다.', exact: true})).not.toBeChecked();
+  await expect(production.getByRole('checkbox', {name: '분석·제작을 위한 외부 전송에 동의합니다.', exact: true})).toBeDisabled();
+  await expect(production.getByRole('button', {name: '필요한 에셋 분석', exact: true})).toBeDisabled();
+  await page.screenshot({path: testInfo.outputPath('production-home-browser.png'), fullPage: false});
+  await openEditor(page);
+  for (const name of ['게임 에셋 제작', '보관함', '2D 캔버스', '3D 뷰포트', '버전 비교']) await expect(page.getByRole('tab', {name, exact: true})).toBeVisible();
   await expect(page.locator('.runtime-badge')).toContainText('브라우저');
   await expect(page.getByRole('listitem').first().locator('img')).toBeVisible();
   await expect.poll(() => page.getByRole('listitem').first().locator('img').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
@@ -90,6 +124,7 @@ test('workstation renders actual fixtures and keeps provider requests desktop-on
 });
 
 test('resize writes a new version, survives reload, and exports original bytes plus the new PNG', async ({page}, testInfo) => {
+  await openEditor(page);
   const initialCard = page.getByRole('listitem').first();
   const name = await initialCard.locator('strong').innerText();
   const dimensions = (await initialCard.innerText()).match(/(\d+)\s*×\s*(\d+)/)!;
@@ -100,10 +135,13 @@ test('resize writes a new version, survives reload, and exports original bytes p
   await page.getByRole('button', {name: '크기 조정', exact: true}).click();
   await expect(initialCard.locator('.version-label')).toHaveText('v2', {timeout: 30_000});
   await expect(initialCard).toContainText('128 × 96');
-  await expect(page.locator('.job-status.succeeded')).toHaveCount(1);
+  const queue = page.getByRole('region', {name: '작업 큐', exact: true});
+  await queue.getByRole('button', {name: /^작업 큐/}).click();
+  await expect(queue.locator('.job-status.succeeded')).toHaveCount(1);
 
   await page.reload();
-  await expect(page.getByRole('listitem')).toHaveCount(12);
+  await expectProductionHome(page);
+  await openEditor(page);
   const restored = page.getByRole('listitem').filter({hasText: name}).first();
   await expect(restored.locator('.version-label')).toHaveText('v2');
   await restored.dblclick();
@@ -143,6 +181,7 @@ test('resize writes a new version, survives reload, and exports original bytes p
 });
 
 test('selected fixture icons produce an atlas with valid frames in the downloaded bundle', async ({page}, testInfo) => {
+  await openEditor(page);
   const cards = page.getByRole('listitem');
   await cards.nth(0).click();
   await cards.nth(1).click({modifiers: ['ControlOrMeta']});
@@ -186,6 +225,7 @@ test('selected fixture icons produce an atlas with valid frames in the downloade
 });
 
 test('keyboard dialogs keep focus inside and return focus to the triggering control', async ({page}) => {
+  await openEditor(page);
   const trigger = page.getByRole('button', {name: '구독 연결', exact: true});
   await trigger.focus();
   await page.keyboard.press('Enter');
@@ -216,6 +256,7 @@ test('keyboard dialogs keep focus inside and return focus to the triggering cont
 });
 
 for (const unit of ['m', 'cm'] as const) test(`browser procedural model (${unit}) exports real GLB with independent geometry checks and explicit Blender provenance`, async ({page}, testInfo) => {
+  await openEditor(page);
   const displayFactor = unit === 'cm' ? 100 : 1;
   if (unit === 'cm') {
     const specification = page.getByRole('tab', {name: '규격', exact: true});

@@ -56,13 +56,14 @@ fn active(asset: &Value) -> Result<&Value> {
 
 fn main() -> Result<()> {
     ensure!(
-        cfg!(all(target_os = "macos", target_arch = "aarch64")),
-        "Mac arm64 proof only"
+        cfg!(all(target_os = "macos", target_arch = "aarch64"))
+            || cfg!(all(windows, target_arch = "x86_64")),
+        "Mac arm64 or Windows x64 proof only"
     );
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     ensure!(
-        args.len() == 2,
-        "Usage: quality3d-source-proof <fresh-output> <GLB>"
+        args.len() == 2 || args.len() == 3,
+        "Usage: quality3d-source-proof <fresh-output> <GLB> [verified-package-root]"
     );
     let output = PathBuf::from(&args[0]);
     fs::create_dir(&output)?;
@@ -71,10 +72,28 @@ fn main() -> Result<()> {
     let source = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../..")
         .canonicalize()?;
+    let packaged_resources = args
+        .get(2)
+        .map(PathBuf::from)
+        .map(|path| path.canonicalize())
+        .transpose()?;
+    let resources = packaged_resources.as_ref().unwrap_or(&source);
+    let examples = if packaged_resources.is_some() {
+        resources.join("examples")
+    } else {
+        source.join("apps/desktop/public/examples")
+    };
+    ensure!(examples.is_dir(), "Fixture resources are missing");
+    ensure!(
+        resources
+            .join("workers/blender-quality/worker.py")
+            .is_file(),
+        "Refinement worker is missing"
+    );
     let backend = Backend::new(
         output.join("app-data"),
-        source.join("apps/desktop/public/examples"),
-        source.join("workers/blender/worker.py"),
+        examples,
+        resources.join("workers/blender/worker.py"),
     );
     backend.start();
     let result = (|| -> Result<Value> {
@@ -154,7 +173,7 @@ fn main() -> Result<()> {
             serde_json::to_vec_pretty(&final_state)?,
         )?;
         Ok(
-            json!({"passed":true,"nativeBackend":true,"nativeWindow":false,"platform":"macos-arm64","lowTriangles":low_count,"restoredTriangles":final_count,"preservedHighUsed":true,"allOriginalAndVersionArtifactsVerified":true,"originalHash":original,"providerRequests":0,"project":project,"export":export["path"]}),
+            json!({"passed":true,"nativeBackend":true,"nativeWindow":false,"platform":if cfg!(windows) {"windows-x64"} else {"macos-arm64"},"packagedResources":packaged_resources.is_some(),"resourceRoot":resources,"lowTriangles":low_count,"restoredTriangles":final_count,"preservedHighUsed":true,"allOriginalAndVersionArtifactsVerified":true,"originalHash":original,"providerRequests":0,"modelRuntimeDownloaded":false,"project":project,"export":export["path"]}),
         )
     })();
     backend.shutdown();

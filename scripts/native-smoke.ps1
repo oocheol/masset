@@ -79,6 +79,12 @@ try {
         if ($qaReport.nativeWindow -ne $true -or $qaReport.platform -ne 'windows' -or $qaReport.pid -ne $qaProcess.Id -or $qaReport.assets -ne $qaExpectedAssets -or $qaReport.webview.domReady -ne $true -or $qaReport.webview.decodedImages -lt 8 -or $qaReport.webview.ipcEnvironment.native -ne $true) {
             throw 'Native report did not establish this Windows process, rendered DOM, 12 fixture assets, decoded asset-protocol images and real native IPC.'
         }
+        $qaProduction = $qaReport.webview.productionUi
+        if ($qaProduction.passed -ne $true -or $qaProduction.nativeRootScan -ne $true -or $qaProduction.windowsImageOnlyDefault -ne $true -or $qaProduction.unsupportedReconstructionBlocked -ne $true -or $qaProduction.localStatusMocked -ne $false -or $qaProduction.plannerResponseMocked -ne $true -or $qaProduction.submissionIntercepted -ne $true -or $qaProduction.realGeneration -ne $false -or $qaProduction.providerRequests -ne 0) {
+            throw 'Native production UI must scan the real fixture project, default Windows to images, block unsupported reconstruction, and keep generation intercepted.'
+        }
+        $qaSummary.productionProjectScanVerified = $true
+        $qaSummary.windowsProductionModeVerified = $true
         if ($Native3D) {
             $qa3D = $qaReport.webview.native3D
             if ($qaReport.withNativeModel -ne $true -or $qaReport.fixtureAssets -ne 12 -or $qaReport.modelAssets -ne 1 -or $qa3D.requested -ne $true -or $qa3D.passed -ne $true -or $qa3D.generator -cne 'Blender' -or $qa3D.blenderUsed -ne $true -or $qa3D.modelJobSucceeded -ne $true -or $qa3D.externalProviderCalls -ne 0 -or $qaReport.webview.externalProviderCalls -ne 0 -or $qa3D.error) {

@@ -137,7 +137,7 @@ class BoundaryTests(unittest.TestCase):
     def test_no_reuse_or_original_overwrite(self):
         destination=self.root/"output"
         destination.mkdir()
-        self.assertEqual(prepare_output(destination),destination.resolve())
+        self.assertTrue(prepare_output(destination).samefile(destination.resolve()))
         sentinel=destination/"original.txt"
         sentinel.write_text("preserve this")
         with self.assertRaises(ValueError):

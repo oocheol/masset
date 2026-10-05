@@ -1,4 +1,6 @@
 docs/licenses/** linguist-vendored
+# The generated aggregate retains the exact whitespace of upstream notices.
+docs/licenses/THIRD_PARTY_LICENSES.txt -whitespace
 docs/licenses/upstream/objc2-*/** -text
 crates/providers/assets/** linguist-vendored
 # Runtime SHA-256 validation requires exact upstream bytes on Windows too.

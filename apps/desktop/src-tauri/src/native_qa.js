@@ -15,14 +15,17 @@
     if(command==='workspace_command'&&productionPhase&&request?.action==='production_state'&&productionState)return Promise.resolve(structuredClone(productionState));
     if(command==='workspace_command'&&productionPhase&&request?.action==='production_plan'){
       check(productionState?.connection&&request.uploadApproved===true,'Production root/consent unavailable');
-      const names=['Fuel Cell','Basalt Asteroid'];
-      productionState.plan={schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:request.output,mode:'new',gameRoot:productionState.connection.root,fingerprint:productionState.connection.fingerprint,spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Isolated native UI fixture; two separate game assets.',warnings:['UI-only fixture: no real provider or model execution.'],items:names.map((name,index)=>({id:crypto.randomUUID(),name,kind:index?'model':'sprite',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'Independent game asset',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))};
+      const imageOnly=state.ipcEnvironment.platform!=='macos';
+      if(imageOnly)check(request.output==='images','Unsupported native platform must plan only images');
+      const names=imageOnly?['Fuel Cell','Mining Tool']:['Fuel Cell','Basalt Asteroid'];
+      productionState.plan={schemaVersion:1,id:crypto.randomUUID(),projectId:gameUiBaseline.project.id,plannerModel:'gpt-5.5',brief:request.brief,output:request.output,mode:'new',gameRoot:productionState.connection.root,fingerprint:productionState.connection.fingerprint,spec:gameUiBaseline.project.spec,styleGuide:gameUiBaseline.project.styleGuide,referenceAssetIds:[],references:[],summary:'Isolated native UI fixture; two separate game assets.',warnings:['UI-only fixture: no real provider or model execution.'],items:names.map((name,index)=>({id:crypto.randomUUID(),name,kind:index&&!imageOnly?'model':'sprite',prompt:`SINGLE ASSET "${name}": One isolated ${name}.`,purpose:'Independent game asset',referenceAssetIds:[],targetAssetId:null,modelParameters:null,enabled:true}))};
       return Promise.resolve(structuredClone(productionState));
     }
     if(command==='workspace_command'&&productionPhase&&request?.action==='production_start'){
       productionSubmission=structuredClone(request);
       return Reflect.apply(originalInvoke,this,[command,{request:{action:'snapshot'}},...rest]).then(snapshot=>({snapshot,state:structuredClone(productionState)}));
     }
+    if(command==='workspace_command'&&productionPhase&&state.ipcEnvironment?.platform!=='macos'&&request?.action==='quality3d_status')return Reflect.apply(originalInvoke,this,[command,args,...rest]);
     if(command==='workspace_command'&&(qualityUiPhase||productionPhase)&&request?.action==='quality3d_status')return Promise.resolve({supported:true,installed:true,busy:false,state:'ready',message:'Isolated native UI fixture; reconstruction installation status mocked',stage:'ready',modelId:'stabilityai/TripoSR',modelRevision:'native-ui-mock',device:'cpu',pythonVersion:'native-ui-mock',weightBytes:1677246742,memoryMb:24576,minimumMemoryMb:16384,blenderReady:true});
     if(command==='workspace_command'&&qualityUiPhase&&request?.action==='quality3d'){
       qualityUiSubmission=structuredClone(request);
@@ -79,8 +82,14 @@
   try{
     await wait('Production home default',()=>document.querySelector('.production-home'),15000);
     check(!document.querySelector('.inspector')&&!document.querySelector('.sidebar'),'Editor must be secondary on startup');
+    state.ipcEnvironment=await invoke({action:'environment'});
     gameUiBaseline=await invoke({action:'snapshot'});productionPhase=true;
-    const productionUi=state.productionUi={defaultGenerationHome:true,nativeRootScan:true,plannerResponseMocked:true,localStatusMocked:true,submissionIntercepted:true,providerRequests:0,realGeneration:false,passed:false};
+    const productionUi=state.productionUi={defaultGenerationHome:true,nativeRootScan:true,plannerResponseMocked:true,localStatusMocked:state.ipcEnvironment.platform==='macos',submissionIntercepted:true,providerRequests:0,realGeneration:false,passed:false};
+    if(state.ipcEnvironment.platform==='windows'){
+      await wait('Windows image default',()=>document.querySelector('.production-home input[type="radio"][value="images"]')?.checked,5000);
+      check(['models','mixed'].every(value=>document.querySelector(`.production-home input[type="radio"][value="${value}"]`)?.disabled),'Windows reconstruction choices must be disabled');
+      productionUi.windowsImageOnlyDefault=true;productionUi.unsupportedReconstructionBlocked=true;
+    }
     const rootButton=await wait('Production folder connect',()=>[...document.querySelectorAll('.production-home button')].find(b=>b.textContent.trim()==='게임 프로젝트 루트 연결'&&!b.disabled),5000);rootButton.click();
     await wait('Real project root scan',()=>productionState?.connection?.engine==='godot'&&document.querySelector('.production-project-name'),5000);
     check(productionState.connection.missingReferences.length===1,'Native missing-reference scan failed');
@@ -88,7 +97,7 @@
     await wait('Mocked subscription ready',()=>document.querySelector('.provider-connection .status-tag.ready'),5000);
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
     await wait('Provider dialog close',()=>!document.querySelector('[role="dialog"]'),5000);
-    const brief=document.querySelector('.production-brief textarea');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(brief,'우주 생존 게임에 필요한 개별 2D 아이콘과 3D 소행성');brief.dispatchEvent(new Event('input',{bubbles:true}));
+    const brief=document.querySelector('.production-brief textarea');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(brief,state.ipcEnvironment.platform==='windows'?'우주 생존 게임에 필요한 개별 연료 아이콘과 채집 도구 이미지':'우주 생존 게임에 필요한 개별 2D 아이콘과 3D 소행성');brief.dispatchEvent(new Event('input',{bubbles:true}));
     document.querySelector('.production-consent input').click();
     const analyze=document.querySelector('.production-analyze button[type="submit"]');await wait('Production analyze enabled',()=>!analyze.disabled,5000);analyze.click();
     await wait('Production checklist',()=>document.querySelectorAll('.production-checklist li').length===2,5000);
@@ -97,7 +106,8 @@
     check(productionSubmission.uploadApproved===true&&productionSubmission.planId===productionState.plan.id,'Production plan/consent lost');
     const afterProduction=await invoke({action:'snapshot'});check(afterProduction.project.jobs.length===gameUiBaseline.project.jobs.length,'UI fixture must not enqueue generation');
     productionUi.items=2;productionUi.passed=true;productionPhase=false;
-    const libraryTab=[...document.querySelectorAll('[role="tab"]')].find(b=>b.textContent.trim()==='보관함');libraryTab.click();
+    const editorButton=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='편집 도구'&&b.offsetWidth>0&&!b.disabled);check(editorButton,'Visible editor entry unavailable');editorButton.click();
+    const libraryTab=await wait('Editor library tab',()=>[...document.querySelectorAll('[role="tab"]')].find(b=>b.textContent.trim()==='보관함'),5000);libraryTab.click();
     const decoded=await wait('Native DOM/assets',()=>{
       const images=[...document.querySelectorAll('img')];for(const image of images)image.loading='eager';
       const decoded=images.filter(image=>image.complete&&image.naturalWidth>0&&/asset\.localhost|asset:/.test(image.src));

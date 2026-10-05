@@ -74,6 +74,14 @@ try {
         if ($qaPluginHash -ne '5ba143b5db4a87d32d6e7802e033330aae56cbceabe0d1e3ba41948385ad4709') { throw 'Cached NSIS plugin differs from the documented 0.5.3 hash. Do not silently replace/download executables.' }
     }
     if (-not $SkipInstall) { Invoke-Checked 'npm.cmd' @('ci') }
+    $qaResourceManifestText = & 'node.exe' (Join-Path $qaWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $qaWorkspace '--plan' '--check-windows-notices'
+    if ($LASTEXITCODE -ne 0) { throw 'The Tauri resource plan or Windows license inventory failed validation before native compilation.' }
+    $qaResourceManifest = $qaResourceManifestText | ConvertFrom-Json
+    $qaRunId = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+    $qaReportDirectory = Join-Path $qaWorkspace ("output\release\$qaRunId")
+    New-Item -ItemType Directory -Path $qaReportDirectory | Out-Null
+    $qaFrozenResourcePath = Join-Path $qaReportDirectory 'resources-frozen.json'
+    $qaResourceManifestText | Set-Content -LiteralPath $qaFrozenResourcePath -Encoding utf8
     if (-not $SkipChecks) {
         Invoke-Checked 'cargo.exe' @('test', '--workspace')
         Invoke-Checked 'npm.cmd' @('run', 'typecheck')
@@ -82,8 +90,6 @@ try {
     $qaCliVersion = (Get-Content -Raw -LiteralPath (Join-Path $qaWorkspace 'node_modules\@tauri-apps\cli\package.json') | ConvertFrom-Json).version
     if ($Distribution -eq 'Nsis' -and $qaCliVersion -ne '2.12.1') { throw 'The NSIS download inventory is pinned to Tauri CLI 2.12.1; update its source/version/hash record before using a different CLI.' }
     Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-cli', '--release')
-    $qaRunId = [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
-    $qaReportDirectory = Join-Path $qaWorkspace ("output\release\$qaRunId")
     $qaBundleDirectory = Join-Path $qaWorkspace 'target\release\bundle\nsis'
     $qaBeforeBundles = @{}
     if (Test-Path -LiteralPath $qaBundleDirectory) {
@@ -99,30 +105,24 @@ try {
     if ($Distribution -eq 'Nsis' -and -not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'A private updater signing key is required for an update-enabled NSIS release.' }
     if ($Distribution -eq 'Portable') { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--no-bundle') }
     else { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--bundles', 'nsis') }
+    $qaAfterBuildPlanText = & 'node.exe' (Join-Path $qaWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $qaWorkspace '--plan' '--expected-plan' $qaFrozenResourcePath '--check-windows-notices'
+    if ($LASTEXITCODE -ne 0) { throw 'Resource sources/configuration or Windows notices changed during the native build. Preserve this failed build; do not package it.' }
+    $qaResourceManifest = $qaAfterBuildPlanText | ConvertFrom-Json
     $qaBinaries = @(
         (Get-ExecutableEvidence (Join-Path $qaWorkspace 'target\release\asset-desktop.exe') -RequireX64),
         (Get-ExecutableEvidence (Join-Path $qaWorkspace 'target\release\asset-cli.exe') -RequireX64)
     )
-    New-Item -ItemType Directory -Path $qaReportDirectory | Out-Null
     $qaPortableFiles = @()
     $qaPackages = @()
     if ($Distribution -eq 'Portable') {
         $qaPortableDirectory = Join-Path $qaReportDirectory 'AssetStudio-windows-x64'
-        New-Item -ItemType Directory -Path (Join-Path $qaPortableDirectory 'workers\blender'), (Join-Path $qaPortableDirectory 'examples'), (Join-Path $qaPortableDirectory 'docs') | Out-Null
+        New-Item -ItemType Directory -Path $qaPortableDirectory | Out-Null
         Copy-Item -LiteralPath (Join-Path $qaWorkspace 'target\release\asset-desktop.exe') -Destination $qaPortableDirectory
-        foreach ($qaWorkerFile in @('worker.py', 'LICENSE')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace "workers\blender\$qaWorkerFile") -Destination (Join-Path $qaPortableDirectory 'workers\blender') }
-        Get-ChildItem -LiteralPath (Join-Path $qaWorkspace 'apps\desktop\public\examples') -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $qaPortableDirectory 'examples') }
-        foreach ($qaNotice in @('LICENSE', 'THIRD_PARTY_NOTICES.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace $qaNotice) -Destination $qaPortableDirectory }
-        $qaDependencyNotices = Join-Path $qaWorkspace 'docs\licenses'
-        if (-not (Test-Path -LiteralPath (Join-Path $qaDependencyNotices 'THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Third-party license texts are missing. Regenerate the notices before packaging a public release.' }
-        Copy-Item -LiteralPath $qaDependencyNotices -Destination (Join-Path $qaPortableDirectory 'docs') -Recurse
-        $qaCatalogNotices = @{
-            'NOTICE' = 'CODEX-CATALOG-NOTICE.txt'
-            'OPENAI-CODEX-NOTICE' = 'CODEX-UPSTREAM-NOTICE.txt'
-            'OPENAI-CODEX-LICENSE' = 'CODEX-CATALOG-LICENSE.txt'
-        }
-        foreach ($qaCatalogNotice in $qaCatalogNotices.GetEnumerator()) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('crates\providers\assets\' + $qaCatalogNotice.Key)) -Destination (Join-Path $qaPortableDirectory $qaCatalogNotice.Value) }
-        foreach ($qaDocument in @('windows-quickstart.md', 'platform-support.md', 'verification.md', 'provider-feasibility.md', 'ima2-gen-comparison.md', 'architecture.md', 'module-contract.md')) { Copy-Item -LiteralPath (Join-Path $qaWorkspace ('docs\' + $qaDocument)) -Destination (Join-Path $qaPortableDirectory 'docs') }
+        $qaCopiedResourceText = & 'node.exe' (Join-Path $qaWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $qaWorkspace '--destination' $qaPortableDirectory '--expected-plan' $qaFrozenResourcePath '--check-windows-notices'
+        if ($LASTEXITCODE -ne 0) { throw 'Portable Tauri resources failed exclusive copying or digest verification.' }
+        $qaCopiedResources = $qaCopiedResourceText | ConvertFrom-Json
+        $qaResourceManifest = $qaCopiedResources
+        if (-not (Test-Path -LiteralPath (Join-Path $qaPortableDirectory 'docs\licenses\THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Third-party license texts are missing. Regenerate the notices before packaging a public release.' }
         if ($VcRuntimeDirectory) {
             $qaRuntimePath = (Resolve-Path -LiteralPath $VcRuntimeDirectory).Path
             $qaRuntimeDlls = @(Get-ChildItem -LiteralPath $qaRuntimePath -File -Filter '*.dll')
@@ -131,11 +131,12 @@ try {
         }
         @'
 Asset Studio Windows x64 portable
-Extract the entire folder and run asset-desktop.exe. Keep examples/ and workers/blender/ beside it.
+Extract the entire folder and run asset-desktop.exe. Keep examples/, workers/, licenses/ and docs/ beside it.
 Read docs/windows-quickstart.md for the Korean usage guide; related provider/platform/verification documents are beside it.
 This unsigned build is not a completed clean-machine install/upgrade/uninstall certification.
 Microsoft WebView2 is required. Native DLL dependencies must be audited separately; no runtime is downloaded by this build path.
 Blender is optional and must be installed separately with consent. Its GPL worker source/license are included.
+The image-to-3D worker source/notices are included; its local model is not bundled. Windows image-to-3D support remains unverified and disabled.
 Resolved dependency license texts and copyright notices are in docs/licenses/THIRD_PARTY_LICENSES.txt.
 The backend QA CLI remains a developer test binary and is not included in this portable application.
 '@ | Set-Content -LiteralPath (Join-Path $qaPortableDirectory 'PORTABLE-README.txt') -Encoding utf8
@@ -166,6 +167,7 @@ The backend QA CLI remains a developer test binary and is not included in this p
     }
     $qaReport = [ordered]@{
         checkedAt = [DateTimeOffset]::UtcNow.ToString('o')
+        appVersion = $qaResourceManifest.appVersion
         platform = 'windows-x64'
         distribution = $Distribution.ToLowerInvariant()
         tauriCliVersion = $qaCliVersion
@@ -177,6 +179,9 @@ The backend QA CLI remains a developer test binary and is not included in this p
         binaries = $qaBinaries
         packages = $qaPackages
         portableFiles = $qaPortableFiles
+        resourceManifest = $qaResourceManifest
+        frozenResourcePlan = $qaFrozenResourcePath
+        resourcePlanVerifiedAfterBuild = $true
         vcRuntimeDirectory = $VcRuntimeDirectory
         packageCreated = $true
         nativeWindowTested = $false

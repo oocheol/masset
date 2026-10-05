@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import ntpath
 import os
 from pathlib import Path
 import re
@@ -25,6 +26,115 @@ KEYS = frozenset({"sourcePath", "sourceSha256", "name", "heightMeters",
 COMPONENTS = {5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2),
               5123: ("H", 2), 5125: ("I", 4), 5126: ("f", 4)}
 WIDTHS = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
+
+
+def _ordinary_windows_path(path) -> str:
+    """Validate before removing a verbatim prefix; never change its target."""
+    raw = os.fspath(path).replace("/", "\\")
+    if "\0" in raw or raw.startswith("\\\\.\\"):
+        raise ValueError("Windows device namespace paths are unsupported")
+    verbatim = raw.startswith("\\\\?\\")
+    if verbatim:
+        tail = raw[4:]
+        if tail.upper().startswith("UNC\\"):
+            raw = "\\\\" + tail[4:]
+        elif re.match(r"^[A-Za-z]:\\", tail):
+            raw = tail
+        else:
+            raise ValueError("Unsupported Windows verbatim path namespace")
+    drive, tail = ntpath.splitdrive(raw)
+    components = tail.split("\\")
+    if drive.startswith("\\\\"):
+        components += drive[2:].split("\\")
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {f"COM{i}" for i in range(1, 10)} | {f"LPT{i}" for i in range(1, 10)}
+    for part in filter(None, components):
+        if verbatim and part in {".", ".."}:
+            raise ValueError("Ambiguous verbatim path components are unsupported")
+        if part in {".", ".."}:
+            continue  # Ordinary Win32 traversal already has these semantics.
+        if part.rstrip(" .") != part or re.search(r'[\x00-\x1f<>:"|?*]', part):
+            raise ValueError("Ambiguous Windows path components are unsupported")
+        if part.split(".", 1)[0].upper() in reserved:
+            raise ValueError("Windows reserved device filenames are unsupported")
+    absolute = ntpath.abspath(raw)
+    drive, tail = ntpath.splitdrive(absolute)
+    valid_drive = bool(re.fullmatch(r"[A-Za-z]:", drive) and tail.startswith("\\"))
+    valid_unc = drive.startswith("\\\\") and len(drive[2:].split("\\")) == 2 and all(drive[2:].split("\\"))
+    if not valid_drive and not valid_unc:
+        raise ValueError("Expected an absolute Windows filesystem path")
+    return absolute
+
+
+def filesystem_path(path) -> Path:
+    r"""Long-path-capable Python I/O without changing caller provenance.
+
+    Rust canonicalize yields \\?\ paths on Windows. Keep that namespace for
+    Python, but never pass it to bpy: Blender's glTF exporter appends '/'.
+    """
+    if os.name != "nt":
+        return Path(os.path.abspath(path))
+    ordinary = _ordinary_windows_path(path)
+    return Path("\\\\?\\UNC\\" + ordinary[2:] if ordinary.startswith("\\\\") else "\\\\?\\" + ordinary)
+
+
+def _windows_short_path(path: str) -> str:
+    # Query an existing OS alias only. Do not create junctions, stage elsewhere,
+    # move originals, or enable/change 8.3 name generation on the user's volume.
+    import ctypes
+    get_short = ctypes.WinDLL("kernel32", use_last_error=True).GetShortPathNameW
+    get_short.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
+    get_short.restype = ctypes.c_uint32
+    required = get_short(path, None, 0)
+    if not required or required > 32768:
+        raise ValueError("Blender requires a shorter project path: no Windows short path alias is available")
+    buffer = ctypes.create_unicode_buffer(required + 1)
+    length = get_short(path, buffer, len(buffer))
+    if not length or length >= len(buffer):
+        raise ValueError("Blender requires a shorter project path: no Windows short path alias is available")
+    return buffer.value
+
+
+def _windows_blender_filename(path) -> str:
+    ordinary = _ordinary_windows_path(path)
+    canonical = "\\\\?\\UNC\\" + ordinary[2:] if ordinary.startswith("\\\\") else "\\\\?\\" + ordinary
+    parent, basename = ntpath.split(ordinary)
+    canonical_parent = ntpath.dirname(canonical)
+    if not basename:
+        raise ValueError("Blender requires a file path with an existing parent directory")
+
+    def usable(candidate):
+        # MAX_PATH counts UTF-16 code units, including the final filename and
+        # NUL. Checking just the directory incorrectly accepts near-limit jobs.
+        if len(candidate.encode("utf-16-le")) // 2 >= 260:
+            return False
+        if not os.path.samefile(ntpath.dirname(candidate), canonical_parent):
+            return False
+        return not os.path.exists(canonical) or os.path.samefile(candidate, canonical)
+
+    try:
+        if usable(ordinary):
+            return ordinary
+    except OSError as exc:
+        if getattr(exc, "winerror", None) not in {3, 206}:
+            raise
+    short = _ordinary_windows_path(_windows_short_path(canonical_parent))
+    candidate = ntpath.join(short, basename)
+    try:
+        if usable(candidate):
+            return candidate
+    except OSError:
+        pass
+    raise ValueError("Blender requires a shorter project path: a safe short alias could not be verified")
+
+
+def blender_filename(path) -> str:
+    """Absolute bpy path to the same file, using a verified short parent if needed.
+
+    The parent must already exist. This works before a fixed worker output file
+    exists and also checks file identity when importing/reloading saved bytes.
+    Absolute paths avoid Blender resolving renders against an unsaved .blend.
+    """
+    return _windows_blender_filename(path) if os.name == "nt" else str(filesystem_path(path))
 
 
 def unique_object(pairs):
@@ -48,6 +158,7 @@ def json_data(data: bytes):
 
 def read_bounded(path: Path, maximum: int) -> bytes:
     # fstat and a bounded read also protect against size changes after stat.
+    path = filesystem_path(path)
     descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NONBLOCK", 0))
     with os.fdopen(descriptor, "rb") as stream:
         info = os.fstat(stream.fileno())
@@ -68,6 +179,7 @@ def read_parameters(path: Path) -> dict:
             or "\0" in source or not Path(source).is_absolute()
             or Path(source).suffix.lower() != ".glb"):
         raise ValueError("sourcePath must be an absolute GLB file path")
+    filesystem_path(source)  # Validate Windows namespaces, preserving the JSON string.
     if not isinstance(job["sourceSha256"], str) or not re.fullmatch(r"[0-9a-fA-F]{64}", job["sourceSha256"]):
         raise ValueError("sourceSha256 must be 64 hexadecimal characters")
     name = job["name"]
@@ -90,10 +202,11 @@ def read_parameters(path: Path) -> dict:
 
 
 def prepare_output(path: Path) -> Path:
+    path = filesystem_path(path)
     if path.is_symlink() or (path.exists() and (not path.is_dir() or any(path.iterdir()))):
         raise ValueError("Output directory must be new or empty; existing files are preserved")
     path.mkdir(parents=True, exist_ok=True)
-    return path.resolve(strict=True)
+    return filesystem_path(path.resolve(strict=True))
 
 
 def integer(value, minimum=0, maximum=MAX_ELEMENTS):
@@ -389,7 +502,7 @@ class GLB:
 
 
 def verify_source(job):
-    data = read_bounded(Path(job["sourcePath"]), GLB_BYTES)
+    data = read_bounded(job["sourcePath"], GLB_BYTES)
     if hashlib.sha256(data).hexdigest().lower() != job["sourceSha256"].lower():
         raise ValueError("Source SHA-256 does not match job; import refused")
     return data, GLB(data)

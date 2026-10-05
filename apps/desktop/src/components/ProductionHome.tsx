@@ -206,6 +206,15 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   const items = plan?.items.filter(item => item.enabled) ?? [];
   const hasModels = items.some(item => item.kind === 'model');
   const needsLocal = output !== 'images' || hasModels || state.runs.some(run => run.items.some(item => item.kind === 'model'));
+  const modelUnavailable = desktop && localStatus?.supported === false;
+  const incompatiblePlan = modelUnavailable && !!state.plan
+    && (state.plan.output !== 'images' || state.plan.items.some(item => item.enabled && item.kind === 'model'));
+
+  useEffect(() => {
+    // Wait for saved state before choosing a platform default. Never replace a
+    // saved plan or a draft that the user has already edited.
+    if (desktop && loaded && localStatus?.supported === false && !state.plan && draftRevision.current === 0 && output === 'mixed') setOutput('images');
+  }, [desktop, loaded, localStatus?.supported, state.plan, output]);
 
   useEffect(() => {
     if (acceptedPlan && acceptedPlan.key !== key) {
@@ -214,10 +223,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     }
   }, [key, acceptedPlan]);
 
-  // Local preparation is also read-only until its separate download consent and
-  // preparation button are used. Poll only while the native runtime says preparing.
+  // Read platform support even for saved image plans. Preparation still needs
+  // its separate consent; poll only while the native runtime says preparing.
   useEffect(() => {
-    if (!desktop || !needsLocal || operation?.startsWith('local:')) return;
+    if (!desktop || operation?.startsWith('local:')) return;
     let active = true;
     let timer: number | undefined;
     const epoch = ++localEpoch.current;
@@ -239,7 +248,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     }
     void read();
     return () => {active = false; window.clearTimeout(timer);};
-  }, [desktop, scope, needsLocal, operation]);
+  }, [desktop, scope, operation]);
 
   const working = busy || operation !== null;
   const providerReady = desktop && !!connection?.available && !!connection.authenticated && connection.ready && !providerChecking;
@@ -250,7 +259,8 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   const selectionValid = referenceIds.length <= 5 && referenceIds.every(assetId => references.some(reference => reference.asset.id === assetId));
   const running = state.runs.some(activeRun);
   const alreadyStarted = !!plan && state.runs.some(run => run.planId === plan.id);
-  const canAnalyze = providerReady && loaded && !loadError && !!state.connection && !!brief.trim() && selectionValid && uploadApproved && !working && !running;
+  const canAnalyze = providerReady && loaded && !loadError && !!state.connection && !!brief.trim() && selectionValid && uploadApproved && !working && !running
+    && (output === 'images' || localStatus?.supported === true);
   const canStart = canAnalyze && !!plan && items.length > 0 && plan.items.length <= 120 && !alreadyStarted && (!hasModels || localReady);
   const draftsDisabled = busy || (!!operation && operation !== 'plan');
 
@@ -258,6 +268,13 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     ++draftRevision.current;
     setAcceptedPlan(null); setUploadApproved(false); setError('');
     if (state.plan) setNotice('설명·종류·참고가 바뀌었습니다. 필요한 에셋을 다시 분석하세요.');
+  }
+
+  function switchToImagePlan() {
+    if (!desktop || working || running) return;
+    invalidateDraft();
+    setOutput('images');
+    setNotice('설명과 참고 자료는 유지했습니다. 전송 범위에 다시 동의하고 필요한 에셋 분석을 눌러 이미지 전용 계획을 만드세요.');
   }
 
   function begin(name: string) {
@@ -426,9 +443,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
           <label className="production-sr-only" htmlFor={`${id}-brief`}>게임 설명</label>
           <textarea id={`${id}-brief`} value={brief} rows={6} disabled={draftsDisabled || !desktop} onChange={event => {invalidateDraft(); setBrief(event.target.value);}} placeholder="예: 작은 섬을 탐험하는 따뜻한 판타지 게임. 숲과 마을, 나무와 바위, 도구와 수집 아이템이 필요해요. 부드러운 색감의 이미지와 단순한 3D 모델을 함께 만들고 싶어요." aria-describedby={`${id}-description-help`}/>
           <p id={`${id}-description-help`} className="production-muted">장르, 배경, 필요한 물체와 원하는 분위기를 자유롭게 적어주세요.</p>
-          <fieldset className="production-output" disabled={draftsDisabled || !desktop}><legend>만들 에셋</legend>
-            {([{value: 'images', label: '이미지', icon: <FileImage size={20}/>}, {value: 'models', label: '3D 모델', icon: <Box size={20}/>}, {value: 'mixed', label: '이미지 + 3D', icon: <Layers size={20}/>} ] as const).map(choice => <label key={choice.value} className={output === choice.value ? 'selected' : ''}><input type="radio" name={`${id}-output`} value={choice.value} checked={output === choice.value} onChange={() => {invalidateDraft(); setOutput(choice.value);}}/>{choice.icon}<span>{choice.label}</span></label>)}
+          <fieldset className="production-output" disabled={draftsDisabled || !desktop} aria-describedby={modelUnavailable ? `${id}-model-limit` : undefined}><legend>만들 에셋</legend>
+            {([{value: 'images', label: '이미지', icon: <FileImage size={20}/>}, {value: 'models', label: '3D 모델', icon: <Box size={20}/>}, {value: 'mixed', label: '이미지 + 3D', icon: <Layers size={20}/>} ] as const).map(choice => <label key={choice.value} className={output === choice.value ? 'selected' : ''}><input type="radio" name={`${id}-output`} value={choice.value} checked={output === choice.value} disabled={choice.value !== 'images' && desktop && localStatus?.supported !== true} onChange={() => {invalidateDraft(); setOutput(choice.value);}}/>{choice.icon}<span>{choice.label}</span></label>)}
           </fieldset>
+          {modelUnavailable && <p id={`${id}-model-limit`} className="production-message warning" role="status">이 제작 화면의 이미지→3D는 현재 Mac 전용입니다. 이 환경에서는 이미지 제작을 이용하세요.</p>}
           <div className="production-reference-actions"><button className="production-button" type="button" onClick={() => void importReferences()} disabled={!desktop || working}><Download size={17}/>{operation === 'import' ? '참고 파일 가져오는 중' : '참고 이미지·모델 추가'}</button><span className="production-muted">선택 사항</span></div>
           <details className="production-references" ref={referenceSection}><summary>참고 에셋 선택 <span>선택 사항 · {referenceIds.length}/5</span></summary>
             <p className="production-muted">가져오거나 실제 제작한 에셋 중 최대 5개를 선택하세요. 미리보기 없는 모델은 메타데이터만 참고합니다.</p>
@@ -455,7 +473,8 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             <p className="production-limit"><AlertTriangle size={16}/>한 계획에서 최대 120개까지 제작합니다. 더 많은 에셋은 나누어 요청하세요.</p>
             {plan.items.length > 120 && <p className="production-message warning" role="alert">120개를 초과한 계획입니다. 범위를 줄이고 다시 분석하세요.</p>}
           </> : <div className="production-plan-empty"><Layers size={36} strokeWidth={1.4}/><h3>{operation === 'plan' ? '제작 목록을 정리하고 있어요' : '설명에서 제작 목록으로'}</h3><p>게임 설명을 분석하면 에셋의 이름, 종류와 용도를 여기에서 확인할 수 있습니다.</p></div>}
-          {needsLocal && <section className="production-local" aria-labelledby={`${id}-local`}><div className="production-heading"><h3 id={`${id}-local`}><Box size={18}/>3D 제작 준비</h3><span className="production-badge" role="status">{!desktop ? '데스크톱 전용' : localLoading ? '확인 중' : localError ? '확인 필요' : localStatus ? localReady ? '준비 완료' : LOCAL_LABELS[localStatus.state] === '준비 완료' ? '준비 확인 필요' : LOCAL_LABELS[localStatus.state] : '확인 필요'}</span></div>
+          {modelUnavailable && (output !== 'images' || incompatiblePlan) && <div className="production-message warning" role="status"><p>기존 계획과 입력은 보존합니다. 이 환경에서 제작할 이미지 전용 계획으로 전환한 뒤 다시 분석하세요.</p><button className="production-button" type="button" disabled={working || running} onClick={switchToImagePlan}>이미지 전용으로 전환</button></div>}
+          {needsLocal && !modelUnavailable && <section className="production-local" aria-labelledby={`${id}-local`}><div className="production-heading"><h3 id={`${id}-local`}><Box size={18}/>3D 제작 준비</h3><span className="production-badge" role="status">{!desktop ? '데스크톱 전용' : localLoading ? '확인 중' : localError ? '확인 필요' : localStatus ? localReady ? '준비 완료' : LOCAL_LABELS[localStatus.state] === '준비 완료' ? '준비 확인 필요' : LOCAL_LABELS[localStatus.state] : '확인 필요'}</span></div>
             <p>GPT로 개념 이미지를 만든 뒤, 로컬 TripoSR로 3D 모델을 재구성합니다. 형상과 텍스처는 제작 결과에서 확인하세요.</p>
             {desktop && localStatus && <p role="status">{safeText(localStatus.message, '이 기기의 로컬 3D 준비 상태를 확인하세요.')}</p>}
             {desktop && localStatus && !memoryReady && <p className="production-message warning">기기의 메모리가 로컬 모델의 요구량을 충족하는지 확인하세요.</p>}
@@ -468,7 +487,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             </div>
           </section>}
           <div className="production-start"><button className="production-button primary" type="button" disabled={!canStart} onClick={() => void start()}>{operation === 'start' ? <LoaderCircle className="production-spin" size={18}/> : <Sparkles size={18}/>}필요한 에셋 모두 제작</button>
-            <p className="production-muted">{alreadyStarted ? '이 계획의 제작 요청이 저장되었습니다. 아래에서 결과를 확인하세요.' : hasModels && !localReady ? '3D가 포함된 계획은 로컬 준비를 마친 뒤 제작할 수 있습니다.' : '결과는 게임 폴더의 AssetStudioGenerated 아래 새 제작 폴더에 저장합니다.'}</p>
+            <p className="production-muted">{alreadyStarted ? '이 계획의 제작 요청이 저장되었습니다. 아래에서 결과를 확인하세요.' : modelUnavailable && (hasModels || output !== 'images') ? '이 계획의 3D 제작은 이 환경에서 지원하지 않습니다. 이미지 전용으로 전환하고 다시 분석하세요.' : hasModels && !localReady ? '3D가 포함된 계획은 로컬 준비를 마친 뒤 제작할 수 있습니다.' : '결과는 게임 폴더의 AssetStudioGenerated 아래 새 제작 폴더에 저장합니다.'}</p>
           </div>
         </section>
       </div>

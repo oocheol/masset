@@ -191,7 +191,11 @@ async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixturePro
   await page.goto('https://production-ui.test/');
   await uiExpect(page.getByRole('heading', {name: '게임에 필요한 에셋을 한 번에', exact: true})).toBeVisible();
   if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('production_state')) await uiExpect.poll(async () => (await commands('production_state')).length).toBe(1);
-  if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('quality3d_status')) await uiExpect(page.getByRole('heading', {name: '3D 제작 준비'}).locator('..').getByRole('status')).not.toHaveText('확인 중');
+  if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('quality3d_status')) {
+    if (fixture.failures.quality3d_status > 0) await uiExpect(page.locator('.production-local').getByRole('alert')).toBeVisible();
+    else if (fixture.local.supported) await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeEnabled();
+    else await uiExpect(page.getByText('이 제작 화면의 이미지→3D는 현재 Mac 전용입니다. 이 환경에서는 이미지 제작을 이용하세요.', {exact: true})).toBeVisible();
+  }
 }
 const analyzeButton = () => page.getByRole('button', {name: '필요한 에셋 분석', exact: true});
 const startButton = () => page.getByRole('button', {name: '필요한 에셋 모두 제작', exact: true});
@@ -211,9 +215,11 @@ async function analyze(output: ProductionPlan['output'] = 'mixed') {
 }
 
 describe('ProductionHome UI (mocked desktop boundary)', () => {
-  it('loads only state and readiness, starts with mixed output and forwards provider/import controls', async () => {
+  it('keeps mixed output on a supported Mac desktop boundary and forwards provider/import controls', async () => {
     await mount();
     await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
+    await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeEnabled();
+    await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeEnabled();
     expect((await commands()).map(request => request.action).sort()).toEqual(['production_state', 'quality3d_status']);
     await uiExpect(analyzeButton()).toBeDisabled(); await uiExpect(startButton()).toBeDisabled();
     await page.getByRole('button', {name: 'GPT 연결 확인', exact: true}).click();
@@ -389,9 +395,64 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     await uiExpect(startButton()).toBeDisabled(); expect(await commands('production_start')).toEqual([]);
   });
 
-  it('allows image plans with missing local tools and never prepares 3D automatically', async () => {
+  it('defaults unsupported Windows desktop to images, blocks model choices and starts only after explicit image approval', async () => {
     await mount({local: local({supported: false, installed: false, state: 'unsupported', blenderReady: false})});
+    await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeChecked();
+    await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeEnabled();
+    await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeDisabled();
+    await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeDisabled();
+    expect(await commands('production_plan')).toEqual([]);
+    expect(await commands('production_start')).toEqual([]);
+    expect(await commands('quality3d_prepare')).toEqual([]);
     await analyze('images'); await uiExpect(startButton()).toBeEnabled();
+    expect(await commands('production_plan')).toEqual([{action: 'production_plan', brief: BRIEF, output: 'images', referenceAssetIds: [], uploadApproved: true}]);
+    expect(await commands('production_start')).toEqual([]);
+    await startButton().click();
+    await uiExpect.poll(async () => (await commands('production_start')).length).toBe(1);
+    expect(await commands('quality3d_prepare')).toEqual([]);
+  });
+
+  it('preserves an incompatible saved plan until explicit image conversion and fresh analysis', async () => {
+    const one = asset('one');
+    const saved = plan({referenceAssetIds: [one.id], references: [{assetId: one.id, versionId: one.activeVersionId,
+      name: one.name, kind: one.kind, width: one.width, height: one.height, mesh: one.mesh}], items: [{...plan().items[0], kind: 'model'}]});
+    await mount({local: local({supported: false, installed: false, state: 'unsupported', blenderReady: false}),
+      state: {connection: scan(), plan: saved, runs: []}, hold: ['production_state']});
+    await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
+    await release('production_state');
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(BRIEF);
+    await uiExpect(page.getByRole('list', {name: '제작 계획'})).toContainText('3D 모델');
+    await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
+    await uiExpect(startButton()).toBeDisabled();
+    expect(await commands('production_plan')).toEqual([]);
+    await page.getByRole('button', {name: '이미지 전용으로 전환', exact: true}).click();
+    await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeChecked();
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(BRIEF);
+    await page.locator('.production-references summary').click();
+    await uiExpect(page.getByRole('button', {name: '참고 one 참고 선택', exact: true})).toHaveAttribute('aria-pressed', 'true');
+    await uiExpect(consent()).not.toBeChecked();
+    expect(await page.evaluate(() => window.__PRODUCTION_UI_FIXTURE__.state.plan)).toEqual(saved);
+    expect(await commands('production_plan')).toEqual([]); expect(await commands('production_start')).toEqual([]);
+    await consent().check(); await analyzeButton().click();
+    await uiExpect(startButton()).toBeEnabled();
+    expect(await commands('production_plan')).toEqual([{action: 'production_plan', brief: BRIEF, output: 'images', referenceAssetIds: ['one'], uploadApproved: true}]);
+    expect(await commands('production_start')).toEqual([]);
+  });
+
+  it('keeps a user draft when unsupported capability arrives late and never auto-analyzes it', async () => {
+    await mount({local: local({supported: false, installed: false, state: 'unsupported', blenderReady: false}), hold: ['quality3d_status']});
+    const edited = `${BRIEF}와 직접 입력한 새 게임 설정`;
+    await page.getByRole('textbox', {name: '게임 설명', exact: true}).fill(edited);
+    await release('quality3d_status');
+    await uiExpect(page.getByRole('radio', {name: '3D 모델', exact: true})).toBeDisabled();
+    await uiExpect(page.getByRole('button', {name: '이미지 전용으로 전환', exact: true})).toBeVisible();
+    await uiExpect(page.getByRole('radio', {name: '이미지 + 3D', exact: true})).toBeChecked();
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(edited);
+    await uiExpect(analyzeButton()).toBeDisabled();
+    await page.getByRole('button', {name: '이미지 전용으로 전환', exact: true}).click();
+    await uiExpect(page.getByRole('radio', {name: '이미지', exact: true})).toBeChecked();
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(edited);
+    expect(await commands('production_plan')).toEqual([]); expect(await commands('production_start')).toEqual([]);
     expect(await commands('quality3d_prepare')).toEqual([]);
   });
 

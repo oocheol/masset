@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 os.environ["OMP_NUM_THREADS"] = "2"
 os.environ["OPENBLAS_NUM_THREADS"] = "2"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit import GLB, artifact, prepare_output, read_parameters, verify_source
+from audit import GLB, artifact, blender_filename, prepare_output, read_parameters, verify_source
 
 import bpy
 import bmesh
@@ -147,7 +147,7 @@ def import_snapshot(data, output, height, name, neutral_image3d=False):
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     try:
-        bpy.ops.import_scene.gltf(filepath=str(snapshot), import_pack_images=True,
+        bpy.ops.import_scene.gltf(filepath=blender_filename(snapshot), import_pack_images=True,
                                   import_shading="NORMALS", merge_vertices=False)
     finally:
         snapshot.unlink()
@@ -556,15 +556,15 @@ def bake_image(high, low, mode, resolution, projection, source_materials, fallba
 
 def save_png(image, output, basename):
     temporary = output / (Path(basename).stem + ".partial.png")
-    image.filepath_raw = str(temporary)
+    image.filepath_raw = blender_filename(temporary)
     image.file_format = "PNG"
     image.save()
     # Exclusive final promotion never overwrites an existing user file.
     promote(temporary, output / basename)
-    image.filepath_raw = str(output / basename)
+    image.filepath_raw = blender_filename(output / basename)
     # Inspect/use the independently decoded PNG pixels, not Cycles' temporary
     # float bake buffer (which has a different sRGB representation in Blender).
-    saved = bpy.data.images.load(str(output / basename), check_existing=False)
+    saved = bpy.data.images.load(blender_filename(output / basename), check_existing=False)
     saved.colorspace_settings.name = image.colorspace_settings.name
     saved.name = image.name + " PNG"
     saved.pack()
@@ -650,7 +650,7 @@ def remove_source_attributes(low):
 def export_glb(obj, output, basename):
     select([obj])
     temporary = output / (Path(basename).stem + ".partial.glb")
-    bpy.ops.export_scene.gltf(filepath=str(temporary), export_format="GLB", use_selection=True,
+    bpy.ops.export_scene.gltf(filepath=blender_filename(temporary), export_format="GLB", use_selection=True,
                               export_yup=True, export_normals=True, export_texcoords=True,
                               export_tangents=True, export_materials="EXPORT",
                               export_extras=False, export_animations=False,
@@ -716,7 +716,7 @@ def render_previews(output, camera, height, size):
     def render(name, resolution):
         scene.render.resolution_x = scene.render.resolution_y = resolution
         temporary = output / (Path(name).stem + ".partial.png")
-        scene.render.filepath = str(temporary)
+        scene.render.filepath = blender_filename(temporary)
         bpy.ops.render.render(write_still=True)
         promote(temporary, output / name)
     render("thumbnail.png", 1024)
@@ -759,6 +759,9 @@ def execute(input_path, output_dir):
     stage("verify-source-hash")
     data, source = verify_source(job)
     output = prepare_output(output_dir)
+    # Fail before expensive work if Blender cannot address the longest fixed
+    # output filename. Python keeps the canonical path throughout the job.
+    blender_filename(output / "game-ready.model.partial.glb")
     lock = output / ".quality-worker.lock"
     with lock.open("x") as stream:
         stream.write(str(os.getpid()))
@@ -972,7 +975,7 @@ def execute(input_path, output_dir):
     high.hide_set(True)
     lod.hide_set(True)
     temporary = output / "source.partial.blend"
-    bpy.ops.wm.save_as_mainfile(filepath=str(temporary), compress=True, check_existing=False)
+    bpy.ops.wm.save_as_mainfile(filepath=blender_filename(temporary), compress=True, check_existing=False)
     promote(temporary, output / "source.blend")
     # Prove the user original was never modified during finishing.
     _, after = verify_source(job)
@@ -1070,11 +1073,11 @@ def execute(input_path, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(description="Data-only Blender mesh-quality finishing worker")
-    parser.add_argument("--input", type=Path, required=True)
-    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--output-dir", required=True)
     args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else [])
     try:
-        execute(args.input.resolve(strict=True), args.output_dir.absolute())
+        execute(args.input, args.output_dir)
     except Exception as exc:
         # Do not print input JSON, credentials, or arbitrary exception paths.
         message = str(exc) if isinstance(exc, ValueError) else "Native finishing operation failed; inspect the local Blender log"

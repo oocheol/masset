@@ -5,11 +5,12 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import sys
 from datetime import datetime, timezone
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit import GLB, artifact, image_dimensions, verify_source
+from audit import GLB, artifact, blender_filename, filesystem_path, image_dimensions, verify_source
 import bpy
 import numpy as np
 import bmesh
@@ -90,10 +91,13 @@ def nearest_error(reference, actual):
 
 
 def run(directory,evidence,log=None):
-    if "--disable-autoexec" not in sys.argv or "--factory-startup" not in sys.argv:
+    if not bpy.app.background or "--disable-autoexec" not in sys.argv or "--factory-startup" not in sys.argv:
         raise ValueError("Independent verification requires factory startup and disable-autoexec")
-    directory = directory.resolve(strict=True)
-    if evidence.exists() or evidence.is_symlink() or evidence.parent.resolve()==directory:
+    requested_directory, requested_evidence = os.fspath(directory), os.fspath(evidence)
+    directory = filesystem_path(filesystem_path(directory).resolve(strict=True))
+    evidence = filesystem_path(evidence)
+    log = filesystem_path(log) if log is not None else None
+    if evidence.exists() or evidence.is_symlink() or filesystem_path(evidence.parent.resolve()).is_relative_to(directory):
         raise ValueError("Evidence must be new and outside the artifact directory")
     report = json.loads((directory/"validation.json").read_text())
     job = report["parameters"]
@@ -101,7 +105,7 @@ def run(directory,evidence,log=None):
     checks = []
     result = {"schemaVersion":1,"createdAt":datetime.now(timezone.utc).isoformat(),
               "blenderVersion":bpy.app.version_string,"nativePlatform":sys.platform,
-              "artifacts":str(directory),"sourceSha256":source.sha256,"checks":checks,
+              "artifacts":requested_directory,"sourceSha256":source.sha256,"checks":checks,
               "independentProcess":True,"scriptAutoexec":False,"glbs":{},"images":{},"blend":{}}
     def check(code,condition,message,measured=None):
         item = {"code":code,"status":"pass" if condition else "fail","message":message}
@@ -129,7 +133,7 @@ def run(directory,evidence,log=None):
                 check("hash-"+item["path"],path.name==item["path"] and actual["sha256"]==item["sha256"] and actual["bytes"]==item["bytes"],
                       "Completed basename/hash/bytes match actual artifact")
     clear()
-    bpy.ops.import_scene.gltf(filepath=job["sourcePath"],import_pack_images=True)
+    bpy.ops.import_scene.gltf(filepath=blender_filename(job["sourcePath"]),import_pack_images=True)
     original,vertices,centers=mesh_data([o for o in bpy.context.scene.objects if o.type=="MESH"])
     array=np.asarray([list(v) for v in vertices])
     minimum,maximum=array.min(axis=0),array.max(axis=0)
@@ -144,7 +148,7 @@ def run(directory,evidence,log=None):
     for filename,role in (("high-detail.glb","highDetail"),("game-ready.model.glb","game"),("lod1.glb","lod1")):
         glb=GLB((directory/filename).read_bytes(),maximum=128*1024*1024)
         clear()
-        bpy.ops.import_scene.gltf(filepath=str(directory/filename),import_pack_images=True)
+        bpy.ops.import_scene.gltf(filepath=blender_filename(directory/filename),import_pack_images=True)
         meshes=[o for o in bpy.context.scene.objects if o.type=="MESH"]
         info,vertices,centroids=mesh_data(meshes)
         info["binary"]=glb.inspection()
@@ -196,7 +200,7 @@ def run(directory,evidence,log=None):
             continue
         dims=image_dimensions(path.read_bytes(),"image/png")
         expected=1024 if basename=="thumbnail.png" else 512 if basename.startswith("turntable-") else job["textureResolution"]
-        image=bpy.data.images.load(str(path),check_existing=False)
+        image=bpy.data.images.load(blender_filename(path),check_existing=False)
         if basename in {"normal.png","orm.png"}:
             image.colorspace_settings.name="Non-Color"
         stats,colors=image_stats(image)
@@ -222,7 +226,7 @@ def run(directory,evidence,log=None):
     hashes={hashlib.sha256((directory/f"turntable-{i:02d}.png").read_bytes()).hexdigest() for i in range(4)}
     check("distinct-turntable",len(hashes)==4,"Four viewpoints produce four different PNGs",len(hashes))
     clear()
-    bpy.ops.wm.open_mainfile(filepath=str(directory/"source.blend"),load_ui=False,use_scripts=False)
+    bpy.ops.wm.open_mainfile(filepath=blender_filename(directory/"source.blend"),load_ui=False,use_scripts=False)
     roles={o.get("assetStudioRole"):o for o in bpy.context.scene.objects if o.type=="MESH" and o.get("assetStudioRole") in {"high-detail","game","lod1"}}
     info={"roles":sorted(roles),"textBlocks":len(bpy.data.texts),"engine":bpy.context.scene.render.engine,
           "device":bpy.context.scene.cycles.device,"threads":bpy.context.scene.render.threads,
@@ -263,7 +267,7 @@ def run(directory,evidence,log=None):
     with evidence.open("x",encoding="utf-8") as stream:
         json.dump(result,stream,indent=2,allow_nan=False)
         stream.write("\n")
-    print(json.dumps({"type":"independent-verification","valid":result["valid"],"evidence":str(evidence),
+    print(json.dumps({"type":"independent-verification","valid":result["valid"],"evidence":requested_evidence,
                       "triangleCounts":counts,"failedChecks":[c for c in checks if c["status"]!="pass"]}),flush=True)
     if not result["valid"]:
         raise SystemExit(1)
@@ -271,11 +275,11 @@ def run(directory,evidence,log=None):
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument("--artifacts",type=Path,required=True)
-    parser.add_argument("--evidence",type=Path,required=True)
-    parser.add_argument("--worker-log",type=Path)
+    parser.add_argument("--artifacts",required=True)
+    parser.add_argument("--evidence",required=True)
+    parser.add_argument("--worker-log")
     args=parser.parse_args(sys.argv[sys.argv.index("--")+1:])
-    run(args.artifacts,args.evidence.absolute(),args.worker_log)
+    run(args.artifacts,args.evidence,args.worker_log)
 
 
 if __name__=="__main__":

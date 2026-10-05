@@ -100,8 +100,14 @@ fn no_links(path: &Path) -> Result<()> {
             bail!("프로젝트 경로에 상대 경로가 있습니다.");
         }
         parent.push(component);
+        // A bare verbatim Windows prefix (\\?\C:) is not an inspectable
+        // filesystem path. Wait until RootDir appends its separator, matching
+        // project_scan's original-path checks without discarding ancestors.
+        if matches!(component, std::path::Component::Prefix(_)) {
+            continue;
+        }
         match fs::symlink_metadata(&parent) {
-            Ok(metadata) if metadata.file_type().is_symlink() => {
+            Ok(metadata) if linked_metadata(&metadata) => {
                 bail!("연결된 경로 대신 실제 프로젝트 폴더를 선택하세요.")
             }
             Ok(_) => {}
@@ -110,6 +116,18 @@ fn no_links(path: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn linked_metadata(metadata: &fs::Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        metadata.file_type().is_symlink() || metadata.file_attributes() & 0x0000_0400 != 0
+    }
+    #[cfg(not(windows))]
+    {
+        metadata.file_type().is_symlink()
+    }
 }
 
 fn state_path(root: &Path) -> PathBuf {
@@ -584,6 +602,12 @@ impl Backend {
         let output = text_field(request, "output")?;
         if !["images", "models", "mixed"].contains(&output) {
             bail!("2D·3D 제작 종류를 선택하세요.");
+        }
+        // Planning must not offer a batch whose reconstruction path cannot run
+        // on this native platform. Reject it before reading project references,
+        // creating a planning cache, or discovering/calling an official provider.
+        if output != "images" && !cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            bail!("이 기기에서는 이미지 제작만 지원합니다. '이미지'를 선택하고 다시 분석하세요. 이미지에서 3D 제작은 Apple Silicon Mac 검증 경로입니다.");
         }
         let mut state = load_state(root)?;
         let previous = state
@@ -1232,6 +1256,100 @@ fn prepare_foreground(source: &Path, target: &Path) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_verbatim_paths_preserve_state_and_managed_delivery() {
+        // This storage-path regression neither discovers installed tools nor
+        // constructs a provider runtime. Every file belongs to this fixture.
+        struct OwnedRoot {
+            directory: PathBuf,
+            parent: PathBuf,
+        }
+        impl Drop for OwnedRoot {
+            fn drop(&mut self) {
+                assert_eq!(self.directory.parent(), Some(self.parent.as_path()));
+                assert!(self
+                    .directory
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .starts_with("asset-production-windows-paths-"));
+                let _ = fs::remove_dir_all(&self.directory);
+            }
+        }
+        let parent = std::env::temp_dir().canonicalize().unwrap();
+        let directory = parent.join(format!("asset-production-windows-paths-{}", Uuid::new_v4()));
+        fs::create_dir(&directory).unwrap();
+        let owned = OwnedRoot {
+            directory: directory.canonicalize().unwrap(),
+            parent,
+        };
+        assert!(matches!(
+            owned.directory.components().next(),
+            Some(std::path::Component::Prefix(prefix))
+                if matches!(prefix.kind(), std::path::Prefix::VerbatimDisk(_) | std::path::Prefix::VerbatimUNC(_, _))
+        ));
+        let workspace = owned.directory.join("제작 작업 공간");
+        let game = owned.directory.join("한글 게임 프로젝트");
+        fs::create_dir(&workspace).unwrap();
+        fs::create_dir(&game).unwrap();
+        let original = game.join("project.godot");
+        let original_bytes = b"[application]\nconfig/name=\"Original test game\"\n";
+        fs::write(&original, original_bytes).unwrap();
+        let original_hash = asset_core::sha256_file(&original).unwrap();
+        let scan = project_scan::scan(&game).unwrap();
+        assert_eq!(scan["engine"], "godot");
+
+        let mut state = State {
+            connection: Some(scan),
+            ..State::default()
+        };
+        save_json(&state_path(&workspace), &state).unwrap();
+        let run_id = Uuid::new_v4().to_string();
+        state.run_ids.push(run_id.clone());
+        // Replacing an app-owned state snapshot must still work on Windows.
+        save_json(&state_path(&workspace), &state).unwrap();
+        assert_eq!(
+            serde_json::to_value(load_state(&workspace).unwrap()).unwrap(),
+            serde_json::to_value(&state).unwrap()
+        );
+
+        let run = managed_output(&game, &run_id).unwrap();
+        let target = run.join("새 결과 파일.txt");
+        no_links(&target).unwrap();
+        let mut output = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&target)
+            .unwrap();
+        output.write_all(b"independent delivery fixture").unwrap();
+        output.sync_all().unwrap();
+        drop(output);
+        assert_eq!(managed_output(&game, &run_id).unwrap(), run);
+        assert!(fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&target)
+            .is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"independent delivery fixture");
+        assert_eq!(asset_core::sha256_file(&original).unwrap(), original_hash);
+        assert_eq!(fs::read(&original).unwrap(), original_bytes);
+
+        let linked = owned.directory.join("linked-game");
+        match std::os::windows::fs::symlink_dir(&game, &linked) {
+            Ok(()) => {
+                assert!(linked_metadata(&fs::symlink_metadata(&linked).unwrap()));
+                assert!(no_links(&linked.join("future-output.json")).is_err());
+                fs::remove_dir(&linked).unwrap();
+            }
+            Err(error) if matches!(error.raw_os_error(), Some(5 | 1314)) => {
+                eprintln!("SKIPPED Windows symlink fixture: creation privilege unavailable ({error}); canonical storage/delivery checks still executed");
+            }
+            Err(error) => panic!("cannot create owned Windows link fixture: {error}"),
+        }
+    }
+
     struct Fixture {
         directory: PathBuf,
         root: PathBuf,
@@ -1252,11 +1370,36 @@ mod tests {
                 "[application]\nconfig/name=\"Test Game\"\n",
             )
             .unwrap();
-            let backend = Backend::new(
-                directory.join("app-data"),
-                directory.join("examples"),
-                directory.join("worker.py"),
-            );
+            // Admission/storage fixtures must never discover installed tools,
+            // invoke a provider, authenticate, or download a local runtime.
+            let backend = Backend {
+                inner: Arc::new(Inner {
+                    data: directory.join("app-data"),
+                    examples: directory.join("unused-examples"),
+                    worker: directory.join("unused-worker.py"),
+                    blender: None,
+                    blender_version: None,
+                    worker_sha256: None,
+                    current: Mutex::new(None),
+                    project_lease: Mutex::new(None),
+                    requests: Mutex::new(()),
+                    io: Mutex::new(()),
+                    dispatch: Mutex::new(()),
+                    initialize: Mutex::new(()),
+                    runners: Mutex::new(BTreeMap::new()),
+                    stop: AtomicBool::new(false),
+                    limits: ResourceLimits::default(),
+                    provider_runtime: Mutex::new(None),
+                    provider_connection: Mutex::new(provider::unavailable_connection(
+                        "단위 테스트는 외부 생성을 요청하지 않습니다.",
+                    )),
+                    codex_installer: asset_providers::installer::CodexInstaller::new(
+                        directory.join("unused-installer"),
+                    ),
+                    planning_cancel: Mutex::new(None),
+                    quality3d_setup: quality3d::SetupState::default(),
+                }),
+            };
             backend
                 .request(json!({"action":"create","root":root,"name":"Private test workspace"}))
                 .unwrap();
@@ -1324,6 +1467,59 @@ mod tests {
         }
     }
 
+    #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+    #[test]
+    fn unsupported_production_plan_preserves_project_before_provider_or_cache_creation() {
+        let f = Fixture::new();
+        let before_state = fs::read(state_path(&f.root)).unwrap();
+        let before_project =
+            serde_json::to_value(Repository::open(&f.root).unwrap().project().unwrap()).unwrap();
+        let before_original = asset_core::sha256_file(&f.game.join("project.godot")).unwrap();
+        let queue = SchedulerStore::open(&f.root.join("scheduler.sqlite")).unwrap();
+        fs::create_dir(f.root.join("cache")).unwrap();
+        let cache_file = f.root.join("cache/preexisting-cache.txt");
+        fs::write(&cache_file, b"preserve existing cached data").unwrap();
+        let before_cache_file = asset_core::sha256_file(&cache_file).unwrap();
+        let cache_entries = || {
+            let mut entries: Vec<_> = fs::read_dir(f.root.join("cache"))
+                .unwrap()
+                .map(|entry| entry.unwrap().file_name())
+                .collect();
+            entries.sort();
+            entries
+        };
+        let before_cache = cache_entries();
+        for output in ["models", "mixed"] {
+            let error = f
+                .backend
+                .request(json!({"action":"production_plan","brief":"A game with images and model concepts",
+                    "output":output,"referenceAssetIds":[],"uploadApproved":true}))
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains("'이미지'를 선택하고 다시 분석"), "{error}");
+            assert!(f.backend.inner.provider_runtime.lock().unwrap().is_none());
+            assert!(f.backend.inner.planning_cancel.lock().unwrap().is_none());
+            assert!(!f.backend.inner.codex_installer.busy());
+            assert!(queue.jobs().unwrap().is_empty());
+            assert_eq!(fs::read(state_path(&f.root)).unwrap(), before_state);
+            assert_eq!(
+                serde_json::to_value(Repository::open(&f.root).unwrap().project().unwrap())
+                    .unwrap(),
+                before_project
+            );
+            assert_eq!(
+                asset_core::sha256_file(&f.game.join("project.godot")).unwrap(),
+                before_original
+            );
+            assert_eq!(cache_entries(), before_cache);
+            assert_eq!(
+                asset_core::sha256_file(&cache_file).unwrap(),
+                before_cache_file
+            );
+            assert!(!f.game.join(OUTPUT_FOLDER).exists());
+        }
+    }
+
     #[test]
     fn production_admission_is_atomic_replayable_and_durable_without_provider_calls() {
         let f = Fixture::new();
@@ -1346,9 +1542,10 @@ mod tests {
             .jobs()
             .unwrap();
         assert_eq!(jobs.len(), 2);
-        assert!(jobs
-            .iter()
-            .all(|j| matches!(j.status,JobStatus::Pending|JobStatus::Ready) && j.payload["singleAsset"] == true));
+        assert!(jobs.iter().all(
+            |j| matches!(j.status, JobStatus::Pending | JobStatus::Ready)
+                && j.payload["singleAsset"] == true
+        ));
         assert_ne!(jobs[0].payload["name"], jobs[1].payload["name"]);
         assert!(!f.game.join(OUTPUT_FOLDER).exists());
         f.backend.shutdown();
