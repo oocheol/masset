@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "version": "0.1.8",
-  "status": "native-dmg-verified-release-ready",
+  "status": "published-native-update-verified",
   "checkedAt": "2026-10-04T17:14:52.922Z",
   "environment": {
     "os": "macOS 27.0.1",
@@ -101,13 +101,13 @@
     "version": "0.1.8",
     "payloadSignatureVerified": true,
     "authenticatedVersionVerified": true,
-    "actualPublicInstallAndRestartVerified": false
+    "actualPublicInstallAndRestartVerified": true
   },
   "publication": {
-    "published": false,
+    "published": true,
     "dmgAcceptanceVerified": true,
     "dmgStatus": "Final DMG mount, copied app, WebView, IPC, backend export and detach passed",
-    "publicMac": "0.1.6",
+    "publicMac": "0.1.8",
     "publicWindows": "0.1.3",
     "siteSourceChanged": true,
     "siteDeployed": false,

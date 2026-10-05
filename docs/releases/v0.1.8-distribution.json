@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "version": "0.1.8",
-  "status": "verified-awaiting-publication",
+  "status": "published-native-update-verified",
   "checkedAt": "2026-10-05T07:55:55.512Z",
   "sourceCommit": "7be2d356fcc412a45916692e9a0b777c462cb3bc",
   "platform": {
@@ -54,7 +54,30 @@
     "bytes": 31314425,
     "sha256": "95c9b7f3c81b0b27082a30f531c17c3639ddfd75ddd83ead88d12265d0ed3e00",
     "authenticatedVersion": "0.1.8",
-    "actualPublicLifecycleVerified": false
+    "actualPublicLifecycleVerified": true,
+    "bootstrapOrigin": "Public v0.1.6 DMG; SHA-256 79055cd2fbc81a658d480ebcb4e6418d3f15c793c6803fc86d19914f6fea0eb7",
+    "lifecycle": {
+      "verified": true,
+      "platform": "macos-arm64",
+      "fromVersion": "0.1.6",
+      "toVersion": "0.1.8",
+      "source": "Provided update-enabled native Mac bootstrap; caller records its verified origin",
+      "bootstrapExecutableSha256": "39db04702153681759a6ae8b56fe49d88cbbb0e358e9831098599f38ccb32b03",
+      "nativeApprovalUi": true,
+      "publicCandidateChannel": "https://github.com/oocheol/masset/releases/download/v0.1.8/latest-macos.json",
+      "actualPluginDownloadSignatureAndVersion": true,
+      "installedBundleSeal": true,
+      "nativeRestart": true,
+      "oldPid": 20450,
+      "newPid": 20521,
+      "projectReopened": true,
+      "projectAndVersionsUnchanged": true,
+      "originalAndArtifactHashesUnchanged": true,
+      "artifactCount": 12,
+      "decodedImages": 12,
+      "providerOperations": 0,
+      "metadataSha256": "6431b3221084a582b44cd663d44316cd920e89e7a122c7a25cc905649af32467"
+    }
   },
   "installer": {
     "sha256": "d4c56620274ce0a6238027883e42a46f6f3192d6e452958707f2936c886f4696",
@@ -66,9 +89,9 @@
     "channelSha256": "ce9b20e518f34c3908d77715b8c668906458a1c4f7e564a37a4c7ef517314924"
   },
   "publication": {
-    "published": false,
-    "publicDownloadsVerified": false,
-    "latest": false,
+    "published": true,
+    "publicDownloadsVerified": true,
+    "latest": true,
     "siteDeployed": false
   }
 }
