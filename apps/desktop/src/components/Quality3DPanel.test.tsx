@@ -158,7 +158,7 @@ beforeAll(async () => {
         };
       `,
   };
-  browser = await chromium.launch({headless: true});
+  browser = await chromium.launch({channel: 'chrome', headless: true});
 });
 beforeEach(async () => {
   context = await browser.newContext({viewport: {width: 1100, height: 1000}});

@@ -1,4 +1,5 @@
-docs/licenses/** linguist-vendored
+# Content-addressed notices and their upstream sources must retain exact bytes on checkout.
+docs/licenses/** linguist-vendored -text
 # The generated aggregate retains the exact whitespace of upstream notices.
 docs/licenses/THIRD_PARTY_LICENSES.txt -whitespace
 docs/licenses/upstream/objc2-*/** -text
