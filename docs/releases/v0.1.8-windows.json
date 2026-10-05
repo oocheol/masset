@@ -1,0 +1,391 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.8",
+  "platform": "windows-x64",
+  "checkedAt": "2026-10-05T09:23:42.799Z",
+  "status": "published-native-and-download-verified",
+  "sourceCommit": "593f175157c952278d2b9110768e80bb09f2501a",
+  "finalIndependentVerifierCommit": "62b9ac5d2cfd19ce062ce7e738f1668bfd022066",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.8",
+  "existingTagPreserved": true,
+  "prReview": {
+    "number": 4,
+    "alreadyMergedBeforeThisTask": true,
+    "mergeCommit": "4cf9c455c13dd78d3d88391aefdbdabedd94a301",
+    "openPullRequests": 0
+  },
+  "installer": {
+    "filename": "AssetStudio_0.1.8_x64-setup.exe",
+    "bytes": 22499602,
+    "sha256": "5d0d974abf1991f645a6cbd960c3929b93d4043694e8e7ad5794254e7fd74214",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio_0.1.8_x64-setup.exe",
+    "updaterSigned": true,
+    "windowsAuthenticodeSigned": false
+  },
+  "portable": {
+    "filename": "AssetStudio-windows-x64-portable.zip",
+    "bytes": 10642426,
+    "sha256": "11072a007c0a244ab1027ab298479f6470b22307d71f0290dfb2d567588de4a0",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.8/AssetStudio-windows-x64-portable.zip",
+    "filesIndependentlyVerified": 375,
+    "executableBytes": 23877120,
+    "executableSha256": "744be95876489ae3ce80dc9dfceeb93d8c9a67a3bac123038dd4d1643a5d9dbe"
+  },
+  "nsis": {
+    "embeddedExecutableSha256": "1befe77447a24668bf3ae76b900d64be3100b167cb2e3f1a926adb511b456966",
+    "resourceFilesVerified": 368,
+    "onlyExecutableDifference": "__TAURI_BUNDLE_TYPE_VAR_UNK -> __TAURI_BUNDLE_TYPE_VAR_NSS",
+    "extractedNativeWindowVerified": true,
+    "installerLifecycleVerified": false
+  },
+  "nativeAcceptance": {
+    "passed": true,
+    "host": "Windows development PC with WebView2 and Blender 5.2.1 LTS",
+    "decodedImages": 12,
+    "projectFolderScanVerified": true,
+    "windowsImageDefaultAndUnsupported3DBlocked": true,
+    "productionPlannerMocked": true,
+    "productionSubmissionIntercepted": true,
+    "nativeBlenderViewport": true,
+    "nativeViewportGlbSha256": "415a6583adc4387667be9ac52f3861ea29e4753391e32eaee0014dd894da1be5",
+    "webglDefaultFramebufferDrawCalls": 6,
+    "backendWithBlender": true,
+    "backendIndependentFiles": 33,
+    "quality3d": {
+      "packagedResources": true,
+      "preservedHighUsed": true,
+      "lowTriangles": 980,
+      "restoredTriangles": 1620,
+      "versionsRetained": 3,
+      "originalSha256": "a46c29f7ec8ac5099a8c10c425089d51bd423c9e879c3eab98ea55abaf68d7b1",
+      "independentReopenChecks": [
+        57,
+        53
+      ],
+      "independentExportFiles": 26,
+      "artifacts": [
+        {
+          "path": "originals/b9e28ee7-b7fb-49e5-8dc8-17fde1566cb0/model.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 1620,
+          "meshRole": null
+        },
+        {
+          "path": "outputs/09257c17-1a50-4cdb-a9bd-ce9ef766f9f7/basecolor.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/095bbf29-3f2a-4dfb-925f-8a0f3f7000b4/game-ready.model.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 980,
+          "meshRole": "game"
+        },
+        {
+          "path": "outputs/1610c151-dced-49db-b082-1e7cc67df6a7/turntable-03.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/2a550614-be4f-45af-8f8f-8551814cf7b8/validation.json",
+          "format": "json",
+          "valid": true
+        },
+        {
+          "path": "outputs/2b3d08ab-3d48-401a-9089-653697156cdb/normal.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/2f0b6a6f-a12c-44b2-a8a4-c82d37317e92/turntable-00.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/38f5d161-3666-4bd9-91e2-b6404f13e7d8/validation.json",
+          "format": "json",
+          "valid": true
+        },
+        {
+          "path": "outputs/4cb87b12-0f2c-48f9-a389-352675e5824d/lod1.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 480,
+          "meshRole": "lod1"
+        },
+        {
+          "path": "outputs/67796ee5-b956-4345-84e5-a5b3d3787cf4/turntable-01.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/6b79cd18-bc95-43f5-af59-28045e89123c/turntable-02.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/6e470816-ab2c-4d4c-bbe1-bdf010615953/turntable-02.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/7809825c-60a4-44a5-a8fb-47cfea0a3148/turntable-00.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/8cc906e6-95d8-49ae-81d2-86658691eea9/thumbnail.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/9ad3c782-fe0a-4777-be69-e67823d13187/lod1.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 792,
+          "meshRole": "lod1"
+        },
+        {
+          "path": "outputs/9feecdb7-aa13-4709-9d58-3153b745fc06/basecolor.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/a0db6912-8c76-4457-94af-c270acdc9a69/source.blend",
+          "format": "blend",
+          "valid": true
+        },
+        {
+          "path": "outputs/aac9cffa-cd56-4a73-bf0a-e75c975c57db/turntable-03.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/ce558596-b817-4d83-8381-d7eab190edf0/source.blend",
+          "format": "blend",
+          "valid": true
+        },
+        {
+          "path": "outputs/e1a62117-7559-4b9b-908a-7aa23eab9ed3/high-detail.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 1620,
+          "meshRole": "high"
+        },
+        {
+          "path": "outputs/e88a6442-d38b-4ce3-92e7-5d5f9fd6732a/orm.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/e9dd786f-6d61-4a85-9a07-2e8a656ba6af/turntable-01.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/eab1fccf-704c-4b31-8095-fff9ad697866/orm.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/f5c18309-84c1-4e23-a81e-4c25ce905508/thumbnail.png",
+          "format": "png",
+          "valid": true
+        },
+        {
+          "path": "outputs/f8a2c14b-1cd7-4e5b-9ce6-44b287e38d4f/high-detail.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 1620,
+          "meshRole": "high"
+        },
+        {
+          "path": "outputs/fbaa3f18-7b69-44aa-b5d4-7748e66f6c8b/game-ready.model.glb",
+          "format": "glb",
+          "valid": true,
+          "triangles": 1620,
+          "meshRole": "game"
+        }
+      ]
+    },
+    "sourceTests": {
+      "rust": {
+        "passed": 208,
+        "failed": 0,
+        "ignored": 4
+      },
+      "frontendFull": {
+        "passed": 127,
+        "skipped": 3
+      },
+      "finalVerifier": {
+        "passed": 16
+      },
+      "browserWorkflows": {
+        "passed": 6
+      }
+    },
+    "licenseInventory": {
+      "target": "x86_64-pc-windows-msvc",
+      "npm": 20,
+      "cargo": 310,
+      "licenseTexts": 249,
+      "mplSourceArchives": 5,
+      "missing": 0
+    }
+  },
+  "updater": {
+    "manifestUrl": "https://github.com/oocheol/masset/releases/latest/download/latest.json",
+    "version": "0.1.8",
+    "payloadSignatureVerified": true,
+    "signedVersionVerified": true,
+    "tamperedPayloadRejected": true,
+    "versionReplayRejected": true,
+    "officialTauriPublicDownload": {
+      "bytes": 22499602,
+      "installerExecuted": false,
+      "payloadSignatureAndVersionVerified": true,
+      "plugin": "tauri-plugin-updater 2.13.1",
+      "publicMetadataChecked": true,
+      "sameVersionComparatorOverride": true,
+      "scope": "Actual official Tauri check/download of current public release; download verification only, no cross-version install",
+      "sha256": "5d0d974abf1991f645a6cbd960c3929b93d4043694e8e7ad5794254e7fd74214"
+    },
+    "manifestSha256": "6c8a0a3e564de2c1d3f5b8ee600f942fef0d164167f698b8fbf7aeb4049bbba2"
+  },
+  "mac": {
+    "version": "0.1.8",
+    "newBuildOrTest": false,
+    "updaterUnchanged": true,
+    "preservedAssets": [
+      {
+        "filename": "AssetStudio_0.1.8_macos-arm64.app.tar.gz",
+        "assetId": 611918468,
+        "bytes": 31314425,
+        "sha256": "95c9b7f3c81b0b27082a30f531c17c3639ddfd75ddd83ead88d12265d0ed3e00",
+        "unchanged": true
+      },
+      {
+        "filename": "AssetStudio_0.1.8_macos-arm64.app.tar.gz.sig",
+        "assetId": 611918469,
+        "bytes": 432,
+        "sha256": "ce0aca0a96b495ff1df5e46b3334163806c8637021e859e50104038a767cdcf5",
+        "unchanged": true
+      },
+      {
+        "filename": "AssetStudio_0.1.8_macos-arm64.dmg",
+        "assetId": 611918471,
+        "bytes": 34515783,
+        "sha256": "f0b15569c67aaf41f4a31b262a31fccc1a6b3f7f26257ac3565864ad8d2ad176",
+        "unchanged": true
+      },
+      {
+        "filename": "install-macos.sh",
+        "assetId": 611918467,
+        "bytes": 6291,
+        "sha256": "d4c56620274ce0a6238027883e42a46f6f3192d6e452958707f2936c886f4696",
+        "unchanged": true
+      },
+      {
+        "filename": "latest-macos.json",
+        "assetId": 611918498,
+        "bytes": 1260,
+        "sha256": "6431b3221084a582b44cd663d44316cd920e89e7a122c7a25cc905649af32467",
+        "unchanged": true
+      },
+      {
+        "filename": "v0.1.8-distribution.json",
+        "assetId": 611923491,
+        "bytes": 3419,
+        "sha256": "0ec9dd9a90a53be8b4da9e5c0e7f3236cc0c4cb7426a735685e039e8c18b7137",
+        "unchanged": true
+      }
+    ]
+  },
+  "boundaries": {
+    "windowsTripoSRReconstructionSupported": false,
+    "newExternalProviderRequests": 0,
+    "modelRuntimeDownloaded": false,
+    "userInstalledAppModified": false,
+    "installerExecuted": false,
+    "crossVersionInstallationVerified": false,
+    "cleanMachineVerified": false,
+    "macNativeEvidence": "docs/releases/v0.1.8-distribution.json",
+    "historicalWindowsProviderEvidenceVersion": "0.1.2"
+  },
+  "proofs": {
+    "portableNativeWindow": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/native-3d.qa.json",
+      "bytes": 1506,
+      "sha256": "a331d55b692139261d99cbf7964c26a18453bbfbb23b8e425dd1ace91e81e826"
+    },
+    "nsisResources": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/nsis-content-proof.json",
+      "bytes": 4627,
+      "sha256": "241344d38541482330c823d58dcd23b8e7ffe2e61ce52892640a055b80f65be9"
+    },
+    "nsisNativeWindow": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/nsis-native-window.qa.json",
+      "bytes": 1270,
+      "sha256": "ece4f8f00127c284a2931b3c9a1ad609910fea7427eb98ee8d2a3ae67687dd2c"
+    },
+    "nativeBackend": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/native-backend.qa.json",
+      "bytes": 1277,
+      "sha256": "37f58a62a652ee6a2cbcd2370dc0ece4806a72666d57bc169fa8f8c047807eff"
+    },
+    "preservedSource": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality3d-final/quality3d-source-proof.json",
+      "bytes": 886,
+      "sha256": "a66b2f2fcec41ff1eb92349ac37a8e625b6066e082984d2b6ac35b0c929b765d"
+    },
+    "copiedPersistedArtifacts": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality3d-reopen/persisted-artifact-copies.json",
+      "bytes": 6977,
+      "sha256": "26b2de1c141a0fb7be21bb87b5587d5d74fc7f1bf2c66dd9bce3fca87eabc6e4"
+    },
+    "lowBlenderReopen": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality3d-independent-low-reopen.json",
+      "bytes": 22966,
+      "sha256": "23cf19fc0aabfad833eff82e3fae7ff0382c0354888ec2f80477e29dc6f96ff1"
+    },
+    "restoredBlenderReopen": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality3d-independent-restored.json",
+      "bytes": 20980,
+      "sha256": "efbaa7bc9a0c58cade1d52ad1220350c497f7a8ec153ec66c80750ff55c62018"
+    },
+    "independentExport": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality3d-export-final-proof.json",
+      "bytes": 20147,
+      "sha256": "673367c53ca8df0430455f71f46febf32d463a997db80a854a5b7d1ed1af3da7"
+    },
+    "publicDownloads": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/public-downloads/public-download-proof.json",
+      "bytes": 2758,
+      "sha256": "b8656af6bf7b7c75ef7e4319f0752cc50c23aed76cccea1f2db327ac40a6dbf9"
+    },
+    "publicUpdater": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/public-update-proof/update-proof.json",
+      "bytes": 1219,
+      "sha256": "e88caef4377741b864095605158fba39f0e958e7ee938cd1f872ed245099578a"
+    },
+    "rustTests": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/final-cargo-test.log",
+      "bytes": 29814,
+      "sha256": "1570e1c5e72a5ab959a9de4b12a46f8d794a7cb991730c15a0e75cdfa7a692e2"
+    },
+    "frontendTests": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/final-npm-test.log",
+      "bytes": 10966,
+      "sha256": "e97195dc499ee2f59b7ebca67c65881a16e3ffc79e699dedf9f95305cb827c85"
+    },
+    "finalVerifierTests": {
+      "path": "output/windows-018/run-20261005-081744-799122ce/quality-verifier-tests.log",
+      "bytes": 275,
+      "sha256": "ed4980a546daeb805fe4e3cd4be82c08ffe4bf4f5077f9ccaac1bd59f03c1771"
+    }
+  }
+}

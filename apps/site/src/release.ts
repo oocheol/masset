@@ -1,12 +1,12 @@
 export const release = {
-  "version": "0.1.3",
-  "filename": "AssetStudio_0.1.3_x64-setup.exe",
+  "version": "0.1.8",
+  "filename": "AssetStudio_0.1.8_x64-setup.exe",
   "executable": "asset-desktop.exe",
-  "bytes": 20417597,
-  "sha256": "09bea559a57b4128174282687c60ee77d1da2eaba232d3c3733774b9db6a6241",
+  "bytes": 22499602,
+  "sha256": "5d0d974abf1991f645a6cbd960c3929b93d4043694e8e7ad5794254e7fd74214",
   "portableFilename": "AssetStudio-windows-x64-portable.zip",
-  "portableBytes": 9563536,
-  "portableSha256": "1599f9194f2928808031e38e8ba9826d23967ce49445336e7a4b101bb08531f5"
+  "portableBytes": 10642426,
+  "portableSha256": "11072a007c0a244ab1027ab298479f6470b22307d71f0290dfb2d567588de4a0"
 } as const;
 
 export type MacRelease = {
