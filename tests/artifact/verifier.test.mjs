@@ -32,21 +32,23 @@ function png(visible = true) {
   return PNG.sync.write(image);
 }
 
-function tetrahedronGlb(invalidIndex = false, invalidNormal = false) {
-  const binary = Buffer.alloc(152);
+function tetrahedronGlb(invalidIndex = false, invalidNormal = false, triangleCount = 4) {
+  const indexBytes = triangleCount * 6;
+  const binary = Buffer.alloc(128 + Math.ceil(indexBytes / 4) * 4);
   [0,0,0, 1,0,0, 0,1,0, 0,0,1].forEach((value, i) => binary.writeFloatLE(value, i * 4));
   [0,1,0, 0,1,0, 0,1,0, 0,1,0].forEach((value, i) => binary.writeFloatLE(value, 48 + i * 4));
   if (invalidNormal) binary.writeFloatLE(0.8, 52);
   [0,0, 1,0, 0,1, 1,1].forEach((value, i) => binary.writeFloatLE(value, 96 + i * 4));
-  [0,2,1, 0,1,3, 0,3,2, 1,2,invalidIndex ? 7 : 3].forEach((value, i) => binary.writeUInt16LE(value, 128 + i * 2));
+  const indices = [0,2,1, 0,1,3, 0,3,2, 1,2,invalidIndex ? 7 : 3];
+  for (let i = 0; i < triangleCount * 3; i++) binary.writeUInt16LE(indices[i % indices.length], 128 + i * 2);
   const gltf = {
     asset: {version: '2.0', generator: 'QA fixture; not a production model provider'},
     scenes: [{nodes: [0]}], scene: 0, nodes: [{mesh: 0}],
     meshes: [{primitives: [{attributes: {POSITION: 0, NORMAL: 1, TEXCOORD_0: 2}, indices: 3, material: 0}]}],
     materials: [{pbrMetallicRoughness: {baseColorFactor: [0.3,0.5,0.7,1], metallicFactor: 0, roughnessFactor: 0.6}}],
     buffers: [{byteLength: binary.length}],
-    bufferViews: [{buffer: 0, byteOffset: 0, byteLength: 48}, {buffer: 0, byteOffset: 48, byteLength: 48}, {buffer: 0, byteOffset: 96, byteLength: 32}, {buffer: 0, byteOffset: 128, byteLength: 24}],
-    accessors: [{bufferView: 0, componentType: 5126, count: 4, type: 'VEC3', min: [0,0,0], max: [1,1,1]}, {bufferView: 1, componentType: 5126, count: 4, type: 'VEC3'}, {bufferView: 2, componentType: 5126, count: 4, type: 'VEC2'}, {bufferView: 3, componentType: 5123, count: 12, type: 'SCALAR'}],
+    bufferViews: [{buffer: 0, byteOffset: 0, byteLength: 48}, {buffer: 0, byteOffset: 48, byteLength: 48}, {buffer: 0, byteOffset: 96, byteLength: 32}, {buffer: 0, byteOffset: 128, byteLength: indexBytes}],
+    accessors: [{bufferView: 0, componentType: 5126, count: 4, type: 'VEC3', min: [0,0,0], max: [1,1,1]}, {bufferView: 1, componentType: 5126, count: 4, type: 'VEC3'}, {bufferView: 2, componentType: 5126, count: 4, type: 'VEC2'}, {bufferView: 3, componentType: 5123, count: triangleCount * 3, type: 'SCALAR'}],
   };
   const encoded = Buffer.from(JSON.stringify(gltf));
   const json = Buffer.alloc(Math.ceil(encoded.length / 4) * 4, 32); encoded.copy(json);
@@ -61,6 +63,27 @@ async function add(root, manifest, name, bytes, format) {
   await writeFile(join(root, name), bytes);
   manifest.files.push({path: name, format, role: 'output', bytes: bytes.length, sha256: digest(bytes)});
   await writeFile(join(root, 'manifest.json'), JSON.stringify(manifest));
+}
+
+async function qualityBundle() {
+  const fixture = await bundle(png());
+  const artifacts = [];
+  for (const [role, triangles] of [['game', 4], ['high', 8], ['lod1', 3]]) {
+    const bytes = tetrahedronGlb(false, false, triangles);
+    await add(fixture.root, fixture.manifest, `${role}.glb`, bytes, 'glb');
+    const artifact = fixture.manifest.files.at(-1);
+    artifact.id = `${role}-id`;
+    artifact.role = role === 'high' ? 'source' : 'output';
+    artifacts.push(artifact);
+  }
+  const version = {id: 'quality-version', artifacts, settings: {
+    quality3dFiles: {game: 'game-id', high: 'high-id', lod1: 'lod1-id'},
+    qualityReport: {triangleCounts: {game: 4, highDetail: 8, lod1: 3}},
+  }};
+  const asset = {kind: 'model', activeVersionId: version.id, mesh: {triangles: 4, dimensions: [1, 1, 1]}, versions: [version]};
+  fixture.manifest.assets = [asset];
+  fixture.manifest.spec = {polygonBudget: 4};
+  return {...fixture, version, asset, save: () => writeFile(join(fixture.root, 'manifest.json'), JSON.stringify(fixture.manifest))};
 }
 
 describe('independent export artifact verifier', () => {
@@ -117,6 +140,40 @@ describe('independent export artifact verifier', () => {
     const normal = await bundle(png());
     await add(normal.root, normal.manifest, 'model.glb', tetrahedronGlb(false, true), 'glb');
     expect((await verifyArtifacts(normal.root)).files.find(item => item.path === 'model.glb').error).toMatch(/non-unit normal/);
+  });
+
+  it('checks game, high-detail and LOD counts separately while preserving the high-detail source above the game budget', async () => {
+    const fixture = await qualityBundle();
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.valid).toBe(true);
+    expect(report.files.filter(file => file.meshRole).map(file => [file.meshRole, file.mesh.triangles])).toEqual([['game', 4], ['high', 8], ['lod1', 3]]);
+  });
+
+  it.each(['game', 'highDetail', 'lod1'])('rejects a wrong %s count despite matching artifact hashes', async role => {
+    const fixture = await qualityBundle();
+    fixture.version.settings.qualityReport.triangleCounts[role]++;
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.valid).toBe(false);
+    expect(report.files.some(file => /quality metadata/.test(file.error ?? ''))).toBe(true);
+  });
+
+  it('still checks the active game mesh against asset metadata', async () => {
+    const fixture = await qualityBundle();
+    fixture.asset.mesh.triangles = 3;
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.files.find(file => file.path === 'game.glb').error).toMatch(/asset metadata/);
+  });
+
+  it.each(['missing-id', 'game-id'])('rejects missing or duplicated LOD role references: %s', async id => {
+    const fixture = await qualityBundle();
+    fixture.version.settings.quality3dFiles.lod1 = id;
+    await fixture.save();
+    const report = await verifyArtifacts(fixture.root);
+    expect(report.valid).toBe(false);
+    expect(report.files.some(file => /role/.test(file.error ?? ''))).toBe(true);
   });
 
   it('compares atlas frame coordinates against decoded source pixels', async () => {

@@ -175,6 +175,23 @@ function declarations(manifest) {
   return [...entries.values()];
 }
 
+function qualityMeshDeclaration(entry) {
+  const settings = entry.version?.settings;
+  const files = settings?.quality3dFiles;
+  if (files === undefined) return null;
+  const roles = ['game', 'high', 'lod1'];
+  if (!files || roles.some(role => typeof files[role] !== 'string') || new Set(roles.map(role => files[role])).size !== 3) fail('Invalid quality GLB role declarations');
+  for (const role of roles) {
+    const artifact = entry.version.artifacts.find(candidate => candidate.id === files[role]);
+    if (artifact?.format !== 'glb' || artifact.role !== (role === 'high' ? 'source' : 'output')) fail('Quality GLB role references a missing or incompatible artifact');
+  }
+  const role = roles.find(role => files[role] === entry.id);
+  if (!role) fail('Quality GLB has no declared mesh role');
+  const triangles = settings.qualityReport?.triangleCounts?.[role === 'high' ? 'highDetail' : role];
+  if (!Number.isSafeInteger(triangles) || triangles < 1) fail('Quality GLB triangle count is missing');
+  return {role, triangles};
+}
+
 function atlasFrames(metadata) {
   if (Array.isArray(metadata.frames)) return metadata.frames.map((entry) => ({...entry, rect: entry.frame ?? entry.rect ?? entry}));
   if (metadata.frames && typeof metadata.frames === 'object') return Object.entries(metadata.frames).map(([name, entry]) => ({name, ...entry, rect: entry.frame ?? entry.rect ?? entry}));
@@ -252,10 +269,17 @@ export async function verifyArtifacts(input) {
         if (image.borderPixels && entry.role === 'output' && entry.asset?.kind !== 'model') report.warnings.push(`${entry.path}: visible border pixels; inspect intentional tiling/crop separately`);
       } else if (format === 'glb') {
         const model = await inspectGlb(bytes); item.mesh = model; item.checks.push('independent-gltf-loader', 'triangle-nonplanar-geometry', 'indices-checked-when-present', 'finite-normals-uv', 'materials');
-        const declared = entry.active ? entry.asset?.mesh : null;
+        const quality = qualityMeshDeclaration(entry);
+        if (quality) {
+          if (quality.triangles !== model.triangles) fail(`GLB triangle count differs from ${quality.role} quality metadata`);
+          item.meshRole = quality.role;
+          item.checks.push('quality-role-triangle-count');
+        }
+        // Asset mesh metadata describes the active game mesh, not its high-detail source or LOD.
+        const declared = entry.active && (!quality || quality.role === 'game') ? entry.asset?.mesh : null;
         if (declared && declared.triangles !== model.triangles) fail('GLB triangle count differs from asset metadata');
         if (declared?.dimensions && model.dimensions.some((value, i) => Math.abs(value-declared.dimensions[i]) > Math.max(...declared.dimensions)*1e-4)) fail('GLB dimensions differ from asset metadata');
-        if (manifest.spec?.polygonBudget && model.triangles > manifest.spec.polygonBudget) fail('GLB exceeds the export polygon budget');
+        if (entry.role !== 'source' && manifest.spec?.polygonBudget && model.triangles > manifest.spec.polygonBudget) fail('GLB exceeds the export polygon budget');
         if (model.degenerateTriangles) report.warnings.push(`${entry.path}: ${model.degenerateTriangles} degenerate triangles`);
       } else if (format === 'json') {
         if (bytes.length > MAX_MANIFEST_BYTES) fail('Metadata exceeds 16 MiB');
