@@ -5,6 +5,30 @@ edition.workspace = true
 license.workspace = true
 default-run = "asset-desktop"
 
+[features]
+# Required explicitly for developer proofs; the Tauri bundler excludes them.
+native-proof = []
+
+[[bin]]
+name = "codex-setup-proof"
+path = "src/bin/codex-setup-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "image3d-proof"
+path = "src/bin/image3d-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "provider-proof"
+path = "src/bin/provider-proof.rs"
+required-features = ["native-proof"]
+
+[[bin]]
+name = "update-proof"
+path = "src/bin/update-proof.rs"
+required-features = ["native-proof"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 

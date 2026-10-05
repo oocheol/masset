@@ -89,7 +89,10 @@ try {
     }
     $qaCliVersion = (Get-Content -Raw -LiteralPath (Join-Path $qaWorkspace 'node_modules\@tauri-apps\cli\package.json') | ConvertFrom-Json).version
     if ($Distribution -eq 'Nsis' -and $qaCliVersion -ne '2.12.1') { throw 'The NSIS download inventory is pinned to Tauri CLI 2.12.1; update its source/version/hash record before using a different CLI.' }
-    Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-cli', '--release')
+    # Build the shipped binaries once with embedded production assets. Proof
+    # executables are built explicitly by QA; they are not installer programs.
+    Invoke-Checked 'npm.cmd' @('run', 'build')
+    Invoke-Checked 'cargo.exe' @('build', '-p', 'asset-desktop', '--bin', 'asset-desktop', '--bin', 'asset-cli', '--release', '--features', 'tauri/custom-protocol')
     $qaBundleDirectory = Join-Path $qaWorkspace 'target\release\bundle\nsis'
     $qaBeforeBundles = @{}
     if (Test-Path -LiteralPath $qaBundleDirectory) {
@@ -103,8 +106,14 @@ try {
         $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = ''
     }
     if ($Distribution -eq 'Nsis' -and -not $env:TAURI_SIGNING_PRIVATE_KEY) { throw 'A private updater signing key is required for an update-enabled NSIS release.' }
-    if ($Distribution -eq 'Portable') { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--no-bundle') }
-    else { Invoke-Checked 'npm.cmd' @('run', 'desktop:build', '--', '--bundles', 'nsis') }
+    if ($Distribution -eq 'Nsis') {
+        Invoke-Checked 'npm.cmd' @('run', 'tauri', '--workspace', '@local-assets/desktop', '--', 'bundle', '--bundles', 'nsis')
+        $qaInstallerScript = Join-Path $qaWorkspace 'target\release\nsis\x64\installer.nsi'
+        $qaInstallerScriptText = Get-Content -Raw -LiteralPath $qaInstallerScript
+        if ($qaInstallerScriptText -match '(?im)^\s*File\b[^\r\n]*\b(?:codex-setup-proof|image3d-proof|provider-proof|update-proof)\.exe\b') {
+            throw 'Developer proof executables must not be included in a public installer.'
+        }
+    }
     $qaAfterBuildPlanText = & 'node.exe' (Join-Path $qaWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $qaWorkspace '--plan' '--expected-plan' $qaFrozenResourcePath '--check-windows-notices'
     if ($LASTEXITCODE -ne 0) { throw 'Resource sources/configuration or Windows notices changed during the native build. Preserve this failed build; do not package it.' }
     $qaResourceManifest = $qaAfterBuildPlanText | ConvertFrom-Json
