@@ -92,6 +92,9 @@
     "published": true,
     "publicDownloadsVerified": true,
     "latest": true,
-    "siteDeployed": false
+    "siteDeployed": true,
+    "siteUrl": "https://masset-nu.vercel.app",
+    "siteDeployment": "https://masset-imr3sf7qd-oocheols-projects.vercel.app",
+    "desktopAndMobileButtonsVerified": true
   }
 }
