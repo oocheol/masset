@@ -1,7 +1,7 @@
 import {useEffect, useId, useRef, useState} from 'react';
 import type {FormEvent} from 'react';
 import {AlertTriangle, ArrowRight, Box, Check, CheckCircle2, Download, FileImage, FolderOpen, Layers, Link2, LoaderCircle, RefreshCw, Sparkles, Square} from 'lucide-react';
-import type {Artifact, Asset, GameProjectScan, Local3DStatus, ProductionItemResult, ProductionPlan, ProductionRun, ProductionState, ProjectSnapshot, ProviderConnection} from '@local-assets/contracts';
+import type {Artifact, Asset, GameProjectScan, Job, Local3DStatus, ProductionItemResult, ProductionPlan, ProductionRun, ProductionState, ProjectSnapshot, ProviderConnection} from '@local-assets/contracts';
 import {artifactUrl, chooseFolder, chooseImports, command, isNative} from '../lib/bridge';
 import './ProductionHome.css';
 
@@ -93,6 +93,16 @@ function activeRun(run: ProductionRun) {
   return run.status === 'pending' || run.status === 'running' || run.items.some(item => item.status === 'pending' || item.status === 'running');
 }
 
+function taskProgress(task: Job): string {
+  if (task.status === 'ready') return '제작 차례 대기';
+  if (task.status === 'pending') return '선행 작업 완료 대기';
+  if (task.status === 'retry_wait') return '다시 시도할 차례 대기';
+  if (task.progress.stage === 'dispatching_external') return 'GPT 요청 준비 중';
+  if (task.progress.stage === 'external_submitted') return 'GPT 응답 대기 중';
+  return /[가-힣]/.test(task.progress.stage) ? safeText(task.progress.stage, '제작 중', 160)
+    : task.kind === 'production_model' ? '3D 변환 중' : '제작 중';
+}
+
 function Thumbnail({snapshot, asset, preview, kind}: {snapshot: ProjectSnapshot; asset?: Asset; preview?: Artifact; kind: Asset['kind']}) {
   const file = preview ?? (asset ? currentFiles(asset).preview : undefined);
   const url = artifactUrl(snapshot, file);
@@ -109,6 +119,8 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   const jobsKey = JSON.stringify(snapshot.project.jobs.map(job => [job.id, job.status, job.assetId, job.finishedAt, job.progress.stage, job.progress.completed, job.progress.total]));
   const [state, setState] = useState<ProductionState>(EMPTY_STATE);
   const [loaded, setLoaded] = useState(false);
+  const [skillInstalling, setSkillInstalling] = useState(false);
+  const [skillNotice, setSkillNotice] = useState('');
   const [brief, setBrief] = useState('');
   const [output, setOutput] = useState<Output>('mixed');
   const [referenceIds, setReferenceIds] = useState<string[]>([]);
@@ -405,12 +417,13 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     document.querySelector<HTMLTextAreaElement>('.production-brief textarea')?.focus();
   }
 
-  async function runAction(action: 'production_review' | 'production_retry' | 'production_cancel', run: ProductionRun, item?: ProductionItemResult) {
+  async function runAction(action: 'production_review' | 'production_retry' | 'production_cancel' | 'production_continue', run: ProductionRun, item?: ProductionItemResult) {
     const name = `${action}:${run.id}:${item?.id ?? ''}`;
     const asset = item?.assetId ? snapshot.project.assets.find(candidate => candidate.id === item.assetId) : undefined;
     if (action === 'production_review' && (!item || item.status !== 'completed' || item.review === 'approved' || !asset || !currentFiles(asset).output)) return;
     if (action === 'production_retry' && (!item || !['needs_attention', 'cancelled'].includes(item.status) || (item.kind === 'model' && !localReady))) return;
     if (action === 'production_cancel' && !activeRun(run)) return;
+    if (action === 'production_continue' && !run.blockedBy?.canContinue) return;
     if (!begin(name)) return;
     const captured = scope;
     try {
@@ -418,11 +431,14 @@ export default function ProductionHome({snapshot, native, connection, providerCh
         const next = await command<ProductionState>({action, runId: run.id, itemId: item!.id, approved: true});
         if (currentScope(captured)) acceptState(next);
       } else {
-        const next = await command<ProductionResponse>(item ? {action, runId: run.id, itemId: item.id} : {action, runId: run.id});
+        const next = await command<ProductionResponse>(action === 'production_continue'
+          ? {action, runId: run.id, acknowledgeUnconfirmedRequests: true}
+          : item ? {action, runId: run.id, itemId: item.id} : {action, runId: run.id});
         acceptResult(next, captured);
       }
     } catch (cause) {if (currentScope(captured)) setError(safeError(cause, action === 'production_review' ? '검수 승인을 저장하지 못했습니다. 다시 시도하세요.'
-      : action === 'production_retry' ? '다시 제작 요청을 확인하지 못했습니다. 현재 상태를 다시 확인하세요.' : '제작 취소를 확인하지 못했습니다. 현재 상태를 다시 확인하세요.'));}
+      : action === 'production_retry' ? '다시 제작 요청을 확인하지 못했습니다. 현재 상태를 다시 확인하세요.'
+      : action === 'production_continue' ? '대기 중인 제작을 계속하지 못했습니다. 현재 상태를 다시 확인하세요.' : '제작 취소를 확인하지 못했습니다. 현재 상태를 다시 확인하세요.'));}
     finally {finish(captured, name);}
   }
 
@@ -442,6 +458,15 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   }
 
   const readyLabel = !desktop ? '데스크톱 전용' : providerChecking ? '연결 확인 중' : providerReady ? '연결 준비됨' : '연결 필요';
+  async function installCodexSkill() {
+    if (!desktop || skillInstalling) return;
+    setSkillInstalling(true); setSkillNotice('');
+    try {
+      const result = await command<{installed: boolean}>({action: 'codex_skill_install'});
+      setSkillNotice(result.installed ? '스킬을 설치했습니다. Codex의 새 작업에서 $asset-studio와 함께 게임을 요청하세요.' : '스킬 설치 상태를 확인하지 못했습니다.');
+    } catch {setSkillNotice('스킬을 설치하지 못했습니다. 기존 스킬의 수정 여부와 최신 앱 설치 상태를 확인하세요.');}
+    finally {setSkillInstalling(false);}
+  }
   return <section className="production-home" aria-label="에셋 제작 홈">
     <div className="production-home-inner">
       <header className="production-hero">
@@ -451,6 +476,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
           <button className="production-button" type="button" onClick={onProvider} disabled={!desktop || working || providerChecking}>{providerChecking ? <LoaderCircle className="production-spin" size={18}/> : <Link2 size={18}/>} {providerReady ? 'GPT 연결 확인' : 'GPT 연결하기'}<ArrowRight size={16}/></button>
         </aside>
       </header>
+      <aside className="production-codex" aria-label="Codex 게임 제작 연결">
+        <div><strong>Codex로 게임을 만들고 있나요?</strong><p>필요한 에셋 제작부터 게임에 넣고 실행하는 작업까지 이어가세요.</p>{skillNotice && <p role="status">{skillNotice}</p>}</div>
+        <button className="production-button" type="button" disabled={!desktop || skillInstalling} onClick={() => void installCodexSkill()}>{skillInstalling ? <LoaderCircle className="production-spin" size={18}/> : <Link2 size={18}/>} Codex 스킬 설치</button>
+      </aside>
 
       <ol className="production-steps" aria-label="제작 순서"><li><span>1</span>프로젝트 연결</li><li><span>2</span>게임 설명</li><li><span>3</span>제작하고 검수</li></ol>
       {!desktop && <p className="production-message" role="status">분석과 제작은 데스크톱 앱에서 연결 상태를 확인한 뒤 사용할 수 있습니다.</p>}
@@ -532,12 +561,18 @@ export default function ProductionHome({snapshot, native, connection, providerCh
         {!state.runs.length && <p className="production-results-empty">{!desktop ? '데스크톱 앱에서 제작한 결과를 확인하세요.' : loadError ? '제작 기록을 확인하려면 상태를 다시 불러오세요.' : !loaded ? '저장된 제작 기록을 불러오는 중입니다.' : '제작을 시작하면 실제 결과 파일이 여기에 모입니다.'}</p>}
         {state.runs.map(run => <article key={run.id} className="production-run production-surface" aria-label={`제작 기록 ${safeText(run.brief, '게임 에셋 제작', 100)}`}><header className="production-heading"><div><h3>{safeText(run.brief, '게임 에셋 제작', 180)}</h3><p className="production-muted">{STATUS_LABELS[run.status]} · 제작 완료 {run.items.filter(item => item.status === 'completed').length}/{run.items.length}개 · 검수 승인 {run.items.filter(item => item.review === 'approved').length}개</p></div>
           {activeRun(run) && <button type="button" className="production-button" disabled={!desktop || working} onClick={() => void runAction('production_cancel', run)}><Square size={16}/>제작 취소</button>}</header>
+          {run.blockedBy?.reason === 'unconfirmed_external' && <div className="production-message warning" role="status">
+            <p>이전 GPT 요청 {run.blockedBy.requestCount}건의 결과를 확인하지 못해 새 제작이 대기 중입니다. 계속하면 대기 중인 에셋을 제작합니다. 이전 요청은 다시 제출하지 않으며, 늦게 결과가 도착할 수 있습니다.</p>
+            {!run.blockedBy.canContinue && <p>이전 요청의 로컬 작업이 종료되는 중입니다.</p>}
+            <button type="button" className="production-button" disabled={!desktop || working || !run.blockedBy.canContinue} onClick={() => void runAction('production_continue', run)}><ArrowRight size={16}/>대기 중인 제작 계속</button>
+          </div>}
           <p className="production-saved-folder"><FolderOpen size={17}/><span>저장 폴더<span className="production-path">{safeText(run.outputRoot, '저장 위치를 확인하세요.', 1200)}</span></span></p>
           <div className="production-gallery">{run.items.map(item => {
             const asset = snapshot.project.assets.find(candidate => candidate.id === item.assetId);
             const files = asset ? currentFiles(asset) : undefined;
             const inspectable = !!asset && !!files?.output;
-            const task = snapshot.project.jobs.find(job => item.jobIds.includes(job.id) && ['running', 'ready', 'retry_wait', 'pending'].includes(job.status));
+            const itemJobs = snapshot.project.jobs.filter(job => item.jobIds.includes(job.id));
+            const task = itemJobs.find(job => job.status === 'running') ?? itemJobs.find(job => ['ready', 'retry_wait', 'pending'].includes(job.status));
             const progress = task?.progress;
             const counts = progress && typeof progress.completed === 'number' && typeof progress.total === 'number'
               && Number.isFinite(progress.completed) && Number.isFinite(progress.total) && progress.completed >= 0 && progress.total > 0
@@ -545,7 +580,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             return <article className="production-result" key={item.id} aria-label={`${safeText(item.name, '제작 에셋')} 제작 결과`}>
               <button type="button" className="production-result-preview" aria-label={`${safeText(item.name, '제작 에셋')} 결과 살펴보기`} disabled={!inspectable || working} onClick={() => {if (asset && inspectable) onInspect(asset);}}><Thumbnail snapshot={snapshot} asset={inspectable ? asset : undefined} kind={item.kind}/><span>결과 살펴보기<ArrowRight size={16}/></span></button>
               <div className="production-result-info"><div className="production-heading"><strong>{safeText(item.name, '제작 에셋')}</strong><span className="production-badge">{KIND_LABELS[item.kind]}</span></div><p className="production-item-status" role="status">{item.review === 'approved' ? <CheckCircle2 size={16}/> : item.status === 'running' ? <LoaderCircle size={16} className="production-spin"/> : null}{STATUS_LABELS[item.status]}{item.review === 'approved' ? ' · 검수 승인됨' : item.status === 'completed' ? ' · 검수 대기' : ''}</p>
-                {progress && ['pending', 'running'].includes(item.status) && <p className="production-job-progress production-muted" role="status">{/[가-힣]/.test(progress.stage) ? safeText(progress.stage, '제작 진행 중', 160) : '제작 진행 중'}{counts ? ` · ${counts}` : ''}</p>}
+                {task && ['pending', 'running'].includes(item.status) && <p className="production-job-progress production-muted" role="status">{taskProgress(task)}{counts ? ` · ${counts}` : ''}</p>}
                 {files?.version?.validation?.valid && files.output && <p className="production-muted">파일 검증 완료</p>}
                 {item.status === 'completed' && !inspectable && <p className="production-muted">결과 파일을 확인하는 중입니다. 상태를 다시 확인하세요.</p>}
                 {item.error && <p className="production-item-error">{safeText(item.error, '이 에셋의 제작에 확인이 필요합니다. 현재 상태를 확인한 뒤 다시 시도하세요.')}</p>}

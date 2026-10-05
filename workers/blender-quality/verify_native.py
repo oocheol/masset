@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import sys
 from datetime import datetime, timezone
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from audit import GLB, artifact, blender_filename, filesystem_path, image_dimensions, verify_source
 import bpy

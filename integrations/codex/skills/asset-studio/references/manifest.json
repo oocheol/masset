@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "brief": "An original stylized tactical game set in an abandoned frontier mine.",
+  "artDirection": "Readable stylized silhouettes, worn teal metal, warm amber details, consistent three-quarter camera and soft light.",
+  "items": [
+    {"name": "QuietPistol", "kind": "model", "description": "One compact rigid sci-fi pistol, entire object visible, no hands or stand.", "purpose": "Quiet weapon pickup and inventory prop"},
+    {"name": "ReloadIcon", "kind": "sprite", "description": "One simple amber reload symbol on a transparent background, no text.", "purpose": "Mobile reload button"}
+  ]
+}

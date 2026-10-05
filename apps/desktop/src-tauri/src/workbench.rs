@@ -35,6 +35,7 @@ pub struct Backend {
 }
 struct Inner {
     data: PathBuf,
+    runtime_data: PathBuf,
     examples: PathBuf,
     worker: PathBuf,
     blender: Option<PathBuf>,
@@ -63,8 +64,18 @@ struct Runner {
 
 impl Backend {
     pub fn new(data: PathBuf, examples: PathBuf, worker: PathBuf) -> Self {
+        Self::with_runtime_data(data.clone(), examples, worker, data)
+    }
+    /// Headless clients own their metadata/session directory, while reusing the
+    /// desktop's verified local runtimes. No credentials are copied here.
+    pub fn with_runtime_data(
+        data: PathBuf,
+        examples: PathBuf,
+        worker: PathBuf,
+        runtime_data: PathBuf,
+    ) -> Self {
         let codex_installer =
-            asset_providers::installer::CodexInstaller::new(data.join("codex-runtimes"));
+            asset_providers::installer::CodexInstaller::new(runtime_data.join("codex-runtimes"));
         let blender = find_blender();
         let blender_version = blender.as_deref().and_then(blender_version);
         let worker_sha256 = asset_core::sha256_file(&worker).ok().map(|result| result.0);
@@ -77,6 +88,7 @@ impl Backend {
         Self {
             inner: Arc::new(Inner {
                 data,
+                runtime_data,
                 examples,
                 worker,
                 blender,
@@ -142,6 +154,9 @@ impl Backend {
                 thread::sleep(Duration::from_millis(150));
             }
         });
+    }
+    pub fn workers_idle(&self) -> bool {
+        self.inner.runners.lock().unwrap().is_empty()
     }
     fn finish_job(&self, root: &Path, task: &Job, outcome: Result<()>) {
         let completion_guard = self.inner.io.lock().unwrap();
@@ -363,6 +378,29 @@ impl Backend {
             bail!("작업 백엔드가 종료되었습니다. 앱을 다시 열어 주세요.");
         }
         match action {
+            "codex_skill_install" => {
+                let resources = self
+                    .inner
+                    .worker
+                    .parent()
+                    .and_then(Path::parent)
+                    .and_then(Path::parent)
+                    .context("앱 리소스 경로가 없습니다.")?;
+                let executable = std::env::current_exe()?;
+                let cli =
+                    executable
+                        .parent()
+                        .context("CLI 경로가 없습니다.")?
+                        .join(if cfg!(windows) {
+                            "asset-cli.exe"
+                        } else {
+                            "asset-cli"
+                        });
+                if !cli.is_file() {
+                    bail!("Codex CLI가 포함된 최신 앱을 설치해 주세요.");
+                }
+                crate::agent_cli::install_codex_skill(resources, &self.inner.runtime_data, &cli)
+            }
             "environment" => Ok(serde_json::to_value(EnvironmentInfo {
                 blender_path: self
                     .inner
@@ -374,10 +412,16 @@ impl Backend {
                 native: true,
             })?),
             "quality3d" => self.enqueue_quality3d(&request),
-            "game_connect" | "production_state" | "production_plan" | "production_start"
-            | "production_review" | "production_retry" | "production_cancel" => {
-                self.production_request(&request)
-            }
+            "game_connect"
+            | "production_state"
+            | "production_verify"
+            | "production_plan"
+            | "production_manifest"
+            | "production_start"
+            | "production_review"
+            | "production_retry"
+            | "production_cancel"
+            | "production_continue" => self.production_request(&request),
             "bootstrap" => {
                 let _initialize = self.inner.initialize.lock().unwrap();
                 if self.current_root().is_none() {
@@ -1221,6 +1265,7 @@ impl Backend {
             .arg("--style-file")
             .arg(&style_file)
             .env_clear()
+            .env("PYTHONDONTWRITEBYTECODE", "1")
             .stdout(stdout)
             .stderr(stderr);
         for key in [
@@ -1905,6 +1950,7 @@ mod lifecycle_tests {
             let backend = Backend {
                 inner: Arc::new(Inner {
                     data: directory.join("appdata"),
+                    runtime_data: directory.join("appdata"),
                     examples: directory.join("unused-examples"),
                     worker: directory.join("unused-worker.py"),
                     blender: None,

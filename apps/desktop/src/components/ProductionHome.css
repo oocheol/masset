@@ -35,6 +35,10 @@
 .production-provider strong { display: flex; align-items: center; gap: 8px; font-size: 16px; }
 .production-provider p { color: var(--ph-muted); margin: 12px 0 18px; font-size: 14px; }
 .production-provider .production-button { width: 100%; }
+.production-codex { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px; border: 1px solid var(--ph-line); border-radius: 16px; background: var(--ph-surface); }
+.production-codex strong { font-size: 16px; }
+.production-codex p { margin: 8px 0 0; color: var(--ph-muted); font-size: 14px; }
+.production-codex .production-button { flex-shrink: 0; }
 .production-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; min-width: 0; }
 .production-heading > div { min-width: 0; }
 .production-badge { display: inline-flex; align-items: center; flex: none; padding: 3px 9px; border: 1px solid var(--ph-line); color: var(--ph-muted); border-radius: 8px; line-height: 1.5; }

@@ -115,6 +115,12 @@ Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이
 
 [Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.8 검증 기록](docs/releases/v0.1.8-macos.md) · [Windows 0.1.8 검증 기록](docs/releases/v0.1.8-windows.md)
 
+## Codex로 게임을 만들며 에셋 제작하기 · 0.1.10 소스
+
+**CLI + Codex 스킬**을 추가했습니다. 앱의 **Codex 스킬 설치**를 한 번 실행한 뒤 Codex에 `$asset-studio 게임을 만들어줘`라고 요청하면, 기존 프로젝트와 필요한 개별 에셋 목록을 바탕으로 제작·엔진 반영·실행 검증을 이어가도록 안내합니다. 무기 5개는 독립 항목 5개로 제작합니다. 별도 MCP 서버나 유료 API 키가 필요하지 않습니다. 공개 다운로드 0.1.8에는 아직 이 기능이 없습니다.
+
+[설치·CLI·방식 비교](docs/codex-integration.md) · [Mac 검증 결과와 미검증 범위](docs/codex-integration-validation.md) · [배포용 스킬 플러그인](integrations/codex/plugin.json)
+
 ## 게임 설명에서 제작과 검수까지 · Windows·Mac 0.1.8
 
 1. **GPT 구독 연결** — 공식 계정과 연결 상태를 확인합니다.

@@ -9,6 +9,13 @@ use std::{
 };
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) != Some("--smoke") {
+        if let Err(error) = asset_desktop::agent_cli::run(&args[1..]) {
+            println!("{}", json!({"type":"error","message":error.to_string()}));
+            std::process::exit(1);
+        }
+        return Ok(());
+    }
     if args.len() < 3 || args[1] != "--smoke" {
         bail!("Usage: asset-cli --smoke <new-output-directory> [--with-blender]")
     }

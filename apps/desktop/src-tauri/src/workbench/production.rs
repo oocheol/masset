@@ -344,7 +344,7 @@ fn planning_project_context(scan: &Value) -> Result<Value> {
 fn validate_plan(plan: &Plan, project: &Project) -> Result<()> {
     if plan.schema_version != 1
         || plan.project_id != project.id
-        || plan.planner_model != "gpt-5.5"
+        || !["gpt-5.5", "codex-manifest"].contains(&plan.planner_model.as_str())
         || plan.mode != "new"
         || !["images", "models", "mixed"].contains(&plan.output.as_str())
         || plan.items.is_empty()
@@ -375,6 +375,10 @@ fn validate_plan(plan: &Plan, project: &Project) -> Result<()> {
             || !ids.insert(&item.id)
             || item.target_asset_id.is_some()
             || item.model_parameters.is_some()
+            || !matches!(
+                item.kind,
+                AssetKind::Image | AssetKind::Sprite | AssetKind::Texture | AssetKind::Model
+            )
             || item.prompt.len() > 8192
             || item.purpose.is_empty()
             || item.purpose.len() > 2048
@@ -492,10 +496,7 @@ fn item_status(jobs: &[&Job]) -> &'static str {
         "completed"
     } else if jobs.iter().any(|j| j.status == JobStatus::Cancelled) {
         "cancelled"
-    } else if jobs
-        .iter()
-        .any(|j| matches!(j.status, JobStatus::Running | JobStatus::Succeeded))
-    {
+    } else if jobs.iter().any(|j| j.status == JobStatus::Running) {
         "running"
     } else {
         "pending"
@@ -555,6 +556,38 @@ impl Backend {
         let root = self.root()?;
         match text_field(request, "action")? {
             "production_state" => self.production_state(&root),
+            "production_verify" => {
+                let _io = self.inner.io.lock().unwrap();
+                let id = text_field(request, "runId")?;
+                let run: Run = read_json(&run_path(&root, id)?)?;
+                let jobs = SchedulerStore::open(&root.join("scheduler.sqlite"))?.jobs()?;
+                let project = Repository::open(&root)?.project()?;
+                let mut verified = 0;
+                for item in run.plan.items.iter().filter(|i| i.enabled) {
+                    let actual: Vec<_> = jobs
+                        .iter()
+                        .filter(|j| {
+                            j.payload.get("productionRunId") == Some(&json!(id))
+                                && j.payload.get("productionItemId") == Some(&json!(item.id))
+                        })
+                        .collect();
+                    if item_status(&actual) != "completed" {
+                        bail!("모든 에셋 제작이 완료된 뒤 전달 파일을 검증할 수 있습니다.");
+                    }
+                    let final_job = actual
+                        .iter()
+                        .find(|j| j.payload.get("productionDeliver") == Some(&json!(true)))
+                        .context("전달 작업이 없습니다.")?;
+                    verify_delivery(
+                        final_job,
+                        asset_for_job(&project, &final_job.id)
+                            .context("전달 결과가 없습니다.")?
+                            .1,
+                    )?;
+                    verified += 1;
+                }
+                Ok(json!({"verified":true,"runId":id,"items":verified,"gameBuildVerified":false}))
+            }
             "game_connect" => {
                 let game = PathBuf::from(text_field(request, "root")?);
                 no_links(&game)?;
@@ -572,7 +605,9 @@ impl Backend {
                 self.production_state(&root)
             }
             "production_plan" => self.plan_production(&root, request),
+            "production_manifest" => self.import_production_manifest(&root, request),
             "production_start" => self.start_production(&root, request),
+            "production_continue" => self.continue_production(&root, request),
             "production_review" => {
                 let _io = self.inner.io.lock().unwrap();
                 let id = text_field(request, "runId")?;
@@ -627,7 +662,17 @@ impl Backend {
         let _io = self.inner.io.lock().unwrap();
         let state = load_state(root)?;
         let project = Repository::open(root)?.project()?;
-        let jobs = SchedulerStore::open(&root.join("scheduler.sqlite"))?.jobs()?;
+        let queue = SchedulerStore::open(&root.join("scheduler.sqlite"))?;
+        let jobs = queue.jobs()?;
+        let unresolved: Vec<_> = jobs
+            .iter()
+            .filter(|j| asset_scheduler::holds_unknown_external_slot(j))
+            .collect();
+        let admission_blocked = !unresolved.is_empty()
+            && queue.running_resources()?.external_jobs >= self.inner.limits.external_jobs;
+        let can_continue = unresolved
+            .iter()
+            .all(|j| !self.inner.runners.lock().unwrap().contains_key(&j.id));
         let mut runs = Vec::new();
         for id in state.run_ids.iter().rev().take(20) {
             let run: Run = read_json(&run_path(root, id)?)?;
@@ -661,9 +706,119 @@ impl Backend {
             } else {
                 "pending"
             };
-            runs.push(json!({"id":run.id,"planId":run.plan.id,"brief":run.plan.brief,"createdAt":run.created_at,"outputRoot":run.output_root,"status":status,"items":items}));
+            let ready_external = jobs.iter().any(|j| {
+                j.payload.get("productionRunId") == Some(&json!(id))
+                    && j.resource == JobResource::External
+                    && j.status == JobStatus::Ready
+            });
+            let blocked_by = (admission_blocked && ready_external).then(|| json!({
+                "reason":"unconfirmed_external", "requestCount":unresolved.len(), "canContinue":can_continue
+            }));
+            runs.push(json!({"id":run.id,"planId":run.plan.id,"brief":run.plan.brief,"createdAt":run.created_at,"outputRoot":run.output_root,"status":status,"items":items,"blockedBy":blocked_by}));
         }
         Ok(json!({"connection":state.connection,"plan":state.plan,"runs":runs}))
+    }
+
+    // Codex already has the game's requirements. A bounded declarative list
+    // avoids a second planner call and preserves the exact individual items.
+    fn import_production_manifest(&self, root: &Path, request: &Value) -> Result<Value> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct ManifestItem {
+            name: String,
+            kind: AssetKind,
+            description: String,
+            purpose: String,
+        }
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Manifest {
+            schema_version: u32,
+            brief: String,
+            art_direction: String,
+            items: Vec<ManifestItem>,
+        }
+        let manifest: Manifest = serde_json::from_value(request["manifest"].clone())?;
+        if manifest.schema_version != 1
+            || manifest.brief.trim().is_empty()
+            || manifest.brief.len() > 16000
+            || manifest.art_direction.trim().is_empty()
+            || manifest.art_direction.len() > 4096
+            || manifest
+                .brief
+                .chars()
+                .chain(manifest.art_direction.chars())
+                .any(|c| c.is_control() && !['\n', '\t'].contains(&c))
+        {
+            bail!("Codex 에셋 목록의 버전·게임 설명·아트 방향을 확인해 주세요.");
+        }
+        let _io = self.inner.io.lock().unwrap();
+        let mut state = load_state(root)?;
+        let connection = state
+            .connection
+            .as_ref()
+            .context("게임 프로젝트 루트를 먼저 연결하세요.")?;
+        let scan = project_scan::scan(Path::new(text_field(connection, "root")?))?;
+        let project = Repository::open(root)?.project()?;
+        let ids: Vec<String> = serde_json::from_value(request["referenceAssetIds"].clone())?;
+        let refs = bundle::references(&project, &ids)?;
+        bundle::verify_references(root, &refs)?;
+        let mut style = project.style_guide.clone();
+        style.name = "Codex 게임 아트 방향".into();
+        style.palette.clear();
+        style.detail = manifest.art_direction;
+        style.reference_asset_ids = ids.clone();
+        style.approved = true;
+        let models = manifest.items.iter().any(|i| i.kind == AssetKind::Model);
+        let images = manifest.items.iter().any(|i| i.kind != AssetKind::Model);
+        if models && !cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+            bail!("이미지에서 3D 제작은 Apple Silicon Mac 검증 경로입니다.");
+        }
+        let plan = Plan {
+            schema_version: 1,
+            id: Uuid::new_v4().to_string(),
+            project_id: project.id.clone(),
+            planner_model: "codex-manifest".into(),
+            game_root: text_field(&scan, "root")?.into(),
+            fingerprint: text_field(&scan, "fingerprint")?.into(),
+            brief: manifest.brief,
+            output: if models && images {
+                "mixed"
+            } else if models {
+                "models"
+            } else {
+                "images"
+            }
+            .into(),
+            mode: "new".into(),
+            spec: project.spec.clone(),
+            style_guide: style,
+            reference_asset_ids: ids.clone(),
+            references: serde_json::to_value(refs)?,
+            summary: "Codex가 작성한 개별 에셋 목록. 별도 GPT 분석 요청 없음.".into(),
+            warnings: vec![],
+            items: manifest
+                .items
+                .into_iter()
+                .map(|i| Item {
+                    id: Uuid::new_v4().to_string(),
+                    prompt: format!("SINGLE ASSET \"{}\": {}", i.name, i.description),
+                    name: i.name,
+                    kind: i.kind,
+                    purpose: i.purpose,
+                    reference_asset_ids: ids.clone(),
+                    target_asset_id: None,
+                    model_parameters: None,
+                    enabled: true,
+                })
+                .collect(),
+        };
+        validate_plan(&plan, &project)?;
+        state.connection = Some(scan);
+        state.plan = Some(plan);
+        save_json(&state_path(root), &state)?;
+        drop(_io);
+        self.production_state(root)
     }
 
     fn plan_production(&self, root: &Path, request: &Value) -> Result<Value> {
@@ -935,6 +1090,45 @@ impl Backend {
         SchedulerStore::open(&root.join("scheduler.sqlite"))?
             .enqueue_many_once(request_id, tasks)?;
         drop(_io);
+        Ok(json!({"snapshot":self.snapshot()?,"state":self.production_state(root)?}))
+    }
+
+    fn continue_production(&self, root: &Path, request: &Value) -> Result<Value> {
+        if request["acknowledgeUnconfirmedRequests"] != true {
+            bail!("이전 GPT 요청의 결과가 나중에 도착할 수 있음을 확인하고 제작을 계속하세요.");
+        }
+        let id = text_field(request, "runId")?;
+        {
+            let _dispatch = self.inner.dispatch.lock().unwrap();
+            let _io = self.inner.io.lock().unwrap();
+            if !load_state(root)?.run_ids.iter().any(|run_id| run_id == id) {
+                bail!("제작 기록을 찾을 수 없습니다.");
+            }
+            let queue = SchedulerStore::open(&root.join("scheduler.sqlite"))?;
+            let jobs = queue.jobs()?;
+            let unresolved: Vec<_> = jobs
+                .iter()
+                .filter(|j| asset_scheduler::holds_unknown_external_slot(j))
+                .collect();
+            // An IPC retry after a successful release is an honest no-op.
+            if !unresolved.is_empty() {
+                if !jobs.iter().any(|j| {
+                    j.payload.get("productionRunId") == Some(&json!(id))
+                        && j.status == JobStatus::Ready
+                        && j.resource == JobResource::External
+                }) {
+                    bail!("독립적으로 시작할 수 있는 제작 대기 항목이 없습니다.");
+                }
+                let runners = self.inner.runners.lock().unwrap();
+                if unresolved.iter().any(|j| runners.contains_key(&j.id)) {
+                    bail!("이전 요청의 로컬 작업이 종료되는 중입니다. 종료 후 제작을 계속할 수 있습니다.");
+                }
+                queue.release_unknown_external_slots(
+                    &unresolved.iter().map(|j| j.id.clone()).collect::<Vec<_>>(),
+                    true,
+                )?;
+            }
+        }
         Ok(json!({"snapshot":self.snapshot()?,"state":self.production_state(root)?}))
     }
 
@@ -1503,6 +1697,7 @@ mod tests {
             let backend = Backend {
                 inner: Arc::new(Inner {
                     data: directory.join("app-data"),
+                    runtime_data: directory.join("app-data"),
                     examples: directory.join("unused-examples"),
                     worker: directory.join("unused-worker.py"),
                     blender: None,
@@ -1595,6 +1790,56 @@ mod tests {
         }
     }
 
+    #[test]
+    fn codex_manifest_preserves_distinct_items_and_rejects_invalid_batch_without_provider() {
+        let f = Fixture::new();
+        let manifest = json!({"schemaVersion":1,"brief":"Five individual tactical weapons","artDirection":"Readable original teal silhouettes", "items":[
+            {"name":"Pistol","kind":"sprite","description":"One pistol icon","purpose":"Inventory"},
+            {"name":"Rifle","kind":"sprite","description":"One rifle icon","purpose":"Inventory"},
+            {"name":"Laser","kind":"sprite","description":"One laser icon","purpose":"Inventory"},
+            {"name":"Launcher","kind":"sprite","description":"One launcher icon","purpose":"Inventory"},
+            {"name":"Blade","kind":"sprite","description":"One blade icon","purpose":"Inventory"}]});
+        let saved = f
+            .backend
+            .request(
+                json!({"action":"production_manifest","manifest":manifest,"referenceAssetIds":[]}),
+            )
+            .unwrap();
+        assert_eq!(saved["plan"]["plannerModel"], "codex-manifest");
+        assert_eq!(saved["plan"]["items"].as_array().unwrap().len(), 5);
+        assert_eq!(
+            saved["plan"]["styleGuide"]["detail"],
+            "Readable original teal silhouettes"
+        );
+        assert!(f.backend.inner.provider_runtime.lock().unwrap().is_none());
+        assert!(SchedulerStore::open(&f.root.join("scheduler.sqlite"))
+            .unwrap()
+            .jobs()
+            .unwrap()
+            .is_empty());
+        let before = fs::read(state_path(&f.root)).unwrap();
+        let mut invalid = manifest.clone();
+        invalid["items"][1]["name"] = json!("Pistol");
+        assert!(f
+            .backend
+            .request(
+                json!({"action":"production_manifest","manifest":invalid,"referenceAssetIds":[]})
+            )
+            .is_err());
+        assert_eq!(fs::read(state_path(&f.root)).unwrap(), before);
+        let accepted = f.backend.request(f.start_request()).unwrap();
+        let jobs = accepted["snapshot"]["project"]["jobs"].as_array().unwrap();
+        assert_eq!(jobs.len(), 5);
+        assert!(jobs.iter().all(|j| j["payload"]["singleAsset"] == true));
+        assert_eq!(
+            jobs.iter()
+                .map(|j| j["payload"]["name"].as_str().unwrap())
+                .collect::<HashSet<_>>()
+                .len(),
+            5
+        );
+    }
+
     #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
     #[test]
     fn unsupported_production_plan_preserves_project_before_provider_or_cache_creation() {
@@ -1646,6 +1891,71 @@ mod tests {
             );
             assert!(!f.game.join(OUTPUT_FOLDER).exists());
         }
+    }
+
+    #[test]
+    fn pending_production_can_continue_without_resubmitting_an_unknown_request() {
+        let f = Fixture::new();
+        let queue = SchedulerStore::open(&f.root.join("scheduler.sqlite")).unwrap();
+        let project = Repository::open(&f.root).unwrap().project().unwrap();
+        let old = job(&project, "image_generate", "Old image", None, JobResource::External,
+            json!({"toolVersion":"unit-fixture-no-provider","requestedModel":"gpt-image-2","reasoningModel":"gpt-6.1-sol"})).unwrap();
+        queue.enqueue(old.clone()).unwrap();
+        queue.claim_ready(&ResourceLimits::default()).unwrap();
+        queue
+            .set_external_identity(&old.id, "old-thread", "old-turn")
+            .unwrap();
+        queue.cancel(&old.id).unwrap();
+        let first = f.backend.request(f.start_request()).unwrap();
+        let run_id = first["state"]["runs"][0]["id"].as_str().unwrap();
+        assert_eq!(first["state"]["runs"][0]["blockedBy"]["requestCount"], 1);
+        assert_eq!(first["state"]["runs"][0]["status"], "pending");
+        assert!(queue
+            .claim_ready(&ResourceLimits::default())
+            .unwrap()
+            .is_empty());
+        let request = json!({"action":"production_continue","runId":run_id,"acknowledgeUnconfirmedRequests":true});
+        assert!(f
+            .backend
+            .request(json!({"action":"production_continue","runId":run_id}))
+            .is_err());
+        f.backend.inner.runners.lock().unwrap().insert(
+            old.id.clone(),
+            Runner {
+                cancel: Arc::new(AtomicBool::new(false)),
+                pid: None,
+                execution_id: None,
+            },
+        );
+        assert_eq!(
+            f.backend.production_state(&f.root).unwrap()["runs"][0]["blockedBy"]["canContinue"],
+            false
+        );
+        assert!(f.backend.request(request.clone()).is_err());
+        assert_eq!(queue.running_resources().unwrap().external_jobs, 1);
+        f.backend.inner.runners.lock().unwrap().remove(&old.id);
+        let result = f.backend.request(request.clone()).unwrap();
+        assert!(result["state"]["runs"][0]["blockedBy"].is_null());
+        f.backend.request(request).unwrap();
+        let jobs = queue.jobs().unwrap();
+        assert_eq!(jobs.len(), 3);
+        assert_eq!(jobs[0].status, JobStatus::ExternalUnknown);
+        assert_eq!(jobs[0].attempts, 1);
+        assert_eq!(jobs[0].payload["externalThreadId"], "old-thread");
+        assert!(!jobs[0].payload.contains_key("remoteCancellationConfirmed"));
+        let claimed = queue.claim_ready(&ResourceLimits::default()).unwrap();
+        assert_eq!(claimed.len(), 1);
+        assert_ne!(claimed[0].id, old.id);
+        assert!(queue
+            .claim_ready(&ResourceLimits::default())
+            .unwrap()
+            .is_empty());
+        // Completion of the first concept is not proof the next local stage runs.
+        let mut concept = claimed[0].clone();
+        concept.status = JobStatus::Succeeded;
+        let mut reconstruction = concept.clone();
+        reconstruction.status = JobStatus::Ready;
+        assert_eq!(item_status(&[&concept, &reconstruction]), "pending");
     }
 
     #[test]

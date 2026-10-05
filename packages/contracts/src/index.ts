@@ -109,8 +109,8 @@ export interface GameProjectScan {
   scannedFiles: number; assetCount: number; assets: {path: string; kind: 'image' | 'model' | 'audio' | 'other'}[];
   missingReferences: {path: string; referencedBy: string}[]; warnings: string[]; fingerprint: string;
 }
-export interface ProductionPlan extends Omit<GameBundlePlan, 'mode'> {
-  gameRoot: string; fingerprint: string; mode: 'new';
+export interface ProductionPlan extends Omit<GameBundlePlan, 'mode' | 'plannerModel'> {
+  gameRoot: string; fingerprint: string; mode: 'new'; plannerModel: 'gpt-5.5' | 'codex-manifest';
 }
 export interface ProductionItemResult {
   id: string; name: string; kind: AssetKind; jobIds: string[]; assetId: string | null;
@@ -120,6 +120,7 @@ export interface ProductionItemResult {
 export interface ProductionRun {
   id: string; planId: string; brief: string; createdAt: string; outputRoot: string;
   status: ProductionItemResult['status']; items: ProductionItemResult[];
+  blockedBy?: {reason: 'unconfirmed_external'; requestCount: number; canContinue: boolean} | null;
 }
 export interface ProductionState {
   connection: GameProjectScan | null; plan: ProductionPlan | null; runs: ProductionRun[];

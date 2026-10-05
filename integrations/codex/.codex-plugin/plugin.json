@@ -1,0 +1,6 @@
+{
+  "name": "asset-studio",
+  "version": "0.1.10",
+  "description": "Create individual game assets while Codex builds and verifies the game.",
+  "skills": "./skills/"
+}

@@ -520,6 +520,7 @@ mod tests {
             let backend = Backend {
                 inner: Arc::new(Inner {
                     data: directory.join("data"),
+                    runtime_data: directory.join("data"),
                     examples: directory.join("unused-examples"),
                     worker: directory.join("unused-worker"),
                     blender: Some(directory.join("unused-blender")),

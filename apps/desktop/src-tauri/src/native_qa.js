@@ -77,11 +77,14 @@
     };
     for(const index of json.scenes?.[json.scene??0]?.nodes??[])visit(index,identity);
     const dimensions=max.map((value,axis)=>value-min[axis]);check(vertices>0&&triangles>0&&dimensions.every(value=>Number.isFinite(value)&&value>0),'GLB scene geometry invalid');
-    return {headerValid:true,meshCount:json.meshes.length,primitiveCount:primitives.length,vertices,triangles,bounds:{min,max,dimensions}};
+    return {headerValid:true,meshCount:json.meshes.length,primitiveCount:primitives.length,embeddedTextures:(json.images??[]).filter(image=>image.bufferView!=null).length,vertices,triangles,bounds:{min,max,dimensions}};
   };
   try{
     await wait('Production home default',()=>document.querySelector('.production-home'),15000);
     check(!document.querySelector('.inspector')&&!document.querySelector('.sidebar'),'Editor must be secondary on startup');
+    const codexSkillButton=[...document.querySelectorAll('.production-codex button')].find(b=>b.textContent.trim()==='Codex 스킬 설치');
+    check(codexSkillButton&&!codexSkillButton.disabled,'Native Codex skill installation entry missing');
+    state.codexSkillUi={visibleEntry:true,nativeWebView:true,installationExecuted:false};
     state.ipcEnvironment=await invoke({action:'environment'});
     gameUiBaseline=await invoke({action:'snapshot'});productionPhase=true;
     const productionUi=state.productionUi={defaultGenerationHome:true,nativeRootScan:true,plannerResponseMocked:true,localStatusMocked:state.ipcEnvironment.platform==='macos',submissionIntercepted:true,providerRequests:0,realGeneration:false,passed:false};
@@ -222,6 +225,15 @@
           restores.push(()=>Object.defineProperty(Constructor.prototype,method,descriptor));
         }
       }
+      const sourceModel=window.__ASSET_NATIVE_QA__?.modelPath;
+      let produced;
+      if(sourceModel){
+        report.generator='Imported generated GLB';report.stage='import textured model';
+        const imported=await invoke({action:'import',paths:[sourceModel]});
+        const asset=imported.project.assets.find(asset=>!oldAssetIds.has(asset.id)&&asset.kind==='model');
+        check(asset,'Textured QA model import failed');produced={asset};
+        document.querySelector('[title="작업 상태 새로고침"]').click();
+      }else{
       report.stage='open model dialog';
       const button=[...document.querySelectorAll('button')].find(button=>button.textContent.trim()==='3D 만들기');check(button&&!button.disabled,'3D create button unavailable');button.click();
       await wait('3D route dialog',()=>document.querySelector('.dialog-quality3d')||document.querySelector('.dialog-model'),5000);
@@ -236,17 +248,19 @@
       check(['width','depth','height'].every(key=>report.parameters[key]===1),'Expected one-meter default dimensions');
       const submit=form.querySelector('button[type="submit"]');check(submit&&!submit.disabled,'Model submit unavailable');submit.click();
       report.stage='native Blender job';
-      const produced=await wait('Native Blender model',async()=>{
+      produced=await wait('Native Blender model',async()=>{
         const snapshot=await invoke({action:'snapshot'}),jobs=snapshot.project.jobs.filter(job=>!oldJobIds.has(job.id));
         check(!jobs.some(job=>job.resource==='external'),'Unexpected external job');
         const failed=jobs.find(job=>['failed','cancelled','external_unknown'].includes(job.status));if(failed)throw new Error(`${failed.kind}: ${failed.error??failed.status}`);
         const asset=snapshot.project.assets.find(asset=>!oldAssetIds.has(asset.id)&&asset.kind==='model'),job=jobs.find(job=>job.kind==='blender_model'&&job.resource==='blender'&&job.status==='succeeded');
         return asset&&job?{asset,job}:null;
       },180000);
-      report.assetId=produced.asset.id;report.jobId=produced.job.id;report.modelJobSucceeded=true;report.blenderVersion=state.ipcEnvironment.blenderVersion;
+      report.jobId=produced.job.id;report.modelJobSucceeded=true;report.blenderVersion=state.ipcEnvironment.blenderVersion;
+      }
+      report.assetId=produced.asset.id;
       const version=produced.asset.versions.find(version=>version.id===produced.asset.activeVersionId),glb=version?.artifacts.find(artifact=>artifact.format.toLowerCase()==='glb');
       report.blenderUsed=!!version?.artifacts.some(artifact=>artifact.format.toLowerCase()==='blend'&&artifact.bytes>0);
-      check(glb&&report.blenderUsed&&version.validation?.valid,'Native GLB, Blender source or validation missing');
+      check(glb&&(sourceModel||report.blenderUsed)&&version.validation?.valid,'Native GLB, Blender source or validation missing');
       report.stage='open actual model card';
       const card=await wait('Generated model card',()=>[...document.querySelectorAll('[aria-label="에셋 목록"] [role="listitem"]')].find(card=>card.querySelector('strong')?.textContent===produced.asset.name),10000);
       card.dispatchEvent(new MouseEvent('dblclick',{bubbles:true,cancelable:true}));report.stage='GLB load and native WebGL rendering';
@@ -257,7 +271,8 @@
       },25000);
       check(report.glbFetch.ok&&/asset\.localhost|^asset:/.test(report.glbFetch.url),'GLB did not use native asset protocol');
       check(report.glbFetch.bytes===glb.bytes&&report.glbFetch.sha256===glb.sha256,'Viewport GLB differs from stored artifact');
-      check(report.glbFetch.bounds.dimensions.every(value=>Math.abs(value-1)<.0001),'Decoded GLB dimensions differ from one meter');
+      if(sourceModel)check(report.glbFetch.embeddedTextures>0,'Textured QA requires embedded images');
+      else check(report.glbFetch.bounds.dimensions.every(value=>Math.abs(value-1)<.0001),'Decoded GLB dimensions differ from one meter');
       check(providerCalls===0,'External provider command attempted');report.externalProviderCalls=providerCalls;report.stage='complete';report.passed=true;
     }
   }catch(error){

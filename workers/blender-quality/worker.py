@@ -23,6 +23,9 @@ from datetime import datetime, timezone
 # Bounded CPU work even when the caller forgets a library-level thread setting.
 os.environ["OMP_NUM_THREADS"] = "2"
 os.environ["OPENBLAS_NUM_THREADS"] = "2"
+# Blender's embedded Python ignores PYTHONDONTWRITEBYTECODE. Keep bundled
+# imports read-only so processing cannot invalidate the signed app resources.
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from audit import GLB, artifact, blender_filename, prepare_output, read_parameters, verify_source
 
@@ -228,6 +231,10 @@ def clean_game_geometry(obj, weld=False):
     bm.from_mesh(obj.data)
     if weld:
         bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=epsilon)
+    # Collapse numerical slivers on the derived copy before atlas projection.
+    # A reconstructed face can have finite positions but sub-micron altitude,
+    # yielding zero UV area after decimation. The high-detail input is untouched.
+    bmesh.ops.dissolve_degenerate(bm, dist=epsilon, edges=list(bm.edges))
     loose_edges = [edge for edge in bm.edges if not edge.link_faces]
     if loose_edges:
         bmesh.ops.delete(bm, geom=loose_edges, context="EDGES")
@@ -247,7 +254,7 @@ def clean_game_geometry(obj, weld=False):
     after = mesh_inspection(obj)
     if after["looseEdges"]:
         raise ValueError("Derived game mesh still contains loose geometry")
-    return {"weld": weld, "weldToleranceMeters": epsilon, "before": before,
+    return {"weld": weld, "weldToleranceMeters": epsilon, "degenerateDissolveToleranceMeters": epsilon, "before": before,
             "after": after, "highDetailModified": False,
             "shading": "Recomputed game normals with 45-degree sharp edges; original high-detail normals retained"}
 
@@ -318,7 +325,42 @@ def smart_uv(obj, resolution):
                                  correct_aspect=True, scale_to_bounds=True)
     finally:
         bpy.ops.object.mode_set(mode="OBJECT")
+    # glTF flips V and writes float32. Extremely thin UV triangles can pass the
+    # in-memory check but collapse in that round trip. Give a bounded number of
+    # such faces their own texel-sized island before baking, not after export.
+    mesh = obj.data
+    # Edit-mode UV operators can replace CustomData; reacquire the RNA layer.
+    layer = mesh.uv_layers.active
+    mesh.calc_loop_triangles()
+    values = np.empty(len(layer.data) * 2, dtype=np.float32)
+    layer.data.foreach_get("uv", values)
+    values = values.reshape(-1, 2)
+    exported = values.astype(np.float64)
+    exported[:, 1] = (1.0 - values[:, 1]).astype(np.float32).astype(np.float64)
+    bad = []
+    for tri in mesh.loop_triangles:
+        a, b, c = (exported[i] for i in tri.loops)
+        area = abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])) * 0.5
+        shortest = min(np.linalg.norm(b-a), np.linalg.norm(c-a), np.linalg.norm(c-b))
+        if area <= 1e-12 or shortest <= 0.01/resolution:
+            bad.append(tuple(tri.loops))
+    if bad:
+        if len(bad) > min(128, max(1, len(mesh.loop_triangles)//50)):
+            raise ValueError("Too many degenerate UV faces for bounded texel-island repair")
+        columns = math.ceil(math.sqrt(len(bad)))
+        rows = math.ceil(len(bad)/columns)
+        strip = (rows * 8 + 4)/resolution
+        values[:, 1] *= 1-strip
+        for index, loops in enumerate(bad):
+            x = (index % columns * 8 + 2)/resolution
+            y = 1-strip + (index//columns * 8 + 2)/resolution
+            for loop, point in zip(loops, ((x,y),(x+4/resolution,y),(x,y+4/resolution))):
+                values[loop] = point
+        layer.data.foreach_set("uv", values.ravel())
+        mesh.update()
+        stage("repair-uv-export-precision", faces=len(bad), reservedPixels=rows*8+4)
     info = mesh_inspection(obj)
+    info["uvExportPrecisionRepairFaces"] = len(bad)
     if not info["uvFinite"] or not info["uvNonzero"] or info["degenerateUVTriangles"]:
         raise ValueError("Game atlas UVs contain non-finite or zero-area triangles")
     return info
@@ -786,7 +828,9 @@ def execute(input_path, output_dir):
     game_cleanup = clean_game_geometry(game)
     game_centering = center_game(game, job["heightMeters"])
     stage("unwrap-game-uv")
-    smart_uv(game, job["textureResolution"])
+    uv_info = smart_uv(game, job["textureResolution"])
+    if uv_info["uvExportPrecisionRepairFaces"]:
+        warnings.append("Sub-texel UV faces received separate texel-sized islands before baking to preserve nonzero area through glTF float32 V conversion. Source geometry and source UVs were preserved.")
     source_materials = list(high.data.materials)
     fallback_materials = source_uv_bind(source_materials, high)
     projection = projection_settings(high, game, job["heightMeters"])

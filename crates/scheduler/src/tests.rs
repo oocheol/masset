@@ -427,6 +427,112 @@ fn restart_releases_old_local_cancel_hold_but_retains_unknown_remote_slot() {
 }
 
 #[test]
+fn continuing_independent_work_preserves_unknown_requests_across_restart() {
+    let temp = TempDb::new();
+    let store = SchedulerStore::open(&temp.path()).unwrap();
+    store
+        .enqueue_many(vec![
+            job("old", JobResource::External, &[]),
+            job("old-child", JobResource::Cpu, &["old"]),
+            job("new", JobResource::External, &[]),
+        ])
+        .unwrap();
+    store.claim_ready(&ResourceLimits::default()).unwrap();
+    store
+        .set_external_identity("old", "thread-old", "turn-old")
+        .unwrap();
+    store.cancel("old").unwrap();
+    let before = store.jobs().unwrap().remove(0);
+    assert!(store
+        .claim_ready(&ResourceLimits::default())
+        .unwrap()
+        .is_empty());
+    assert!(store
+        .release_unknown_external_slots(&["old".into()], false)
+        .is_err());
+    // Validate the entire batch before committing any admission release.
+    assert!(store
+        .release_unknown_external_slots(&["old".into(), "new".into()], true)
+        .is_err());
+    assert_eq!(store.running_resources().unwrap().external_jobs, 1);
+    store
+        .release_unknown_external_slots(&["old".into()], true)
+        .unwrap();
+    let cursor = store.events_after(0, 32).unwrap().next_cursor;
+    store
+        .release_unknown_external_slots(&["old".into()], true)
+        .unwrap();
+    assert_eq!(store.events_after(0, 32).unwrap().next_cursor, cursor);
+    drop(store);
+    let store = SchedulerStore::open(&temp.path()).unwrap();
+    store.recover().unwrap();
+    assert_eq!(store.running_resources().unwrap().external_jobs, 0);
+    let after = store.jobs().unwrap().remove(0);
+    assert_eq!(after.status, JobStatus::ExternalUnknown);
+    assert_eq!(after.attempts, before.attempts);
+    assert_eq!(after.error, before.error);
+    assert_eq!(
+        events::external_identity(&after),
+        events::external_identity(&before)
+    );
+    assert!(!after.payload.contains_key("remoteCancellationConfirmed"));
+    assert_eq!(status(&store, "old-child"), JobStatus::Cancelled);
+    assert!(store.rerun("old").is_err());
+    assert_eq!(
+        store.claim_ready(&ResourceLimits::default()).unwrap()[0].id,
+        "new"
+    );
+    assert!(store
+        .claim_ready(&ResourceLimits::default())
+        .unwrap()
+        .is_empty());
+    store.resume_external("old", true).unwrap();
+    assert!(!store.jobs().unwrap()[0]
+        .payload
+        .contains_key("externalSlotReleasedAt"));
+}
+
+#[test]
+fn maintenance_pauses_only_unsubmitted_work_and_restores_its_dependency_chain() {
+    let store = memory_store();
+    let mut first = job("active", JobResource::External, &[]);
+    first.payload.insert("productionRunId".into(), json!("run"));
+    let mut next = job("queued", JobResource::External, &[]);
+    next.payload.insert("productionRunId".into(), json!("run"));
+    store
+        .enqueue_many(vec![
+            first,
+            next,
+            job("child", JobResource::Blender, &["queued"]),
+        ])
+        .unwrap();
+    store.claim_ready(&ResourceLimits::default()).unwrap();
+    store
+        .set_external_identity("active", "thread-a", "turn-a")
+        .unwrap();
+    assert_eq!(
+        store.pause_unsubmitted_external("run", "update-1").unwrap(),
+        ["queued"]
+    );
+    assert_eq!(status(&store, "active"), JobStatus::Running);
+    assert_eq!(status(&store, "child"), JobStatus::WaitingUser);
+    store.complete("active").unwrap();
+    assert!(store
+        .claim_ready(&ResourceLimits::default())
+        .unwrap()
+        .is_empty());
+    assert!(store
+        .resume_maintenance("different-update")
+        .unwrap()
+        .is_empty());
+    assert_eq!(store.resume_maintenance("update-1").unwrap(), ["queued"]);
+    assert_eq!(status(&store, "child"), JobStatus::Pending);
+    let claimed = store.claim_ready(&ResourceLimits::default()).unwrap();
+    assert_eq!(claimed[0].id, "queued");
+    assert_eq!(claimed[0].attempts, 1);
+}
+
+#[test]
 fn rerun_invalidates_downstream_only_and_keeps_successful_upstream() {
     let store = memory_store();
     store

@@ -1,3 +1,4 @@
+pub mod agent_cli;
 #[cfg(target_os = "macos")]
 mod macos_update;
 mod process_guard;
@@ -10,7 +11,7 @@ pub mod workbench;
 use tauri::Manager;
 use workbench::Backend;
 
-struct NativeQa(Option<std::path::PathBuf>, bool);
+struct NativeQa(Option<std::path::PathBuf>, bool, Option<std::path::PathBuf>);
 
 #[tauri::command]
 fn native_qa_complete(
@@ -231,7 +232,9 @@ pub fn run() {
             app.manage(updates);
             #[cfg(target_os = "macos")]
             app.manage(update_qa);
-            app.manage(NativeQa(qa_directory, with_native_model));
+            // Only explicit isolated QA may read this local model path.
+            let qa_model = qa_directory.as_ref().and_then(|_| std::env::var_os("ASSET_NATIVE_QA_GLB")).map(std::path::PathBuf::from);
+            app.manage(NativeQa(qa_directory, with_native_model, qa_model));
             let backend = Backend::new(data, examples, worker);
             backend.start();
             app.manage(backend);
@@ -251,7 +254,8 @@ pub fn run() {
             {
                 let with_native_model = webview.app_handle().state::<NativeQa>().inner().1;
                 let game_root=webview.app_handle().state::<NativeQa>().inner().0.as_ref().unwrap().join("game-project");
-                let parameters=serde_json::json!({"withNativeModel":with_native_model,"gameProjectRoot":game_root});
+                let model_path = webview.app_handle().state::<NativeQa>().inner().2.clone();
+                let parameters=serde_json::json!({"withNativeModel":with_native_model,"gameProjectRoot":game_root,"modelPath":model_path});
                 let script = format!("window.__ASSET_NATIVE_QA__ = Object.freeze({parameters});\n{}", include_str!("native_qa.js"));
                 let _ = webview.eval(&script);
             }

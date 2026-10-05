@@ -124,6 +124,7 @@ fn process_environment(command: &mut Command) {
     command
         .env("HF_HUB_DISABLE_TELEMETRY", "1")
         .env("DO_NOT_TRACK", "1")
+        .env("PYTHONDONTWRITEBYTECODE", "1")
         .env("PYTHONNOUSERSITE", "1")
         .env("PYTHONUNBUFFERED", "1");
     #[cfg(windows)]
@@ -228,7 +229,7 @@ impl Backend {
     }
 
     fn quality3d_runtime(&self) -> PathBuf {
-        self.inner.data.join("image3d/triposr-cpu-v1")
+        self.inner.runtime_data.join("image3d/triposr-cpu-v1")
     }
 
     fn quality3d_ready(&self) -> Option<Value> {

@@ -48,6 +48,7 @@ const statuses = [
 ];
 
 const faqs = [
+  { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '0.1.10 소스에는 CLI와 Codex 스킬을 추가했습니다. 앱에서 스킬을 설치하면 Codex가 필요한 개별 에셋 목록을 작성해 제작하고, 게임 엔진에 반영한 뒤 실행·검증하는 흐름을 사용할 수 있습니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 공개 다운로드 0.1.8에는 아직 포함되지 않았습니다. 새로운 연동은 Mac부터 검증하며, 게임 완성은 실제 엔진 실행으로 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
   { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 0.1.1~0.1.3 설치 사용자와 Mac 0.1.4 이상 사용자는 앱에서 0.1.8로 업데이트할 수 있습니다. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows x64와 Apple Silicon Mac 0.1.8의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },

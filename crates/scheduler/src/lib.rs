@@ -587,6 +587,7 @@ impl SchedulerStore {
             stored.job.started_at = Some(now_text());
             stored.job.finished_at = None;
             stored.job.error = None;
+            stored.job.payload.remove("externalSlotReleasedAt");
             stored.job.progress = progress(if stored.job.resource == JobResource::External {
                 "dispatching_external"
             } else {
@@ -795,6 +796,104 @@ impl SchedulerStore {
             reset(stored);
             stored.job.progress = progress("explicit_external_resubmission");
             Ok(())
+        })
+    }
+
+    /// Continue separately requested work without resubmitting uncertain jobs.
+    /// The coordinator must observe that these jobs' local workers have exited.
+    /// Releasing admission is not evidence of remote completion/cancellation:
+    /// identities, attempts, errors and dependent jobs remain unchanged.
+    pub fn release_unknown_external_slots(
+        &self,
+        ids: &[String],
+        acknowledge_unconfirmed_requests: bool,
+    ) -> Result<()> {
+        if !acknowledge_unconfirmed_requests {
+            bail!("continuing past unconfirmed external requests requires acknowledgement");
+        }
+        self.mutate(|all| {
+            for id in ids {
+                let stored = find_mut(all, id)?;
+                if stored.job.resource != JobResource::External
+                    || stored.job.status != JobStatus::ExternalUnknown
+                {
+                    bail!("job {id} is not an unresolved external request");
+                }
+                if !holds_unknown_external_slot(&stored.job) {
+                    continue;
+                }
+                stored
+                    .job
+                    .payload
+                    .insert("externalSlotReleasedAt".into(), json!(now_text()));
+                stored.job.progress = progress("external_unknown_admission_released");
+            }
+            Ok(())
+        })
+    }
+
+    /// Maintenance only: hold unsubmitted requests while an installed app is
+    /// replaced. Active requests finish normally; no request/attempt is reset.
+    pub fn pause_unsubmitted_external(&self, run_id: &str, token: &str) -> Result<Vec<String>> {
+        if token.is_empty() || token.len() > 128 {
+            bail!("invalid maintenance token");
+        }
+        self.mutate_result(|all| {
+            let mut ids = Vec::new();
+            for stored in all {
+                if stored.job.resource == JobResource::External
+                    && stored.job.status == JobStatus::Ready
+                    && stored.job.attempts == 0
+                    && stored
+                        .job
+                        .payload
+                        .get("productionRunId")
+                        .and_then(Value::as_str)
+                        == Some(run_id)
+                    && stored
+                        .job
+                        .payload
+                        .get("externalSubmitted")
+                        .and_then(Value::as_bool)
+                        != Some(true)
+                {
+                    stored.job.status = JobStatus::WaitingUser;
+                    stored
+                        .job
+                        .payload
+                        .insert("maintenancePause".into(), json!(token));
+                    stored.job.progress = progress("업데이트 적용 대기");
+                    stored.job.error = Some(
+                        "진행 중인 결과를 보존하고 앱 업데이트를 적용하기 위해 잠시 대기합니다."
+                            .into(),
+                    );
+                    ids.push(stored.job.id.clone());
+                }
+            }
+            Ok(ids)
+        })
+    }
+
+    pub fn resume_maintenance(&self, token: &str) -> Result<Vec<String>> {
+        self.mutate_result(|all| {
+            let mut ids = Vec::new();
+            for stored in all {
+                if stored.job.status == JobStatus::WaitingUser
+                    && stored
+                        .job
+                        .payload
+                        .get("maintenancePause")
+                        .and_then(Value::as_str)
+                        == Some(token)
+                {
+                    stored.job.payload.remove("maintenancePause");
+                    stored.job.status = JobStatus::Pending;
+                    stored.job.progress = progress("queued");
+                    stored.job.error = None;
+                    ids.push(stored.job.id.clone());
+                }
+            }
+            Ok(ids)
         })
     }
 
@@ -1145,6 +1244,8 @@ fn reset(stored: &mut StoredJob) {
     stored.job.progress = progress("queued");
     stored.job.payload.remove("executionId");
     stored.job.payload.remove("externalSubmitted");
+    stored.job.payload.remove("externalSlotReleasedAt");
+    stored.job.payload.remove("maintenancePause");
     stored.job.payload.remove("cancellationAwaitingWorker");
     clear_external_identity(&mut stored.job);
     stored.available_at_ms = 0;
@@ -1245,6 +1346,18 @@ fn find_mut<'a>(all: &'a mut [StoredJob], id: &str) -> Result<&'a mut StoredJob>
         .with_context(|| format!("unknown job {id}"))
 }
 
+/// Unknown requests retain admission until the user continues independent work.
+/// The released request itself remains uncertain and is never claimed/retried.
+pub fn holds_unknown_external_slot(job: &Job) -> bool {
+    job.status == JobStatus::ExternalUnknown
+        && job.resource == JobResource::External
+        && !job
+            .payload
+            .get("externalSlotReleasedAt")
+            .and_then(Value::as_str)
+            .is_some_and(|value| chrono::DateTime::parse_from_rfc3339(value).is_ok())
+}
+
 fn usage_for(all: &[StoredJob]) -> Result<ResourceUsage> {
     let mut usage = ResourceUsage::default();
     for stored in all {
@@ -1253,9 +1366,7 @@ fn usage_for(all: &[StoredJob]) -> Result<ResourceUsage> {
                 &stored.job.resource,
                 &ResourceRequest::for_job(&stored.job)?,
             );
-        } else if stored.job.status == JobStatus::ExternalUnknown
-            && stored.job.resource == JobResource::External
-        {
+        } else if holds_unknown_external_slot(&stored.job) {
             // The remote job may still be running. Keep its provider slot reserved,
             // without pretending a local worker is still allocating memory.
             usage.external_jobs = usage.external_jobs.saturating_add(1);

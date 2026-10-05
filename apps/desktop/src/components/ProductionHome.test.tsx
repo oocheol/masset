@@ -153,6 +153,9 @@ beforeAll(async () => {
           response = structuredClone(fixture.retryResult) ?? {snapshot: structuredClone(fixture.props.snapshot), state: structuredClone(fixture.state)};
           const run = response.state.runs.find(run => run.id === request.runId); run.status = 'running';
           Object.assign(run.items.find(item => item.id === request.itemId), {status:'running',review:'pending',error:null});
+        } else if (action === 'production_continue') {
+          response = {snapshot: structuredClone(fixture.props.snapshot), state: structuredClone(fixture.state)};
+          response.state.runs.find(run => run.id === request.runId).blockedBy = null;
         } else if (action === 'production_cancel') {
           response = structuredClone(fixture.cancelResult) ?? {snapshot: structuredClone(fixture.props.snapshot), state: structuredClone(fixture.state)};
           const run = response.state.runs.find(run => run.id === request.runId); run.status = 'cancelled';
@@ -163,7 +166,7 @@ beforeAll(async () => {
         if (fixture.props.snapshot.project.id !== requestedProject) return response;
         if (action.startsWith('quality3d_') && action !== 'quality3d_status') fixture.local = structuredClone(response);
         else if (action === 'production_review' || action === 'game_connect' || action === 'production_plan') fixture.state = structuredClone(response);
-        else if (['production_start', 'production_retry', 'production_cancel'].includes(action)) fixture.state = structuredClone(response.state);
+        else if (['production_start', 'production_retry', 'production_cancel', 'production_continue'].includes(action)) fixture.state = structuredClone(response.state);
         return response;
       };`,
   };
@@ -556,6 +559,32 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     await page.clock.fastForward(4000); expect(await commands('production_state')).toHaveLength(3);
     expect((await commands()).every(request => ['production_state', 'quality3d_status'].includes(String(request.action)))).toBe(true);
     await page.evaluate(() => {window.__PRODUCTION_UI_UNMOUNT__();}); await page.clock.fastForward(5000); expect(await commands('production_state')).toHaveLength(3);
+  });
+
+  it('shows why independent production is blocked and continues once without retrying old requests', async () => {
+    const waiting = run('pending'); waiting.blockedBy = {reason:'unconfirmed_external',requestCount:1,canContinue:true};
+    const project = snapshot(); const queued = job('ready'); queued.progress = {stage:'ready',completed:null,total:null}; project.project.jobs = [queued];
+    await mount({state: {connection:scan(),plan:null,runs:[waiting]},hold:['production_continue']}, {snapshot:project});
+    await uiExpect(page.locator('.production-run')).toContainText('이전 GPT 요청 1건의 결과를 확인하지 못해 새 제작이 대기 중');
+    await uiExpect(page.locator('.production-job-progress')).toHaveText('제작 차례 대기');
+    await uiExpect(page.locator('.production-run')).not.toContainText('제작 진행 중');
+    const button = page.getByRole('button', {name:'대기 중인 제작 계속',exact:true});
+    await button.evaluate(button => {(button as HTMLButtonElement).click(); (button as HTMLButtonElement).click();});
+    await uiExpect.poll(async () => (await commands('production_continue')).length).toBe(1);
+    await uiExpect(button).toBeDisabled(); await release('production_continue');
+    await uiExpect(button).toHaveCount(0);
+    expect(await commands('production_continue')).toEqual([{action:'production_continue',runId:RUN_ID,acknowledgeUnconfirmedRequests:true}]);
+    expect(await commands('production_retry')).toHaveLength(0);
+    expect(await commands('production_start')).toHaveLength(0);
+  });
+
+  it('waits for the old local worker to exit and renders dependent stages as waiting', async () => {
+    const waiting = run('pending'); waiting.blockedBy = {reason:'unconfirmed_external',requestCount:1,canContinue:false};
+    const project = snapshot(); const queued = job('pending'); queued.progress = {stage:'pending',completed:null,total:null}; project.project.jobs = [queued];
+    await mount({state:{connection:scan(),plan:null,runs:[waiting]}}, {snapshot:project});
+    await uiExpect(page.getByRole('button',{name:'대기 중인 제작 계속',exact:true})).toBeDisabled();
+    await uiExpect(page.locator('.production-job-progress')).toHaveText('선행 작업 완료 대기');
+    expect(await commands('production_continue')).toHaveLength(0);
   });
 
   it('refreshes on final job progress/count changes even with no active run', async () => {

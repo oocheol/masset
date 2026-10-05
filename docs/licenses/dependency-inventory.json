@@ -3,8 +3,8 @@
   "target": "aarch64-apple-darwin",
   "includeTools": false,
   "inputs": {
-    "packageLockSha256": "f2ac9ede618c591db9b2f3a2f98eafb5520c287386e1f91bfc3e285b808bd942",
-    "cargoLockSha256": "1cc29f39d5a5f460ea7050e386da402a966ee782e5cf9085d72794dd82cfeaae"
+    "packageLockSha256": "d8ed4f9cb6913dd3c8665ad4554bbfaea77ee7eb46d1085b578d95b03e03e09b",
+    "cargoLockSha256": "882ae7cc981dd05dba28d32cacfa6d1f9dca21845c9b336b1b49a29d27da3c9b"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",
@@ -13625,7 +13625,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-desktop",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "licenseExpression": "Apache-2.0",
       "path": "apps/desktop/src-tauri/Cargo.toml"
     },
@@ -13646,7 +13646,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-providers",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "licenseExpression": "Apache-2.0",
       "path": "crates/providers/Cargo.toml"
     },
