@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.10",
+  "platform": "darwin-aarch64",
+  "packagedAt": "2026-10-05T23:49:40.863696+00:00",
+  "status": "built-with-additional-validation-skipped",
+  "nativeSourceBaselineCommit": "f8f3647f94e585605e0b72d291031f37d92b908a",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.10",
+  "windowsReleasePreserved": "0.1.9",
+  "features": [
+    "bundled native asset-cli",
+    "installable Codex skill and portable plugin",
+    "manifest-driven individual assets and resumable JSONL production",
+    "long production-plan wait and queue continuation fixes",
+    "bounded model UV repair and app-resource bytecode protection"
+  ],
+  "package": {
+    "dmg": {
+      "filename": "AssetStudio_0.1.10_macos-arm64.dmg",
+      "bytes": 15111194,
+      "sha256": "e47fe42b39539f0d883251c1b6a5e944aa2c92f790f37eb3ba34d6e5ce778974"
+    },
+    "installer": {
+      "filename": "install-macos.sh",
+      "bytes": 6285,
+      "sha256": "02bb8da6d5405ac0fc66bf8d0c96f240495bcd195fdd59b915b4d043ce659572"
+    },
+    "codexPlugin": {
+      "filename": "AssetStudio_0.1.10_codex-plugin.zip",
+      "bytes": 9619,
+      "sha256": "39fbdafced21d1743067d4626307b84d42845dd501e2c75761f467d1d283e701"
+    },
+    "updater": {
+      "filename": "AssetStudio_0.1.10_macos-arm64.app.tar.gz",
+      "bytes": 15392635,
+      "sha256": "3b38671d31350d42dfc0ccb8a7470241d7fcd6def42f62706b2f73419996a26c"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1248,
+      "sha256": "0a9641bb1be4821162ad8c4af4f5b5e0f9d2db5e0a89f8fd274852ddd5c40245"
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 1028,
+      "sha256": "45d3f7c352766a1b38037ea283f1879b18df0e2a395f90bd0f2108f39d72ffaf"
+    }
+  },
+  "validation": {
+    "additionalValidationPerformed": false,
+    "skipReason": "User explicitly requested production deployment without further validation.",
+    "finalDmgInstallationTested": false,
+    "finalMacNativeWindowTested": false,
+    "updaterReplacementLifecycleTested": false,
+    "publicDownloadsReverified": false,
+    "newWindowsBuildPerformed": false,
+    "gameEndToEndCompletionTested": false,
+    "priorDeveloperEvidence": "docs/codex-integration-validation.md",
+    "priorMacReleaseEvidence": "docs/releases/v0.1.8-macos.md"
+  },
+  "boundaries": {
+    "appleDeveloperIdSigned": false,
+    "appleNotarized": false,
+    "appAdHocSigned": true,
+    "updateSignedWithProjectKey": true,
+    "newWindowsCliAndSkillDistributed": false,
+    "intelMacDistributed": false
+  }
+}

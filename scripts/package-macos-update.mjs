@@ -13,7 +13,7 @@ export async function packageMacUpdate(archive, output, version) {
   const decoded = Buffer.from(signature, 'base64').toString('utf8');
   if (!decoded.split('\n').some(line => line.startsWith('trusted comment: ') && line.split('\t').includes(`version:${version}`))) throw new Error('Tauri signature has no matching authenticated version');
   const filename = `AssetStudio_${version}_macos-arm64.app.tar.gz`;
-  const metadata = {version, notes:'Apple Silicon Mac: 게임 설명과 프로젝트 루트 연결로 필요한 에셋을 분석하고 개별 2D·3D 결과를 제작·검수합니다. GPT 참고 이미지에서 로컬 TripoSR와 Blender로 모델을 만들고 새 결과 폴더에 저장합니다. 원본과 이전 버전은 보존합니다. 로컬 3D 준비는 CPython 3.9·최소 16GB 메모리와 Blender가 필요합니다. 기존 앱은 백업한 뒤 교체·재실행합니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
+  const metadata = {version, notes:'Mac 0.1.10: Codex 스킬과 네이티브 CLI로 게임 제작 중 개별 2D·정적 3D 에셋을 제작합니다. 긴 제작 목록의 분석 대기, 큐 이어받기, 모델 UV 처리와 앱 내부 Python 캐시를 개선했습니다. 원본과 이전 버전은 보존합니다. 로컬 3D는 CPython 3.9·최소 16GB 메모리와 Blender가 필요합니다. 최종 배포본 추가 테스트는 요청에 따라 생략했습니다.', pub_date:new Date().toISOString(), platforms:{'darwin-aarch64':{
     url:`https://github.com/oocheol/masset/releases/download/v${version}/${filename}`, signature,
     bytes:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex'),
   }}};

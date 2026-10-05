@@ -1,6 +1,6 @@
 # Codex에서 게임을 만들며 에셋 제작하기
 
-0.1.10 소스와 Mac 빌드는 **네이티브 CLI + Codex 스킬**을 제공합니다. Codex가 게임 요구 사항과 기존 프로젝트를 읽고, 부족한 에셋 목록을 작성해 Asset Studio로 제작한 뒤 엔진에 반영하고 실행·검증하는 구성입니다. 별도 MCP 서버·포트·API 키가 필요하지 않습니다. 공개 다운로드는 아직 0.1.8이며 이 기능의 공개 배포와 구분합니다.
+Mac 0.1.10 배포본은 **네이티브 CLI + Codex 스킬**을 제공합니다. Codex가 게임 요구 사항과 기존 프로젝트를 읽고, 부족한 에셋 목록을 작성해 Asset Studio로 제작한 뒤 엔진에 반영하고 실행·검증하는 구성입니다. 별도 MCP 서버·포트·API 키가 필요하지 않습니다. Mac DMG에 포함되며 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.10/AssetStudio_0.1.10_codex-plugin.zip)도 제공합니다. Windows 다운로드는 기존 0.1.9를 유지합니다.
 
 | 방법 | 설치와 사용 | 선택 |
 | --- | --- | --- |
@@ -16,8 +16,10 @@
 Mac 앱 제작 홈의 **Codex 스킬 설치** 버튼을 누릅니다. CLI로 설치할 수도 있습니다.
 
 ```sh
-"/Applications/Asset Studio.app/Contents/MacOS/asset-cli" install-codex
+"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" install-codex
 ```
+
+위 명령은 터미널 설치의 기본 앱 위치입니다. 다른 폴더에 설치했다면 해당 앱의 `Contents/MacOS/asset-cli` 경로를 사용하세요.
 
 사용자 `~/.agents/skills/asset-studio`에 스킬과 실제 CLI 경로를 저장합니다. 앱 위치에 맞는 CLI가 설치되며, 기존 관리형 스킬은 해시 확인 후 백업하고 갱신합니다. 사용자가 수정한 스킬은 덮어쓰지 않습니다. Codex의 스킬 목록을 새로 읽는 새 작업에서 사용하세요.
 
@@ -32,8 +34,8 @@ Codex에 다음처럼 요청합니다.
 CLI는 개발 도구 없이 앱에 포함됩니다. 독립 개발 빌드에는 `--resources /absolute/masset`를 전달합니다.
 
 ```sh
-"/Applications/Asset Studio.app/Contents/MacOS/asset-cli" doctor --check-gpt
-"/Applications/Asset Studio.app/Contents/MacOS/asset-cli" produce \
+"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" doctor --check-gpt
+"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" produce \
   --game-root /absolute/MyGame \
   --manifest /absolute/assets.json \
   --request-id 5130c051-cd41-4eaa-9f91-caa1e9808131 --allow-gpt
@@ -51,4 +53,4 @@ JSON Lines 출력의 `plan`, `progress`, `result`로 실제 제작을 추적합�
 
 Asset Studio는 개별 시각 에셋과 검증 가능한 파일을 만듭니다. Codex는 플레이어 조작·AI·미션·카메라·음향·애니메이션을 구현하고, 실제 엔진 가져오기·재질·충돌·씬 연결·빌드·플레이 테스트를 담당합니다. Unity의 GLB 가져오기 지원 여부도 실제 프로젝트에서 확인해야 합니다. 에셋 폴더 생성으로 게임 완성을 선언하지 않습니다.
 
-이미지에서 3D는 기존 Apple Silicon Mac TripoSR·Blender 경로이며 숨은 면·얇은 물체의 형상은 확인이 필요합니다. CLI는 기존 품질 기능을 연결하며 새로운 모델의 품질이나 리깅·애니메이션을 보장하지 않습니다. 새로운 Windows CLI/스킬 실행과 모바일 게임 성능은 이번 Mac 검증 범위에 포함하지 않습니다. 검증 결과는 실제 실행·파일 해시·재열기 증거로 구분합니다.
+이미지에서 3D는 기존 Apple Silicon Mac TripoSR·Blender 경로이며 숨은 면·얇은 물체의 형상은 확인이 필요합니다. CLI는 기존 품질 기능을 연결하며 새로운 모델의 품질이나 리깅·애니메이션을 보장하지 않습니다. Windows 0.1.9에는 새 CLI·스킬이 포함되지 않습니다. 이번 최종 Mac 배포 패키지의 추가 설치·화면 테스트는 요청에 따라 생략했으며, 이전 개발 검증은 [별도 기록](codex-integration-validation.md)에 남깁니다. 모바일 게임 성능과 게임 전체 완성 검증은 포함하지 않습니다.

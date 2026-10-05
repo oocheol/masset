@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.10 — Mac Codex asset workflow (2026-10-06)
+
+- Added a bundled native CLI and installable Codex skill for individual assets during game development, with a portable skill/plugin ZIP.
+- Added manifest-driven production, request-ID resume, JSONL progress and delivery hashes using the existing subscription and local 3D paths.
+- Improved long production-plan waiting, held queue recovery and local-stage retry without regenerating completed reference images.
+- Repaired bounded UV defects and stopped Blender Python bytecode writes inside the signed app.
+- Published a Mac DMG and separately signed updater. Preserved Windows 0.1.9 downloads and its signed channel.
+- Final package installation, UI and updater lifecycle tests were skipped at the user's explicit request; earlier development evidence is recorded separately.
+
 ## 0.1.9 — Windows local image-to-3D (2026-10-06)
 
 - Enabled Windows x64 reconstruction in the production screen and 3D workbench, retaining the Apple Silicon path.
