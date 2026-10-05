@@ -116,6 +116,8 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   const [uploadApproved, setUploadApproved] = useState(false);
   const [acceptedPlan, setAcceptedPlan] = useState<{id: string; key: string} | null>(null);
   const [operation, setOperation] = useState<string | null>(null);
+  const [planningSeconds, setPlanningSeconds] = useState(0);
+  const [cancelingPlan, setCancelingPlan] = useState(false);
   const [error, setError] = useState('');
   const [loadError, setLoadError] = useState('');
   const [notice, setNotice] = useState('');
@@ -129,6 +131,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   latest.current = {scope, snapshot, brief, output, referenceIds};
   const mounted = useRef(false);
   const pending = useRef<string | null>(null);
+  const planCanceled = useRef(false);
   const readEpoch = useRef(0);
   const stateFlight = useRef<Promise<void> | null>(null);
   const localEpoch = useRef(0);
@@ -160,8 +163,17 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     setLoaded(false);
     setBrief(''); setOutput('mixed'); setReferenceIds([]); setUploadApproved(false);
     setAcceptedPlan(null); setOperation(null); setError(''); setLoadError(''); setNotice('');
+    setPlanningSeconds(0); setCancelingPlan(false); planCanceled.current = false;
     setLocalStatus(null); setLocalError(''); setLocalLoading(false); setDownloadApproved(false);
   }, [scope]);
+
+  useEffect(() => {
+    if (operation !== 'plan') return;
+    const started = performance.now();
+    setPlanningSeconds(0);
+    const timer = window.setInterval(() => setPlanningSeconds(Math.floor((performance.now() - started) / 1000)), 1000);
+    return () => window.clearInterval(timer);
+  }, [operation, scope]);
 
   // This is the only automatic production action: read persisted state. A read
   // waits for an older read, and mutations invalidate responses already in flight.
@@ -325,10 +337,12 @@ export default function ProductionHome({snapshot, native, connection, providerCh
     const captured = scope;
     const revision = draftRevision.current;
     const requested = {snapshot, brief, output, referenceIds: [...referenceIds], root: state.connection?.root};
+    planCanceled.current = false; setCancelingPlan(false);
     setAcceptedPlan(null); setNotice('');
     try {
       const next = await command<ProductionState>({action: 'production_plan', brief: brief.trim(), output, referenceAssetIds: [...referenceIds], uploadApproved: true});
       if (!currentScope(captured)) return;
+      if (planCanceled.current) {setNotice('에셋 분석을 취소했습니다. 설명과 참고 자료는 유지했습니다.'); return;}
       acceptState(next);
       const current = latest.current;
       const saved = next.plan;
@@ -338,8 +352,26 @@ export default function ProductionHome({snapshot, native, connection, providerCh
         && matchesPlan(saved, next.connection, current.snapshot, current.brief, current.output, current.referenceIds)) {
         setAcceptedPlan({id: saved.id, key: savedKey});
       } else setNotice('입력이 바뀌었거나 저장된 계획이 일치하지 않습니다. 필요한 에셋을 다시 분석하세요.');
-    } catch (cause) {if (currentScope(captured)) setError(safeError(cause, '필요한 에셋을 분석하지 못했습니다. 연결과 입력을 확인한 뒤 다시 시도하세요.'));}
+    } catch (cause) {if (currentScope(captured)) {
+      if (planCanceled.current) setNotice('에셋 분석을 취소했습니다. 설명과 참고 자료는 유지했습니다.');
+      else setError(safeError(cause, '필요한 에셋을 분석하지 못했습니다. 연결과 입력을 확인한 뒤 다시 시도하세요.'));
+    }}
     finally {finish(captured, 'plan');}
+  }
+
+  async function cancelAnalysis() {
+    if (!desktop || pending.current !== 'plan' || planCanceled.current) return;
+    const captured = scope;
+    planCanceled.current = true; setCancelingPlan(true);
+    ++draftRevision.current; setAcceptedPlan(null);
+    try {
+      await command({action: 'cancel_plan'});
+    } catch {
+      if (currentScope(captured) && pending.current === 'plan') {
+        planCanceled.current = false; setCancelingPlan(false);
+        setError('분석 취소 요청을 전달하지 못했습니다. 다시 취소하거나 분석 결과를 기다려 주세요.');
+      }
+    }
   }
 
   function acceptResult(next: ProductionResponse, captured: string) {
@@ -465,6 +497,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             <p id={`${id}-upload-scope`}>전송 범위: 게임 설명, 에셋의 상대 파일 이름과 누락된 참조 정보, 직접 선택한 참고 에셋의 메타데이터와 미리보기(있는 경우). 소스 파일 내용은 전송하지 않습니다.</p>
           </div>
           <footer className="production-analyze"><p className="production-muted">{!state.connection ? '게임 프로젝트를 먼저 연결하세요.' : !providerReady ? 'GPT 연결 상태를 확인하세요.' : running ? '진행 중인 제작이 끝난 뒤 새 계획을 분석할 수 있습니다.' : '먼저 제작 목록을 확인한 뒤 제작을 시작합니다.'}</p><button className="production-button primary" type="submit" disabled={!canAnalyze}>{operation === 'plan' ? <LoaderCircle className="production-spin" size={18}/> : <Sparkles size={18}/>} {operation === 'plan' ? '필요한 에셋 분석 중' : '필요한 에셋 분석'}</button></footer>
+          {operation === 'plan' && <div className="production-analyze" aria-label="에셋 분석 진행">
+            <p className="production-muted" role="status">{cancelingPlan ? '분석 취소를 기다리는 중' : 'GPT가 제작 목록을 구성하는 중'} · {Math.floor(planningSeconds / 60)}분 {planningSeconds % 60}초 경과<br/>전체 게임의 이미지와 3D 목록은 몇 분 걸릴 수 있습니다. 최대 10분 동안 응답을 기다립니다.</p>
+            <button className="production-button" type="button" disabled={cancelingPlan} onClick={() => void cancelAnalysis()}><Square size={16}/>{cancelingPlan ? '분석 취소 중' : '분석 취소'}</button>
+          </div>}
         </form>
 
         <section className="production-plan production-surface" aria-labelledby={`${id}-plan`}>

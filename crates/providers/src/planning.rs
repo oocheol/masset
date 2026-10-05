@@ -8,6 +8,8 @@ use std::collections::HashMap;
 pub(super) const MAX_PLANNING_RPC_BYTES: usize = 1024 * 1024;
 const MAX_CONTEXT_BYTES: usize = 256 * 1024;
 const MAX_PLAN_BYTES: usize = 512 * 1024;
+const MAX_PRODUCTION_NOTIFICATIONS: usize = 65_536;
+const MAX_PLANNING_STREAM_BYTES: usize = 64 * 1024 * 1024;
 const MAX_ITEMS: usize = 44;
 const MAX_PRODUCTION_ITEMS: usize = 120;
 const MAX_PROJECT_ASSETS: usize = 2000;
@@ -183,6 +185,13 @@ pub(super) fn timeout_before(
     }
 }
 
+fn planning_timeout(configured: Duration, production: bool) -> Duration {
+    // A complete game inventory can require up to 120 distinct item descriptions.
+    // Keep the small bundle limit, but allow production to use the same bounded
+    // budget as generation. Caller deadlines and cancellation still apply.
+    configured.min(Duration::from_secs(if production { 600 } else { 120 }))
+}
+
 pub(super) fn verify_queued_notifications(process: &RuntimeProcess) -> Result<(), RuntimeError> {
     for message in &process.queued {
         if message["method"] == "asset/toolDenied" || process.is_server_request(message) {
@@ -232,12 +241,9 @@ impl CodexRuntime {
         canceled: &AtomicBool,
     ) -> Result<Value, RuntimeError> {
         check_cancel(canceled)?;
-        let deadline = Instant::now()
-            + self
-                .options
-                .generation_timeout
-                .min(Duration::from_secs(120));
         let input = validate_context(context, reference_paths)?;
+        let deadline =
+            Instant::now() + planning_timeout(self.options.generation_timeout, input.production);
         if self.active_turn.is_some() || self.poisoned {
             return Err(RuntimeError::Busy);
         }
@@ -481,121 +487,140 @@ impl CodexRuntime {
     ) -> Result<Value, RuntimeError> {
         let mut messages = HashMap::new();
         let mut notification_count = 0;
-        loop {
-            if canceled.load(Ordering::Acquire) {
-                self.interrupt_planning(thread_id, turn_id);
-                return Err(RuntimeError::Interrupted);
-            }
-            if Instant::now() >= deadline {
-                self.interrupt_planning(thread_id, turn_id);
-                return Err(RuntimeError::OutcomeUnknown {
-                    stage: "planning_timeout",
-                    thread_id: Some(thread_id.into()),
-                    turn_id: Some(turn_id.into()),
-                });
-            }
-            let message = match self.process.next_message(Duration::from_millis(100)) {
-                Ok(Some(message)) => message,
-                Ok(None) => continue,
-                Err(_) => {
+        let mut received_bytes = 0usize;
+        let result = (|| {
+            loop {
+                if canceled.load(Ordering::Acquire) {
+                    self.interrupt_planning(thread_id, turn_id);
+                    return Err(RuntimeError::Interrupted);
+                }
+                if Instant::now() >= deadline {
+                    self.interrupt_planning(thread_id, turn_id);
                     return Err(RuntimeError::OutcomeUnknown {
-                        stage: "planning_stream",
+                        stage: "planning_timeout",
                         thread_id: Some(thread_id.into()),
                         turn_id: Some(turn_id.into()),
-                    })
-                }
-            };
-            notification_count += 1;
-            if notification_count > 4096 {
-                return Err(RuntimeError::Protocol);
-            }
-            if self.process.is_server_request(&message) {
-                self.process.deny_request(&message)?;
-                self.interrupt_planning(thread_id, turn_id);
-                return Err(RuntimeError::UnsafeToolConfiguration);
-            }
-            let method = message["method"].as_str().ok_or(RuntimeError::Protocol)?;
-            let params = &message["params"];
-            if method == "asset/toolDenied" {
-                return Err(RuntimeError::UnsafeToolConfiguration);
-            }
-            if matches!(method, "item/started" | "item/completed")
-                && validate_text_item(&params["item"]).is_err()
-            {
-                self.interrupt_planning(thread_id, turn_id);
-                return Err(RuntimeError::UnsafeToolConfiguration);
-            }
-            if params["threadId"].as_str() != Some(thread_id) {
-                continue;
-            }
-            let message_turn = if method == "turn/completed" {
-                params.pointer("/turn/id")
-            } else {
-                params.get("turnId")
-            };
-            if message_turn.and_then(Value::as_str) != Some(turn_id) {
-                continue;
-            }
-            match method {
-                "item/started" => validate_text_item(&params["item"])?,
-                "item/completed" => collect_text_item(&params["item"], &mut messages)?,
-                "error" => {
-                    self.interrupt_planning(thread_id, turn_id);
-                    return Err(RuntimeError::GenerationFailed {
-                        failure: classify_turn_failure(
-                            &params["error"],
-                            thread_id,
-                            turn_id,
-                            false,
-                            params["willRetry"].as_bool(),
-                        ),
                     });
                 }
-                "turn/completed" => {
-                    let turn = &params["turn"];
-                    match turn["status"].as_str() {
-                        Some("interrupted") => return Err(RuntimeError::Interrupted),
-                        Some("failed") => {
-                            return Err(RuntimeError::GenerationFailed {
-                                failure: classify_turn_failure(
-                                    &turn["error"],
-                                    thread_id,
-                                    turn_id,
-                                    false,
-                                    None,
-                                ),
-                            })
+                let message = match self.process.next_message(Duration::from_millis(100)) {
+                    Ok(Some(message)) => message,
+                    Ok(None) => continue,
+                    Err(_) => {
+                        return Err(RuntimeError::OutcomeUnknown {
+                            stage: "planning_stream",
+                            thread_id: Some(thread_id.into()),
+                            turn_id: Some(turn_id.into()),
+                        })
+                    }
+                };
+                notification_count += 1;
+                received_bytes = received_bytes.saturating_add(
+                    serde_json::to_vec(&message)
+                        .map(|v| v.len())
+                        .unwrap_or(MAX_PLANNING_RPC_BYTES),
+                );
+                let notification_limit = if input.production {
+                    MAX_PRODUCTION_NOTIFICATIONS
+                } else {
+                    4096
+                };
+                if notification_count > notification_limit
+                    || received_bytes > MAX_PLANNING_STREAM_BYTES
+                {
+                    return Err(RuntimeError::PlanningStreamLimit {
+                        notifications: notification_count,
+                        received_bytes,
+                    });
+                }
+                if self.process.is_server_request(&message) {
+                    self.process.deny_request(&message)?;
+                    self.interrupt_planning(thread_id, turn_id);
+                    return Err(RuntimeError::UnsafeToolConfiguration);
+                }
+                let method = message["method"].as_str().ok_or(RuntimeError::Protocol)?;
+                let params = &message["params"];
+                if method == "asset/toolDenied" {
+                    return Err(RuntimeError::UnsafeToolConfiguration);
+                }
+                if matches!(method, "item/started" | "item/completed")
+                    && validate_text_item(&params["item"]).is_err()
+                {
+                    self.interrupt_planning(thread_id, turn_id);
+                    return Err(RuntimeError::UnsafeToolConfiguration);
+                }
+                if params["threadId"].as_str() != Some(thread_id) {
+                    continue;
+                }
+                let message_turn = if method == "turn/completed" {
+                    params.pointer("/turn/id")
+                } else {
+                    params.get("turnId")
+                };
+                if message_turn.and_then(Value::as_str) != Some(turn_id) {
+                    continue;
+                }
+                match method {
+                    "item/started" => validate_text_item(&params["item"])?,
+                    "item/completed" => collect_text_item(&params["item"], &mut messages)?,
+                    "error" => {
+                        self.interrupt_planning(thread_id, turn_id);
+                        return Err(RuntimeError::GenerationFailed {
+                            failure: classify_turn_failure(
+                                &params["error"],
+                                thread_id,
+                                turn_id,
+                                false,
+                                params["willRetry"].as_bool(),
+                            ),
+                        });
+                    }
+                    "turn/completed" => {
+                        let turn = &params["turn"];
+                        match turn["status"].as_str() {
+                            Some("interrupted") => return Err(RuntimeError::Interrupted),
+                            Some("failed") => {
+                                return Err(RuntimeError::GenerationFailed {
+                                    failure: classify_turn_failure(
+                                        &turn["error"],
+                                        thread_id,
+                                        turn_id,
+                                        false,
+                                        None,
+                                    ),
+                                })
+                            }
+                            Some("completed") => {}
+                            _ => return Err(RuntimeError::Protocol),
                         }
-                        Some("completed") => {}
-                        _ => return Err(RuntimeError::Protocol),
+                        for item in turn["items"].as_array().ok_or(RuntimeError::Protocol)? {
+                            collect_text_item(item, &mut messages)?;
+                        }
+                        if canceled.load(Ordering::Acquire) {
+                            return Err(RuntimeError::Interrupted);
+                        }
+                        if messages.len() != 1 {
+                            return Err(RuntimeError::InvalidPlan);
+                        }
+                        let plan = validate_plan(messages.values().next().unwrap(), input)?;
+                        check_cancel(canceled)?;
+                        return Ok(plan);
                     }
-                    for item in turn["items"].as_array().ok_or(RuntimeError::Protocol)? {
-                        collect_text_item(item, &mut messages)?;
+                    "item/agentMessage/delta"
+                    | "item/reasoning/summaryTextDelta"
+                    | "item/reasoning/summaryPartAdded"
+                    | "item/reasoning/textDelta"
+                    | "turn/started" => {}
+                    // Unknown item/tool event families fail closed, including future
+                    // registry additions. Unrelated status/usage notifications carry
+                    // no plan text and are bounded by the count/deadline above.
+                    _ if method.starts_with("item/") => {
+                        return Err(RuntimeError::UnsafeToolConfiguration)
                     }
-                    if canceled.load(Ordering::Acquire) {
-                        return Err(RuntimeError::Interrupted);
-                    }
-                    if messages.len() != 1 {
-                        return Err(RuntimeError::InvalidPlan);
-                    }
-                    let plan = validate_plan(messages.values().next().unwrap(), input)?;
-                    check_cancel(canceled)?;
-                    return Ok(plan);
+                    _ => {}
                 }
-                "item/agentMessage/delta"
-                | "item/reasoning/summaryTextDelta"
-                | "item/reasoning/summaryPartAdded"
-                | "item/reasoning/textDelta"
-                | "turn/started" => {}
-                // Unknown item/tool event families fail closed, including future
-                // registry additions. Unrelated status/usage notifications carry
-                // no plan text and are bounded by the count/deadline above.
-                _ if method.starts_with("item/") => {
-                    return Err(RuntimeError::UnsafeToolConfiguration)
-                }
-                _ => {}
             }
-        }
+        })();
+        result
     }
 }
 
@@ -2576,6 +2601,61 @@ mod tests {
             CodexRuntime::connect_for_planning(options),
             Err(RuntimeError::PlanningModelRequiresTools)
         ));
+    }
+
+    #[test]
+    fn long_production_stream_completes_without_relaxing_bundle_or_stream_limits() {
+        let delta = json!({"method":"item/agentMessage/delta","params":{"threadId":"thread-1","turnId":"turn-1","delta":"PRIVATE_STREAM_TEXT"}});
+        for (production, count, completes) in [
+            (true, 5000, true),
+            (false, 5000, false),
+            (true, MAX_PRODUCTION_NOTIFICATIONS + 1, false),
+        ] {
+            let mut messages = preflight();
+            messages.extend(std::iter::repeat_n(delta.clone(), count));
+            messages.push(completed(plan(production_items(1, 1))));
+            let mut fixture = Fixture::new(messages);
+            fixture.actor.options.generation_timeout = Duration::from_secs(5);
+            let ctx = if production {
+                production_context("mixed")
+            } else {
+                context("images", 1)
+            };
+            let result = fixture
+                .actor
+                .plan_assets(&ctx, &[], &AtomicBool::new(false));
+            if completes {
+                assert!(result.is_ok());
+            } else {
+                let error = result.unwrap_err();
+                assert!(matches!(error, RuntimeError::PlanningStreamLimit { .. }));
+                assert!(!error.to_string().contains("PRIVATE_STREAM_TEXT"));
+            }
+            assert_eq!(fixture.turns(), 1);
+            assert!(fs::read_dir(&fixture.root).unwrap().next().is_none());
+        }
+    }
+
+    #[test]
+    fn whole_game_planning_can_wait_past_two_minutes_without_unbounded_deadlines() {
+        let default_budget = RuntimeOptions::new("unused", "unused").generation_timeout;
+        assert_eq!(
+            planning_timeout(default_budget, true),
+            Duration::from_secs(600)
+        );
+        assert_eq!(
+            planning_timeout(default_budget, false),
+            Duration::from_secs(120)
+        );
+        assert_eq!(
+            planning_timeout(Duration::from_secs(3600), true),
+            Duration::from_secs(600)
+        );
+        assert_eq!(
+            planning_timeout(Duration::from_secs(90), true),
+            Duration::from_secs(90)
+        );
+        assert_eq!(planning_timeout(Duration::ZERO, true), Duration::ZERO);
     }
 
     #[test]

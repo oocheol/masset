@@ -1,7 +1,7 @@
 //! Describe a game, inspect a read-only project, then produce independent assets.
 //! Plans are data; generated code and game source files never execute or upload.
 use super::*;
-use asset_providers::runtime::{CodexRuntime, RuntimeOptions};
+use asset_providers::runtime::{CodexRuntime, NativeFailureClass, RuntimeError, RuntimeOptions};
 use asset_providers::REQUESTED_IMAGE_MODEL;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashSet, VecDeque};
@@ -9,6 +9,86 @@ use std::io::{Read, Write};
 
 const MAX_ITEMS: usize = 120;
 const OUTPUT_FOLDER: &str = "AssetStudioGenerated";
+
+struct PlanningCancellation<'a>(&'a Mutex<Option<Arc<AtomicBool>>>);
+
+impl Drop for PlanningCancellation<'_> {
+    fn drop(&mut self) {
+        *self.0.lock().unwrap() = None;
+    }
+}
+
+fn planning_error(error: RuntimeError) -> anyhow::Error {
+    // Fixed user-facing messages only: never forward RPC errors, process output,
+    // assistant text, URLs or authentication details through the desktop bridge.
+    let message = match &error {
+        RuntimeError::OutcomeUnknown { stage: "planning_timeout", .. } =>
+            "GPT 에셋 분석이 10분 안에 완료되지 않았습니다. 설명과 참고 자료는 유지했습니다. 미션이나 구역 단위로 범위를 나눠 다시 분석해 주세요.",
+        RuntimeError::Timeout => "GPT 분석 연결의 응답 시간이 초과됐습니다. 연결 상태를 확인한 뒤 다시 분석해 주세요.",
+        RuntimeError::AuthenticationRequired => "GPT 구독 로그인이 만료됐습니다. GPT 구독 연결에서 다시 로그인한 뒤 분석해 주세요.",
+        RuntimeError::Unavailable => "공식 Codex 실행 파일을 찾지 못했습니다. GPT 구독 연결에서 준비 상태를 확인해 주세요.",
+        RuntimeError::ReasoningModelUnavailable => "GPT-5.5 분석 모델의 사용 가능 여부를 확인하지 못했습니다. GPT 구독 연결과 계정의 모델 이용 권한을 확인해 주세요.",
+        RuntimeError::InvalidInput => "게임 설명 또는 참고 자료를 분석 요청으로 전달하지 못했습니다. 입력 크기와 참고 파일을 확인해 주세요.",
+        RuntimeError::PlanningStreamLimit { .. } => "GPT 제작 목록 응답이 처리 가능한 크기를 초과했습니다. 미션이나 구역 단위로 나눠 분석해 주세요.",
+        RuntimeError::InvalidPlan | RuntimeError::InvalidPlanRule { .. } => "GPT가 반환한 제작 목록의 형식을 확인하지 못했습니다. 설명과 참고 자료는 유지했습니다. 다시 분석해 주세요.",
+        RuntimeError::Interrupted => "에셋 분석을 취소했습니다. 설명과 참고 자료는 유지했습니다.",
+        RuntimeError::GenerationFailed { failure } => match failure.codex_error_info {
+            NativeFailureClass::UsageLimitExceeded | NativeFailureClass::SessionBudgetExceeded => "GPT 구독 사용 한도에 도달했습니다. GPT 구독 연결에서 한도와 초기화 시간을 확인해 주세요.",
+            NativeFailureClass::Unauthorized => "GPT 구독 인증을 확인하지 못했습니다. GPT 구독 연결에서 다시 로그인해 주세요.",
+            NativeFailureClass::ContextWindowExceeded => "GPT 분석에 전달할 자료가 너무 큽니다. 참고 자료나 게임 설명의 범위를 줄여 주세요.",
+            NativeFailureClass::ServerOverloaded => "GPT 서버가 혼잡해 분석을 완료하지 못했습니다. 잠시 후 다시 분석해 주세요.",
+            _ => "GPT 요청이 실패해 에셋 분석을 완료하지 못했습니다. 연결 상태를 확인한 뒤 다시 분석해 주세요.",
+        },
+        RuntimeError::OutcomeUnknown { .. } => "GPT 분석 중 연결이 끊겨 결과를 확인하지 못했습니다. 자동 재요청은 하지 않았습니다. 연결 상태를 확인한 뒤 다시 분석해 주세요.",
+        _ => "GPT 분석 연결의 실행 상태를 확인하지 못했습니다. GPT 구독 연결을 확인한 뒤 다시 분석해 주세요.",
+    };
+    anyhow!("{message} ({})", error.code())
+}
+
+fn record_planning_error(work: &Path, phase: &str, error: &RuntimeError) {
+    // Allowlisted diagnostics only, in this request's new app-owned directory.
+    let rule = match error {
+        RuntimeError::InvalidPlanRule { rule }
+            if [
+                "response_size",
+                "json_shape",
+                "summary_or_count",
+                "item_identity_or_text",
+                "name_prefix",
+                "single_asset_description",
+                "reference_identity",
+                "target_or_kind",
+                "target_reference",
+                "improvement_target",
+                "model_parameters",
+                "prompt_size",
+                "requested_counts",
+                "serialization",
+            ]
+            .contains(rule) =>
+        {
+            Some(*rule)
+        }
+        _ => None,
+    };
+    if let Ok(file) = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(work.join("planning-error.json"))
+    {
+        let stream = match error {
+            RuntimeError::PlanningStreamLimit {
+                notifications,
+                received_bytes,
+            } => Some(json!({"notifications":notifications,"receivedBytes":received_bytes})),
+            _ => None,
+        };
+        let _ = serde_json::to_writer(
+            file,
+            &json!({"phase":phase,"code":error.code(),"rule":rule,"stream":stream}),
+        );
+    }
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -609,6 +689,9 @@ impl Backend {
         if output != "images" && !quality3d::reconstruction_supported() {
             bail!("이 기기에서는 이미지 제작만 지원합니다. '이미지'를 선택하고 다시 분석하세요. 이미지에서 3D 제작은 Windows x64·Apple Silicon Mac에서 지원합니다.");
         }
+        let cancel = Arc::new(AtomicBool::new(false));
+        *self.inner.planning_cancel.lock().unwrap() = Some(cancel.clone());
+        let _planning = PlanningCancellation(&self.inner.planning_cancel);
         let mut state = load_state(root)?;
         let previous = state
             .connection
@@ -641,13 +724,22 @@ impl Backend {
         let executable = self
             .provider_executable()
             .context("GPT 구독 연결을 먼저 확인해 주세요.")?;
-        let cancel = Arc::new(AtomicBool::new(false));
-        *self.inner.planning_cancel.lock().unwrap() = Some(cancel.clone());
         let result = (|| -> Result<Plan> {
+            if cancel.load(Ordering::SeqCst) {
+                return Err(planning_error(RuntimeError::Interrupted));
+            }
             let mut options = RuntimeOptions::new(executable, work.join("rpc"));
             options.reasoning_model = Some("gpt-5.5".into());
-            let mut runtime = CodexRuntime::connect_for_planning(options)?;
-            let proposal = runtime.plan_assets(&context, &images, &cancel)?;
+            let mut runtime = CodexRuntime::connect_for_planning(options).map_err(|error| {
+                record_planning_error(&work, "connect", &error);
+                planning_error(error)
+            })?;
+            let proposal = runtime
+                .plan_assets(&context, &images, &cancel)
+                .map_err(|error| {
+                    record_planning_error(&work, "plan", &error);
+                    planning_error(error)
+                })?;
             if cancel.load(Ordering::SeqCst) {
                 bail!("게임 분석을 취소했습니다.");
             }
@@ -680,7 +772,6 @@ impl Backend {
             validate_plan(&plan, &project)?;
             Ok(plan)
         })();
-        *self.inner.planning_cancel.lock().unwrap() = None;
         let plan = result?;
         let _io = self.inner.io.lock().unwrap();
         state.connection = Some(scan);
@@ -1332,6 +1423,43 @@ mod tests {
             "delivery":delivery,"reconstruction":version.settings["localReconstruction"],"project":root,"work":work});
         fs::write(output.join("production-image3d-proof.json"), serde_json::to_vec_pretty(&report).unwrap()).unwrap();
         backend.shutdown();
+    }
+
+    #[test]
+    fn planning_errors_keep_actionable_causes_without_private_runtime_details() {
+        let cases = [
+            (RuntimeError::AuthenticationRequired, "로그인"),
+            (RuntimeError::Timeout, "응답 시간"),
+            (
+                RuntimeError::OutcomeUnknown {
+                    stage: "planning_timeout",
+                    thread_id: Some("PRIVATE_CREDENTIAL".into()),
+                    turn_id: Some("PRIVATE_CREDENTIAL".into()),
+                },
+                "10분",
+            ),
+            (
+                RuntimeError::OutcomeUnknown {
+                    stage: "PRIVATE_CREDENTIAL",
+                    thread_id: None,
+                    turn_id: None,
+                },
+                "연결이 끊겨",
+            ),
+            (
+                RuntimeError::InvalidPlanRule {
+                    rule: "PRIVATE_CREDENTIAL",
+                },
+                "제작 목록의 형식",
+            ),
+        ];
+        for (error, message) in cases {
+            let code = error.code();
+            let displayed = planning_error(error).to_string();
+            assert!(displayed.contains(message));
+            assert!(displayed.contains(code));
+            assert!(!displayed.contains("PRIVATE_CREDENTIAL"));
+        }
     }
 
     #[cfg(windows)]

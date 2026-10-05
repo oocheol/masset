@@ -162,7 +162,8 @@ beforeAll(async () => {
           response = structuredClone(fixture.cancelResult) ?? {snapshot: structuredClone(fixture.props.snapshot), state: structuredClone(fixture.state)};
           const run = response.state.runs.find(run => run.id === request.runId); run.status = 'cancelled';
           run.items.forEach(item => {if (item.status === 'pending' || item.status === 'running') item.status = 'cancelled';});
-        } else throw new Error('Unexpected UI fixture action');
+        } else if (action === 'cancel_plan') response = {cancelRequested: true};
+        else throw new Error('Unexpected UI fixture action');
         await gate(action);
         if (fixture.props.snapshot.project.id !== requestedProject) return response;
         if (action.startsWith('quality3d_') && action !== 'quality3d_status') fixture.local = structuredClone(response);
@@ -341,6 +342,34 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     await uiExpect(page.getByText(/입력이 바뀌었거나 저장된 계획이 일치하지 않습니다/)).toBeVisible();
     await uiExpect(page.getByRole('list', {name: '제작 계획'})).toHaveCount(0); await uiExpect(startButton()).toBeDisabled();
     await uiExpect(consent()).not.toBeChecked(); expect(await commands('production_start')).toEqual([]);
+  });
+
+  it('keeps a long analysis visible, cancels once, and rejects a late plan without losing inputs', async () => {
+    await mount({hold: ['production_plan']}); await describeGame(); await analyzeButton().click();
+    await uiExpect(page.getByLabel('에셋 분석 진행')).toContainText('최대 10분');
+    await page.clock.runFor(1000);
+    await uiExpect(page.getByLabel('에셋 분석 진행')).toContainText('0분 1초 경과');
+    await page.clock.runFor(120000);
+    await uiExpect(page.getByLabel('에셋 분석 진행')).toContainText('2분 1초 경과');
+    const cancel = page.getByRole('button', {name: '분석 취소', exact: true});
+    await cancel.evaluate(button => {(button as HTMLButtonElement).click(); (button as HTMLButtonElement).click();});
+    expect(await commands('cancel_plan')).toEqual([{action: 'cancel_plan'}]);
+    await uiExpect(page.getByRole('button', {name: '분석 취소 중', exact: true})).toBeDisabled();
+    await release('production_plan');
+    await uiExpect(page.getByText('에셋 분석을 취소했습니다. 설명과 참고 자료는 유지했습니다.')).toBeVisible();
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(BRIEF);
+    await uiExpect(page.getByRole('list', {name: '제작 계획'})).toHaveCount(0);
+    await uiExpect(startButton()).toBeDisabled(); expect(await commands('production_start')).toEqual([]);
+  });
+
+  it('shows an actionable planning timeout without clearing the brief or submitting work', async () => {
+    const message = 'GPT 에셋 분석이 10분 안에 완료되지 않았습니다. 미션이나 구역 단위로 범위를 나눠 다시 분석해 주세요. (provider.outcome_unknown)';
+    await mount({failures: {production_plan: 1}, errorMessages: {production_plan: message}});
+    await describeGame(); await analyzeButton().click();
+    await uiExpect(page.getByRole('alert')).toHaveText(message);
+    await uiExpect(page.getByRole('textbox', {name: '게임 설명', exact: true})).toHaveValue(BRIEF);
+    await uiExpect(analyzeButton()).toBeEnabled();
+    expect(await commands('production_start')).toEqual([]);
   });
 
   it('invalidates plans and consent when brief, output or selected references change', async () => {
