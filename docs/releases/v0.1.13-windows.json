@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.13",
+  "platform": "windows-x64",
+  "verifiedAt": "2026-10-06T07:27:00.342Z",
+  "sourceCodeCommit": "33b74cd57e20a754c6907ea1a4ce865cc90a3087",
+  "implementationCommit": "808e01ab3f30e74c7ea97b8ccda8ee5b11e0c807",
+  "localVerificationComplete": true,
+  "assets": [
+    {
+      "filename": "AssetStudio_0.1.13_x64-setup.exe",
+      "bytes": 11457090,
+      "sha256": "747dc7c26472f10832c4cbe5bada3451178c37441ab014b94418131e6e061d84",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_x64-setup.exe"
+    },
+    {
+      "filename": "AssetStudio_0.1.13_x64-setup.exe.sig",
+      "bytes": 444,
+      "sha256": "c9f2373cd3143602819800ba6c368aeacb6df693bfc245537bc65f18298ae832",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_x64-setup.exe.sig"
+    },
+    {
+      "filename": "AssetStudio-windows-x64-portable.zip",
+      "bytes": 17184103,
+      "sha256": "e9d7e1b7f822a76d279a2a62c5228f38ae1840a7f58d7337077ebb05f2450553",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio-windows-x64-portable.zip"
+    },
+    {
+      "filename": "AssetStudioCLI-0.1.13-windows-x64.zip",
+      "bytes": 7314020,
+      "sha256": "3a83d9c365d2bc19faf15d52b6f7ddfc439d3dd95f80f377989cd1db9746fcf6",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudioCLI-0.1.13-windows-x64.zip"
+    },
+    {
+      "filename": "native-cli-windows-x64.json",
+      "bytes": 91206,
+      "sha256": "f9517723df4b59b66ff5315ac75281bd3b132b0da50331eec185a9c5f4946783",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/native-cli-windows-x64.json"
+    },
+    {
+      "filename": "AssetStudio_0.1.13_codex-plugin-windows-macos.zip",
+      "bytes": 73588,
+      "sha256": "930bc43413cc3b78577776e8d6f0ebffc594da1e1f72941b38bc12df707f1612",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos.zip"
+    },
+    {
+      "filename": "latest.json",
+      "bytes": 1035,
+      "sha256": "cbf3271e9414aba105fb207c612e3f2c3fa96a4014eb49a78997adbbad872ad4",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/latest.json"
+    },
+    {
+      "filename": "latest-macos.json",
+      "bytes": 1046,
+      "sha256": "10dbac22aa5d0aad6fa0d3e7e8a986f035de14896b66c9d264fd4fe4f57ce35a",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/latest-macos.json"
+    }
+  ],
+  "executables": {
+    "portable": {
+      "bytes": 24657920,
+      "sha256": "cdf87d1db44eb0adeeb952caa7d7673a4575515210a645bf3bffcf202609fc28"
+    },
+    "bundledCli": {
+      "bytes": 14481920,
+      "sha256": "3b1fbcabead76ec909b6d29bb56a1ac7b88a86965a30d045bf078c501434ad41"
+    },
+    "standaloneCli": {
+      "bytes": 14483456,
+      "sha256": "90b26998fb45007b9af3ffe10343de8750ef30e2403cacbb0122538b2c4c09a4"
+    },
+    "differentBuildMetadata": true
+  },
+  "retainedMac": {
+    "newBuild": false,
+    "guiVersion": "0.1.12",
+    "cliVersion": "0.1.11",
+    "cliSha256": "e9b65653a117aabce02443b7a77352ea1e7e0bb15248bac236a5ff7d7054014f",
+    "updateChannelSha256": "10dbac22aa5d0aad6fa0d3e7e8a986f035de14896b66c9d264fd4fe4f57ce35a"
+  },
+  "commonNpm": {
+    "package": "@oocheol/asset-studio",
+    "version": "0.1.13",
+    "bytes": 77296,
+    "sha256": "7afaf6b28c4cc80f58ee5505c9a4e9c6b00542334bda491154a489ee51ffaa65",
+    "integrity": "sha512-bwle1msaUGhxTA7oaeg5qj/0cTx0BTGnjBghMOoHlDEDexyHEf2YEPrBjVpHv1dSxUbdrpAxvxsRaR0MgJBUBQ==",
+    "skillInventorySha256": "f9faecd287f84bbc332e752e0aec4ccf80fb52a3b92b35451dcedbc8a96c9809",
+    "runtimeVersions": {
+      "windows-x64": "0.1.13",
+      "macos-arm64": "0.1.11"
+    },
+    "actualPackedInstallUpdateStatus": true,
+    "published": false
+  },
+  "checks": {
+    "rust": {
+      "passed": 253,
+      "ignored": 5
+    },
+    "frontend": {
+      "passed": 153,
+      "skipped": 3,
+      "defaultParallelCommandPassed": true
+    },
+    "npmInstaller": {
+      "passed": 19
+    },
+    "pythonWorker": {
+      "passed": 33,
+      "skipped": 1
+    },
+    "rawCache": {
+      "passed": 13
+    },
+    "combinedPreviewRegression": {
+      "passed": 17
+    },
+    "independentNativeReopens": [
+      {
+        "valid": true,
+        "checks": 59,
+        "sha256": "9648cd96457a48ff8ee6c32ff27d2bb08746fc9fff46fc37b2a957be8fbe3037"
+      },
+      {
+        "valid": true,
+        "checks": 59,
+        "sha256": "ba2c6e15a66b2e48f5bf9d050603f7184cfff31f93e0ec4a02e8db7f68ea19b3"
+      }
+    ],
+    "packageAudit": {
+      "passed": true,
+      "checks": 4862,
+      "counts": {
+        "frozenTauri": 390,
+        "portableCompatibility": 5,
+        "frozenTotal": 395,
+        "nsisFiles": 398,
+        "portableFiles": 398,
+        "cliFiles": 380,
+        "commonPluginFiles": 11
+      },
+      "sha256": "3bb26652d396f8b7ad697247372bc19b892d1aebe7b6f3fd73f152eb9d9092a6",
+      "localSignatureAndTamperReplayVerified": true
+    },
+    "nativeGui": {
+      "passed": true,
+      "nativeIpc": true,
+      "decodedImages": 12,
+      "windowsProductionModeVerified": true,
+      "native3DVerified": true,
+      "glbSha256": "415a6583adc4387667be9ac52f3861ea29e4753391e32eaee0014dd894da1be5",
+      "draws": 12
+    },
+    "guardedWmiUnavailableFallback": {
+      "bothNestedWindowsJobProcessesPassed": true,
+      "inferenceCalls": 0,
+      "originalBundleAndRuntimePreserved": true
+    }
+  },
+  "performance": {
+    "hardware": {
+      "cpu": "Intel Core i5-12400F",
+      "ramGiB": 64,
+      "cpuThreads": 2,
+      "device": "cpu",
+      "blender": "5.2.1 LTS",
+      "python": "3.12.10"
+    },
+    "fixture": "workers/image3d/fixtures/blue-sphere.png",
+    "fixtureSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+    "quality": "draft",
+    "textureResolution": 512,
+    "maxTriangles": 5000,
+    "runs": [
+      {
+        "cacheHit": false,
+        "inferenceExecuted": true,
+        "commandSeconds": 80.90441489999999,
+        "coreSeconds": 69.717,
+        "previewSeconds": 10.07,
+        "reconstructionSeconds": 48.578,
+        "rawSha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+        "artifacts": 17,
+        "uvAtlas": {
+          "continuousUVTriangleArea": 0.25112092028938326,
+          "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+          "densityRatioP90P10": 1.1831832664821982,
+          "interiorOverlapFraction": 0.0016296318859562284,
+          "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+          "overlappingInteriorTexels": 107,
+          "packingGapPixels": 4,
+          "packingMethod": "Blender pack_islands CONVEX/ANY with final atlas FRACTION margin",
+          "paddingIncludedInUsage": false,
+          "paddingPixels": 2,
+          "resolution": 512,
+          "smallMeshPacking": false,
+          "subpixelOverlapCertified": false,
+          "surfaceTexels": 65659,
+          "surfaceUsageFraction": 0.2504692077636719,
+          "texelDensityPixelsPerMeter": {
+            "median": 156.10254047303383,
+            "p10": 143.02511774817157,
+            "p90": 169.22492600628266
+          }
+        },
+        "triangleCounts": {
+          "game": 4894,
+          "highDetail": 5738,
+          "lod1": 3591,
+          "original": 5738
+        },
+        "qualityPreservation": {
+          "game": {
+            "certifiesUnseenGeometry": false,
+            "certifiesWatertightness": false,
+            "failedMetrics": [],
+            "limits": {
+              "maximumLostThinSurfaceFraction": 0.03,
+              "maximumRelativeSurfaceError": 0.06,
+              "minimumSilhouetteIoU": 0.88,
+              "p95RelativeSurfaceError": 0.015
+            },
+            "maximumRelativeSurfaceError": 0.0011462917318567634,
+            "maximumSurfaceErrorMeters": 0.0011462917318567634,
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "minimumSilhouetteIoU": 0.9996294924045943,
+            "normalizingExtentMeters": 1,
+            "p95RelativeSurfaceError": 0.000137815600464819,
+            "p95SurfaceErrorMeters": 0.000137815600464819,
+            "passed": true,
+            "role": "game",
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "applicable": true,
+                "derivedPixels": 2702,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 1,
+                "missingSourcePixelFraction": 0,
+                "sourcePixels": 2702,
+                "viewAxis": "X"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2606,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 1,
+                "missingSourcePixelFraction": 0,
+                "sourcePixels": 2606,
+                "viewAxis": "Y"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2698,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9996294924045943,
+                "missingSourcePixelFraction": 0.0003705075954057058,
+                "sourcePixels": 2699,
+                "viewAxis": "Z"
+              }
+            ],
+            "surfaceSampleCount": 2060,
+            "thinFeatures": {
+              "applicable": true,
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified",
+              "lostThinSurfaceFraction": 0,
+              "lostThinSurfaceSamples": 0,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "minimumMeasuredThicknessMeters": 0.00003779881046991795,
+              "sampledSourceFaces": 1024,
+              "thinSurfaceSamples": 60,
+              "thinThresholdMeters": 0.03
+            }
+          },
+          "lod1": {
+            "certifiesUnseenGeometry": false,
+            "certifiesWatertightness": false,
+            "failedMetrics": [],
+            "limits": {
+              "maximumLostThinSurfaceFraction": 0.1,
+              "maximumRelativeSurfaceError": 0.1,
+              "minimumSilhouetteIoU": 0.78,
+              "p95RelativeSurfaceError": 0.035
+            },
+            "maximumRelativeSurfaceError": 0.00260797212831676,
+            "maximumSurfaceErrorMeters": 0.00260797212831676,
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "minimumSilhouetteIoU": 0.9981502034776175,
+            "normalizingExtentMeters": 1,
+            "p95RelativeSurfaceError": 0.0008589629142079501,
+            "p95SurfaceErrorMeters": 0.0008589629142079501,
+            "passed": true,
+            "role": "lod1",
+            "shadingDeviationFromGame": {
+              "includesNormalTexture": false,
+              "maximumNormalDeviationDegrees": 180,
+              "method": "derived triangle-center corner normals versus barycentric source corner normals",
+              "opposedNormalSampleFraction": 0.00390625,
+              "p95NormalDeviationDegrees": 11.685399140459756,
+              "samples": 1024
+            },
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "applicable": true,
+                "derivedPixels": 2699,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9981502034776175,
+                "missingSourcePixelFraction": 0.0014803849000740192,
+                "sourcePixels": 2702,
+                "viewAxis": "X"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2606,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9984662576687117,
+                "missingSourcePixelFraction": 0.0007674597083653108,
+                "sourcePixels": 2606,
+                "viewAxis": "Y"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2697,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9985185185185185,
+                "missingSourcePixelFraction": 0.0011115227862171174,
+                "sourcePixels": 2699,
+                "viewAxis": "Z"
+              }
+            ],
+            "surfaceSampleCount": 2060,
+            "thinFeatures": {
+              "applicable": true,
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified",
+              "lostThinSurfaceFraction": 0,
+              "lostThinSurfaceSamples": 0,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "minimumMeasuredThicknessMeters": 0.00003779881046991795,
+              "sampledSourceFaces": 1024,
+              "thinSurfaceSamples": 60,
+              "thinThresholdMeters": 0.03
+            }
+          }
+        }
+      },
+      {
+        "cacheHit": true,
+        "inferenceExecuted": false,
+        "commandSeconds": 31.20586970000001,
+        "coreSeconds": 20.39,
+        "previewSeconds": 9.653,
+        "reconstructionSeconds": 3.531,
+        "rawSha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+        "artifacts": 17,
+        "uvAtlas": {
+          "continuousUVTriangleArea": 0.25112092028938326,
+          "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+          "densityRatioP90P10": 1.1831832664821982,
+          "interiorOverlapFraction": 0.0016296318859562284,
+          "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+          "overlappingInteriorTexels": 107,
+          "packingGapPixels": 4,
+          "packingMethod": "Blender pack_islands CONVEX/ANY with final atlas FRACTION margin",
+          "paddingIncludedInUsage": false,
+          "paddingPixels": 2,
+          "resolution": 512,
+          "smallMeshPacking": false,
+          "subpixelOverlapCertified": false,
+          "surfaceTexels": 65659,
+          "surfaceUsageFraction": 0.2504692077636719,
+          "texelDensityPixelsPerMeter": {
+            "median": 156.10254047303383,
+            "p10": 143.02511774817157,
+            "p90": 169.22492600628266
+          }
+        },
+        "triangleCounts": {
+          "game": 4894,
+          "highDetail": 5738,
+          "lod1": 3591,
+          "original": 5738
+        },
+        "qualityPreservation": {
+          "game": {
+            "certifiesUnseenGeometry": false,
+            "certifiesWatertightness": false,
+            "failedMetrics": [],
+            "limits": {
+              "maximumLostThinSurfaceFraction": 0.03,
+              "maximumRelativeSurfaceError": 0.06,
+              "minimumSilhouetteIoU": 0.88,
+              "p95RelativeSurfaceError": 0.015
+            },
+            "maximumRelativeSurfaceError": 0.0011462917318567634,
+            "maximumSurfaceErrorMeters": 0.0011462917318567634,
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "minimumSilhouetteIoU": 0.9996294924045943,
+            "normalizingExtentMeters": 1,
+            "p95RelativeSurfaceError": 0.000137815600464819,
+            "p95SurfaceErrorMeters": 0.000137815600464819,
+            "passed": true,
+            "role": "game",
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "applicable": true,
+                "derivedPixels": 2702,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 1,
+                "missingSourcePixelFraction": 0,
+                "sourcePixels": 2702,
+                "viewAxis": "X"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2606,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 1,
+                "missingSourcePixelFraction": 0,
+                "sourcePixels": 2606,
+                "viewAxis": "Y"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2698,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9996294924045943,
+                "missingSourcePixelFraction": 0.0003705075954057058,
+                "sourcePixels": 2699,
+                "viewAxis": "Z"
+              }
+            ],
+            "surfaceSampleCount": 2060,
+            "thinFeatures": {
+              "applicable": true,
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified",
+              "lostThinSurfaceFraction": 0,
+              "lostThinSurfaceSamples": 0,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "minimumMeasuredThicknessMeters": 0.00003779881046991795,
+              "sampledSourceFaces": 1024,
+              "thinSurfaceSamples": 60,
+              "thinThresholdMeters": 0.03
+            }
+          },
+          "lod1": {
+            "certifiesUnseenGeometry": false,
+            "certifiesWatertightness": false,
+            "failedMetrics": [],
+            "limits": {
+              "maximumLostThinSurfaceFraction": 0.1,
+              "maximumRelativeSurfaceError": 0.1,
+              "minimumSilhouetteIoU": 0.78,
+              "p95RelativeSurfaceError": 0.035
+            },
+            "maximumRelativeSurfaceError": 0.00260797212831676,
+            "maximumSurfaceErrorMeters": 0.00260797212831676,
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "minimumSilhouetteIoU": 0.9981502034776175,
+            "normalizingExtentMeters": 1,
+            "p95RelativeSurfaceError": 0.0008589629142079501,
+            "p95SurfaceErrorMeters": 0.0008589629142079501,
+            "passed": true,
+            "role": "lod1",
+            "shadingDeviationFromGame": {
+              "includesNormalTexture": false,
+              "maximumNormalDeviationDegrees": 180,
+              "method": "derived triangle-center corner normals versus barycentric source corner normals",
+              "opposedNormalSampleFraction": 0.00390625,
+              "p95NormalDeviationDegrees": 11.685399140459756,
+              "samples": 1024
+            },
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "applicable": true,
+                "derivedPixels": 2699,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9981502034776175,
+                "missingSourcePixelFraction": 0.0014803849000740192,
+                "sourcePixels": 2702,
+                "viewAxis": "X"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2606,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9984662576687117,
+                "missingSourcePixelFraction": 0.0007674597083653108,
+                "sourcePixels": 2606,
+                "viewAxis": "Y"
+              },
+              {
+                "applicable": true,
+                "derivedPixels": 2697,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch",
+                "intersectionOverUnion": 0.9985185185185185,
+                "missingSourcePixelFraction": 0.0011115227862171174,
+                "sourcePixels": 2699,
+                "viewAxis": "Z"
+              }
+            ],
+            "surfaceSampleCount": 2060,
+            "thinFeatures": {
+              "applicable": true,
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified",
+              "lostThinSurfaceFraction": 0,
+              "lostThinSurfaceSamples": 0,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "minimumMeasuredThicknessMeters": 0.00003779881046991795,
+              "sampledSourceFaces": 1024,
+              "thinSurfaceSamples": 60,
+              "thinThresholdMeters": 0.03
+            }
+          }
+        }
+      }
+    ],
+    "singleInputObservation": true,
+    "historicalRunsNotControlledComparisons": true,
+    "cacheHitPreservedInferenceProof": true,
+    "exactReopenExport": true,
+    "originalPreserved": true
+  },
+  "shippingProofs": {
+    "installedStandalone": {
+      "commandSeconds": 40.742562299999996,
+      "cliSha256": "90b26998fb45007b9af3ffe10343de8750ef30e2403cacbb0122538b2c4c09a4",
+      "cacheHit": true,
+      "inferenceExecuted": false,
+      "glbs": 3,
+      "maps": 3,
+      "previews": 5,
+      "sourceBlendReopened": true,
+      "exactExport": true,
+      "cacheAndReadyPreserved": true
+    },
+    "finalBundled": {
+      "commandSeconds": 33.0795897,
+      "cliSha256": "3b1fbcabead76ec909b6d29bb56a1ac7b88a86965a30d045bf078c501434ad41",
+      "cacheHit": true,
+      "inferenceExecuted": false,
+      "glbs": 3,
+      "maps": 3,
+      "previews": 5,
+      "sourceBlendReopened": true,
+      "exactExport": true,
+      "cacheAndReadyPreserved": true
+    }
+  },
+  "publication": {
+    "githubVerified": false,
+    "npmVerified": false,
+    "siteVerified": false
+  },
+  "limitations": {
+    "newLiveGptRequest": false,
+    "remoteImagePerformanceMeasured": false,
+    "actualImageModelIdConfirmed": false,
+    "macNativeBuildOrExecution": false,
+    "installerLifecycleTested": false,
+    "cleanMachineTested": false,
+    "authenticodeSigned": false,
+    "appleDeveloperIdNotarized": false,
+    "unseenGeometryAccuracyGuaranteed": false,
+    "previewReceiptCryptographicSignature": false,
+    "earlierPlatformFailureExactTupleCaptured": false
+  }
+}
