@@ -4,7 +4,7 @@
   "version": "0.1.11",
   "platform": "windows-x86_64",
   "checkedAt": "2026-10-06T00:52:32.355Z",
-  "status": "native-artifacts-verified-publication-pending",
+  "status": "published-and-native-download-verified",
   "sourceBuildCommit": "849c2344b0283fa7281d4de16d8ab234dd99c582",
   "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.11",
   "macReleasePreserved": "0.1.10",
@@ -87,7 +87,9 @@
       "gameGlbTriangles": 4894,
       "heightMeters": 1,
       "textureResolution": 512,
-      "blenderAutoExecution": false
+      "blenderAutoExecution": false,
+      "publishedCliBinaryMatchesTestedBinary": true,
+      "cliSha256": "f17390fd3a5579287f8b5aa50b5e2a5ff7478d5a310bfb5513a55ac7f205c460"
     },
     "installerAudit": {
       "sourceBuildCommit": "849c2344b0283fa7281d4de16d8ab234dd99c582",
@@ -119,10 +121,111 @@
       "version": "0.1.11",
       "versionReplayRejected": true
     },
-    "publicDownloadsVerified": false,
-    "publicNativeUpdaterVerified": false,
-    "installedUserSkillVerified": false,
-    "productionSiteVerified": false
+    "publicDownloadsVerified": true,
+    "publicNativeUpdaterVerified": true,
+    "installedUserSkillVerified": true,
+    "productionSiteVerified": true,
+    "publicDownloads": [
+      {
+        "filename": "AssetStudio_0.1.11_x64-setup.exe",
+        "bytes": 11321763,
+        "sha256": "b542cdd1580157ca6a11426eb6db93bc88dbd300e4014f615b80a9a017cfe6ef",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio_0.1.11_x64-setup.exe.sig",
+        "bytes": 444,
+        "sha256": "c593063be2670855d5f40e8874cdf7b9ab099751b1d955334e61e24586682d51",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio-windows-x64-portable.zip",
+        "bytes": 16949834,
+        "sha256": "6fdde0ad9bf4a98b5e3eba2377556eeab869cbfb4c045bad6fe63071f8a1c328",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudioCLI-0.1.11-windows-x64.zip",
+        "bytes": 7171955,
+        "sha256": "44d3697a2b8608283a5994fd6e29dade2bbfbca8a3ed087860490dbf64305278",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio_0.1.11_codex-plugin.zip",
+        "bytes": 55666,
+        "sha256": "c490f78ef2b07a32e36cd00b5b4b01a083610d530b4576b1e841c5fb8b407bad",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "latest.json",
+        "bytes": 998,
+        "sha256": "bb0c0e23dfe03843df9443daffb42b4ddb23064fd3f080e61e52c2e886961c28",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "latest-macos.json",
+        "bytes": 1248,
+        "sha256": "0a9641bb1be4821162ad8c4af4f5b5e0f9d2db5e0a89f8fd274852ddd5c40245",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "native-cli-windows-x64.json",
+        "bytes": 90596,
+        "sha256": "2febbdeb42e2268b425059ac898abee971376d3965be35be8df72eb1138c52ed",
+        "verified": true,
+        "authenticationSent": false
+      }
+    ],
+    "publicLatestChannelsVerified": true,
+    "macChannelBytesPreserved": true,
+    "nativePublicUpdater": {
+      "bytes": 11321763,
+      "installerExecuted": false,
+      "payloadSignatureAndVersionVerified": true,
+      "plugin": "tauri-plugin-updater 2.13.1",
+      "publicMetadataChecked": true,
+      "sameVersionComparatorOverride": true,
+      "scope": "Actual official Tauri check/download of current public release; download verification only, no cross-version install",
+      "sha256": "b542cdd1580157ca6a11426eb6db93bc88dbd300e4014f615b80a9a017cfe6ef"
+    },
+    "userSkill": {
+      "additionalLoginStarted": false,
+      "version": "0.1.11",
+      "publicRuntimeSha256": "44d3697a2b8608283a5994fd6e29dade2bbfbca8a3ed087860490dbf64305278",
+      "installedSkillFilesVerified": 8,
+      "imageGenerationRequested": false,
+      "existingAuthReused": true
+    },
+    "productionSite": {
+      "schemaVersion": 1,
+      "passed": true,
+      "url": "https://masset-nu.vercel.app/",
+      "deploymentId": "dpl_EaG2mzUJY6oaVdQYEyK42LLNkVxR",
+      "deploymentUrl": "https://masset-j6f11oth5-oocheols-projects.vercel.app",
+      "productionAliasVerified": true,
+      "desktopViewport": 1280,
+      "mobileViewport": 390,
+      "horizontalOverflow": false,
+      "downloadLinksVerified": true,
+      "macLinkVersion": "0.1.10",
+      "skillTextSize": "18px",
+      "brokenImages": [],
+      "consoleErrors": 0,
+      "screenshots": [
+        "output/playwright/windows-0.1.11-skill-desktop.png",
+        "output/playwright/windows-0.1.11-skill-mobile.png",
+        "output/playwright/windows-0.1.11-mobile-navigation.png"
+      ],
+      "mobileAnchorNavigationVerified": true
+    },
+    "windowsMasterCiRun": "https://github.com/oocheol/masset/actions/runs/37396316099"
   },
   "boundaries": {
     "windowsAuthenticodeSigned": false,
@@ -132,5 +235,6 @@
     "imageInferenceAccess": "unknown",
     "newMacRuntimePublished": false,
     "intelMacPublished": false
-  }
+  },
+  "publicationVerifiedAt": "2026-10-06T01:01:51.550Z"
 }
