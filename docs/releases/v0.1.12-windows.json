@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.12",
+  "platform": "windows-x86_64",
+  "checkedAt": "2026-10-06T04:29:58.919Z",
+  "status": "published-and-native-download-verified",
+  "sourceBuildCommit": "29cb4d0810aa6685bfa2dfb6afab938bc47c44e0",
+  "releaseTagTarget": "e70e9c7f969eb48e30580534a9f50b1a1c644589",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.12",
+  "macReleasePreserved": "0.1.12",
+  "macStandaloneCliPreserved": "0.1.11",
+  "newMacPackageBuilt": false,
+  "packages": {
+    "installer": {
+      "filename": "AssetStudio_0.1.12_x64-setup.exe",
+      "bytes": 11323573,
+      "sha256": "58c7d4d9a7ae744a6e838a0030cadf341bf5309eff70e49ba8eb4f5784c0a939"
+    },
+    "installerSignature": {
+      "filename": "AssetStudio_0.1.12_x64-setup.exe.sig",
+      "bytes": 444,
+      "sha256": "492f7153dcf8f0d034cb43ed99f99239ca4a2a2ebe9a5c6b5f53cb4c90385105"
+    },
+    "portable": {
+      "filename": "AssetStudio-windows-x64-portable.zip",
+      "bytes": 16975175,
+      "sha256": "817ce8a9fa8322fdcaefb1d0338155b88e58f9ccd58c1b4958eb612642648e54"
+    },
+    "standaloneCli": {
+      "filename": "AssetStudioCLI-0.1.12-windows-x64.zip",
+      "bytes": 7184882,
+      "sha256": "7a428a5103432ecc3f738646277d330bb17aefbb11af8b21502f24313393fefa",
+      "verifiedInventoryFiles": 377
+    },
+    "codexSkill": {
+      "filename": "AssetStudio_0.1.12_codex-plugin-windows-macos.zip",
+      "bytes": 73783,
+      "sha256": "d999f5e51a5b25b16c5fbb5741c44aacf5bcd24dfcf1d385f9c8326f81f2513d",
+      "files": 11
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 970,
+      "sha256": "fdb3f040114b2259c1152c4db87fb9ea438805ce5fefd54c39e7134eee90fa2a"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1046,
+      "sha256": "10dbac22aa5d0aad6fa0d3e7e8a986f035de14896b66c9d264fd4fe4f57ce35a"
+    },
+    "npm": {
+      "name": "@oocheol/asset-studio",
+      "version": "0.1.12",
+      "bytes": 77089,
+      "sha256": "190808356fcb52b7704debf2c3660f27504b6113f0aa6ede337a0321cd2edbaa",
+      "integrity": "sha512-8eQ9NsEIOItx2DYuLbIpJJ93ZEmP+aHKTvWRUn19mQpmJvXeR7AJy5j6GhuF6/wmvAym/QfGh0C07zVqsXsppw==",
+      "skillInventorySha256": "438fcbbc3c31c9ff94942d3a2b3f182a461b805031dd978c9d2aa83efd792d33",
+      "runtimeVersions": {
+        "windows-x64": "0.1.12",
+        "macos-arm64": "0.1.11"
+      }
+    }
+  },
+  "validation": {
+    "rustWorkspacePassed": true,
+    "rustTestsPassed": 230,
+    "rustTestsExplicitlyIgnored": 5,
+    "frontendTestsPassed": 153,
+    "frontendTestsExplicitlySkipped": 3,
+    "browserScenariosPassed": 6,
+    "npmInstallerTestsPassed": 19,
+    "bootstrapBoundaryTestsPassed": 52,
+    "blenderDataBoundaryTestsPassed": 17,
+    "image3dBoundaryTestsPassed": 19,
+    "image3dBoundaryTestsExplicitlySkipped": 2,
+    "installerAudit": {
+      "passed": true,
+      "schemaVersion": 1,
+      "version": "0.1.12",
+      "sourceBuildCommit": "29cb4d0810aa6685bfa2dfb6afab938bc47c44e0",
+      "tauriResourcesVerified": 387,
+      "productionCliVerified": true,
+      "desktopBundleMarkerVerified": true,
+      "developerProofExecutablesExcluded": true,
+      "portableCompatibilityCopiesSeparate": 5,
+      "installerExecuted": false
+    },
+    "portableFilesRoundtripVerified": 395,
+    "nativePortableWindow": true,
+    "nativeExtractedInstallerWindow": true,
+    "nativeLocalBlenderModel": {
+      "generator": "Blender",
+      "blenderVersion": "Blender 5.2.1 LTS",
+      "modelJobSucceeded": true,
+      "glbBytes": 116908,
+      "glbSha256": "415a6583adc4387667be9ac52f3861ea29e4753391e32eaee0014dd894da1be5",
+      "triangles": 1620,
+      "dimensionsMeters": [
+        1,
+        1,
+        1
+      ],
+      "drawCalls": 18,
+      "variedPixelsVerified": true,
+      "providerRequests": 0
+    },
+    "standaloneCli": {
+      "sha256": "c34021fbaf04b9691c6ad7b4572d9432528e27fc6db7c2bbe813a9e75a19546c",
+      "originalPreserved": true,
+      "reopenedInSeparateProcess": true,
+      "actualResize": {
+        "width": 7,
+        "height": 9
+      },
+      "exportVerified": true,
+      "guiStarted": false
+    },
+    "extractedInstallerCli": {
+      "sha256": "e7ced919e640d9aa3fbf3a36d95fbdfb11d50df162d2120fd777a54c2c7e877b",
+      "originalPreserved": true,
+      "reopenedInSeparateProcess": true,
+      "actualResize": {
+        "width": 7,
+        "height": 9
+      },
+      "exportVerified": true
+    },
+    "updaterLocalSignature": {
+      "checkedAt": "2026-10-06T04:23:17.923386700+00:00",
+      "installerBytes": 11323573,
+      "installerExecuted": false,
+      "installerSha256": "58c7d4d9a7ae744a6e838a0030cadf341bf5309eff70e49ba8eb4f5784c0a939",
+      "nativeLibrary": true,
+      "networkRequests": 0,
+      "payloadSignatureVerified": true,
+      "providerGenerationRequested": false,
+      "scope": "Independent minisign-verify 0.2.5 check of actual local release bytes and authenticated version; excludes the plugin download path, cross-version installer execution and clean-machine behavior",
+      "signedVersionVerified": true,
+      "tamperedPayloadRejected": true,
+      "version": "0.1.12",
+      "versionReplayRejected": true
+    },
+    "publicNativeUpdater": {
+      "bytes": 11323573,
+      "installerExecuted": false,
+      "payloadSignatureAndVersionVerified": true,
+      "plugin": "tauri-plugin-updater 2.13.1",
+      "publicMetadataChecked": true,
+      "sameVersionComparatorOverride": true,
+      "scope": "Actual official Tauri check/download of current public release; download verification only, no cross-version install",
+      "sha256": "58c7d4d9a7ae744a6e838a0030cadf341bf5309eff70e49ba8eb4f5784c0a939"
+    },
+    "updaterVerifierClientVersion": "0.1.11",
+    "publicDownloads": [
+      {
+        "filename": "AssetStudio_0.1.12_x64-setup.exe",
+        "bytes": 11323573,
+        "sha256": "58c7d4d9a7ae744a6e838a0030cadf341bf5309eff70e49ba8eb4f5784c0a939",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio_0.1.12_x64-setup.exe.sig",
+        "bytes": 444,
+        "sha256": "492f7153dcf8f0d034cb43ed99f99239ca4a2a2ebe9a5c6b5f53cb4c90385105",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio-windows-x64-portable.zip",
+        "bytes": 16975175,
+        "sha256": "817ce8a9fa8322fdcaefb1d0338155b88e58f9ccd58c1b4958eb612642648e54",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "latest.json",
+        "bytes": 970,
+        "sha256": "fdb3f040114b2259c1152c4db87fb9ea438805ce5fefd54c39e7134eee90fa2a",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudioCLI-0.1.12-windows-x64.zip",
+        "bytes": 7184882,
+        "sha256": "7a428a5103432ecc3f738646277d330bb17aefbb11af8b21502f24313393fefa",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "native-cli-windows-x64.json",
+        "bytes": 90597,
+        "sha256": "2258ed08d4e1367583d14319801458cca36fa7e719080a601a5d238e33ec54e9",
+        "verified": true,
+        "authenticationSent": false
+      },
+      {
+        "filename": "AssetStudio_0.1.12_codex-plugin-windows-macos.zip",
+        "bytes": 73783,
+        "sha256": "d999f5e51a5b25b16c5fbb5741c44aacf5bcd24dfcf1d385f9c8326f81f2513d",
+        "verified": true,
+        "authenticationSent": false
+      }
+    ],
+    "publicLatestWindowsChannelVerified": true,
+    "publicMacChannelBytesPreserved": true,
+    "existingMacAssetsPreserved": 9,
+    "releaseTagTargetPreserved": true,
+    "publicWindowsSkillLoader": {
+      "nativePowerShell": "5.1",
+      "privateCliRuntimePrepared": true,
+      "archiveSha256": "7a428a5103432ecc3f738646277d330bb17aefbb11af8b21502f24313393fefa",
+      "verifiedInventoryFiles": 377,
+      "globalSkillChanged": false,
+      "newCodexLoginStarted": false,
+      "providerRequests": 0
+    },
+    "npmRegistry": {
+      "latest": "0.1.12",
+      "archiveMatchesPublishedBytes": true,
+      "freshCacheInstalled": true,
+      "verifiedSkillFiles": 8
+    },
+    "npmUpgrade": {
+      "from": "0.1.11",
+      "to": "0.1.12",
+      "previousFilesPreserved": 8,
+      "previousReceiptPreserved": true,
+      "extraUserFilePreserved": true,
+      "macRuntimeUnchanged": true,
+      "repeatedUpdate": "unchanged"
+    },
+    "productionSiteVerified": false
+  },
+  "boundaries": {
+    "windowsAuthenticodeSigned": false,
+    "cleanMachineTested": false,
+    "installerReplacementLifecycleTested": false,
+    "newGptGenerationTested": false,
+    "newTripoSrCpuGenerationTested": false,
+    "newMacRuntimePublished": false,
+    "intelMacPublished": false
+  },
+  "channelHistoryNote": "Existing Mac packaging records and SHA256SUMS-macos.txt retain the Windows 0.1.11 channel hash from Mac packaging time. Only current Windows latest.json was replaced; all prior Mac assets and the v0.1.12 tag target were preserved."
+}
