@@ -38,6 +38,9 @@ Copy-Item -LiteralPath ($publishInstaller[0].path + '.sig') -Destination ($publi
 $publishResourceText = & 'node.exe' (Join-Path $publishWorkspace 'scripts\copy-windows-resources.mjs') '--workspace' $publishWorkspace '--destination' $publishDirectory '--expected-plan' $BuildReportPath '--check-windows-notices'
 if ($LASTEXITCODE -ne 0) { throw 'Portable Tauri resources failed exclusive copying or digest verification.' }
 $publishResources = $publishResourceText | ConvertFrom-Json
+$publishCli = @($publishBuild.binaries | Where-Object { [IO.Path]::GetFileName($_.path) -eq 'asset-cli.exe' })
+if ($publishCli.Count -ne 1 -or $publishCli[0].architecture -ne 'x64') { throw 'Exactly one recorded AMD64 production CLI is required.' }
+Copy-Verified $publishCli[0] (Join-Path $publishDirectory 'asset-cli.exe')
 if (@(Get-ChildItem -LiteralPath (Join-Path $publishDirectory 'examples') -File -Filter '*.png').Count -ne 12) { throw 'Twelve native examples are required.' }
 $publishNotices = Join-Path $publishDirectory 'docs\licenses'
 if (-not (Test-Path -LiteralPath (Join-Path $publishNotices 'THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Dependency notices are required.' }
@@ -47,6 +50,7 @@ Extract the entire folder and run asset-desktop.exe. Keep examples/, workers/, l
 Use the in-app usage guide or docs/windows-quickstart.md. Projects and input originals are preserved.
 Node/Rust development tools are not required. Microsoft WebView2 must already be installed.
 Blender is optional, separate and never downloaded by the app; worker GPL source/license are included.
+asset-cli.exe supports headless editing, production and explicitly consented user-local preparation. See docs/skill-first-setup.md for the independent Codex skill (GUI installation not required).
 Windows x64 image-to-3D uses an app-managed CPython3.12 CPU runtime. The first preparation requires explicit download consent (~1.89GiB); model weights are not bundled. Blender, at least 16GB RAM and Microsoft Visual C++ 2015-2022 x64 runtime are required. See docs/model-quality.md and the release's native verification record.
 Windows Authenticode signing and clean-machine support are unverified. Update installer signatures are separate.
 Third-party terms, exact license texts and matching unmodified MPL sources: docs/licenses/.

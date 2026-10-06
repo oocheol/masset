@@ -1243,8 +1243,13 @@ mod tests {
     struct Scratch(PathBuf);
     impl Scratch {
         fn new() -> Self {
-            let directory =
-                std::env::temp_dir().join(format!("asset-prerequisite-test-{}", Uuid::new_v4()));
+            // macOS commonly reports /var/folders although /var is a symlink
+            // to /private/var. Resolve only our test fixture's existing base;
+            // production no_links still rejects caller-selected aliases.
+            let directory = std::env::temp_dir()
+                .canonicalize()
+                .unwrap()
+                .join(format!("asset-prerequisite-test-{}", Uuid::new_v4()));
             fs::create_dir(&directory).unwrap();
             Self(directory)
         }

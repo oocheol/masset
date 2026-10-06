@@ -5,14 +5,14 @@ description: Build or improve a playable game in Codex with automatically prepar
 
 Use Asset Studio as the asset producer within the user's game-development task. Keep implementing the game after assets arrive; the asset list or a folder of renders alone is not a completed game.
 
-Windows x64 and Apple Silicon Mac are supported. No MCP server or API key is needed.
+The standalone 0.1.11 runtime is released for Windows x64. Apple Silicon packaging is a separate release; the Mac loader reports unavailable until a verified Mac package is pinned. The existing Mac 0.1.10 app includes its prior CLI. No MCP server or API key is needed.
 
 ## Prepare automatically on first use
 
 The skill includes instructions, loaders and a pinned package manifest, not the native executable or model weights. Start with the appropriate loader beside this file. It installs the versioned CLI and resources in a private user directory and verifies them again before execution. Python, Node, Rust and the Asset Studio GUI are not required to bootstrap.
 
 - Windows: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "ABSOLUTE_SKILL_DIR/scripts/bootstrap.ps1" -ConsentDownloads`.
-- Apple Silicon Mac: `bash "ABSOLUTE_SKILL_DIR/scripts/bootstrap.sh" --consent-downloads`.
+- Apple Silicon Mac: `bash "ABSOLUTE_SKILL_DIR/scripts/bootstrap.sh" --consent-downloads` only when the fixed manifest includes a released Mac package. Do not build, download another platform or substitute an app automatically when it is unavailable.
 - An existing Python 3.9+ installation can optionally run `python "ABSOLUTE_SKILL_DIR/scripts/bootstrap.py" ensure --consent-downloads`.
 
 Use absolute, shell-quoted paths. Add `-Needs3d` on Windows or `--needs-3d` on Mac/Python only for model work. Do not install Blender or model weights for a 2D-only task. The loaders print JSON Lines with `runtime_ready`, `cliPath` and `resourcePath`; use those exact verified paths for later CLI calls, passing `--resources resourcePath`. Never execute a CLI path merely because an editable `installation.json` beside the skill claims it is trusted. Do not override the release manifest or download arbitrary executables.

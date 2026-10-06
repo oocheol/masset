@@ -10,6 +10,8 @@ const downloadUrl = `${sourceUrl}/releases/download/v${release.version}/${releas
 const portableUrl = `${sourceUrl}/releases/download/v${release.version}/${release.portableFilename}`;
 const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 const hasMacRelease = macReleases.length > 0;
+const skillVersion = '0.1.11';
+const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin.zip`;
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -35,7 +37,7 @@ const models = [
 ];
 
 const statuses = [
-  { feature: 'Windows 0.1.9 · 이미지와 3D 제작', status: 'Windows CPU 생성 확인', tone: 'verified', detail: '게임 프로젝트에서 이미지·3D·혼합을 선택합니다. Windows CPU에서 실제 TripoSR 메시 생성, Blender 처리, 저장·프로젝트 재열기·독립 내보내기를 확인했습니다. Python은 앱 전용 공간에 준비하며 첫 다운로드에 동의가 필요합니다. 이번 검증은 로컬 이미지 입력이며 새로운 GPT 요청은 보내지 않았습니다.' },
+  { feature: 'Windows 0.1.11 · 앱 없이 Codex에서 제작', status: 'Windows CLI·CPU 생성 확인', tone: 'verified', detail: '독립 스킬과 CLI가 기존 공식 Codex 로그인을 재사용합니다. 필요한 도구는 승인 후 사용자 전용 공간에 준비합니다. 실제 이미지 편집·저장·재열기·내보내기, Windows CPU TripoSR와 Blender의 GLB·.blend 재열기를 확인했습니다. 앱의 이미지·3D·혼합 제작도 유지합니다. 이번 검증은 로컬 이미지 입력이며 새로운 GPT 요청은 보내지 않았습니다.' },
   { feature: 'Mac 0.1.10 · Codex와 함께 개별 에셋 제작', status: 'Mac 0.1.10 제공', tone: 'experimental', detail: '앱에서 Codex 스킬을 설치하면 게임 제작 중 필요한 개별 이미지와 정적 3D 소품을 CLI로 제작할 수 있습니다. 게임 설명·프로젝트 루트로 시작하는 앱 제작 화면도 유지합니다. 긴 제작 목록의 분석 대기와 큐 이어받기, 모델 UV 처리를 개선했습니다. 배포 전 추가 검증 범위는 릴리스 기록을 확인하세요.' },
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
@@ -49,7 +51,8 @@ const statuses = [
 ];
 
 const faqs = [
-  { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: 'Mac 0.1.10에 CLI와 Codex 스킬이 포함되어 있습니다. 앱에서 스킬을 설치하면 Codex가 필요한 개별 에셋 목록을 작성해 제작하고, 게임 엔진에 반영한 뒤 실행·검증하는 흐름을 사용할 수 있습니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. Mac 앱의 Codex 스킬 설치를 한 번 실행하고 $asset-studio 게임을 만들어줘라고 요청하세요. Windows는 기존 0.1.9를 제공합니다. 게임 완성은 실제 엔진 실행으로 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
+  { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64용 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. 독립 Mac 패키지는 별도 빌드 후 추가하며, 현재 Mac은 기존 앱의 CLI를 제공합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
+  { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
   { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.9로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.10으로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows 0.1.9와 Apple Silicon Mac 0.1.10의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
@@ -191,7 +194,15 @@ export default function App() {
       </section>
 
       <section id="download" className="download-section section-space page-width" aria-labelledby="download-title">
-        <nav className="platform-picker" aria-label="운영체제별 다운로드"><a href="#download-windows">Windows x64</a><a href="#download-mac">Mac Apple Silicon</a></nav>
+        <nav className="platform-picker" aria-label="사용 방법별 다운로드"><a href="#download-skill">Codex 스킬 · 앱 없이</a><a href="#download-windows">Windows 앱</a><a href="#download-mac">Mac 앱</a></nav>
+        <section id="download-skill" className="skill-download" aria-labelledby="skill-download-title">
+          <div className="mac-download-heading"><h3 id="skill-download-title">Codex에서 바로 시작.</h3><span className="mac-trial-label">독립 스킬 · v{skillVersion}</span></div>
+          <div className="skill-download-layout">
+            <div><p>스킬만 설치하세요. 필요한 도구는 첫 사용에서 준비합니다.<br />이미 연결된 공식 Codex 로그인을 사용합니다.</p><a className="button button-primary" href={skillDownloadUrl}><ArrowDownToLine size={19} aria-hidden="true" />Codex 스킬 ZIP 다운로드</a><p className="skill-download-platform">Windows x64 · 독립 Mac 패키지는 별도 배포 예정</p></div>
+            <ol><li><strong>스킬 설치</strong><span>ZIP의 skills/asset-studio를 사용자 ~/.agents/skills 폴더에 넣습니다.</span></li><li><strong>새 Codex 작업에서 요청</strong><span>“$asset-studio 필요한 도구를 설치하고 에셋을 만들어줘”</span></li><li><strong>필요한 구성요소만 준비</strong><span>2D는 CLI로 시작합니다. 3D 작업에는 Blender·Python·모델을 추가로 준비합니다.</span></li></ol>
+          </div>
+          <p className="skill-download-note">Asset Studio 앱과 Node·Rust 개발 도구는 필요하지 않습니다. 다운로드 정보와 준비 상태를 확인하며, 계정 인증이 필요한 경우 공식 로그인으로 안내합니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/skill-first-setup.md`}>설치·준비 안내 <ArrowUpRight size={16} aria-hidden="true" /></a>
+        </section>
         <div id="download-windows" className="download-card">
           <div className="download-main"><div className="download-heading-mark"><Mark /><span>Windows x64 · v{release.version}</span></div><h2 id="download-title">당신의 작업실을<br />준비하세요.</h2><p>설치 파일을 실행하고 안내를 따르세요.<br />앱 안의 사용 가이드로 시작할 수 있습니다.</p><DownloadLink secondary /><a className="portable-link" href={portableUrl}>설치 없이 쓰는 포터블 ZIP</a><a className="release-link" href={releaseUrl}>v{release.version} 릴리스 기록 <ArrowUpRight size={14} aria-hidden="true" /></a></div>
           <div id="requirements" className="download-requirements"><h3>받기 전에 확인해 주세요</h3><dl><div><dt>운영체제</dt><dd>Windows x64</dd></div><div><dt>앱 실행</dt><dd>Microsoft WebView2 Runtime</dd></div><div><dt>이미지→3D</dt><dd>16GB RAM · Blender 5.2.1 · Visual C++ x64 런타임</dd></div><div><dt>첫 3D 준비</dt><dd>앱에서 동의 후 약 1.89GiB 다운로드 · Python 자동 준비</dd></div><div><dt>배포 형태</dt><dd>설치형 · 앱 내부 업데이트</dd></div><div><dt>파일 크기</dt><dd>{release.bytes.toLocaleString('en-US')} bytes <span>(약 {sizeMiB} MiB)</span></dd></div></dl><p className="unsigned-note">업데이트 파일에는 암호학적 서명이 있습니다. Windows 코드 서명은 없어 실행 경고가 나타날 수 있습니다. 공식 릴리스와 파일 해시를 확인해 주세요.</p></div>

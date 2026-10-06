@@ -1,6 +1,6 @@
 # Codex에서 게임을 만들며 에셋 제작하기
 
-**0.1.11 스킬은 Windows x64·Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. GUI 다운로드는 Windows 0.1.9·Mac 0.1.10을 유지합니다.
+**0.1.11 스킬은 Windows x64에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows 앱도 0.1.11로 배포하며 Mac은 기존 0.1.10을 유지합니다. 독립 Mac 패키지는 별도 빌드·검증 후 추가합니다.
 
 | 방법 | 설치와 사용 | 선택 |
 | --- | --- | --- |

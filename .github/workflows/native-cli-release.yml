@@ -6,6 +6,10 @@ on:
       - codex/skill-first-cli-0.1.11
   workflow_dispatch:
     inputs:
+      macos_packages:
+        description: 'Build Apple Silicon separately (Windows is always built)'
+        type: boolean
+        default: false
       verify_macos_3d_setup:
         description: 'Download pinned Blender, Python and TripoSR for an actual Mac setup check'
         type: boolean
@@ -19,15 +23,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: windows-x64
-            runner: windows-latest
-            target: x86_64-pc-windows-msvc
-            binary: asset-cli.exe
-          - platform: macos-arm64
-            runner: macos-15
-            target: aarch64-apple-darwin
-            binary: asset-cli
+        # Mac builds are separate, explicit dispatches; pushes build Windows only.
+        include: ${{ fromJSON(inputs.macos_packages == true && '[{"platform":"windows-x64","runner":"windows-latest","target":"x86_64-pc-windows-msvc","binary":"asset-cli.exe"},{"platform":"macos-arm64","runner":"macos-15","target":"aarch64-apple-darwin","binary":"asset-cli"}]' || '[{"platform":"windows-x64","runner":"windows-latest","target":"x86_64-pc-windows-msvc","binary":"asset-cli.exe"}]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
@@ -86,7 +83,7 @@ jobs:
           resources=$(/usr/bin/plutil -extract resourcePath raw -o - "$installed")
           node scripts/native-cli-proof.mjs --cli "$cli" --resources "$resources" --output output/cli-package/macos-arm64/native-proof
       - name: Actual Mac local prerequisites and model preparation
-        if: runner.os == 'macOS' && (inputs.verify_macos_3d_setup || github.event_name == 'push')
+        if: runner.os == 'macOS' && inputs.macos_packages && inputs.verify_macos_3d_setup
         shell: bash
         run: |
           set -euo pipefail

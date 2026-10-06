@@ -76,7 +76,8 @@
       "../../../docs/model-quality.md": "docs/model-quality.md",
       "../../../workers/image3d/glb_color.py": "workers/image3d/glb_color.py",
       "../../../integrations/codex/": "integrations/codex/",
-      "../../../docs/codex-integration.md": "docs/codex-integration.md"
+      "../../../docs/codex-integration.md": "docs/codex-integration.md",
+      "../../../docs/skill-first-setup.md": "docs/skill-first-setup.md"
     },
     "shortDescription": "Generate and review game assets from your project",
     "category": "GraphicsAndDesign",

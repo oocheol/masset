@@ -10,7 +10,7 @@ Codex에서 Asset Studio 스킬을 사용하면 **Asset Studio 앱을 따로 설
 
 > $asset-studio 필요한 도구가 없으면 설치하고 준비해줘. 기존 게임에 필요한 이미지와 정적 3D 소품을 제작해 넣고 실행해서 확인해줘.
 
-Windows x64와 Apple Silicon Mac을 지원합니다. Python·Node.js·Rust 개발 도구와 앱 화면 없이 기본 운영체제 도구로 첫 설치를 진행합니다. Intel Mac 패키지는 제공하지 않습니다.
+독립 0.1.11 패키지는 **Windows x64부터 배포합니다.** Python·Node.js·Rust 개발 도구와 앱 화면 없이 운영체제 기본 도구로 첫 설치를 진행합니다. Apple Silicon 독립 패키지는 별도 Mac 빌드·검증 후 추가합니다. 현재 Mac 사용자는 기존 0.1.10 앱의 CLI를 이용할 수 있습니다. Intel Mac 패키지는 제공하지 않습니다.
 
 ## 첫 실행에서 하는 일
 
@@ -30,7 +30,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.agent
 # 3D도 필요한 경우 마지막에 -Needs3d 추가
 ```
 
-Apple Silicon Mac:
+Apple Silicon Mac의 진입점은 별도 패키지 배포 후 사용합니다. 현재 고정 명세에 Mac 패키지가 없으면 다운로드하지 않고 준비 불가 상태를 반환합니다.
 
 ```sh
 bash "$HOME/.agents/skills/asset-studio/scripts/bootstrap.sh" --consent-downloads
@@ -64,4 +64,4 @@ Blender SHA-256: Windows `0e631dad7d0cad6d5d18abdd2e2550f6c0213215334eda00ddbd3d
 
 이미지→3D에는 최소 16GB RAM이 필요합니다. Windows는 Microsoft Visual C++ x64 런타임이 없으면 `needs_attention`으로 알립니다. 이 시스템 구성요소를 관리자 권한으로 몰래 설치하지 않습니다. Mac CLI에는 Apple Developer ID 공증이 없습니다. 운영체제의 신뢰 확인이 필요한 경우 해당 파일만 확인하며 시스템 전체 보안을 끄지 않습니다.
 
-GUI 앱은 시각 편집·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. 현재 GUI 다운로드와 자동 업데이트 채널은 Windows 0.1.9·Mac 0.1.10을 유지합니다. 독립 CLI·스킬 0.1.11은 별도 릴리스입니다.
+GUI 앱은 시각 편집·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. Mac 앱 다운로드와 업데이트는 기존 0.1.10을 유지합니다. 0.1.11의 이번 배포 범위는 Windows 앱·독립 CLI·스킬입니다.

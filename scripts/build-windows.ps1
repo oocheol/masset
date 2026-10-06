@@ -131,6 +131,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Portable Tauri resources failed exclusive copying or digest verification.' }
         $qaCopiedResources = $qaCopiedResourceText | ConvertFrom-Json
         $qaResourceManifest = $qaCopiedResources
+        Copy-Item -LiteralPath (Join-Path $qaWorkspace 'target\release\asset-cli.exe') -Destination $qaPortableDirectory
         if (-not (Test-Path -LiteralPath (Join-Path $qaPortableDirectory 'docs\licenses\THIRD_PARTY_LICENSES.txt') -PathType Leaf)) { throw 'Third-party license texts are missing. Regenerate the notices before packaging a public release.' }
         if ($VcRuntimeDirectory) {
             $qaRuntimePath = (Resolve-Path -LiteralPath $VcRuntimeDirectory).Path
@@ -147,7 +148,7 @@ Microsoft WebView2 is required. Native DLL dependencies must be audited separate
 Blender is optional and must be installed separately with consent. Its GPL worker source/license are included.
 Windows x64 image-to-3D uses an app-managed CPython3.12 CPU runtime. The first preparation requires explicit download consent (~1.89GiB); model weights are not bundled. Blender, at least 16GB RAM and Microsoft Visual C++ 2015-2022 x64 runtime are required. See docs/model-quality.md and the release's native verification record.
 Resolved dependency license texts and copyright notices are in docs/licenses/THIRD_PARTY_LICENSES.txt.
-The backend QA CLI remains a developer test binary and is not included in this portable application.
+asset-cli.exe is the production headless client and can prepare user-local tools with explicit download consent. See docs/skill-first-setup.md. Developer-only proof executables are excluded.
 '@ | Set-Content -LiteralPath (Join-Path $qaPortableDirectory 'PORTABLE-README.txt') -Encoding utf8
         $qaPortableFiles = @(Get-ChildItem -LiteralPath $qaPortableDirectory -Recurse -File | ForEach-Object {
             $qaFileRecord = Get-FileEvidence $_.FullName

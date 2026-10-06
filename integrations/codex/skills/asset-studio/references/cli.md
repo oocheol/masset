@@ -1,6 +1,6 @@
 # Native CLI
 
-Use the verified absolute `cliPath` and `resourcePath` returned by the skill loader, and quote paths using the host shell. Standalone Windows x64 and Apple Silicon packages contain the native CLI and workers without the GUI app. Pass `--resources /absolute/runtime/resources`. A development binary requires `--resources /absolute/masset`.
+Use the verified absolute `cliPath` and `resourcePath` returned by the skill loader, and quote paths using the host shell. The standalone 0.1.11 package contains the Windows x64 CLI and workers without the GUI app. Apple Silicon packaging is a separate release; the Mac loader requires a verified Mac entry in the fixed manifest. Pass `--resources /absolute/runtime/resources`. A development binary requires `--resources /absolute/masset`.
 
 ## Automatic prerequisites
 

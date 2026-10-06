@@ -2,6 +2,17 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:106px}
 body{margin:0;min-width:0;font-size:16px;line-height:1.75}
+.skill-download{padding:30px 32px;margin:0 0 32px;border:1px solid var(--edge);background:var(--rail);scroll-margin-top:100px}
+.skill-download-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:36px;margin-top:24px;align-items:start}
+.skill-download-layout p{font-size:18px;line-height:1.8;word-break:keep-all}
+.skill-download-layout .button{margin-top:20px}
+.skill-download-platform{margin-top:12px;color:var(--muted);font-size:16px!important}
+.skill-download-layout ol{margin:0;padding-left:25px;display:grid;gap:18px;font-size:17px}
+.skill-download-layout li{padding-left:6px}
+.skill-download-layout strong,.skill-download-layout span{display:block}
+.skill-download-layout span{color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.skill-download-note{font-size:16px;color:var(--muted);line-height:1.8;margin:24px 0 14px;word-break:keep-all}
+@media(max-width:760px){.skill-download{padding:24px 21px}.skill-download-layout{grid-template-columns:1fr;gap:28px}.skill-download-layout .button{width:100%}}
 button,input{font:inherit}
 button,a{-webkit-tap-highlight-color:transparent}
 button{cursor:pointer}
