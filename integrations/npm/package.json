@@ -1,0 +1,19 @@
+{
+  "name": "@oocheol/asset-studio",
+  "version": "0.1.11",
+  "description": "Install and update the Asset Studio Codex skill without the desktop app",
+  "type": "module",
+  "bin": {
+    "asset-studio-skill": "bin/asset-studio-skill.mjs"
+  },
+  "files": ["bin/", "lib/", "skill/", "skill-manifest.json", "LICENSE", "README.md"],
+  "engines": { "node": ">=22.20.0" },
+  "os": ["win32", "darwin"],
+  "cpu": ["x64", "arm64"],
+  "license": "Apache-2.0",
+  "repository": { "type": "git", "url": "git+https://github.com/oocheol/masset.git", "directory": "integrations/npm" },
+  "homepage": "https://masset-nu.vercel.app/",
+  "bugs": { "url": "https://github.com/oocheol/masset/issues" },
+  "keywords": ["codex", "skill", "asset-studio", "game-assets"],
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" }
+}

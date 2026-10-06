@@ -1,4 +1,7 @@
 node_modules/
+integrations/npm/skill/
+integrations/npm/skill-manifest.json
+integrations/npm/LICENSE
 target/
 apps/desktop/dist/
 .tools/

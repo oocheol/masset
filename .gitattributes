@@ -13,3 +13,8 @@ workers/image3d/licenses/** -text
 *.glb binary
 *.blend binary
 *.crate binary
+# Keep the npm distribution identical across Windows and Mac checkouts.
+integrations/npm/** text eol=lf
+scripts/prepare-skill-npm.mjs text eol=lf
+scripts/verify-skill-npm-package.mjs text eol=lf
+tests/npm-skill/** text eol=lf

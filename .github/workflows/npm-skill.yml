@@ -1,0 +1,71 @@
+name: Codex skill npm package
+
+on:
+  push:
+    paths:
+      - 'integrations/npm/**'
+      - 'integrations/codex/skills/asset-studio/**'
+      - 'scripts/prepare-skill-npm.mjs'
+      - 'scripts/verify-skill-npm-package.mjs'
+      - 'tests/npm-skill/**'
+      - '.github/workflows/npm-skill.yml'
+  pull_request:
+    paths:
+      - 'integrations/npm/**'
+      - 'integrations/codex/skills/asset-studio/**'
+      - 'scripts/prepare-skill-npm.mjs'
+      - 'scripts/verify-skill-npm-package.mjs'
+      - 'tests/npm-skill/**'
+      - '.github/workflows/npm-skill.yml'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish with the npm trusted publisher configured for this workflow'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - name: Verify install, update, original preservation and rollback
+        run: npm run skill:test
+      - name: Package the pinned skill without lifecycle hooks
+        run: npm run skill:pack
+      - name: Run the actual packed npm command in an isolated project
+        run: npm run skill:verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-skill-${{ matrix.os }}
+          path: output/npm-skill/*.tgz
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/master'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - run: npm run skill:pack
+      - name: Publish using npm OIDC and automatic provenance
+        run: npm publish ./integrations/npm --ignore-scripts --access public --provenance
+
+# No desktop build, native runtime download, account probe or model download.
+# Trusted publishing must first be configured in the npm package settings.
