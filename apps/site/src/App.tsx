@@ -38,7 +38,7 @@ const models = [
 ];
 
 const statuses = [
-  { feature: 'Windows 0.1.12 · 앱 없이 Codex에서 제작', status: 'Windows CLI·CPU 생성 확인', tone: 'verified', detail: '독립 스킬과 CLI가 기존 공식 Codex 로그인을 재사용합니다. 필요한 도구는 승인 후 사용자 전용 공간에 준비합니다. 실제 이미지 편집·저장·재열기·내보내기, Windows CPU TripoSR와 Blender의 GLB·.blend 재열기를 확인했습니다. 앱의 이미지·3D·혼합 제작도 유지합니다. 이번 검증은 로컬 이미지 입력이며 새로운 GPT 요청은 보내지 않았습니다.' },
+  { feature: 'Windows 0.1.12 · 새 디자인과 앱 없이 Codex에서 제작', status: 'Windows CLI 실제 확인', tone: 'verified', detail: '독립 스킬과 CLI가 기존 공식 Codex 로그인을 재사용합니다. 필요한 도구는 승인 후 사용자 전용 공간에 준비합니다. 0.1.12 CLI에서 실제 이미지 편집·저장·별도 프로세스 재열기·내보내기를 확인했습니다. CPU TripoSR 생성과 Blender의 GLB·.blend 재열기는 0.1.11에서 실증했습니다. 앱의 이미지·3D·혼합 제작도 유지합니다. 새로운 GPT 요청은 보내지 않았습니다.' },
   { feature: 'Mac 0.1.12 · 제작과 결과 검수 중심의 새 화면', status: 'Mac 0.1.12 제공', tone: 'experimental', detail: '제작 입력·연결 상태·개별 진행률과 검수를 중심으로 화면을 정리했습니다. 보관함과 결과 화면을 오가도 제작 입력을 보존합니다. Mac DMG와 서명된 업데이트를 제공합니다. npm 스킬은 0.1.12이며 Mac 독립 CLI는 기존 0.1.11을 유지합니다. 잠금 상태로 Mac 화면과 설치·업데이트 교체 실행 검증을 생략했습니다.' },
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },

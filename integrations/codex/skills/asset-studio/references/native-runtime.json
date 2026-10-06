@@ -5,8 +5,8 @@
     "windows-x64": {
       "version": "0.1.12",
       "url": "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudioCLI-0.1.12-windows-x64.zip",
-      "bytes": 7184732,
-      "sha256": "a8c73dc13ffa0738fb395afe25980f2a8b1ab803f42f174cad27fddcf3186186",
+      "bytes": 7184882,
+      "sha256": "7a428a5103432ecc3f738646277d330bb17aefbb11af8b21502f24313393fefa",
       "license": "Apache-2.0; third-party notices in resources/docs/licenses",
       "cliPath": "asset-cli.exe",
       "resourcePath": "resources",
@@ -14,7 +14,7 @@
         {
           "path": "asset-cli.exe",
           "bytes": 14080512,
-          "sha256": "10e2d1ca04c3184dbe565ab2e162a178ff30793fd6ba2beff2fb9a0f6e84bbba",
+          "sha256": "c34021fbaf04b9691c6ad7b4572d9432528e27fc6db7c2bbe813a9e75a19546c",
           "executable": true
         },
         {
@@ -39,8 +39,8 @@
         },
         {
           "path": "resources/docs/codex-integration.md",
-          "bytes": 7627,
-          "sha256": "619e877befe4e8b160741cac290d5eb2ab3771c7e2161f836467d1b85184e614"
+          "bytes": 7876,
+          "sha256": "7f48ede78b133a59ce400ade01b562abdfe830505f527fa6bda364b425127d8f"
         },
         {
           "path": "resources/docs/game-asset-bundles.md",
@@ -1609,8 +1609,8 @@
         },
         {
           "path": "resources/docs/skill-first-setup.md",
-          "bytes": 10105,
-          "sha256": "a7300b48b3630ad69f9b614aefd2552224dcf147efd492c156567f616dacfc23"
+          "bytes": 10372,
+          "sha256": "5f0ce6e79b380a24c0c32e3ac4f5fe4e4c12f9896851d027c4d91a13b7857b0e"
         },
         {
           "path": "resources/docs/verification.md",

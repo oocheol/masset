@@ -95,4 +95,4 @@ Blender SHA-256: Windows `0e631dad7d0cad6d5d18abdd2e2550f6c0213215334eda00ddbd3d
 
 이미지→3D에는 최소 16GB RAM이 필요합니다. Windows는 Microsoft Visual C++ x64 런타임이 없으면 `needs_attention`으로 알립니다. 이 시스템 구성요소를 관리자 권한으로 몰래 설치하지 않습니다. Mac CLI에는 Apple Developer ID 공증이 없습니다. 운영체제의 신뢰 확인이 필요한 경우 해당 파일만 확인하며 시스템 전체 보안을 끄지 않습니다.
 
-GUI 앱은 시각 편집·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. Windows·Mac 앱은 0.1.12이며 독립 CLI는 Windows 0.1.12 · Mac 0.1.11입니다. Windows의 실행 검증은 [별도 기록](releases/v0.1.12-windows.md), Mac 빌드와 실행 검증 생략 범위는 [Mac 배포 기록](releases/v0.1.12-macos.md)에 구분합니다.
+GUI 앱은 시각 편집·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. Windows·Mac 앱은 0.1.12이며 독립 CLI는 Windows 0.1.12 · Mac 0.1.11입니다. Windows의 실행 검증은 [별도 기록](releases/v0.1.12-windows.md), Mac 앱의 빌드·실행 생략 범위는 [Mac 0.1.12 배포 기록](releases/v0.1.12-macos.md), 독립 Mac CLI의 실행 생략 범위는 [Mac 0.1.11 배포 기록](releases/v0.1.11-macos.md)에 구분합니다. Mac 0.1.12 앱의 설치 버튼은 앱에 포함된 0.1.11 스킬을 등록하므로 최신 공통 스킬은 npm 또는 새 ZIP으로 설치·업데이트하세요.

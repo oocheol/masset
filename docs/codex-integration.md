@@ -15,7 +15,7 @@
 
 새 사용자는 [스킬 설치 안내](skill-first-setup.md)에 따라 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하고 새 Codex 작업에서 호출합니다. 앱·Python·Node·Rust가 없어도 운영체제 기본 도구로 준비합니다.
 
-Mac 0.1.12 앱 사용자는 제작 홈의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령으로 공통 스킬을 설치할 수도 있습니다. 앱에 포함된 CLI 경로를 함께 등록합니다.
+Mac 0.1.12 앱의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령은 그 앱에 포함된 0.1.11 스킬을 설치하고 앱의 CLI 경로를 함께 등록합니다. 최신 공통 스킬 0.1.12를 사용하려면 npm 설치·업데이트 명령 또는 새 공통 ZIP을 사용하세요. 이미 공개한 Mac 앱은 다시 포장하지 않습니다.
 
 ```sh
 "$HOME/Applications/Asset Studio 0.1.12/Asset Studio.app/Contents/MacOS/asset-cli" install-codex
@@ -55,4 +55,4 @@ JSON Lines 출력의 `plan`, `progress`, `result`로 실제 제작을 추적합�
 
 Asset Studio는 개별 시각 에셋과 검증 가능한 파일을 만듭니다. Codex는 플레이어 조작·AI·미션·카메라·음향·애니메이션을 구현하고, 실제 엔진 가져오기·재질·충돌·씬 연결·빌드·플레이 테스트를 담당합니다. Unity의 GLB 가져오기 지원 여부도 실제 프로젝트에서 확인해야 합니다. 에셋 폴더 생성으로 게임 완성을 선언하지 않습니다.
 
-이미지에서 3D는 Windows x64·Apple Silicon Mac의 TripoSR·Blender 경로이며 숨은 면·얇은 물체의 형상은 확인이 필요합니다. 새로운 모델 품질이나 리깅·애니메이션을 보장하지 않습니다. Windows 0.1.9 앱에는 새 CLI가 포함되지 않으므로 0.1.12 독립 스킬을 사용합니다. 이전 Mac 0.1.10 최종 앱 패키지의 추가 설치·화면 테스트는 당시 요청에 따라 생략했으며, [이전 개발 검증](codex-integration-validation.md)에 기록했습니다. 독립 CLI 검증은 0.1.12 릴리스 기록에서 별도로 확인합니다. 모바일 성능과 게임 전체 완성 검증은 포함하지 않습니다.
+이미지에서 3D는 Windows x64·Apple Silicon Mac의 TripoSR·Blender 경로이며 숨은 면·얇은 물체의 형상은 확인이 필요합니다. 새로운 모델 품질이나 리깅·애니메이션을 보장하지 않습니다. Windows 0.1.9 앱에는 새 CLI가 포함되지 않으므로 최신 독립 스킬을 사용합니다. 이전 Mac 0.1.10 최종 앱 패키지의 추가 설치·화면 테스트는 당시 요청에 따라 생략했으며, [이전 개발 검증](codex-integration-validation.md)에 기록했습니다. 독립 CLI 검증은 [Windows 0.1.12 기록](releases/v0.1.12-windows.md)과 [Mac 0.1.11의 실행 검증 생략 기록](releases/v0.1.11-macos.md)을 구분해 확인합니다. 모바일 성능과 게임 전체 완성 검증은 포함하지 않습니다.

@@ -122,7 +122,7 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
 
 **Mac 구독 연결:** 0.1.12에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 0.1.4 이상은 앱 내부 업데이트로 0.1.12를 받을 수 있습니다.
 
-Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Mac Blender 작업자는 실제 생성·GLB·`.blend` 재열기를 검증했습니다. 새 Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.
+Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Mac Blender 작업자는 실제 생성·GLB·`.blend` 재열기를 검증했습니다. 기존 Mac 0.1.6 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.
 
 [Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.12 배포 기록](docs/releases/v0.1.12-macos.md) · [Windows 0.1.12 검증 기록](docs/releases/v0.1.12-windows.md)
 
