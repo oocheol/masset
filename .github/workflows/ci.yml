@@ -40,7 +40,10 @@ jobs:
         run: python -m unittest discover -s workers/image3d/tests -p "test_worker.py"
       - run: npm run build
       - run: npm run site:build
-      - run: npx playwright test
+      - name: Browser acceptance tests
+        run: node node_modules/@playwright/test/cli.js test
+        env:
+          DEBUG: pw:webserver
       - uses: actions/upload-artifact@v4
         if: always()
         with:
