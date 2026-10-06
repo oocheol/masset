@@ -1915,18 +1915,18 @@
       ]
     },
     "macos-arm64": {
-      "version": "0.1.11",
-      "url": "https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudioCLI-0.1.11-macos-arm64.zip",
-      "bytes": 6816741,
-      "sha256": "e9b65653a117aabce02443b7a77352ea1e7e0bb15248bac236a5ff7d7054014f",
+      "version": "0.1.13",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudioCLI-0.1.13-macos-arm64.zip",
+      "bytes": 7360143,
+      "sha256": "60312077851b387b24198cd6f3095d9ffa41641359deb253c8a9b65919d278a3",
       "license": "Apache-2.0; third-party notices in resources/docs/licenses",
       "cliPath": "asset-cli",
       "resourcePath": "resources",
       "files": [
         {
           "path": "asset-cli",
-          "bytes": 12599792,
-          "sha256": "dddcec3ee06eebd2d0786b4dfad18ed34c804014426ea692259eabec5c408cba",
+          "bytes": 15943968,
+          "sha256": "1167cafbf2393e890af53c184e6a91909722639b52defaa628b522b6ea3c1918",
           "executable": true
         },
         {
@@ -1951,8 +1951,8 @@
         },
         {
           "path": "resources/docs/codex-integration.md",
-          "bytes": 7537,
-          "sha256": "d04f28036c7d35652f7f3ae396fb9079e9b03f5c17f3283609da3a08daf2b3fd"
+          "bytes": 7945,
+          "sha256": "38460ccf53fc611ddc79a2865f9e705f8e1d2f17ab7dfe730b59f47bbe77413b"
         },
         {
           "path": "resources/docs/game-asset-bundles.md",
@@ -1961,8 +1961,8 @@
         },
         {
           "path": "resources/docs/game-production.md",
-          "bytes": 8070,
-          "sha256": "e7bd633e80f54f04145f8ff43970c113ae67f36d66b97b98c55ca2f13c028b3e"
+          "bytes": 9066,
+          "sha256": "3942777036a0150deaa38cd3decfa9399567acb1ab1de6b8e3c8ec9460f0683b"
         },
         {
           "path": "resources/docs/ima2-gen-comparison.md",
@@ -1971,13 +1971,13 @@
         },
         {
           "path": "resources/docs/licenses/dependency-inventory.json",
-          "bytes": 530978,
-          "sha256": "c4abe13b36aaab2ef1c6fa9fbc48960cbfa0309e5b8fbf8c0344acbc46e4a491"
+          "bytes": 480268,
+          "sha256": "25488c2b07221760c3b323f55d3530f0bff5c39edf99dc557c9b8701d4a27bac"
         },
         {
           "path": "resources/docs/licenses/license-text-index.json",
-          "bytes": 53975,
-          "sha256": "bdffd023b81405ee376223a6ec5e11c74c74cfc79d30db4118234ccc435b1bbe"
+          "bytes": 52094,
+          "sha256": "0788e38f73e58e08fc4162a0d56ac144d600c15a58f76c34a62f13b2bc488aab"
         },
         {
           "path": "resources/docs/licenses/missing-license-texts.json",
@@ -2011,8 +2011,8 @@
         },
         {
           "path": "resources/docs/licenses/README.md",
-          "bytes": 36347,
-          "sha256": "631fc4cb8c85d802e827b8fac8ac389b0a1fe32eb53875fae5499b29092fe556"
+          "bytes": 35756,
+          "sha256": "bd49fb7838766f1b2c9d64f4a5a7d2136afb8fc5f67081abd70ce609abe8b3cf"
         },
         {
           "path": "resources/docs/licenses/RUST-STANDARD-LIBRARY-LICENSES.html",
@@ -3401,8 +3401,8 @@
         },
         {
           "path": "resources/docs/licenses/THIRD_PARTY_LICENSES.txt",
-          "bytes": 968480,
-          "sha256": "877ceb6baa3036562a6de805f675a01a022f965ae97755fc6107b9b65ebd08d1"
+          "bytes": 936849,
+          "sha256": "b954675ad4e26a6c4d3c4df0186f0f84ebe26a3c101faf2c0adef75f48c873b1"
         },
         {
           "path": "resources/docs/licenses/upstream/alloc-0a81fd6928ea3b33c8cd484aa4575d50ffb98012/LICENSE",
@@ -3501,8 +3501,8 @@
         },
         {
           "path": "resources/docs/model-quality.md",
-          "bytes": 4582,
-          "sha256": "f37e3db558f2079f18067acaf80308f1f4e947353b169c5bba70ace99654a2b0"
+          "bytes": 6615,
+          "sha256": "2f16d481d10788b14a2b90cd514d8909fc00b63092f1b55626ed9fb3694c4728"
         },
         {
           "path": "resources/docs/module-contract.md",
@@ -3521,13 +3521,13 @@
         },
         {
           "path": "resources/docs/skill-first-setup.md",
-          "bytes": 7356,
-          "sha256": "5e4023a8d346bea5b6565687796fc3d9661102908332d96ac485608bf6e5a77b"
+          "bytes": 10726,
+          "sha256": "7dd4434acb4cfdabdde8ae48842fd06af8a1e51f11d6262ce89457e90c33fc2e"
         },
         {
           "path": "resources/docs/verification.md",
-          "bytes": 50351,
-          "sha256": "df25a89a998487a58f0554230abef672cac6bb553ca6527dcf13f2e9710b32ee"
+          "bytes": 54691,
+          "sha256": "4eecf6d2eb226abbedad69e67f32adb6bef946b7b26b908ab40114f1761fd1da"
         },
         {
           "path": "resources/docs/windows-quickstart.md",
@@ -3686,8 +3686,8 @@
         },
         {
           "path": "resources/workers/blender-quality/audit.py",
-          "bytes": 25169,
-          "sha256": "7b2670e75a914106463657f40706478b40c0565ac913e763b9819e0b2a952a91"
+          "bytes": 26793,
+          "sha256": "38bfba7ef0c35373fd4369cc46235cc625af2f5bbd7ec2623a673eccd17dc6d8"
         },
         {
           "path": "resources/workers/blender-quality/LICENSE",
@@ -3695,14 +3695,24 @@
           "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
         },
         {
+          "path": "resources/workers/blender-quality/preview_worker.py",
+          "bytes": 7332,
+          "sha256": "9dce00678445756f49bb3eb901514e913e51e4777096ee3ccfe14ec46c6da905"
+        },
+        {
+          "path": "resources/workers/blender-quality/quality_metrics.py",
+          "bytes": 12889,
+          "sha256": "14baebdb5f46634830f7eecb60829db22e82fdfb86d1c26f914c942fd327848e"
+        },
+        {
           "path": "resources/workers/blender-quality/README.md",
-          "bytes": 9194,
-          "sha256": "02d8568755fea97f329a9d01f4591e84a63cea69bc27a7afef591a827ba81b18"
+          "bytes": 16355,
+          "sha256": "861f83b0d76fbae61dfe45f6c0d32757c27bebe0dd59d5690b2116ab6266b33c"
         },
         {
           "path": "resources/workers/blender-quality/worker.py",
-          "bytes": 59821,
-          "sha256": "9a5617fd7f0f5e9da04f55f1850b1e65addb0de0d0ec27ac2d594aec0e527b2f"
+          "bytes": 72128,
+          "sha256": "e71a7525d08378972d738b9cfaa861a57edcb6ff6decd431b25867b73fac7f2e"
         },
         {
           "path": "resources/workers/blender/LICENSE",
@@ -3765,14 +3775,19 @@
           "sha256": "ade0a66629bdd7e01e46b3296b3851cff0fd27989bca53da470ad6e96ed620fb"
         },
         {
+          "path": "resources/workers/image3d/raw_cache.py",
+          "bytes": 17191,
+          "sha256": "b73f34dced1432ac98485578372865a98ec0779acf224bff28439c4863c71c32"
+        },
+        {
           "path": "resources/workers/image3d/README.md",
-          "bytes": 19098,
-          "sha256": "d205f8c36e974dff0ef5424fdb7f6324bad024562d621c87a5f8ddcc9a729c96"
+          "bytes": 22361,
+          "sha256": "04ab6b622f49f35f022e1954f56f90a5193b7ae3b408d3a56de569fd85809357"
         },
         {
           "path": "resources/workers/image3d/runtime_common.py",
-          "bytes": 19188,
-          "sha256": "d669a4347d7313d823e15565e50c372a64d86229094f72e1f6afa94f856e6009"
+          "bytes": 19466,
+          "sha256": "3a2fea0b2e6ad6945b77440db45ed212b73f6b5e09156667284dfde879bbca58"
         },
         {
           "path": "resources/workers/image3d/runtime_probe.py",
@@ -3806,8 +3821,8 @@
         },
         {
           "path": "resources/workers/image3d/worker.py",
-          "bytes": 20288,
-          "sha256": "cd17e60f01997a1e121480d9c8d2d7fe9dcbdca3045c4d3c35ee18bf7c368ba8"
+          "bytes": 26483,
+          "sha256": "0dca968728f29d5dd8a2087d4b9c820f28aa020bdd56d61c9b232521b6c438f9"
         }
       ]
     }

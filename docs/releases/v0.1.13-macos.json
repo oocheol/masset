@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.13",
+  "platform": "macos",
+  "checkedAt": "2026-10-06T07:56:52.919Z",
+  "sourceBaseCommit": "ff9692a31bf60b294c53816e1dbfd816f3811c54",
+  "sourceIncludesRecordedWorkingTreeChanges": true,
+  "windowsVersionPreserved": "0.1.13",
+  "npmInstallerVersion": "0.1.14",
+  "package": {
+    "dmg": {
+      "filename": "AssetStudio_0.1.13_macos-arm64.dmg",
+      "bytes": 19522907,
+      "sha256": "b18e9de1549655692c21d013f1a9cf6004ba984014d79e95001b6c0ac79dc77d"
+    },
+    "installer": {
+      "filename": "install-macos.sh",
+      "bytes": 6285,
+      "sha256": "bb71a4c54d8db7ccf457ebb530af158d267336be8b4d0657820f02f0583c3149"
+    },
+    "updater": {
+      "filename": "AssetStudio_0.1.13_macos-arm64.app.tar.gz",
+      "bytes": 17109700,
+      "sha256": "b4fe81439a3db054719de3af36b1f4bf5044412240c2bd85e3db02c3baca5c90"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1046,
+      "sha256": "443874a3e79375206efb2cd5fdea3885e6317f9b7a36ceddd0555b40dd1f8d22"
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 1035,
+      "sha256": "cbf3271e9414aba105fb207c612e3f2c3fa96a4014eb49a78997adbbad872ad4"
+    },
+    "standaloneCli": {
+      "filename": "AssetStudioCLI-0.1.13-macos-arm64.zip",
+      "bytes": 7360143,
+      "sha256": "60312077851b387b24198cd6f3095d9ffa41641359deb253c8a9b65919d278a3",
+      "files": 380
+    },
+    "codexPlugin": {
+      "filename": "AssetStudio_0.1.13_codex-plugin-windows-macos-cli13.zip",
+      "bytes": 76306,
+      "sha256": "47148f064a1d012c67a263d2aae2b2a94d01da39e58dbe185310ef06c40aa417",
+      "runtimeVersions": {
+        "windows-x64": "0.1.13",
+        "macos-arm64": "0.1.13"
+      }
+    },
+    "npm": {
+      "version": "0.1.14",
+      "bytes": 79487,
+      "sha256": "93989dff447153916041dc28ffe4d7fd52b7dd4c08b4b71e72fc4d617dd351f2",
+      "integrity": "sha512-PGzm7o08+onWdyqL6rBUfe+RL3aqkNajQdHvktBXGoY+BbE3cvoCUqr2vpWpudF0q41YgUpwROi98Oxm8iO3vQ==",
+      "inventorySha256": "7c63fdfc823a10d8e3bfaee161d71215dbc5f008997ba6f6e4617a6ca3a8383c"
+    }
+  },
+  "nativeBundle": {
+    "architecture": "arm64",
+    "version": "0.1.13",
+    "executableSha256": "d2fa03de2d80614fce5713b69a9dc107a797e688dca4fbb5833963c2fb6061d7",
+    "embeddedFrontendAssets": [
+      {
+        "name": "index-BoG1CVXg.js",
+        "embedded": true
+      },
+      {
+        "name": "index-WrAXNy8c.css",
+        "embedded": true
+      },
+      {
+        "name": "webview-CShjXgC1.js",
+        "embedded": true
+      }
+    ],
+    "updaterBundleMatches": true,
+    "appInventoryFiles": 393,
+    "commonSkillRuntimeVersions": {
+      "windows-x64": "0.1.13",
+      "macos-arm64": "0.1.13"
+    }
+  },
+  "validation": {
+    "desktopBuildPassed": true,
+    "desktopTypecheckPassed": true,
+    "packageTestsPassed": 18,
+    "macLoaderAndInstallerTestsPassed": 5,
+    "npmInstallerTestsPassed": 19,
+    "actualNpmTarballInstallUpdateStatusPassed": true,
+    "standaloneCliFilesVerified": 380,
+    "stockMacLoaderInstalled": true,
+    "cliNativeImageProcessingPassed": true,
+    "cliResize": {
+      "width": 7,
+      "height": 9
+    },
+    "cliOriginalPreserved": true,
+    "cliReopenedInSeparateProcess": true,
+    "cliIndependentExportPassed": true,
+    "dmgChecksumVerified": true,
+    "dmgMountedAndAppInspected": true,
+    "dmgInstallerCheckOnlyPassed": true,
+    "appSignatureVerified": true,
+    "updaterSignatureVerified": true,
+    "authenticatedVersionVerified": true,
+    "tamperedUpdateRejected": true,
+    "versionReplayRejected": true,
+    "windowsChannelBytesPreserved": true,
+    "windowsRuntimeInventoryPreserved": true,
+    "nativeWindowTested": false,
+    "dmgInstallationTested": false,
+    "updaterReplacementLifecycleTested": false,
+    "newGptGenerationTested": false,
+    "local3dGenerationTested": false,
+    "mac3dPerformanceMeasured": false,
+    "newWindowsBuildPerformed": false,
+    "publicDownloadsVerified": false,
+    "npmPublished": false,
+    "siteDeploymentVerified": false,
+    "skipReason": "Mac GUI, installation and update replacement execution omitted while Mac is locked, as authorized by user.",
+    "siteBuildPassed": true
+  },
+  "boundaries": {
+    "appAdHocSigned": true,
+    "updateSignedWithProjectKey": true,
+    "appleDeveloperIdSigned": false,
+    "appleNotarized": false,
+    "intelMacDistributed": false,
+    "paidApiFallback": false
+  }
+}

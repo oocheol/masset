@@ -11,6 +11,7 @@ script_dir="$(cd -P -- "$(/usr/bin/dirname -- "$0")" && /bin/pwd)"
 exec /usr/bin/osascript -l JavaScript - "$script_dir" "$@" <<'JXA'
 ObjC.import('Foundation');
 ObjC.bindFunction('open', ['int', ['char*', 'int', 'int']]);
+ObjC.bindFunction('fchmod', ['int', ['int', 'unsigned int']]);
 ObjC.bindFunction('flock', ['int', ['int', 'int']]);
 ObjC.bindFunction('renamex_np', ['int', ['char*', 'char*', 'unsigned int']]);
 ObjC.bindFunction('exit', ['void', ['int']]);
@@ -103,7 +104,11 @@ function newFile(path) {
   // Darwin O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW; mode 0600.
   var descriptor = $.open(path, 1 | 512 | 2048 | 256, 384);
   if (descriptor < 0) fail('unsafe_path', 'An existing file was preserved without replacement.');
-  return $.NSFileHandle.alloc.initWithFileDescriptorCloseOnDealloc(descriptor, true);
+  var stream = $.NSFileHandle.alloc.initWithFileDescriptorCloseOnDealloc(descriptor, true);
+  // JXA's fixed binding cannot reliably pass open's variadic mode on arm64.
+  // The shell umask keeps creation private; set the exact mode on the owned fd.
+  if ($.fchmod(descriptor, 384) !== 0) { stream.closeFile; fail('unsafe_path', 'The private file permissions could not be prepared.'); }
+  return stream;
 }
 function writeNewJson(path, value) {
   var stream = newFile(path);
@@ -220,6 +225,8 @@ function verifyTree(root, spec, receipt) {
     var names = fm.contentsOfDirectoryAtPathError($(directory), error);
     if (nil(names)) fail('package_mismatch', 'The runtime directory could not be verified.');
     ObjC.unwrap(names).forEach(function(name) {
+      // NSArray unwrapping leaves NSString elements bridged in JXA.
+      name = ObjC.unwrap(name);
       var path = directory + '/' + name; noLinks(path); var info = attributes(path); var relativePath = path.slice(root.length + 1);
       if (!info) fail('package_mismatch', 'A runtime file disappeared during verification.');
       if (info.type === 'NSFileTypeDirectory') {
@@ -255,6 +262,7 @@ function acquireLock(base) {
   var descriptor = $.open(path, 2 | 512 | 256, 384);
   if (descriptor < 0) fail('unsafe_path', 'The runtime lock could not be opened safely.');
   var stream = $.NSFileHandle.alloc.initWithFileDescriptorCloseOnDealloc(descriptor, true);
+  if ($.fchmod(descriptor, 384) !== 0) { stream.closeFile; fail('unsafe_path', 'The private lock permissions could not be prepared.'); }
   if ($.flock(descriptor, 2 | 4) !== 0) { stream.closeFile; fail('bootstrap_busy', 'Another native CLI preparation is running; try again after it finishes.'); }
   try {
     var length = Number(stream.seekToEndOfFile);
