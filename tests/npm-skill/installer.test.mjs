@@ -38,7 +38,9 @@ test('fresh installation copies exact pinned bytes without running loaders', asy
   assert.equal(result.operation, 'installed');
   assert.equal(result.state, 'current');
   assert.equal(result.backupPath, null);
-  assert.deepEqual(result.runtimeVersions, { 'windows-x64': '0.1.11', 'macos-arm64': '0.1.11' });
+  const runtime = JSON.parse(await fs.readFile(path.join(f.packageRoot, 'skill', 'references', 'native-runtime.json'), 'utf8'));
+  assert.deepEqual(result.runtimeVersions, Object.fromEntries(
+    ['windows-x64', 'macos-arm64'].map(platform => [platform, runtime.packages[platform].version])));
   const bundle = await loadBundle(f.packageRoot);
   for (const file of bundle.manifest.files) assert.deepEqual(await fs.readFile(path.join(f.target, file.path)), bundle.contents.get(file.path));
   assert.deepEqual((await fs.readdir(path.join(f.project, '.agents'))).sort(), ['.asset-studio-skill', 'skills']);
@@ -84,15 +86,18 @@ test('unmanaged and malformed receipts are preserved instead of merged or delete
 
 test('a newer npm installer may retain the same pinned native runtime', async t => {
   const f = await fixture(t);
-  await installSkill(f.packageRoot, { project: f.project });
+  const previous = await installSkill(f.packageRoot, { project: f.project });
   const packageJson = path.join(f.packageRoot, 'package.json');
   const descriptor = JSON.parse(await fs.readFile(packageJson, 'utf8'));
-  descriptor.version = '0.1.12';
+  const parts = descriptor.version.split('.').map(Number);
+  const nextVersion = `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
+  descriptor.version = nextVersion;
   await fs.writeFile(packageJson, JSON.stringify(descriptor));
-  await reviseManifest(f.packageRoot, manifest => { manifest.packageVersion = '0.1.12'; });
+  await reviseManifest(f.packageRoot, manifest => { manifest.packageVersion = nextVersion; });
   const result = await installSkill(f.packageRoot, { project: f.project });
-  assert.equal(result.packageVersion, '0.1.12');
-  assert.equal(result.runtimeVersions['windows-x64'], '0.1.11');
+  assert.equal(result.packageVersion, nextVersion);
+  assert.equal(result.operation, 'updated');
+  assert.deepEqual(result.runtimeVersions, previous.runtimeVersions);
   assert.ok(result.backupPath);
 });
 

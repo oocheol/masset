@@ -9,7 +9,7 @@ const help = `Asset Studio Codex skill installer ${descriptor.version}
 
   npx @oocheol/asset-studio@latest install
   npx @oocheol/asset-studio@latest update
-  npx @oocheol/asset-studio@0.1.11 install
+  npx @oocheol/asset-studio@${descriptor.version} install
   asset-studio-skill status [--json]
 
 Options:

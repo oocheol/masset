@@ -3,18 +3,18 @@
   "format": "asset-studio-cli-runtime",
   "packages": {
     "windows-x64": {
-      "version": "0.1.11",
-      "url": "https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudioCLI-0.1.11-windows-x64.zip",
-      "bytes": 7171955,
-      "sha256": "44d3697a2b8608283a5994fd6e29dade2bbfbca8a3ed087860490dbf64305278",
+      "version": "0.1.12",
+      "url": "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudioCLI-0.1.12-windows-x64.zip",
+      "bytes": 7184732,
+      "sha256": "a8c73dc13ffa0738fb395afe25980f2a8b1ab803f42f174cad27fddcf3186186",
       "license": "Apache-2.0; third-party notices in resources/docs/licenses",
       "cliPath": "asset-cli.exe",
       "resourcePath": "resources",
       "files": [
         {
           "path": "asset-cli.exe",
-          "bytes": 14066688,
-          "sha256": "f17390fd3a5579287f8b5aa50b5e2a5ff7478d5a310bfb5513a55ac7f205c460",
+          "bytes": 14080512,
+          "sha256": "10e2d1ca04c3184dbe565ab2e162a178ff30793fd6ba2beff2fb9a0f6e84bbba",
           "executable": true
         },
         {
@@ -39,8 +39,8 @@
         },
         {
           "path": "resources/docs/codex-integration.md",
-          "bytes": 7415,
-          "sha256": "122c1d42a160777f56e8bd68ac67f3d7d67d74cef20c071153715cf24c70a81d"
+          "bytes": 7627,
+          "sha256": "619e877befe4e8b160741cac290d5eb2ab3771c7e2161f836467d1b85184e614"
         },
         {
           "path": "resources/docs/game-asset-bundles.md",
@@ -60,7 +60,7 @@
         {
           "path": "resources/docs/licenses/dependency-inventory.json",
           "bytes": 480268,
-          "sha256": "bfa6968dba7eaf9ac9ccec79774b456179b2e899093a050716c96b9dbbb46fb5"
+          "sha256": "db4c77c69cafcaee6d414d28a1f89c46f17e1ccd5f4db17e8340de4beda1d50b"
         },
         {
           "path": "resources/docs/licenses/license-text-index.json",
@@ -1609,8 +1609,8 @@
         },
         {
           "path": "resources/docs/skill-first-setup.md",
-          "bytes": 7166,
-          "sha256": "99f3fb4627a628b65fedb4d914cc9e9b0342dea9de86d4bb45ff58575fdb3170"
+          "bytes": 10105,
+          "sha256": "a7300b48b3630ad69f9b614aefd2552224dcf147efd492c156567f616dacfc23"
         },
         {
           "path": "resources/docs/verification.md",

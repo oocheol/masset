@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "target": "aarch64-apple-darwin",
+  "target": "x86_64-pc-windows-msvc",
   "includeTools": false,
   "inputs": {
-    "packageLockSha256": "0aba467842c208fa96d3bf7af9b0456ceeceaa28637b635ac7face818bf98e95",
-    "cargoLockSha256": "8ac7fe40f4bf742860b315caeabe143ee925778b2aa247eebbcc05550c689586"
+    "packageLockSha256": "baa2fe016d40453f065c556fd134879658c18fd55f7f74f17ded0b139c0ec067",
+    "cargoLockSha256": "c1500ed324c5ff34b99de2da3200f960e764c2308162382d10ab9d215bbaafce"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",
@@ -389,48 +389,6 @@
     {
       "ecosystem": "cargo",
       "name": "base64",
-      "version": "0.21.7",
-      "scope": [
-        "host-proc-macro-dependency",
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/marshallpierce/rust-base64",
-      "crateDownload": "https://crates.io/api/v1/crates/base64/0.21.7/download",
-      "lockSha256": "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567",
-      "upstreamCommit": "9652c787730e58515ce7b44fcafd2430ab424628",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "base64@0.21.7",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7.txt",
-          "bytes": 1076,
-          "sha256": "0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "base64@0.21.7",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "base64",
       "version": "0.22.1",
       "scope": [
         "host-proc-macro-dependency",
@@ -716,53 +674,6 @@
             "ecosystem": "cargo",
             "package": "block-buffer@0.10.4",
             "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "block2",
-      "version": "0.6.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/block2/0.6.2/download",
-      "lockSha256": "cdeb9d870516001442e364c5220d3574d2da8dc765554b4a617230d33fa58ef5",
-      "upstreamCommit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
-      "upstreamSubdirectory": "crates/block2",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "block2@0.6.2",
-            "file": "objc2-b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/b4167b582b2f75f9a1be75495c41b765344fd03c/LICENSE.md",
-            "commit": "b4167b582b2f75f9a1be75495c41b765344fd03c",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "block2@0.6.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
           },
           "fullLicenseBody": true
         }
@@ -1337,224 +1248,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "core-foundation-sys",
-      "version": "0.8.7",
-      "scope": [
-        "host-proc-macro-dependency",
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/servo/core-foundation-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/core-foundation-sys/0.8.7/download",
-      "lockSha256": "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b",
-      "upstreamCommit": "652bab0a62d87df8a974ffad2ad9f7be218a8b56",
-      "upstreamSubdirectory": "core-foundation-sys",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation-sys@0.8.7",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
-          "bytes": 1067,
-          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation-sys@0.8.7",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "core-foundation",
-      "version": "0.10.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/servo/core-foundation-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/core-foundation/0.10.1/download",
-      "lockSha256": "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6",
-      "upstreamCommit": "548b65cd3046bb46fc5cebb9f39e7bfd56eaeaa2",
-      "upstreamSubdirectory": "core-foundation",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation@0.10.1",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
-          "bytes": 1067,
-          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation@0.10.1",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "core-foundation",
-      "version": "0.9.4",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/servo/core-foundation-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/core-foundation/0.9.4/download",
-      "lockSha256": "91e195e091a93c46f7102ec7818a2aa394e1e1771c3ab4825963fa03e45afb8f",
-      "upstreamCommit": "795398aa3775bbdaf03419fcd2cc0dad7ebbc4dc",
-      "upstreamSubdirectory": "core-foundation",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation@0.9.4",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
-          "bytes": 1067,
-          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-foundation@0.9.4",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "core-graphics-types",
-      "version": "0.2.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/servo/core-foundation-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/core-graphics-types/0.2.0/download",
-      "lockSha256": "3d44a101f213f6c4cdc1853d4b78aef6db6bdfa3468798cc1d9912f4735013eb",
-      "upstreamCommit": "b10f1efc48343fc5590127ec6d890ffbb8b5bd02",
-      "upstreamSubdirectory": "core-graphics-types",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-graphics-types@0.2.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
-          "bytes": 1067,
-          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-graphics-types@0.2.0",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "core-graphics",
-      "version": "0.25.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/servo/core-foundation-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/core-graphics/0.25.0/download",
-      "lockSha256": "064badf302c3194842cf2c5d61f56cc88e54a759313879cdf03abdd27d0c3b97",
-      "upstreamCommit": "14d8c7fb828a1d2c139dd345a6860b0e9648137b",
-      "upstreamSubdirectory": "core-graphics",
-      "documents": [
-        {
-          "path": "texts/ec82b96487e9e778ee610c7ab245162464782cfa1f555c2299333f8dbe5c036a.txt",
-          "bytes": 321,
-          "sha256": "ec82b96487e9e778ee610c7ab245162464782cfa1f555c2299333f8dbe5c036a",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-graphics@0.25.0",
-            "file": "COPYRIGHT"
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-graphics@0.25.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
-          "bytes": 1067,
-          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "core-graphics@0.25.0",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "cpufeatures",
       "version": "0.2.17",
       "scope": [
@@ -1588,6 +1281,47 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "cpufeatures@0.2.17",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "cpufeatures",
+      "version": "0.3.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/RustCrypto/utils",
+      "crateDownload": "https://crates.io/api/v1/crates/cpufeatures/0.3.1/download",
+      "lockSha256": "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566",
+      "upstreamCommit": "e3ac92bfd33051e146025baa2d0ce79891b7fc73",
+      "upstreamSubdirectory": "cpufeatures",
+      "documents": [
+        {
+          "path": "texts/a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5.txt",
+          "bytes": 10849,
+          "sha256": "a9040321c3712d8fd0b09cf52b17445de04a23a10165049ae187cd39e5c86be5",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "cpufeatures@0.3.1",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa.txt",
+          "bytes": 1082,
+          "sha256": "73b9dc2e79c7308998dd30296e073aefaefb944a68fb89aa412c23c0edcabcaa",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "cpufeatures@0.3.1",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -2330,83 +2064,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "dispatch2",
-      "version": "0.3.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/dispatch2/0.3.1/download",
-      "lockSha256": "1e0e367e4e7da84520dedcac1901e4da967309406d1e51017ae1abfb97adbd38",
-      "upstreamCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
-      "upstreamSubdirectory": "crates/dispatch2",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "dispatch2@0.3.1",
-            "file": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
-            "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "dispatch2@0.3.1",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "dispatch2@0.3.1",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "dispatch2@0.3.1",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "displaydoc",
       "version": "0.2.7",
       "scope": [
@@ -2669,47 +2326,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "embed_plist",
-      "version": "1.2.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/nvzqz/embed-plist-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/embed_plist/1.2.2/download",
-      "lockSha256": "4ef6b89e5b37196644d8796de5268852ff179b44e96276cf4290264843743bb7",
-      "upstreamCommit": "6ef4f526382d338ae16af562c53c5a597cf4a644",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "embed_plist@1.2.2",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/daacc37f680c7dd0a758ac99a109f2f57d9f21d3683df9e9245055922842a695.txt",
-          "bytes": 1072,
-          "sha256": "daacc37f680c7dd0a758ac99a109f2f57d9f21d3683df9e9245055922842a695",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "embed_plist@1.2.2",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "equivalent",
       "version": "1.0.2",
       "scope": [
@@ -2785,47 +2401,6 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "erased-serde@0.4.10",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "errno",
-      "version": "0.3.14",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/lambda-fairy/rust-errno",
-      "crateDownload": "https://crates.io/api/v1/crates/errno/0.3.14/download",
-      "lockSha256": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
-      "upstreamCommit": "ffc03bfb9eb491013567115e6eea560948cd9e52",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "errno@0.3.14",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2.txt",
-          "bytes": 1054,
-          "sha256": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "errno@0.3.14",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -3148,129 +2723,6 @@
             "ecosystem": "cargo",
             "package": "foldhash@0.2.0",
             "file": "LICENSE"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "foreign-types-macros",
-      "version": "0.2.4",
-      "scope": [
-        "host-proc-macro-dependency"
-      ],
-      "licenseExpression": "MIT/Apache-2.0",
-      "upstream": "https://github.com/sfackler/foreign-types",
-      "crateDownload": "https://crates.io/api/v1/crates/foreign-types-macros/0.2.4/download",
-      "lockSha256": "ea5190182e6915eb873ddbc16e23b711b6eb1f9c00a0d0a3a91b5f6228475225",
-      "upstreamCommit": "2d5077646c441fb089662e9ac439bec45c0d84b5",
-      "upstreamSubdirectory": "foreign-types-macros",
-      "documents": [
-        {
-          "path": "texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
-          "bytes": 11358,
-          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types-macros@0.2.4",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734.txt",
-          "bytes": 1072,
-          "sha256": "333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types-macros@0.2.4",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "foreign-types-shared",
-      "version": "0.3.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT/Apache-2.0",
-      "upstream": "https://github.com/sfackler/foreign-types",
-      "crateDownload": "https://crates.io/api/v1/crates/foreign-types-shared/0.3.1/download",
-      "lockSha256": "aa9a19cbb55df58761df49b23516a86d432839add4af60fc256da840f66ed35b",
-      "upstreamCommit": "bdce800c23ce73b33a337833611e0e5fdf83ce9f",
-      "upstreamSubdirectory": "foreign-types-shared",
-      "documents": [
-        {
-          "path": "texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
-          "bytes": 11358,
-          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types-shared@0.3.1",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734.txt",
-          "bytes": 1072,
-          "sha256": "333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types-shared@0.3.1",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "foreign-types",
-      "version": "0.5.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT/Apache-2.0",
-      "upstream": "https://github.com/sfackler/foreign-types",
-      "crateDownload": "https://crates.io/api/v1/crates/foreign-types/0.5.0/download",
-      "lockSha256": "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965",
-      "upstreamCommit": "c5a90ed3f39dd5fe8b5af6e9cee1bc446746272c",
-      "upstreamSubdirectory": null,
-      "documents": [
-        {
-          "path": "texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
-          "bytes": 11358,
-          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types@0.5.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734.txt",
-          "bytes": 1072,
-          "sha256": "333ea3aaa3cadb819f4acd9f9153f9feee060a995ca8710f32bc5bd9a4b91734",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "foreign-types@0.5.0",
-            "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
         }
@@ -4500,48 +3952,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "iana-time-zone",
-      "version": "0.1.65",
-      "scope": [
-        "host-proc-macro-dependency",
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/strawlab/iana-time-zone",
-      "crateDownload": "https://crates.io/api/v1/crates/iana-time-zone/0.1.65/download",
-      "lockSha256": "e31bc9ad994ba00e440a8aa5c9ef0ec67d5cb5e5cb0cc7f8b744a35b389cc470",
-      "upstreamCommit": "3726968181ae67d95c8de2f750a95b9c703ae4c8",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/696759d65dfe558ff7d9f031c76db19ec5c0767470fb67c4e8d990820d1e99c9.txt",
-          "bytes": 10832,
-          "sha256": "696759d65dfe558ff7d9f031c76db19ec5c0767470fb67c4e8d990820d1e99c9",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "iana-time-zone@0.1.65",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/da28ccc6b158fc2d8cccc74e99794b1cff1d29bd7bbeb019442fcf0c04c6cad9.txt",
-          "bytes": 1059,
-          "sha256": "da28ccc6b158fc2d8cccc74e99794b1cff1d29bd7bbeb019442fcf0c04c6cad9",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "iana-time-zone@0.1.65",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "ico",
       "version": "0.5.0",
       "scope": [
@@ -5244,6 +4654,90 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "jiff-tzdb-platform",
+      "version": "0.1.3",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "Unlicense OR MIT",
+      "upstream": "https://github.com/BurntSushi/jiff",
+      "crateDownload": "https://crates.io/api/v1/crates/jiff-tzdb-platform/0.1.3/download",
+      "lockSha256": "875a5a69ac2bab1a891711cf5eccbec1ce0341ea805560dcd90b7a2e925132e8",
+      "upstreamCommit": "939549520e6004b051b02c8b5f74973b833f3670",
+      "upstreamSubdirectory": "crates/jiff-tzdb-platform",
+      "documents": [
+        {
+          "path": "texts/01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f.txt",
+          "bytes": 126,
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "jiff-tzdb-platform@0.1.3",
+            "file": "COPYING"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f.txt",
+          "bytes": 1081,
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "jiff-tzdb-platform@0.1.3",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "jiff-tzdb",
+      "version": "0.1.8",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "Unlicense OR MIT",
+      "upstream": "https://github.com/BurntSushi/jiff",
+      "crateDownload": "https://crates.io/api/v1/crates/jiff-tzdb/0.1.8/download",
+      "lockSha256": "142bd39932ad231f10513df9ab62661fead8719872150b7ad02a2df79f4e141e",
+      "upstreamCommit": "bc70277861e54973e8a9be91bc92c44de56719b5",
+      "upstreamSubdirectory": "crates/jiff-tzdb",
+      "documents": [
+        {
+          "path": "texts/01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f.txt",
+          "bytes": 126,
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "jiff-tzdb@0.1.8",
+            "file": "COPYING"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f.txt",
+          "bytes": 1081,
+          "sha256": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "jiff-tzdb@0.1.8",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "jiff",
       "version": "0.2.37",
       "scope": [
@@ -5455,7 +4949,6 @@
       "name": "libc",
       "version": "0.2.189",
       "scope": [
-        "host-proc-macro-dependency",
         "native-runtime-dependency"
       ],
       "licenseExpression": "MIT OR Apache-2.0",
@@ -6225,775 +5718,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "objc2-app-kit",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-app-kit/0.3.2/download",
-      "lockSha256": "d49e936b501e5c5bf01fda3a9452ff86dc3ea98ad5f283e1455153142d97518c",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-app-kit",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-app-kit@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-app-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-app-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-app-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-core-foundation",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-core-foundation/0.3.2/download",
-      "lockSha256": "2a180dd8642fa45cdb7dd721cd4c11b1cadd4929ce112ebd8b9f5803cc79d536",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-core-foundation",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-core-foundation@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-foundation@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-foundation@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-foundation@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-core-graphics",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-core-graphics/0.3.2/download",
-      "lockSha256": "e022c9d066895efa1345f8e33e584b9f958da2fd4cd116792e15e07e4720a807",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-core-graphics",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-core-graphics@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-graphics@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-graphics@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-core-graphics@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-encode",
-      "version": "4.1.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-encode/4.1.0/download",
-      "lockSha256": "ef25abbcd74fb2609453eb695bd2f860d389e457f67dc17cafc8b8cbc89d0c33",
-      "upstreamCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
-      "upstreamSubdirectory": "crates/objc2-encode",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-encode@4.1.0",
-            "file": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
-            "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-encode@4.1.0",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-exception-helper",
-      "version": "0.1.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-exception-helper/0.1.1/download",
-      "lockSha256": "c7a1c5fbb72d7735b076bb47b578523aedc40f3c439bea6dfd595c089d79d98a",
-      "upstreamCommit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
-      "upstreamSubdirectory": "crates/objc2-exception-helper",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-exception-helper@0.1.1",
-            "file": "objc2-8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8d214f5477365ffcbcbb7de058c86ed9a518efb7/LICENSE.md",
-            "commit": "8d214f5477365ffcbcbb7de058c86ed9a518efb7",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-exception-helper@0.1.1",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-exception-helper@0.1.1",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-exception-helper@0.1.1",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-foundation",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-foundation/0.3.2/download",
-      "lockSha256": "e3e0adef53c21f888deb4fa59fc59f7eb17404926ee8a6f59f5df0fd7f9f3272",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-foundation",
-      "documents": [
-        {
-          "path": "texts/259b22f571b54fed25f68ec5abd8eda223e7b0547a806f13ba797a0eabecd64f.txt",
-          "bytes": 8610,
-          "sha256": "259b22f571b54fed25f68ec5abd8eda223e7b0547a806f13ba797a0eabecd64f",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "objc2-foundation@0.3.2",
-            "file": "src/copying.rs"
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-foundation@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-foundation@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-io-surface",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-io-surface/0.3.2/download",
-      "lockSha256": "180788110936d59bab6bd83b6060ffdfffb3b922ba1396b312ae795e1de9d81d",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-io-surface",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-io-surface@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-io-surface@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-io-surface@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-io-surface@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-osa-kit",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-osa-kit/0.3.2/download",
-      "lockSha256": "f112d1746737b0da274ef79a23aac283376f335f4095a083a267a082f21db0c0",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-osa-kit",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-osa-kit@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-osa-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-osa-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-osa-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-quartz-core",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-quartz-core/0.3.2/download",
-      "lockSha256": "96c1358452b371bf9f104e21ec536d37a650eb10f7ee379fff67d2e08d537f1f",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-quartz-core",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-quartz-core@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-quartz-core@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-quartz-core@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-quartz-core@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2-web-kit",
-      "version": "0.3.2",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Zlib OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2-web-kit/0.3.2/download",
-      "lockSha256": "b2e5aaab980c433cf470df9d7af96a7b46a9d892d521a2cbbb2f8a4c16751e7f",
-      "upstreamCommit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-      "upstreamSubdirectory": "framework-crates/objc2-web-kit",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2-web-kit@0.3.2",
-            "file": "objc2-7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
-            "commit": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-web-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
-          "bytes": 11358,
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-web-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-APACHE-2.0.txt",
-            "upstreamUrl": "https://www.apache.org/licenses/LICENSE-2.0",
-            "commit": null,
-            "note": "Canonical Apache-2.0 license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Exact unmodified HTTP response body from the directly linked Apache Software Foundation plain-text license endpoint, including the full license, appendix and copyright placeholders. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280.txt",
-          "bytes": 1110,
-          "sha256": "1d113539516a28f3f478ced92f33ea7656a307014514bf331084a4243c85a280",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2-web-kit@0.3.2",
-            "file": "objc2-canonical/LICENSE-Zlib.txt",
-            "upstreamUrl": "https://zlib.net/zlib_license.html",
-            "commit": null,
-            "note": "Canonical Zlib license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. The complete single PRE element from the directly linked official Zlib license page, with character entities decoded and UTF-8 output. All source header, Zlib copyright, authors, restrictions and contact lines retained; these canonical-source attributions are not substituted for objc2 authors. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "objc2",
-      "version": "0.6.4",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT",
-      "upstream": "https://github.com/madsmtm/objc2",
-      "crateDownload": "https://crates.io/api/v1/crates/objc2/0.6.4/download",
-      "lockSha256": "3a12a8ed07aefc768292f076dc3ac8c48f3781c8f2d5851dd3d98950e8c5a89f",
-      "upstreamCommit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
-      "upstreamSubdirectory": "crates/objc2",
-      "documents": [
-        {
-          "path": "texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
-          "bytes": 1339,
-          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
-          "origin": {
-            "kind": "pinned-upstream-license",
-            "ecosystem": "cargo",
-            "package": "objc2@0.6.4",
-            "file": "objc2-8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
-            "upstreamUrl": "https://raw.githubusercontent.com/madsmtm/objc2/8852b424193ca41602281b3d7540d7c8ed51e49a/LICENSE.md",
-            "commit": "8852b424193ca41602281b3d7540d7c8ed51e49a",
-            "note": "Exact unmodified LICENSE.md from this package VCS commit. It declares the applicable license alternatives and retains the complete Apple SDK/Xcode explanation; it links to canonical license bodies rather than embedding them."
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265.txt",
-          "bytes": 1068,
-          "sha256": "21785883212d06d2c262b7e9f73f92ae7a03a7f2fe86809d7c7ad9bd6961d265",
-          "origin": {
-            "kind": "canonical-license-supplement",
-            "ecosystem": "cargo",
-            "package": "objc2@0.6.4",
-            "file": "objc2-canonical/LICENSE-MIT.txt",
-            "upstreamUrl": "https://opensource.org/license/MIT",
-            "commit": null,
-            "note": "Canonical MIT license text from the official URL directly linked by this package's exact-commit LICENSE.md. This separately fetched canonical snapshot was not extracted from the package or its Git commit. Only the four visible copyright/license paragraphs in div#separator and div#LicenseText; HTML tags removed and numeric/named character entities decoded; paragraphs separated by a blank LF line. Original copyright placeholders and curly quotation marks retained. This is the linked canonical MIT template, not package-specific copyright attribution. Source body hash and extraction provenance are in objc2-canonical/provenance.json. The original SPDX expression is retained; attribution collection is not legal clearance."
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "once_cell",
       "version": "1.21.4",
       "scope": [
@@ -7066,47 +5790,6 @@
         "sha256": "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d",
         "unmodified": true
       },
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "osakit",
-      "version": "0.3.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/mdevils/rust-osakit",
-      "crateDownload": "https://crates.io/api/v1/crates/osakit/0.3.1/download",
-      "lockSha256": "732c71caeaa72c065bb69d7ea08717bd3f4863a4f451402fc9513e29dbd5261b",
-      "upstreamCommit": "9f1dcf7d2a29524410da519adbb97513b713ab74",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
-          "bytes": 9723,
-          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "osakit@0.3.1",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/5fb3573f6e7198ff6c203dbbd58d1da4bec9e8c5a828edefd9e98587d0443471.txt",
-          "bytes": 1055,
-          "sha256": "5fb3573f6e7198ff6c203dbbd58d1da4bec9e8c5a828edefd9e98587d0443471",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "osakit@0.3.1",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
       "hasFullLicenseText": true
     },
     {
@@ -8594,71 +7277,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "rustix",
-      "version": "1.1.5",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
-      "upstream": "https://github.com/bytecodealliance/rustix",
-      "crateDownload": "https://crates.io/api/v1/crates/rustix/1.1.5/download",
-      "lockSha256": "891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d",
-      "upstreamCommit": "287214b889865d8e1406a0ee71cc409b6f6191c8",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9.txt",
-          "bytes": 853,
-          "sha256": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "rustix@1.1.5",
-            "file": "COPYRIGHT"
-          },
-          "fullLicenseBody": false
-        },
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "rustix@1.1.5",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5.txt",
-          "bytes": 12243,
-          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "rustix@1.1.5",
-            "file": "LICENSE-Apache-2.0_WITH_LLVM-exception"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
-          "bytes": 1023,
-          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "rustix@1.1.5",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "rustls-pki-types",
       "version": "1.15.1",
       "scope": [
@@ -9017,88 +7635,6 @@
             "kind": "installed-package",
             "ecosystem": "cargo",
             "package": "scopeguard@1.2.0",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "security-framework-sys",
-      "version": "2.17.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/kornelski/rust-security-framework",
-      "crateDownload": "https://crates.io/api/v1/crates/security-framework-sys/2.17.0/download",
-      "lockSha256": "6ce2691df843ecc5d231c0b14ece2acc3efb62c0a398c7e1d875f3983ce020e3",
-      "upstreamCommit": "5f6e65114b77d5bc161d2b099cad09f2a67609d2",
-      "upstreamSubdirectory": "security-framework-sys",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "security-framework-sys@2.17.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/91e934255ba3b2f21103d68c5581c23ef34aa95c4628e4405b8c901935e11c69.txt",
-          "bytes": 1081,
-          "sha256": "91e934255ba3b2f21103d68c5581c23ef34aa95c4628e4405b8c901935e11c69",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "security-framework-sys@2.17.0",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "security-framework",
-      "version": "3.7.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/kornelski/rust-security-framework",
-      "crateDownload": "https://crates.io/api/v1/crates/security-framework/3.7.0/download",
-      "lockSha256": "b7f4bc775c73d9a02cde8bf7b2ec4c9d12743edf609006c7facc23998404cd1d",
-      "upstreamCommit": "5f6e65114b77d5bc161d2b099cad09f2a67609d2",
-      "upstreamSubdirectory": "security-framework",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "security-framework@3.7.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/91e934255ba3b2f21103d68c5581c23ef34aa95c4628e4405b8c901935e11c69.txt",
-          "bytes": 1081,
-          "sha256": "91e934255ba3b2f21103d68c5581c23ef34aa95c4628e4405b8c901935e11c69",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "security-framework@3.7.0",
             "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
@@ -9967,6 +8503,47 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "softbuffer",
+      "version": "0.4.8",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/rust-windowing/softbuffer",
+      "crateDownload": "https://crates.io/api/v1/crates/softbuffer/0.4.8/download",
+      "lockSha256": "aac18da81ebbf05109ab275b157c22a653bb3c12cf884450179942f81bcbf6c3",
+      "upstreamCommit": "d871852faa1137d4615b99b9ad31c3ba80f345b5",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/a4445427440043e8ce6fadf7a43fb906cb0d7f6c573a560a9f142cf9f9bf8ff4.txt",
+          "bytes": 11312,
+          "sha256": "a4445427440043e8ce6fadf7a43fb906cb0d7f6c573a560a9f142cf9f9bf8ff4",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "softbuffer@0.4.8",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/0463bfa47d6d763d8c824333efb0e6d6df3946c13c3b077c78ed9f23ca50d0f2.txt",
+          "bytes": 1056,
+          "sha256": "0463bfa47d6d763d8c824333efb0e6d6df3946c13c3b077c78ed9f23ca50d0f2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "softbuffer@0.4.8",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "stable_deref_trait",
       "version": "1.2.1",
       "scope": [
@@ -10109,48 +8686,6 @@
     },
     {
       "ecosystem": "cargo",
-      "name": "swift-rs",
-      "version": "1.0.8",
-      "scope": [
-        "host-proc-macro-dependency",
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/Brendonovich/swift-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/swift-rs/1.0.8/download",
-      "lockSha256": "e45c444e496845d3f2a351146bff59aae4975b2280238df1dfaa0c7d1846f38e",
-      "upstreamCommit": "fd82965ee1a55b2777122a9ac42a581c613327ac",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/908a661cf763bddfa04f2739bea561be62a246f03ad53fcb2272d3ddbd1d943f.txt",
-          "bytes": 11354,
-          "sha256": "908a661cf763bddfa04f2739bea561be62a246f03ad53fcb2272d3ddbd1d943f",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "swift-rs@1.0.8",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/f3c3e9f4febe81ff14ccc233c344e6e60051290d1c1e5a2c670d63cc3608a5bb.txt",
-          "bytes": 1067,
-          "sha256": "f3c3e9f4febe81ff14ccc233c344e6e60051290d1c1e5a2c670d63cc3608a5bb",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "swift-rs@1.0.8",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
       "name": "syn",
       "version": "2.0.119",
       "scope": [
@@ -10283,88 +8818,6 @@
             "ecosystem": "cargo",
             "package": "synstructure@0.14.0",
             "file": "LICENSE"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "system-configuration-sys",
-      "version": "0.6.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/mullvad/system-configuration-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/system-configuration-sys/0.6.0/download",
-      "lockSha256": "8e1d1b10ced5ca923a1fcb8d03e96b8d3268065d724548c0211415ff6ac6bac4",
-      "upstreamCommit": "fd43df6f57de954878d824c14c08b57045e46e76",
-      "upstreamSubdirectory": "system-configuration-sys",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "system-configuration-sys@0.6.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824.txt",
-          "bytes": 1058,
-          "sha256": "000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "system-configuration-sys@0.6.0",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "system-configuration",
-      "version": "0.7.0",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/mullvad/system-configuration-rs",
-      "crateDownload": "https://crates.io/api/v1/crates/system-configuration/0.7.0/download",
-      "lockSha256": "a13f3d0daba03132c0aa9767f98351b3488edc2c100cda2d2ec2b04f3d8d3c8b",
-      "upstreamCommit": "bc5958ccec74c724fc60bbd64ebeae44511cae2c",
-      "upstreamSubdirectory": "system-configuration",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "system-configuration@0.7.0",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824.txt",
-          "bytes": 1058,
-          "sha256": "000cbb5bea6f21829c8f0d9e1fe87410bd5ef0453412ffc017845982a3e19824",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "system-configuration@0.7.0",
-            "file": "LICENSE-MIT"
           },
           "fullLicenseBody": true
         }
@@ -11921,6 +10374,59 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "unicode-segmentation",
+      "version": "1.13.3",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/unicode-rs/unicode-segmentation",
+      "crateDownload": "https://crates.io/api/v1/crates/unicode-segmentation/1.13.3/download",
+      "lockSha256": "c6f5d3c3b1bf09027a88a6bc961fc00497d651009560b5463668dc81b0fa87a8",
+      "upstreamCommit": "66a032fd8d667bc47ac5b640b151dff3f5356d07",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d.txt",
+          "bytes": 321,
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "unicode-segmentation@1.13.3",
+            "file": "COPYRIGHT"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "bytes": 10847,
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "unicode-segmentation@1.13.3",
+            "file": "LICENSE-APACHE"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "bytes": 1071,
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "unicode-segmentation@1.13.3",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "untrusted",
       "version": "0.9.0",
       "scope": [
@@ -12273,6 +10779,144 @@
     },
     {
       "ecosystem": "cargo",
+      "name": "webview2-com-macros",
+      "version": "0.8.1",
+      "scope": [
+        "host-proc-macro-dependency"
+      ],
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/wravery/webview2-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/webview2-com-macros/0.8.1/download",
+      "lockSha256": "67a921c1b6914c367b2b823cd4cde6f96beec77d30a939c8199bb377cf9b9b54",
+      "upstreamCommit": "dffa41a8a46d3f5565eefbff2de57d38d399f158",
+      "upstreamSubdirectory": "crates/callback-macros",
+      "documents": [
+        {
+          "path": "texts/0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73.txt",
+          "bytes": 1067,
+          "sha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73",
+          "origin": {
+            "kind": "pinned-upstream-license",
+            "ecosystem": "cargo",
+            "package": "webview2-com-macros@0.8.1",
+            "file": "webview2-dffa41a8a46d3f5565eefbff2de57d38d399f158/LICENSE",
+            "upstreamUrl": "https://raw.githubusercontent.com/wravery/webview2-rs/dffa41a8a46d3f5565eefbff2de57d38d399f158/LICENSE",
+            "commit": "dffa41a8a46d3f5565eefbff2de57d38d399f158",
+            "note": null
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "webview2-com-sys",
+      "version": "0.39.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/wravery/webview2-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/webview2-com-sys/0.39.1/download",
+      "lockSha256": "b3a07132775117d6065853d9d1178157b8c90e228de47129d6bce2c7edebedfb",
+      "upstreamCommit": "edc2caf886175ccaebe86078c9cfe1ae2a187328",
+      "upstreamSubdirectory": "crates/bindings",
+      "documents": [
+        {
+          "path": "texts/0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73.txt",
+          "bytes": 1067,
+          "sha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73",
+          "origin": {
+            "kind": "pinned-upstream-license",
+            "ecosystem": "cargo",
+            "package": "webview2-com-sys@0.39.1",
+            "file": "webview2-edc2caf886175ccaebe86078c9cfe1ae2a187328/LICENSE",
+            "upstreamUrl": "https://raw.githubusercontent.com/wravery/webview2-rs/edc2caf886175ccaebe86078c9cfe1ae2a187328/LICENSE",
+            "commit": "edc2caf886175ccaebe86078c9cfe1ae2a187328",
+            "note": null
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "webview2-com",
+      "version": "0.39.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT",
+      "upstream": "https://github.com/wravery/webview2-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/webview2-com/0.39.1/download",
+      "lockSha256": "3f89fca7a704cee10dcb3654c1dbb8941d1783132f1917358af75bec37a7d7e6",
+      "upstreamCommit": "edc2caf886175ccaebe86078c9cfe1ae2a187328",
+      "upstreamSubdirectory": "crates/webview2-com",
+      "documents": [
+        {
+          "path": "texts/0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73.txt",
+          "bytes": 1067,
+          "sha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73",
+          "origin": {
+            "kind": "pinned-upstream-license",
+            "ecosystem": "cargo",
+            "package": "webview2-com@0.39.1",
+            "file": "webview2-edc2caf886175ccaebe86078c9cfe1ae2a187328/LICENSE",
+            "upstreamUrl": "https://raw.githubusercontent.com/wravery/webview2-rs/edc2caf886175ccaebe86078c9cfe1ae2a187328/LICENSE",
+            "commit": "edc2caf886175ccaebe86078c9cfe1ae2a187328",
+            "note": null
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "winapi-util",
+      "version": "0.1.11",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "Unlicense OR MIT",
+      "upstream": "https://github.com/BurntSushi/winapi-util",
+      "crateDownload": "https://crates.io/api/v1/crates/winapi-util/0.1.11/download",
+      "lockSha256": "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22",
+      "upstreamCommit": "803874c57dc1f10ecd42f7c86d9de72f53818432",
+      "upstreamSubdirectory": "",
+      "documents": [
+        {
+          "path": "texts/01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f.txt",
+          "bytes": 126,
+          "sha256": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "winapi-util@0.1.11",
+            "file": "COPYING"
+          },
+          "fullLicenseBody": false
+        },
+        {
+          "path": "texts/cb3c929a05e6cbc9de9ab06a4c57eeb60ca8c724bef6c138c87d3a577e27aa14.txt",
+          "bytes": 1081,
+          "sha256": "cb3c929a05e6cbc9de9ab06a4c57eeb60ca8c724bef6c138c87d3a577e27aa14",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "winapi-util@0.1.11",
+            "file": "LICENSE-MIT"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
       "name": "window-vibrancy",
       "version": "0.8.1",
       "scope": [
@@ -12320,6 +10964,705 @@
             "file": "LICENSE.spdx"
           },
           "fullLicenseBody": false
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows_x86_64_msvc",
+      "version": "0.53.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows_x86_64_msvc/0.53.1/download",
+      "lockSha256": "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650",
+      "upstreamCommit": "d468916ac27a36fb8a12bafc1bf5c0ec2fe92238",
+      "upstreamSubdirectory": "crates/targets/x86_64_msvc",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows_x86_64_msvc@0.53.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows_x86_64_msvc@0.53.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-collections",
+      "version": "0.3.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-collections/0.3.2/download",
+      "lockSha256": "23b2d95af1a8a14a3c7367e1ed4fc9c20e0a26e79551b1454d72583c97cc6610",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/collections",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-collections@0.3.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-collections@0.3.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-core",
+      "version": "0.62.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-core/0.62.2/download",
+      "lockSha256": "b8e83a14d34d0623b51dce9581199302a221863196a1dde71a7663a4c2be9deb",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/core",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-core@0.62.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-core@0.62.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-future",
+      "version": "0.3.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-future/0.3.2/download",
+      "lockSha256": "e1d6f90251fe18a279739e78025bd6ddc52a7e22f921070ccdc67dde84c605cb",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/future",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-future@0.3.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-future@0.3.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-implement",
+      "version": "0.60.2",
+      "scope": [
+        "host-proc-macro-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-implement/0.60.2/download",
+      "lockSha256": "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/implement",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-implement@0.60.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-implement@0.60.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-interface",
+      "version": "0.59.3",
+      "scope": [
+        "host-proc-macro-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-interface/0.59.3/download",
+      "lockSha256": "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/interface",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-interface@0.59.3",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-interface@0.59.3",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-link",
+      "version": "0.2.1",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-link/0.2.1/download",
+      "lockSha256": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+      "upstreamCommit": "d468916ac27a36fb8a12bafc1bf5c0ec2fe92238",
+      "upstreamSubdirectory": "crates/libs/link",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-link@0.2.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-link@0.2.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-numerics",
+      "version": "0.3.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-numerics/0.3.1/download",
+      "lockSha256": "6e2e40844ac143cdb44aead537bbf727de9b044e107a0f1220392177d15b0f26",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/numerics",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-numerics@0.3.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-numerics@0.3.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-registry",
+      "version": "0.6.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-registry/0.6.1/download",
+      "lockSha256": "02752bf7fbdcce7f2a27a742f798510f3e5ad88dbe84871e5168e2120c3d5720",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/registry",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-registry@0.6.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-registry@0.6.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-result",
+      "version": "0.4.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-result/0.4.1/download",
+      "lockSha256": "7781fa89eaf60850ac3d2da7af8e5242a5ea78d1a11c49bf2910bb5a73853eb5",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/result",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-result@0.4.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-result@0.4.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-strings",
+      "version": "0.5.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-strings/0.5.1/download",
+      "lockSha256": "7837d08f69c77cf6b07689544538e017c1bfcf57e34b4c0ff58e6c2cd3b37091",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/strings",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-strings@0.5.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-strings@0.5.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-sys",
+      "version": "0.60.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-sys/0.60.2/download",
+      "lockSha256": "f2f500e4d28234f72040990ec9d39e3a6b950f9f22d3dba18416c35882612bcb",
+      "upstreamCommit": "4b8893b307719ec23cce698269ca572ef301dc5c",
+      "upstreamSubdirectory": "crates/libs/sys",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.60.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.60.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-sys",
+      "version": "0.61.2",
+      "scope": [
+        "host-proc-macro-dependency",
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-sys/0.61.2/download",
+      "lockSha256": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/sys",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.61.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-sys@0.61.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-targets",
+      "version": "0.53.5",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-targets/0.53.5/download",
+      "lockSha256": "4945f9f551b88e0d65f3db0bc25c33b8acea4d9e41163edf90dcd0b19f9069f3",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/targets",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-targets@0.53.5",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-targets@0.53.5",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-threading",
+      "version": "0.2.1",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-threading/0.2.1/download",
+      "lockSha256": "3949bd5b99cafdf1c7ca86b43ca564028dfe27d66958f2470940f73d86d75b37",
+      "upstreamCommit": "d468916ac27a36fb8a12bafc1bf5c0ec2fe92238",
+      "upstreamSubdirectory": "crates/libs/threading",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-threading@0.2.1",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-threading@0.2.1",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows-version",
+      "version": "0.1.7",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows-version/0.1.7/download",
+      "lockSha256": "e4060a1da109b9d0326b7262c8e12c84df67cc0dbc9e33cf49e01ccc2eb63631",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/version",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-version@0.1.7",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows-version@0.1.7",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "cargo",
+      "name": "windows",
+      "version": "0.62.2",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "MIT OR Apache-2.0",
+      "upstream": "https://github.com/microsoft/windows-rs",
+      "crateDownload": "https://crates.io/api/v1/crates/windows/0.62.2/download",
+      "lockSha256": "527fadee13e0c05939a6a05d5bd6eec6cd2e3dbd648b9f8e447c6518133d8580",
+      "upstreamCommit": "32c3144490c016fe496a0aed769bce60987a2e9d",
+      "upstreamSubdirectory": "crates/libs/windows",
+      "documents": [
+        {
+          "path": "texts/c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b.txt",
+          "bytes": 11351,
+          "sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows@0.62.2",
+            "file": "license-apache-2.0"
+          },
+          "fullLicenseBody": true
+        },
+        {
+          "path": "texts/c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383.txt",
+          "bytes": 1141,
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "origin": {
+            "kind": "installed-package",
+            "ecosystem": "cargo",
+            "package": "windows@0.62.2",
+            "file": "license-mit"
+          },
+          "fullLicenseBody": true
         }
       ],
       "hasFullLicenseText": true
@@ -12433,47 +11776,6 @@
             "file": "LICENSE.spdx"
           },
           "fullLicenseBody": false
-        }
-      ],
-      "hasFullLicenseText": true
-    },
-    {
-      "ecosystem": "cargo",
-      "name": "xattr",
-      "version": "1.6.1",
-      "scope": [
-        "native-runtime-dependency"
-      ],
-      "licenseExpression": "MIT OR Apache-2.0",
-      "upstream": "https://github.com/Stebalien/xattr",
-      "crateDownload": "https://crates.io/api/v1/crates/xattr/1.6.1/download",
-      "lockSha256": "32e45ad4206f6d2479085147f02bc2ef834ac85886624a23575ae137c8aa8156",
-      "upstreamCommit": "3e1914f5dac41437db1fed74f6284fd84cb26b26",
-      "upstreamSubdirectory": "",
-      "documents": [
-        {
-          "path": "texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
-          "bytes": 10847,
-          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "xattr@1.6.1",
-            "file": "LICENSE-APACHE"
-          },
-          "fullLicenseBody": true
-        },
-        {
-          "path": "texts/8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36.txt",
-          "bytes": 1056,
-          "sha256": "8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36",
-          "origin": {
-            "kind": "installed-package",
-            "ecosystem": "cargo",
-            "package": "xattr@1.6.1",
-            "file": "LICENSE-MIT"
-          },
-          "fullLicenseBody": true
         }
       ],
       "hasFullLicenseText": true
@@ -13607,6 +12909,52 @@
     },
     {
       "ecosystem": "vendored-native-source",
+      "name": "Microsoft WebView2 SDK loader",
+      "version": "1.0.3800.47",
+      "scope": [
+        "native-runtime-dependency"
+      ],
+      "licenseExpression": "BSD-3-Clause",
+      "container": {
+        "name": "webview2-com-sys",
+        "version": "0.39.1",
+        "lockSha256": "b3a07132775117d6065853d9d1178157b8c90e228de47129d6bce2c7edebedfb"
+      },
+      "resolvedFeatures": [],
+      "upstream": "https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3800.47/License",
+      "nativeArtifacts": [
+        {
+          "path": "x64/WebView2LoaderStatic.lib",
+          "bytes": 10500472,
+          "sha256": "89c6b872783b8f6c3cedbff618adb42082d455c615453ae10cfc753f1e8f25d8"
+        },
+        {
+          "path": "x64/WebView2Loader.dll",
+          "bytes": 160880,
+          "sha256": "86545b66cdb0603bc26b626fb9ad610cb6e71f28d468f5ea66df23b03dda96d5"
+        }
+      ],
+      "documents": [
+        {
+          "path": "texts/0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55.txt",
+          "bytes": 1487,
+          "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55",
+          "origin": {
+            "kind": "official-nuget-license-text",
+            "ecosystem": "vendored-native-source",
+            "package": "Microsoft WebView2 SDK loader@1.0.3800.47",
+            "file": "Microsoft.Web.WebView2-1.0.3800.47/LICENSE.txt",
+            "upstreamUrl": "https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3800.47/License",
+            "commit": null,
+            "note": "Exact displayed license text extracted from the official exact-version NuGet License page pre element; HTML character entities decoded. The page identifies LICENSE.txt. No SDK package or executable downloaded."
+          },
+          "fullLicenseBody": true
+        }
+      ],
+      "hasFullLicenseText": true
+    },
+    {
+      "ecosystem": "vendored-native-source",
       "name": "SQLite",
       "version": "bundled by libsqlite3-sys 0.30.1",
       "scope": [
@@ -13654,7 +13002,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-desktop",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "licenseExpression": "Apache-2.0",
       "path": "apps/desktop/src-tauri/Cargo.toml"
     },
@@ -13675,7 +13023,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-providers",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "licenseExpression": "Apache-2.0",
       "path": "crates/providers/Cargo.toml"
     },
@@ -13689,8 +13037,8 @@
   ],
   "counts": {
     "npm": 20,
-    "cargo": 317,
-    "licenseTexts": 258,
+    "cargo": 310,
+    "licenseTexts": 249,
     "missing": 0,
     "mplSourceArchives": 5
   },
