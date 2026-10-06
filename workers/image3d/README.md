@@ -199,6 +199,56 @@ its cached pinned JSON directly. The checkpoint uses
 Only the exact trusted official checkpoint can reach this loader. CPU is selected
 explicitly; no MPS/native GPU support is claimed.
 
+## Reusing verified raw reconstructions
+
+The optional `--cache-root /absolute/private/cache` flag enables a private raw
+cache. The existing five-field job JSON remains unchanged. The coordinator uses
+its app-data directory rather than user projects or input folders for this cache.
+Changes to Blender's polygon budget, texture size or physical height can then
+reuse the same one-metre raw `mesh.glb`. Quality changes require a new raw mesh.
+
+Every request still verifies pinned model/code bytes and installed dependency
+versions, decodes the source image and checks its actual SHA-256. The source is
+hashed again before success. The key includes source SHA-256, preprocessing and
+worker implementation hashes, the entire platform dependency lock, model/code/
+DINO revisions, Python/dependency versions, extraction quality and CPU threads.
+Thread count remains part of the key because output byte identity between two
+and four threads has not been established. This cache adds no package, model,
+GPU runtime or network download.
+
+An entry contains exactly `mesh.glb`, `prepared-input.png`, `generation.json` and
+a byte inventory receipt. A hit verifies every file's size and SHA-256, compares
+the conditioning image with the freshly decoded input, and reopens the actual
+GLB to check finite nonplanar geometry, triangle indices/areas, bounds, Y-up metre
+units, winding and linear float32 colors. The mesh is copied exclusively into a
+new output and checked again. Each request writes a new generation receipt with
+`inferenceExecuted: false`, current timing/hardware/runtime metadata and
+`cache.originGenerationSha256` for the preserved earlier receipt. The earlier
+receipt's hash is separate from the new `generation.json` artifact hash.
+
+A hit never updates `ready.json` or creates a new `inferenceProof`: it verifies
+an earlier reconstruction and does not claim this process ran model inference.
+Fresh inference reports `inferenceExecuted: true`. `cache.hit`, `cache.key`,
+`cache.state` and `cache.integrityVerified` appear in generation and completion
+events. Corrupt entries are preserved in a uniquely named `quarantine` directory,
+reported by a `cache-invalid` stage and reconstructed again. Symlinks, Windows
+junctions/reparse points, hard-linked artifacts, traversal paths and unowned
+populated roots fail explicitly without changing their contents.
+
+An operating-system key lock covers lookup, inference and atomic publication.
+Concurrent requests for the same key wait up to 900 seconds and reuse the first
+verified publication; process termination releases the lock. Half-written staging
+entries are retained and never reused. Cache artifacts and user originals are
+never silently overwritten or deleted.
+
+`tests/test_raw_cache.py` exercises storage integrity, invalid provenance,
+preprocessing mismatch, corruption quarantine, Windows junction/hard-link
+rejection, interrupted publication, concurrent publication and recovery after
+process death. With the prepared interpreter, it also writes/reopens actual
+float32-color GLBs and proves a cache-hit receipt leaves runtime inference proof
+bytes unchanged. These tests do not invoke TripoSR or establish new Mac inference
+support; native end-to-end speed/quality measurements are coordinator evidence.
+
 The Windows download inventory totals **2,034,000,316 bytes** before installation:
 314,371,180 bytes for 37 dependency archives, 11,133,606 bytes for embedded Python,
 31,241,354 bytes for the code archive, 1,677,246,742 bytes for the checkpoint, and

@@ -5,6 +5,77 @@ use asset_providers::runtime::{
 };
 use asset_providers::{AuthStatus, ImageGenerationRequest, ImageProvenance, REQUESTED_IMAGE_MODEL};
 
+/// A successful image transport may serve another isolated job. This is not a
+/// cached authentication decision and is never returned after a failed turn.
+pub(super) struct GenerationSession {
+    identity: String,
+    runtime: CodexRuntime,
+}
+
+fn generation_session_identity(executable: &Path, output_root: &Path) -> Result<String> {
+    let mut digest = Sha256::new();
+    digest.update(
+        std::env::var_os("CODEX_EXECUTABLE")
+            .unwrap_or_default()
+            .to_string_lossy()
+            .as_bytes(),
+    );
+    let mut files = vec![executable.to_path_buf()];
+    #[cfg(any(windows, target_os = "macos"))]
+    files.extend(
+        image_runtime_helper_paths(executable)
+            .into_iter()
+            .filter(|p| p.is_file()),
+    );
+    let configured_home = std::env::var_os("CODEX_HOME")
+        .map(PathBuf::from)
+        .or_else(|| {
+            std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
+                .map(|home| PathBuf::from(home).join(".codex"))
+        });
+    if let Some(home) = configured_home {
+        if !home.is_absolute() {
+            bail!("Codex 설정 폴더는 절대 경로여야 합니다.");
+        }
+        files.push(home.join("config.toml"));
+    }
+    // Hash configuration bytes only; never parse, serialize, or expose their
+    // contents, and never inspect auth.json or any credential file.
+    for ancestor in output_root.ancestors() {
+        let config = ancestor.join(".codex/config.toml");
+        match fs::symlink_metadata(&config) {
+            Ok(_) => files.push(config),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+    }
+    files.sort();
+    files.dedup();
+    for path in files {
+        digest.update(path.to_string_lossy().as_bytes());
+        match fs::symlink_metadata(&path) {
+            Ok(metadata) => {
+                if metadata.file_type().is_symlink() || !metadata.is_file() {
+                    bail!("Codex 실행 파일 또는 설정 경로를 확인해 주세요.");
+                }
+                #[cfg(windows)]
+                {
+                    use std::os::windows::fs::MetadataExt;
+                    if metadata.file_attributes() & 0x400 != 0 {
+                        bail!("Codex 설정에 연결 경로를 사용할 수 없습니다.");
+                    }
+                }
+                let (hash, bytes) = asset_core::sha256_file(&path)?;
+                digest.update(bytes.to_le_bytes());
+                digest.update(hash.as_bytes());
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => digest.update(b"missing"),
+            Err(error) => return Err(error.into()),
+        }
+    }
+    Ok(format!("{:x}", digest.finalize()))
+}
+
 pub(super) fn unavailable_connection(reason: &str) -> Value {
     json!({"available":false,"authenticated":false,"ready":false,"runtimeVersion":null,
         "reasoningModel":DEFAULT_REASONING_MODEL,"catalogSource":"unknown","inferenceAccess":"unknown",
@@ -101,6 +172,119 @@ fn individual_asset_prompt(payload: &Value) -> Result<String> {
         ""
     };
     Ok(format!("{subject} The only asset to depict is: {}. Individual description: {}\n{reconstruction}\nUse the attached references only as visual/style guidance or to improve the selected source. Do not reproduce other objects from a reference collage. No contact sheet, overview, montage, multiple panels, collection of items, text labels or asset list. Return one image file for this one named asset.\nApproved common style: {}\nApproved target specification: {}\nUse only the native image tool; do not create or execute scripts.",text_field(payload,"name")?,text_field(payload,"prompt")?,payload["styleGuide"],payload["spec"]))
+}
+
+fn normalize_generated_image(
+    source: &Path,
+    output: &Path,
+    payload: &Value,
+    source_info: &raster::ImageInfo,
+) -> Result<(raster::ImageInfo, Value)> {
+    let width = dimension_field(&payload["spec"], "width")?;
+    let height = dimension_field(&payload["spec"], "height")?;
+    if u64::from(width) * u64::from(height) > raster::MAX_PIXELS {
+        bail!("출력 이미지의 픽셀 제한을 초과했습니다.");
+    }
+    let mode = payload["resizeMode"].as_str().unwrap_or("contain");
+    if !matches!(mode, "contain" | "cover") {
+        bail!("규격 맞춤 방식은 contain 또는 cover여야 합니다.");
+    }
+    let pixel_art = payload["spec"]["pixelArt"].as_bool().unwrap_or(false);
+    let (sw, sh) = (source_info.width, source_info.height);
+    let upscaled;
+    let info = if mode == "cover" {
+        let (cw, ch) = if u64::from(sw) * u64::from(height) > u64::from(sh) * u64::from(width) {
+            (
+                ((u64::from(sh) * u64::from(width) / u64::from(height)).max(1)) as u32,
+                sh,
+            )
+        } else {
+            (
+                sw,
+                ((u64::from(sw) * u64::from(height) / u64::from(width)).max(1)) as u32,
+            )
+        };
+        let cropped = output.with_file_name(format!("fit-crop-{}.png", Uuid::new_v4()));
+        raster::process(
+            source,
+            &cropped,
+            &json!({"type":"crop","x":(sw-cw)/2,"y":(sh-ch)/2,"width":cw,"height":ch}),
+        )?;
+        upscaled = width > cw || height > ch;
+        raster::process(
+            &cropped,
+            output,
+            &json!({"type":"resize","width":width,"height":height,"pixelArt":pixel_art}),
+        )?
+    } else {
+        let (rw, rh) = if u64::from(width) * u64::from(sh) <= u64::from(height) * u64::from(sw) {
+            (
+                width,
+                (u64::from(sh) * u64::from(width) / u64::from(sw)).max(1) as u32,
+            )
+        } else {
+            (
+                (u64::from(sw) * u64::from(height) / u64::from(sh)).max(1) as u32,
+                height,
+            )
+        };
+        upscaled = rw > sw || rh > sh;
+        if rw == width && rh == height {
+            raster::process(
+                source,
+                output,
+                &json!({"type":"resize","width":width,"height":height,"pixelArt":pixel_art}),
+            )?
+        } else {
+            let scaled = output.with_file_name(format!("fit-content-{}.png", Uuid::new_v4()));
+            raster::process(
+                source,
+                &scaled,
+                &json!({"type":"resize","width":rw,"height":rh,"pixelArt":pixel_art}),
+            )?;
+            let mut reader = image::ImageReader::open(&scaled)?.with_guessed_format()?;
+            let mut limits = image::Limits::default();
+            limits.max_image_width = Some(raster::MAX_EDGE);
+            limits.max_image_height = Some(raster::MAX_EDGE);
+            limits.max_alloc = Some(raster::MAX_PIXELS * 8);
+            reader.limits(limits);
+            let content = reader.decode()?.to_rgba8();
+            let mut canvas = image::RgbaImage::from_pixel(width, height, image::Rgba([0, 0, 0, 0]));
+            image::imageops::replace(
+                &mut canvas,
+                &content,
+                i64::from((width - rw) / 2),
+                i64::from((height - rh) / 2),
+            );
+            use image::ImageEncoder as _;
+            let file = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(output)?;
+            image::codecs::png::PngEncoder::new(&file).write_image(
+                &canvas,
+                width,
+                height,
+                image::ExtendedColorType::Rgba8,
+            )?;
+            file.sync_all()?;
+            raster::inspect(output)?
+        }
+    };
+    Ok((
+        info,
+        json!({"mode":mode,"sourceSize":[sw,sh],"targetSize":[width,height],
+        "aspectRatioPreserved":true,"upscaled":upscaled,"detailRestoration":false}),
+    ))
+}
+
+fn append_normalization_checks(report: &mut ValidationReport, metadata: &Value) {
+    if metadata["upscaled"] == true {
+        report.checks.push(ValidationCheck {code:"source-resolution-upscaled".into(),status:ValidationStatus::Warn,
+            message:format!("수신 원본 {}×{}px을 프로젝트 규격 {}×{}px에 맞춰 확대했습니다. 보간은 새 디테일을 복원하지 않습니다.",
+                metadata["sourceSize"][0],metadata["sourceSize"][1],metadata["targetSize"][0],metadata["targetSize"][1]),
+            measured:Some(MeasuredValue::Text(metadata.to_string()))});
+    }
 }
 
 fn runtime_version_rank(value: &str) -> Option<semver::Version> {
@@ -487,7 +671,26 @@ impl Backend {
             work.join("received"),
         );
         queue.set_progress(&task.id, "공식 구독 연결 확인", None, None)?;
-        let mut runtime = match CodexRuntime::connect(options) {
+        let runtime_executable = options.executable.clone();
+        let identity = generation_session_identity(&options.executable, &options.output_root)?;
+        let previous = self.inner.generation_runtime.lock().unwrap().take();
+        let connected = match previous {
+            Some(mut session) if session.identity == identity => {
+                match session.runtime.prepare_image_job(&options.output_root) {
+                    Ok(true) => Ok(session.runtime),
+                    Ok(false) => {
+                        drop(session);
+                        CodexRuntime::connect(options)
+                    }
+                    Err(error) => Err(error),
+                }
+            }
+            previous => {
+                drop(previous);
+                CodexRuntime::connect(options)
+            }
+        };
+        let mut runtime = match connected {
             Ok(runtime) => runtime,
             Err(error) => {
                 queue.fail(&task.id, failure_kind(&error), &failure_message(&error))?;
@@ -531,11 +734,15 @@ impl Backend {
         };
         // Persist intent before submission: a crash during turn/start cannot
         // silently enqueue another subscription charge on restart.
+        self.set_generation_phase_resources(root, task, true, cancel)?;
         queue.mark_external_submitted(&task.id)?;
         let mut event_error = None;
         let mut image_tool_started = false;
         let mut external_identity: Option<(String, String)> = None;
-        let outcome = runtime.generate(&request,cancel,|event| {
+        let outcome = runtime.generate_with_artifact_gate(&request,cancel,|| {
+            self.set_generation_phase_resources(root, task, false, cancel)
+                .map_err(|_| RuntimeError::Interrupted)
+        },|event| {
             let result = match event {
                 ProviderEvent::Started{thread_id,turn_id} => {
                     external_identity = Some((thread_id.clone(), turn_id.clone()));
@@ -604,6 +811,7 @@ impl Backend {
         if individual && outcome.receipts.len() != 1 {
             bail!("개별 에셋 한 항목에서 이미지 파일이 하나만 수신되어야 합니다. 수신 기록은 보존하며 자동 재요청하지 않았습니다.")
         }
+        self.set_generation_phase_resources(root, task, false, cancel)?;
         queue.set_progress(&task.id, "파일 디코딩 · 해시 · 프로젝트 저장", None, None)?;
         for (index, receipt) in outcome.receipts.iter().enumerate() {
             asset_providers::validate_receipt(&request, receipt)?;
@@ -611,7 +819,6 @@ impl Backend {
                 bail!("구독 경로가 아닌 생성 결과를 거부했습니다.")
             }
             let info = raster::inspect(&receipt.image_path)?;
-            let _guard = self.inner.io.lock().unwrap();
             if cancel.load(Ordering::SeqCst) {
                 bail!("이미지 작업이 취소되었습니다.")
             }
@@ -640,13 +847,16 @@ impl Backend {
             let requested_width = payload["spec"]["width"].as_u64().unwrap_or(0);
             let requested_height = payload["spec"]["height"].as_u64().unwrap_or(0);
             let mut artifacts = vec![artifact.clone()];
+            let mut normalization = Value::Null;
             let final_info = if payload["normalizeToSpec"] == true {
                 let normalized = work.join(format!("game-asset-{index}.png"));
-                let info = raster::process(
+                let (info, metadata) = normalize_generated_image(
                     &repo.artifact_path(&artifact.path)?,
                     &normalized,
-                    &json!({"type":"resize","width":requested_width,"height":requested_height,"pixelArt":payload["spec"]["pixelArt"].as_bool().unwrap_or(false)}),
+                    &payload,
+                    &copied_info,
                 )?;
+                normalization = metadata;
                 artifacts[0].role = ArtifactRole::Source;
                 let mut output = repo.copy_in(
                     &normalized,
@@ -661,6 +871,7 @@ impl Backend {
                 copied_info
             };
             let mut report = image_report(&artifact.id, &final_info)?;
+            append_normalization_checks(&mut report, &normalization);
             if payload["normalizeToSpec"] != true
                 && (u64::from(info.width) != requested_width
                     || u64::from(info.height) != requested_height)
@@ -697,6 +908,7 @@ impl Backend {
                         "normalizedToSpec".into(),
                         payload["normalizeToSpec"].clone(),
                     ),
+                    ("outputNormalization".into(), normalization),
                     ("providerThreadId".into(), json!(outcome.thread_id)),
                     ("providerTurnId".into(), json!(outcome.turn_id)),
                     (
@@ -725,7 +937,28 @@ impl Backend {
             } else if payload["productionDeliver"] == true {
                 asset.folder = "게임 제작 결과".into();
             }
+            // Decode, resampling and unique artifact copies above require no
+            // global project lock. Only publish metadata against the latest
+            // project state while holding the coordinator's I/O lock.
+            let _guard = self.inner.io.lock().unwrap();
+            if cancel.load(Ordering::SeqCst) || self.inner.stop.load(Ordering::SeqCst) {
+                bail!("이미지 작업이 취소되었습니다.");
+            }
             record_generated(&mut repo, asset, task)?;
+        }
+        if !cancel.load(Ordering::SeqCst)
+            && !self.inner.stop.load(Ordering::SeqCst)
+            && generation_session_identity(&runtime_executable, &work.join("received"))
+                .ok()
+                .as_deref()
+                == Some(identity.as_str())
+        {
+            let mut cached = self.inner.generation_runtime.lock().unwrap();
+            // Shutdown sets stop before clearing this slot. Check under the
+            // same mutex so a finishing worker cannot repopulate it afterwards.
+            if !cancel.load(Ordering::SeqCst) && !self.inner.stop.load(Ordering::SeqCst) {
+                *cached = Some(GenerationSession { identity, runtime });
+            }
         }
         Ok(())
     }
@@ -966,5 +1199,155 @@ mod tests {
             .as_str()
             .unwrap()
             .contains("계정 이용 권한을 증명하지"));
+    }
+
+    #[test]
+    fn generation_session_identity_ignores_empty_job_paths_and_detects_changed_bytes() {
+        let root =
+            std::env::temp_dir().join(format!("asset-generation-identity-{}", Uuid::new_v4()));
+        fs::create_dir_all(&root).unwrap();
+        let executable = root.join(if cfg!(windows) { "codex.exe" } else { "codex" });
+        fs::write(&executable, b"fixture-executable-1").unwrap();
+        let first =
+            generation_session_identity(&executable, &root.join("cache/job-one/received")).unwrap();
+        assert_eq!(
+            first,
+            generation_session_identity(&executable, &root.join("cache/job-two/received")).unwrap()
+        );
+        fs::write(&executable, b"fixture-executable-2").unwrap();
+        let changed_executable =
+            generation_session_identity(&executable, &root.join("cache/job-two/received")).unwrap();
+        assert_ne!(first, changed_executable);
+        fs::create_dir_all(root.join(".codex")).unwrap();
+        fs::write(
+            root.join(".codex/config.toml"),
+            b"model_reasoning_effort = 'low'",
+        )
+        .unwrap();
+        let configured =
+            generation_session_identity(&executable, &root.join("cache/job-two/received")).unwrap();
+        assert_ne!(changed_executable, configured);
+        fs::write(
+            root.join(".codex/config.toml"),
+            b"model_reasoning_effort = 'max'",
+        )
+        .unwrap();
+        assert_ne!(
+            configured,
+            generation_session_identity(&executable, &root.join("cache/job-two/received")).unwrap()
+        );
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn generated_contain_preserves_shape_source_and_warns_on_real_upscale() {
+        let root = std::env::temp_dir().join(format!("asset-generation-fit-{}", Uuid::new_v4()));
+        fs::create_dir_all(&root).unwrap();
+        let source = root.join("source.png");
+        image::RgbaImage::from_pixel(4, 2, image::Rgba([50, 120, 220, 255]))
+            .save(&source)
+            .unwrap();
+        let hash = asset_core::sha256_file(&source).unwrap();
+        let info = raster::inspect(&source).unwrap();
+        let output = root.join("contained.png");
+        let (actual, metadata) = normalize_generated_image(
+            &source,
+            &output,
+            &json!({"spec":{"width":8,"height":8,"pixelArt":true}}),
+            &info,
+        )
+        .unwrap();
+        let pixels = image::open(&output).unwrap().to_rgba8();
+        assert_eq!((actual.width, actual.height), (8, 8));
+        assert_eq!(pixels.get_pixel(4, 0)[3], 0);
+        assert_eq!(pixels.get_pixel(4, 2), &image::Rgba([50, 120, 220, 255]));
+        assert_eq!(pixels.get_pixel(4, 5)[3], 255);
+        assert_eq!(pixels.get_pixel(4, 7)[3], 0);
+        assert_eq!(metadata["sourceSize"], json!([4, 2]));
+        assert_eq!(metadata["targetSize"], json!([8, 8]));
+        assert_eq!(metadata["mode"], "contain");
+        assert_eq!(metadata["upscaled"], true);
+        assert_eq!(metadata["detailRestoration"], false);
+        let mut report = image_report("fixture-output", &actual).unwrap();
+        append_normalization_checks(&mut report, &metadata);
+        let check = report
+            .checks
+            .iter()
+            .find(|check| check.code == "source-resolution-upscaled")
+            .unwrap();
+        assert_eq!(check.status, ValidationStatus::Warn);
+        assert_eq!(
+            check.measured,
+            Some(MeasuredValue::Text(metadata.to_string()))
+        );
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), hash);
+        assert!(normalize_generated_image(
+            &source,
+            &output,
+            &json!({"spec":{"width":8,"height":8}}),
+            &info
+        )
+        .is_err());
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), hash);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn generated_cover_crops_center_without_stretch_or_false_upscale_warning() {
+        let root = std::env::temp_dir().join(format!("asset-generation-cover-{}", Uuid::new_v4()));
+        fs::create_dir_all(&root).unwrap();
+        let source = root.join("source.png");
+        let mut pixels = image::RgbaImage::new(6, 2);
+        for (x, _, pixel) in pixels.enumerate_pixels_mut() {
+            *pixel = image::Rgba(if x < 2 {
+                [255, 0, 0, 255]
+            } else if x < 4 {
+                [0, 255, 0, 255]
+            } else {
+                [0, 0, 255, 255]
+            });
+        }
+        pixels.save(&source).unwrap();
+        let before = asset_core::sha256_file(&source).unwrap();
+        let info = raster::inspect(&source).unwrap();
+        let output = root.join("covered.png");
+        let (actual, metadata) = normalize_generated_image(
+            &source,
+            &output,
+            &json!({"resizeMode":"cover","spec":{"width":2,"height":2,"pixelArt":true}}),
+            &info,
+        )
+        .unwrap();
+        assert!(image::open(&output)
+            .unwrap()
+            .to_rgba8()
+            .pixels()
+            .all(|p| p.0 == [0, 255, 0, 255]));
+        assert_eq!(metadata["upscaled"], false);
+        assert_eq!(metadata["aspectRatioPreserved"], true);
+        let mut report = image_report("fixture-output", &actual).unwrap();
+        append_normalization_checks(&mut report, &metadata);
+        assert!(!report
+            .checks
+            .iter()
+            .any(|check| check.code == "source-resolution-upscaled"));
+        assert!(normalize_generated_image(
+            &source,
+            &root.join("invalid.png"),
+            &json!({"resizeMode":"stretch","spec":{"width":2,"height":2}}),
+            &info
+        )
+        .is_err());
+        assert!(normalize_generated_image(
+            &source,
+            &root.join("huge.png"),
+            &json!({"spec":{"width":8192,"height":8192}}),
+            &info
+        )
+        .is_err());
+        assert!(!root.join("invalid.png").exists());
+        assert!(!root.join("huge.png").exists());
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
+        fs::remove_dir_all(root).unwrap();
     }
 }

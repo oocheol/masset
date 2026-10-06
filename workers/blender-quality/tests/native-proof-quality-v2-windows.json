@@ -1,0 +1,1159 @@
+{
+  "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\quality-v2-1791265936548\\sphere-independent-final.json",
+  "newDownloads": false,
+  "freshGptGenerationRequested": false,
+  "previewSeconds": 9.743,
+  "limitations": [
+    "Raw reconstruction timing uses one fixed existing sphere; procedural minimum-model tests are separate and do not certify complex assets",
+    "Pixel-grid atlas overlap is sampled and 107 interior texels remain below the 0.5 percent rejection limit",
+    "Shape checks are sampled; no new backside/PBR/retopology or watertight certificate",
+    "LOD uses its own geometric normals and omits the game tangent normal texture",
+    "EEVEE succeeded without fallback; a natural native EEVEE failure was not observed"
+  ],
+  "boundaryTestsPassed": 10,
+  "qualityPreservation": {
+    "game": {
+      "passed": true,
+      "failedMetrics": [],
+      "role": "game",
+      "normalizingExtentMeters": 1.0,
+      "surfaceSampleCount": 2060,
+      "p95SurfaceErrorMeters": 0.000137815600464819,
+      "maximumSurfaceErrorMeters": 0.0011462917318567634,
+      "p95RelativeSurfaceError": 0.000137815600464819,
+      "maximumRelativeSurfaceError": 0.0011462917318567634,
+      "silhouetteResolution": 64,
+      "silhouetteViews": [
+        {
+          "viewAxis": "X",
+          "intersectionOverUnion": 1.0,
+          "missingSourcePixelFraction": 0.0,
+          "sourcePixels": 2702,
+          "derivedPixels": 2702
+        },
+        {
+          "viewAxis": "Y",
+          "intersectionOverUnion": 1.0,
+          "missingSourcePixelFraction": 0.0,
+          "sourcePixels": 2606,
+          "derivedPixels": 2606
+        },
+        {
+          "viewAxis": "Z",
+          "intersectionOverUnion": 0.9996294924045943,
+          "missingSourcePixelFraction": 0.0003705075954057058,
+          "sourcePixels": 2699,
+          "derivedPixels": 2698
+        }
+      ],
+      "minimumSilhouetteIoU": 0.9996294924045943,
+      "thinFeatures": {
+        "sampledSourceFaces": 1024,
+        "thinSurfaceSamples": 60,
+        "thinThresholdMeters": 0.03,
+        "minimumMeasuredThicknessMeters": 3.779881046991795E-05,
+        "lostThinSurfaceSamples": 0,
+        "lostThinSurfaceFraction": 0.0,
+        "applicable": true,
+        "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+        "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+      },
+      "limits": {
+        "p95RelativeSurfaceError": 0.015,
+        "maximumRelativeSurfaceError": 0.06,
+        "minimumSilhouetteIoU": 0.88,
+        "maximumLostThinSurfaceFraction": 0.03
+      },
+      "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+      "certifiesWatertightness": false,
+      "certifiesUnseenGeometry": false
+    },
+    "lod1": {
+      "passed": true,
+      "failedMetrics": [],
+      "role": "lod1",
+      "normalizingExtentMeters": 1.0,
+      "surfaceSampleCount": 2060,
+      "p95SurfaceErrorMeters": 0.0008589629142079501,
+      "maximumSurfaceErrorMeters": 0.00260797212831676,
+      "p95RelativeSurfaceError": 0.0008589629142079501,
+      "maximumRelativeSurfaceError": 0.00260797212831676,
+      "silhouetteResolution": 64,
+      "silhouetteViews": [
+        {
+          "viewAxis": "X",
+          "intersectionOverUnion": 0.9981502034776175,
+          "missingSourcePixelFraction": 0.0014803849000740192,
+          "sourcePixels": 2702,
+          "derivedPixels": 2699
+        },
+        {
+          "viewAxis": "Y",
+          "intersectionOverUnion": 0.9984662576687117,
+          "missingSourcePixelFraction": 0.0007674597083653108,
+          "sourcePixels": 2606,
+          "derivedPixels": 2606
+        },
+        {
+          "viewAxis": "Z",
+          "intersectionOverUnion": 0.9985185185185185,
+          "missingSourcePixelFraction": 0.0011115227862171174,
+          "sourcePixels": 2699,
+          "derivedPixels": 2697
+        }
+      ],
+      "minimumSilhouetteIoU": 0.9981502034776175,
+      "thinFeatures": {
+        "sampledSourceFaces": 1024,
+        "thinSurfaceSamples": 60,
+        "thinThresholdMeters": 0.03,
+        "minimumMeasuredThicknessMeters": 3.779881046991795E-05,
+        "lostThinSurfaceSamples": 0,
+        "lostThinSurfaceFraction": 0.0,
+        "applicable": true,
+        "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+        "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+      },
+      "limits": {
+        "p95RelativeSurfaceError": 0.035,
+        "maximumRelativeSurfaceError": 0.1,
+        "minimumSilhouetteIoU": 0.78,
+        "maximumLostThinSurfaceFraction": 0.1
+      },
+      "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+      "certifiesWatertightness": false,
+      "certifiesUnseenGeometry": false,
+      "shadingDeviationFromGame": {
+        "samples": 1024,
+        "p95NormalDeviationDegrees": 11.685399140459756,
+        "maximumNormalDeviationDegrees": 180.0,
+        "opposedNormalSampleFraction": 0.00390625,
+        "method": "derived triangle-center corner normals versus barycentric source corner normals",
+        "includesNormalTexture": false
+      }
+    }
+  },
+  "coreSeconds": 21.252,
+  "fixedSourceSha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+  "checkedAt": "2026-10-06T06:01:35.1476297Z",
+  "triangleCounts": {
+    "original": 5738,
+    "highDetail": 5738,
+    "game": 4894,
+    "lod1": 3591
+  },
+  "lodNormalPolicy": {
+    "gameNormalIncluded": true,
+    "lodNormalTextureIncluded": false,
+    "gameNormalTextureReused": false,
+    "separateNormalRebake": false,
+    "reason": "Game tangent-space normal map is not validated for changed LOD geometry; LOD uses its own measured corner normals",
+    "shadingDeviation": {
+      "samples": 1024,
+      "p95NormalDeviationDegrees": 11.685399140459756,
+      "maximumNormalDeviationDegrees": 180.0,
+      "opposedNormalSampleFraction": 0.00390625,
+      "method": "derived triangle-center corner normals versus barycentric source corner normals",
+      "includesNormalTexture": false
+    }
+  },
+  "uvAtlas": {
+    "resolution": 512,
+    "surfaceTexels": 65659,
+    "surfaceUsageFraction": 0.2504692077636719,
+    "overlappingInteriorTexels": 107,
+    "interiorOverlapFraction": 0.0016296318859562284,
+    "continuousUVTriangleArea": 0.25112092028938326,
+    "texelDensityPixelsPerMeter": {
+      "p10": 143.02511774817157,
+      "median": 156.10254047303383,
+      "p90": 169.22492600628266
+    },
+    "densityRatioP90P10": 1.1831832664821982,
+    "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+    "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+    "paddingIncludedInUsage": false,
+    "subpixelOverlapCertified": false,
+    "paddingPixels": 2,
+    "packingGapPixels": 4,
+    "packingMethod": "Blender pack_islands CONVEX with final atlas FRACTION margin"
+  },
+  "cudaInferenceTested": false,
+  "schemaVersion": 2,
+  "artifacts": [
+    {
+      "sha256": "3fc5d593956ef9492325e6e8f2d18bd957fe4643b861163b13b9d3603c851d13",
+      "bytes": 655112,
+      "basename": "high-detail.glb",
+      "role": "core"
+    },
+    {
+      "sha256": "8e5b90e6579e04f8c898d5f4ac49d2d23e463ff4c687f71e8585242a271e3228",
+      "bytes": 2048884,
+      "basename": "game-ready.model.glb",
+      "role": "core"
+    },
+    {
+      "sha256": "be3500ac9b8bec98b44e38bf15b8f1303a41ab973ab9fb083ca1898cfb628d42",
+      "bytes": 1210484,
+      "basename": "lod1.glb",
+      "role": "core"
+    },
+    {
+      "sha256": "1ccca13779d14bb54d1e5a5e4eab5255cbe45455e83e375d2184e1cbe55fe688",
+      "bytes": 2217911,
+      "basename": "source.blend",
+      "role": "core"
+    },
+    {
+      "sha256": "70933abd6a760c3249461c02b9a7ccaf0dae01f5d44299d10767e23c08ef7220",
+      "bytes": 846263,
+      "basename": "basecolor.png",
+      "role": "core"
+    },
+    {
+      "sha256": "30e54708784d24d2151a9e0cd5ac9147cad2067770a55151bc4e92912450090b",
+      "bytes": 781738,
+      "basename": "normal.png",
+      "role": "core"
+    },
+    {
+      "sha256": "2c7743a3a637b4901e9714368b58b620b296b3ddce53c4bab70fb220aeb9a34a",
+      "bytes": 122010,
+      "basename": "orm.png",
+      "role": "core"
+    },
+    {
+      "sha256": "80dda2486b8db045416a887b886debb92d6df435a933ee6df5ca663a1114bec3",
+      "bytes": 32213,
+      "basename": "validation.json",
+      "role": "core"
+    },
+    {
+      "sha256": "74b067d47d0ab65f95d3242f69f0937ac57eef1731c6c1cd3c9ecc5c06355e76",
+      "bytes": 1198186,
+      "basename": "thumbnail.png",
+      "role": "preview"
+    },
+    {
+      "sha256": "e498bb03c757c461218dc610bfe7e8727fdb0cb5b76e666333f3220e75450a01",
+      "bytes": 322479,
+      "basename": "turntable-00.png",
+      "role": "preview"
+    },
+    {
+      "sha256": "c1bb26dc207aa1a0570b61c688d8dad1f3ba2aebfda31c2d326c550a4ff63bc7",
+      "bytes": 323358,
+      "basename": "turntable-01.png",
+      "role": "preview"
+    },
+    {
+      "sha256": "4517af8de887bde47f86dde43a311cd9730ae95199e544b215b9d43a9f5d8534",
+      "bytes": 319944,
+      "basename": "turntable-02.png",
+      "role": "preview"
+    },
+    {
+      "sha256": "e58c93333feda144c8d2226ae9939d180ae71d435d776bd6878cedf5f2adacbb",
+      "bytes": 328241,
+      "basename": "turntable-03.png",
+      "role": "preview"
+    },
+    {
+      "sha256": "d400344816ea63d5940f4217b33799599ac34202067d610e21870f5749be24cc",
+      "bytes": 5794,
+      "basename": "preview-validation.json",
+      "role": "preview"
+    }
+  ],
+  "nativeSecurityChecks": 6,
+  "combinedWorkerSeconds": 30.995,
+  "blenderVersion": "5.2.1 LTS",
+  "macNativeTested": false,
+  "scope": "Native Windows Blender quality-worker and separate preview; fixed existing raw reconstruction",
+  "coreEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\quality-v2-1791265936548\\sphere-result-final\\validation.json",
+  "sourceOriginalPreserved": true,
+  "previewEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\quality-v2-1791265936548\\sphere-preview-fast-final\\preview-validation.json",
+  "newReconstructionInferenceRequested": false,
+  "cpuModelRuntimeChanged": false,
+  "nativeMeasurementRegressionCases": 8,
+  "previewEngine": "BLENDER_EEVEE",
+  "previewFallbackReason": null,
+  "minimalModelProof": {
+    "testedAt": "2026-10-06T15:14:03.1520334+09:00",
+    "runtimeSources": [
+      {
+        "path": "workers\\blender-quality\\audit.py",
+        "sha256": "38bfba7ef0c35373fd4369cc46235cc625af2f5bbd7ec2623a673eccd17dc6d8",
+        "bytes": 26793
+      },
+      {
+        "path": "workers\\blender-quality\\quality_metrics.py",
+        "sha256": "14baebdb5f46634830f7eecb60829db22e82fdfb86d1c26f914c942fd327848e",
+        "bytes": 12889
+      },
+      {
+        "path": "workers\\blender-quality\\worker.py",
+        "sha256": "e71a7525d08378972d738b9cfaa861a57edcb6ff6decd431b25867b73fac7f2e",
+        "bytes": 72128
+      },
+      {
+        "path": "workers\\blender-quality\\preview_worker.py",
+        "sha256": "9dce00678445756f49bb3eb901514e913e51e4777096ee3ccfe14ec46c6da905",
+        "bytes": 7332
+      },
+      {
+        "path": "workers\\blender-quality\\verify_native.py",
+        "sha256": "e5a1879d04c4c19a41a048344d5cd981c412d51c654005e64fcc5208927c534c",
+        "bytes": 20071
+      }
+    ],
+    "fixtures": [
+      {
+        "case": "cube",
+        "sourcePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\fixtures\\cube.glb",
+        "sourceSha256": "95eec9fd5cdcb66949a7be352f1d7b52229b728cdca8fe172b4c6f7088f7c2b0",
+        "sourceBytes": 2032,
+        "originalSourcePreserved": true,
+        "valid": true,
+        "triangleCounts": {
+          "original": 12,
+          "highDetail": 12,
+          "game": 12,
+          "lod1": 12
+        },
+        "reduction": {
+          "method": "Unreduced validated game mesh copy",
+          "originalTriangles": 12,
+          "budget": 12,
+          "finalTriangles": 12,
+          "attempts": [],
+          "retopology": false,
+          "reason": "No lower-count candidate passed bounded geometry, source-shape and shading checks",
+          "reductionApplied": false,
+          "fidelityAttempts": [
+            {
+              "budget": 6,
+              "triangles": 4,
+              "passed": false,
+              "failedMetrics": [
+                "surface-p95",
+                "surface-maximum",
+                "silhouette"
+              ]
+            },
+            {
+              "budget": 9,
+              "triangles": 8,
+              "passed": false,
+              "failedMetrics": [
+                "surface-p95",
+                "surface-maximum"
+              ]
+            },
+            {
+              "budget": 10,
+              "triangles": 8,
+              "passed": false,
+              "failedMetrics": [
+                "surface-p95",
+                "surface-maximum"
+              ]
+            }
+          ],
+          "relaxedForFidelity": false
+        },
+        "qualityPreservation": {
+          "game": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "game",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 68,
+            "p95SurfaceErrorMeters": 5.372690026206328E-08,
+            "maximumSurfaceErrorMeters": 5.372690026206328E-08,
+            "p95RelativeSurfaceError": 5.372690026206328E-08,
+            "maximumRelativeSurfaceError": 5.372690026206328E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 12,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.015,
+              "maximumRelativeSurfaceError": 0.06,
+              "minimumSilhouetteIoU": 0.88,
+              "maximumLostThinSurfaceFraction": 0.03
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false
+          },
+          "lod1": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "lod1",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 68,
+            "p95SurfaceErrorMeters": 5.372690026206328E-08,
+            "maximumSurfaceErrorMeters": 5.372690026206328E-08,
+            "p95RelativeSurfaceError": 5.372690026206328E-08,
+            "maximumRelativeSurfaceError": 5.372690026206328E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 12,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.035,
+              "maximumRelativeSurfaceError": 0.1,
+              "minimumSilhouetteIoU": 0.78,
+              "maximumLostThinSurfaceFraction": 0.1
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false,
+            "shadingDeviationFromGame": {
+              "samples": 12,
+              "p95NormalDeviationDegrees": 0.0,
+              "maximumNormalDeviationDegrees": 0.0,
+              "opposedNormalSampleFraction": 0.0,
+              "method": "derived triangle-center corner normals versus barycentric source corner normals",
+              "includesNormalTexture": false
+            }
+          }
+        },
+        "uvAtlas": {
+          "resolution": 512,
+          "surfaceTexels": 238632,
+          "surfaceUsageFraction": 0.910308837890625,
+          "overlappingInteriorTexels": 0,
+          "interiorOverlapFraction": 0.0,
+          "continuousUVTriangleArea": 0.9098601090646976,
+          "texelDensityPixelsPerMeter": {
+            "p10": 199.38001173018716,
+            "median": 199.38002558698017,
+            "p90": 199.38003929162366
+          },
+          "densityRatioP90P10": 1.000000138235705,
+          "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+          "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+          "paddingIncludedInUsage": false,
+          "subpixelOverlapCertified": false,
+          "paddingPixels": 2,
+          "packingGapPixels": 4,
+          "packingMethod": "Blender pack_islands AABB/CARDINAL with final atlas FRACTION margin",
+          "smallMeshPacking": true
+        },
+        "lodNormalPolicy": {
+          "gameNormalIncluded": false,
+          "lodNormalTextureIncluded": false,
+          "gameNormalTextureReused": false,
+          "separateNormalRebake": false,
+          "reason": "Game tangent-space normal reuse is not independently validated for LOD; its material uses its own measured corner normals",
+          "shadingDeviation": {
+            "samples": 12,
+            "p95NormalDeviationDegrees": 0.0,
+            "maximumNormalDeviationDegrees": 0.0,
+            "opposedNormalSampleFraction": 0.0,
+            "method": "derived triangle-center corner normals versus barycentric source corner normals",
+            "includesNormalTexture": false
+          }
+        },
+        "coreWorkerSeconds": 2.028,
+        "processElapsedSeconds": 5.447,
+        "preview": {
+          "mode": "deferred",
+          "status": "deferred",
+          "engine": null,
+          "files": [],
+          "thumbnailResolution": [
+            1024,
+            1024
+          ],
+          "turntableResolution": [
+            512,
+            512
+          ],
+          "turntableViews": 4
+        },
+        "independentChecks": 54,
+        "independentValid": true,
+        "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\cube-independent.json",
+        "independentEvidenceSha256": "58426dc1804713028c23faab4c1e954ac85cf790dc363deb21822272924d478a",
+        "artifacts": [
+          {
+            "basename": "basecolor.png",
+            "sha256": "bdbed6601a64dce3db4fd0970347172f48cdf5705f773f653c93228de20f5dd1",
+            "bytes": 11365
+          },
+          {
+            "basename": "game-ready.model.glb",
+            "sha256": "d892add52736ade03012bc62a5f1818c80825a62551cdb97ab82afc22e5716c5",
+            "bytes": 25472
+          },
+          {
+            "basename": "high-detail.glb",
+            "sha256": "818402a10e50c8c0678cc63ed4b9d4ac9c1dabf3e7b36dba79d32da8df694cdb",
+            "bytes": 2564
+          },
+          {
+            "basename": "lod1.glb",
+            "sha256": "44d13756bf6e4595fd22b13edc4045af46f61def712a68e6a0f231d5baf24371",
+            "bytes": 25480
+          },
+          {
+            "basename": "orm.png",
+            "sha256": "c6ba71ecad4eea73147bba189111f1bc9043e5a1b59db47995989bb1e7b604f6",
+            "bytes": 11256
+          },
+          {
+            "basename": "source.blend",
+            "sha256": "fe93147d672f956fc23d1f0aa2359312444e8f1758f5d0669a8bd2f197cf8139",
+            "bytes": 109269
+          },
+          {
+            "basename": "validation.json",
+            "sha256": "598d4d2d0bcdb2e9df460ea8ed366b9afbdd98f927f50ce9cd0acf6d35f69e35",
+            "bytes": 30032
+          }
+        ]
+      },
+      {
+        "case": "vertical-card",
+        "sourcePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\fixtures\\vertical-card.glb",
+        "sourceSha256": "d80f3f308ede6cb25317858d9cc6847eeb68515ae9afdbc6b2d4b89fb852f500",
+        "sourceBytes": 1332,
+        "originalSourcePreserved": true,
+        "valid": true,
+        "triangleCounts": {
+          "original": 2,
+          "highDetail": 2,
+          "game": 2,
+          "lod1": 2
+        },
+        "reduction": {
+          "method": "Unreduced validated game mesh copy",
+          "originalTriangles": 2,
+          "budget": 2,
+          "finalTriangles": 2,
+          "attempts": [],
+          "retopology": false,
+          "reason": "No lower-count candidate passed bounded geometry, source-shape and shading checks",
+          "reductionApplied": false,
+          "fidelityAttempts": [
+            {
+              "budget": 1,
+              "triangles": 2,
+              "passed": false,
+              "failedMetrics": [
+                "candidate-geometry"
+              ],
+              "reason": "Cannot satisfy triangle budget with bounded decimation"
+            }
+          ],
+          "relaxedForFidelity": false
+        },
+        "qualityPreservation": {
+          "game": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "game",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 24,
+            "p95SurfaceErrorMeters": 1.4901161193847656E-08,
+            "maximumSurfaceErrorMeters": 1.4901161193847656E-08,
+            "p95RelativeSurfaceError": 1.4901161193847656E-08,
+            "maximumRelativeSurfaceError": 1.4901161193847656E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 2,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.015,
+              "maximumRelativeSurfaceError": 0.06,
+              "minimumSilhouetteIoU": 0.88,
+              "maximumLostThinSurfaceFraction": 0.03
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false
+          },
+          "lod1": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "lod1",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 24,
+            "p95SurfaceErrorMeters": 1.4901161193847656E-08,
+            "maximumSurfaceErrorMeters": 1.4901161193847656E-08,
+            "p95RelativeSurfaceError": 1.4901161193847656E-08,
+            "maximumRelativeSurfaceError": 1.4901161193847656E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 3844,
+                "derivedPixels": 3844,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 2,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.035,
+              "maximumRelativeSurfaceError": 0.1,
+              "minimumSilhouetteIoU": 0.78,
+              "maximumLostThinSurfaceFraction": 0.1
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false,
+            "shadingDeviationFromGame": {
+              "samples": 2,
+              "p95NormalDeviationDegrees": 0.0,
+              "maximumNormalDeviationDegrees": 0.0,
+              "opposedNormalSampleFraction": 0.0,
+              "method": "derived triangle-center corner normals versus barycentric source corner normals",
+              "includesNormalTexture": false
+            }
+          }
+        },
+        "uvAtlas": {
+          "resolution": 512,
+          "surfaceTexels": 254016,
+          "surfaceUsageFraction": 0.968994140625,
+          "overlappingInteriorTexels": 0,
+          "interiorOverlapFraction": 0.0,
+          "continuousUVTriangleArea": 0.9689941614815336,
+          "texelDensityPixelsPerMeter": {
+            "p10": 504.0000007033348,
+            "median": 504.0000054240229,
+            "p90": 504.0000101447109
+          },
+          "densityRatioP90P10": 1.000000018732889,
+          "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+          "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+          "paddingIncludedInUsage": false,
+          "subpixelOverlapCertified": false,
+          "paddingPixels": 2,
+          "packingGapPixels": 4,
+          "packingMethod": "Blender pack_islands AABB/CARDINAL with final atlas FRACTION margin",
+          "smallMeshPacking": true
+        },
+        "lodNormalPolicy": {
+          "gameNormalIncluded": false,
+          "lodNormalTextureIncluded": false,
+          "gameNormalTextureReused": false,
+          "separateNormalRebake": false,
+          "reason": "Game tangent-space normal reuse is not independently validated for LOD; its material uses its own measured corner normals",
+          "shadingDeviation": {
+            "samples": 2,
+            "p95NormalDeviationDegrees": 0.0,
+            "maximumNormalDeviationDegrees": 0.0,
+            "opposedNormalSampleFraction": 0.0,
+            "method": "derived triangle-center corner normals versus barycentric source corner normals",
+            "includesNormalTexture": false
+          }
+        },
+        "coreWorkerSeconds": 1.793,
+        "processElapsedSeconds": 4.901,
+        "preview": {
+          "mode": "deferred",
+          "status": "deferred",
+          "engine": null,
+          "files": [],
+          "thumbnailResolution": [
+            1024,
+            1024
+          ],
+          "turntableResolution": [
+            512,
+            512
+          ],
+          "turntableViews": 4
+        },
+        "independentChecks": 54,
+        "independentValid": true,
+        "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\vertical-card-independent.json",
+        "independentEvidenceSha256": "aab84999a98e9a813f0ce2991b51abf649b5fcf1c09d58838a45fdf4ddf9b80f",
+        "artifacts": [
+          {
+            "basename": "basecolor.png",
+            "sha256": "8062a4e6cc1a581b4ab72bea4ae715259dd6633ee74a0ba1128333eb14e5c9c2",
+            "bytes": 11408
+          },
+          {
+            "basename": "game-ready.model.glb",
+            "sha256": "a36e9de61abb34b90cd4671f03f9c110acfb52de1fe1af445587d269c1f99c99",
+            "bytes": 24708
+          },
+          {
+            "basename": "high-detail.glb",
+            "sha256": "f933861c5045306766ef7b5f66dc968f424dbc5642b6462512ccd9647d00aa8c",
+            "bytes": 1544
+          },
+          {
+            "basename": "lod1.glb",
+            "sha256": "4660c278a1a5f76d550cd24949739ef2e6e4d6db58a9bc9bf954f013009a9e9d",
+            "bytes": 24720
+          },
+          {
+            "basename": "orm.png",
+            "sha256": "f992cc5b5eaafc005c489d545b17b5b701b99fdd89b62a36908058f8aac75f7b",
+            "bytes": 11483
+          },
+          {
+            "basename": "source.blend",
+            "sha256": "2be2b4155f61820dfeceb30fe31e48a3beabd71bf7045b447a58194b963f92b4",
+            "bytes": 107278
+          },
+          {
+            "basename": "validation.json",
+            "sha256": "3daf56adf8cea89c23a6db7de0170ef89fcb7870cf281c237df9812cea615a19",
+            "bytes": 29609
+          }
+        ]
+      },
+      {
+        "case": "single-triangle",
+        "sourcePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\fixtures\\single-triangle.glb",
+        "sourceSha256": "899b511c938affbc4b17dc5457d4c227c9d11e3ee6138838200d5b8bbea7d82d",
+        "sourceBytes": 1300,
+        "originalSourcePreserved": true,
+        "valid": true,
+        "triangleCounts": {
+          "original": 1,
+          "highDetail": 1,
+          "game": 1,
+          "lod1": 1
+        },
+        "reduction": {
+          "method": "Unreduced validated game mesh copy",
+          "originalTriangles": 1,
+          "budget": 1,
+          "finalTriangles": 1,
+          "attempts": [],
+          "retopology": false,
+          "reason": "No lower-count candidate passed bounded geometry, source-shape and shading checks",
+          "reductionApplied": false,
+          "fidelityAttempts": [],
+          "relaxedForFidelity": false
+        },
+        "qualityPreservation": {
+          "game": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "game",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 20,
+            "p95SurfaceErrorMeters": 2.980232238769531E-08,
+            "maximumSurfaceErrorMeters": 2.980232238769531E-08,
+            "p95RelativeSurfaceError": 2.980232238769531E-08,
+            "maximumRelativeSurfaceError": 2.980232238769531E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 1922,
+                "derivedPixels": 1922,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 1,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.015,
+              "maximumRelativeSurfaceError": 0.06,
+              "minimumSilhouetteIoU": 0.88,
+              "maximumLostThinSurfaceFraction": 0.03
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false
+          },
+          "lod1": {
+            "passed": true,
+            "failedMetrics": [],
+            "role": "lod1",
+            "normalizingExtentMeters": 1.0,
+            "surfaceSampleCount": 20,
+            "p95SurfaceErrorMeters": 2.980232238769531E-08,
+            "maximumSurfaceErrorMeters": 2.980232238769531E-08,
+            "p95RelativeSurfaceError": 2.980232238769531E-08,
+            "maximumRelativeSurfaceError": 2.980232238769531E-08,
+            "silhouetteResolution": 64,
+            "silhouetteViews": [
+              {
+                "viewAxis": "X",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Y",
+                "intersectionOverUnion": 1.0,
+                "applicable": true,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 1922,
+                "derivedPixels": 1922,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              },
+              {
+                "viewAxis": "Z",
+                "intersectionOverUnion": 1.0,
+                "applicable": false,
+                "missingSourcePixelFraction": 0.0,
+                "sourcePixels": 0,
+                "derivedPixels": 0,
+                "emptyViewPolicy": "Jointly empty edge-on views are equal/nonapplicable; one empty view remains a mismatch"
+              }
+            ],
+            "minimumSilhouetteIoU": 1.0,
+            "thinFeatures": {
+              "sampledSourceFaces": 1,
+              "thinSurfaceSamples": 0,
+              "thinThresholdMeters": 0.03,
+              "minimumMeasuredThicknessMeters": null,
+              "lostThinSurfaceSamples": 0,
+              "lostThinSurfaceFraction": null,
+              "applicable": false,
+              "method": "source inward ray with opposing-face normal dot <= -0.5; derived nearest surface",
+              "limitation": "Sampled source geometry only; open sheets and features below the sampling/pixel grid are not certified"
+            },
+            "limits": {
+              "p95RelativeSurfaceError": 0.035,
+              "maximumRelativeSurfaceError": 0.1,
+              "minimumSilhouetteIoU": 0.78,
+              "maximumLostThinSurfaceFraction": 0.1
+            },
+            "method": "deterministic bidirectional surface samples plus native BVH orthographic silhouettes",
+            "certifiesWatertightness": false,
+            "certifiesUnseenGeometry": false,
+            "shadingDeviationFromGame": {
+              "samples": 1,
+              "p95NormalDeviationDegrees": 0.0,
+              "maximumNormalDeviationDegrees": 0.0,
+              "opposedNormalSampleFraction": 0.0,
+              "method": "derived triangle-center corner normals versus barycentric source corner normals",
+              "includesNormalTexture": false
+            }
+          }
+        },
+        "uvAtlas": {
+          "resolution": 512,
+          "surfaceTexels": 126958,
+          "surfaceUsageFraction": 0.48430633544921875,
+          "overlappingInteriorTexels": 0,
+          "interiorOverlapFraction": 0.0,
+          "continuousUVTriangleArea": 0.48449720434437926,
+          "texelDensityPixelsPerMeter": {
+            "p10": 504.0000697135923,
+            "median": 504.0000697135923,
+            "p90": 504.0000697135923
+          },
+          "densityRatioP90P10": 1.0,
+          "densityMethod": "square root of UV pixel area / actual world-space triangle area",
+          "overlapMethod": "strict triangle-interior pixel centers; shared edges excluded",
+          "paddingIncludedInUsage": false,
+          "subpixelOverlapCertified": false,
+          "paddingPixels": 2,
+          "packingGapPixels": 4,
+          "packingMethod": "Blender pack_islands AABB/CARDINAL with final atlas FRACTION margin",
+          "smallMeshPacking": true
+        },
+        "lodNormalPolicy": {
+          "gameNormalIncluded": false,
+          "lodNormalTextureIncluded": false,
+          "gameNormalTextureReused": false,
+          "separateNormalRebake": false,
+          "reason": "Game tangent-space normal reuse is not independently validated for LOD; its material uses its own measured corner normals",
+          "shadingDeviation": {
+            "samples": 1,
+            "p95NormalDeviationDegrees": 0.0,
+            "maximumNormalDeviationDegrees": 0.0,
+            "opposedNormalSampleFraction": 0.0,
+            "method": "derived triangle-center corner normals versus barycentric source corner normals",
+            "includesNormalTexture": false
+          }
+        },
+        "coreWorkerSeconds": 1.865,
+        "processElapsedSeconds": 6.184,
+        "preview": {
+          "mode": "deferred",
+          "status": "deferred",
+          "engine": null,
+          "files": [],
+          "thumbnailResolution": [
+            1024,
+            1024
+          ],
+          "turntableResolution": [
+            512,
+            512
+          ],
+          "turntableViews": 4
+        },
+        "independentChecks": 54,
+        "independentValid": true,
+        "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\single-triangle-independent.json",
+        "independentEvidenceSha256": "b40efd6b169183235bddc350908a92d396c75b17737b1dd4c3f3d67a1825e255",
+        "artifacts": [
+          {
+            "basename": "basecolor.png",
+            "sha256": "b3ebf4ec88a9566951aebb2a9d913b58d7696958863b981943b6e2f5aeae6b84",
+            "bytes": 14892
+          },
+          {
+            "basename": "game-ready.model.glb",
+            "sha256": "f987f1ea3ed7939ef320483e566aa7ef0701a27d3cec61422f4fb7c9d6ab3f21",
+            "bytes": 31580
+          },
+          {
+            "basename": "high-detail.glb",
+            "sha256": "d60e8ff148970800fd8daa1510837324b5dd88adfd2be101599db764dbd3131c",
+            "bytes": 1492
+          },
+          {
+            "basename": "lod1.glb",
+            "sha256": "2a55fd5e2ef28c8e2039544dd766d340947de17a8095e9f93700866bed1ad5e1",
+            "bytes": 31592
+          },
+          {
+            "basename": "orm.png",
+            "sha256": "e12cb3acb269a7a15f5c01105d7951665b6939379043d8cbd5ceda94ab3ceb77",
+            "bytes": 14923
+          },
+          {
+            "basename": "source.blend",
+            "sha256": "c3546f50c5164b23bfba580b32d596d09c2c6792240adfa93f8207b8ab8d0a6e",
+            "bytes": 125508
+          },
+          {
+            "basename": "validation.json",
+            "sha256": "8c646fe61f06e561956695cf3385bf8f087e2cef58b97fb91f5aeeedb5eca6aa",
+            "bytes": 29421
+          }
+        ]
+      }
+    ],
+    "nativeRegression": {
+      "cases": 8,
+      "passed": true,
+      "path": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\native-shape-shading-regression.json",
+      "sha256": "533a365da004dbe03f6eb197c18c48be5ea687d556d5071e0859f37bad601edc",
+      "filledNotchMinimumSilhouetteIoU": 0.6992715920915713,
+      "filledNotchRejected": true,
+      "hardFaceNormalDeviationDegrees": 0.0,
+      "smoothedHardFaceNormalDeviationDegrees": 25.23939271668337
+    },
+    "cubeSmallPackingComparison": {
+      "sameSourceSha256": "95eec9fd5cdcb66949a7be352f1d7b52229b728cdca8fe172b4c6f7088f7c2b0",
+      "sameProfile": {
+        "sourcePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\fixtures\\cube.glb",
+        "sourceSha256": "95eec9fd5cdcb66949a7be352f1d7b52229b728cdca8fe172b4c6f7088f7c2b0",
+        "name": "cube native fixture",
+        "heightMeters": 1,
+        "maxTriangles": 1000,
+        "textureResolution": 512,
+        "sourceKind": "model",
+        "preserveMaterials": true,
+        "previewMode": "deferred"
+      },
+      "beforeEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\cube-result\\validation.json",
+      "afterEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\minimal-lod-1791266867972\\cube-result-fast\\validation.json",
+      "beforeCombinedUVStageSeconds": 58.296,
+      "afterCombinedUVStagesSeconds": 0.014,
+      "beforeSurfaceTexels": 238632,
+      "afterSurfaceTexels": 238632,
+      "beforeInteriorOverlapTexels": 0,
+      "afterInteriorOverlapTexels": 0,
+      "scope": "One identical 12-triangle cube at texture512; not a whole-pipeline speed promise"
+    },
+    "historicalSphereProofPreserved": true,
+    "sphereEvidencePredatesCurrentMinimalLODFallback": true,
+    "currentWorkerVerifiedFixtures": [
+      "cube",
+      "vertical-card",
+      "single-triangle"
+    ]
+  },
+  "workerSecondsMethod": "Sum of recorded stage durations; excludes reconstruction, process startup and final report/artifact serialization"
+}

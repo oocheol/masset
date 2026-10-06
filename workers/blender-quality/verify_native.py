@@ -146,6 +146,8 @@ def run(directory,evidence,log=None):
                    for m in source.doc.get("materials",[])
                    if "baseColorTexture" not in m.get("pbrMetallicRoughness",{})]
     counts={}
+    geometry_coordinates={}
+    geometry_centroids={}
     for filename,role in (("high-detail.glb","highDetail"),("game-ready.model.glb","game"),("lod1.glb","lod1")):
         glb=GLB((directory/filename).read_bytes(),maximum=128*1024*1024)
         clear()
@@ -156,6 +158,8 @@ def run(directory,evidence,log=None):
         info["loadedImages"]=[image_stats(i)[0] for i in bpy.data.images if i.has_data]
         result["glbs"][role]=info
         counts[role]=info["triangles"]
+        geometry_coordinates[role]=vertices
+        geometry_centroids[role]=centroids
         check(role+"-mesh",info["triangles"]==glb.scene_triangles and info["finitePositions"] and info["finiteNormals"] and info["unitNormals"],
               "Fresh native import has actual indexed geometry and finite unit normals",info["triangles"])
         check(role+"-no-studio",all(o.type=="MESH" for o in bpy.context.scene.objects),"GLB has no camera/lights or extra studio objects")
@@ -171,13 +175,19 @@ def run(directory,evidence,log=None):
         else:
             check(role+"-uv",info["uvFinite"] and info["uvTriangles"]==info["triangles"] and info["degenerateUVTriangles"]==0,
                   "Actual imported UVs give every triangle finite nonzero area")
-            budget=job["maxTriangles"] if role=="game" else min(job["maxTriangles"]//2,counts["game"]//2)
+            budget=job["maxTriangles"] if role=="game" else report.get("lod1Reduction",{}).get("budget",min(job["maxTriangles"]//2,counts["game"]//2))
+            check(role+"-bounded-budget",type(budget)==int and 0<budget<=job["maxTriangles"]
+                  and (role=="game" or budget<=counts["game"]),"Recorded accepted budget does not exceed the game/project limit",budget)
             check(role+"-budget",info["triangles"]<=budget,"Actual native mesh satisfies triangle budget",info["triangles"])
             check(role+"-bottom-center",abs(info["boundsZUp"][0][2])<job["heightMeters"]*1e-5 and
                   all(abs(info["boundsZUp"][0][i]+info["boundsZUp"][1][i])<job["heightMeters"]*1e-5 for i in (0,1)),
                   "Actual game/LOD origin is bottom-center")
             check(role+"-no-loose",info["looseEdges"]==0,"Actual reopened GLB has no loose wire geometry",info["looseEdges"])
             for basename,key in (("basecolor.png","baseColorTexture"),("normal.png","normalTexture"),("orm.png","metallicRoughnessTexture"),("emission.png","emissiveTexture")):
+                if role=="lod1" and basename=="normal.png" and "lodNormalPolicy" in report:
+                    check("lod-normal-not-reused",all("normalTexture" not in mat for mat in glb.doc.get("materials",[])),
+                          "Fresh LOD GLB material omits the game tangent normal texture")
+                    continue
                 path=directory/basename
                 if not path.exists():
                     continue
@@ -193,7 +203,23 @@ def run(directory,evidence,log=None):
             if role=="game":
                 check("game-reported-dimensions",all(abs(a-b)<job["heightMeters"]*1e-5 for a,b in zip(info["dimensionsYUp"],report["mesh"]["dimensions"])),
                       "Fresh measured GLB Y-up dimensions match report")
-    check("lod-strictly-lower",counts["lod1"]<counts["game"],"LOD1 has fewer actual triangles than game")
+    lod_reduction=report.get("lod1Reduction",{})
+    if counts["lod1"]==counts["game"]:
+        check("lod-unreduced-explicit",lod_reduction.get("reductionApplied") is False
+              and isinstance(lod_reduction.get("reason"),str) and bool(lod_reduction["reason"])
+              and any(c["code"]=="lod1-lower-budget" and c["status"]=="warn" for c in report["checks"]),
+              "Equal-count LOD is explicitly unreduced with a reason and warning; no reduction claimed")
+        game_coordinates=geometry_coordinates["game"]
+        lod_coordinates=geometry_coordinates["lod1"]
+        game_centroids=geometry_centroids["game"]
+        lod_centroids=geometry_centroids["lod1"]
+        identical_error=max(nearest_error(game_coordinates,lod_coordinates),nearest_error(lod_coordinates,game_coordinates),
+                            nearest_error(game_centroids,lod_centroids),nearest_error(lod_centroids,game_centroids))
+        check("lod-unreduced-geometry",identical_error<job["heightMeters"]*1e-5,
+              "Unreduced LOD retains reopened game vertices and triangle centers bidirectionally",identical_error)
+    else:
+        check("lod-strictly-lower",counts["lod1"]<counts["game"] and lod_reduction.get("reductionApplied",True) is True,
+              "Reduced LOD has fewer actual triangles than game")
     clear()
     for basename in ("basecolor.png","normal.png","orm.png","emission.png","thumbnail.png",*[f"turntable-{i:02d}.png" for i in range(4)]):
         path=directory/basename
@@ -224,8 +250,13 @@ def run(directory,evidence,log=None):
                 check("orm-source-factors",not errors or max(errors)<0.005,"Source roughness/metallic factors appear in actual ORM interior pixels",max(errors,default=0))
         if basename=="thumbnail.png" or basename.startswith("turntable-"):
             check("preview-not-solid-"+basename,stats["sampleDistinctRGB8"]>100,"Rendered preview contains actual non-solid image pixels",stats["sampleDistinctRGB8"])
-    hashes={hashlib.sha256((directory/f"turntable-{i:02d}.png").read_bytes()).hexdigest() for i in range(4)}
-    check("distinct-turntable",len(hashes)==4,"Four viewpoints produce four different PNGs",len(hashes))
+    if job.get("previewMode")=="deferred":
+        check("deferred-preview-separated",report.get("preview",{}).get("status")=="deferred"
+              and not any((directory/name).exists() for name in ("thumbnail.png",*[f"turntable-{i:02d}.png" for i in range(4)])),
+              "Core result completes without preview files in deferred mode")
+    else:
+        hashes={hashlib.sha256((directory/f"turntable-{i:02d}.png").read_bytes()).hexdigest() for i in range(4)}
+        check("distinct-turntable",len(hashes)==4,"Four viewpoints produce four different PNGs",len(hashes))
     clear()
     bpy.ops.wm.open_mainfile(filepath=blender_filename(directory/"source.blend"),load_ui=False,use_scripts=False)
     roles={o.get("assetStudioRole"):o for o in bpy.context.scene.objects if o.type=="MESH" and o.get("assetStudioRole") in {"high-detail","game","lod1"}}

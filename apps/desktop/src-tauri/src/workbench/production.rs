@@ -764,15 +764,21 @@ impl Backend {
         let refs = bundle::references(&project, &ids)?;
         bundle::verify_references(root, &refs)?;
         let mut style = project.style_guide.clone();
-        style.name = "Codex 게임 아트 방향".into();
-        style.palette.clear();
-        style.detail = manifest.art_direction;
+        // The manifest supplements the project's material and camera direction.
+        if style.detail.trim().is_empty() {
+            style.detail = manifest.art_direction;
+        } else {
+            style.detail = format!(
+                "{}\n\n이번 제작 방향: {}",
+                style.detail, manifest.art_direction
+            );
+        }
         style.reference_asset_ids = ids.clone();
         style.approved = true;
         let models = manifest.items.iter().any(|i| i.kind == AssetKind::Model);
         let images = manifest.items.iter().any(|i| i.kind != AssetKind::Model);
-        if models && !cfg!(all(target_os = "macos", target_arch = "aarch64")) {
-            bail!("이미지에서 3D 제작은 Apple Silicon Mac 검증 경로입니다.");
+        if models && !quality3d::reconstruction_supported() {
+            bail!("이미지에서 3D 제작은 Windows x64와 Apple Silicon Mac을 지원합니다.");
         }
         let plan = Plan {
             schema_version: 1,
@@ -870,9 +876,8 @@ impl Backend {
         let project_context =
             planning_project_context(&include_delivered_inventory(&scan, &project)?)?;
         let mut style = project.style_guide.clone();
-        style.name = "게임 설명과 참고 자료 기준".into();
-        style.palette.clear();
-        style.detail="Follow the game's described visual style and selected references; use one coherent art direction across all items.".into();
+        // Retain the approved palette, camera and concrete art direction.
+        // Selected references supplement the user's style rather than replacing it.
         style.reference_asset_ids = ids.clone();
         style.approved = true;
         let context = json!({"production":true,"projectContext":project_context,"brief":brief,"output":output,"mode":"new","styleGuide":style,"spec":project.spec,"references":refs,"supportedModelTemplates":[]});
@@ -1023,6 +1028,11 @@ impl Backend {
             common["toolVersion"] = status["runtimeVersion"].clone();
             common["singleAsset"] = json!(true);
             common["normalizeToSpec"] = json!(!model);
+            common["resizeMode"] = json!(if item.kind == AssetKind::Texture {
+                "cover"
+            } else {
+                "contain"
+            });
             common["resources"] = json!({"ramMb":image_ram_mb(raster::MAX_PIXELS,16,384),"cpuThreads":1,"diskWeight":1});
             let image = job(
                 &project,
@@ -1546,12 +1556,22 @@ mod tests {
     #[test]
     #[ignore = "requires a prepared local TripoSR CPU runtime and Blender; no provider requests"]
     fn windows_native_production_reconstruction_and_delivery() {
-        let data = PathBuf::from(std::env::var_os("ASSET_WINDOWS_IMAGE3D_DATA_ROOT").expect("reserved native proof data"));
-        let output = PathBuf::from(std::env::var_os("ASSET_WINDOWS_IMAGE3D_PRODUCTION_OUTPUT").expect("fresh native proof output"));
+        let data = PathBuf::from(
+            std::env::var_os("ASSET_WINDOWS_IMAGE3D_DATA_ROOT")
+                .expect("reserved native proof data"),
+        );
+        let output = PathBuf::from(
+            std::env::var_os("ASSET_WINDOWS_IMAGE3D_PRODUCTION_OUTPUT")
+                .expect("fresh native proof output"),
+        );
         assert!(data.is_absolute() && output.is_absolute() && !output.exists());
         fs::create_dir_all(&output).unwrap();
         let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let backend = Backend::new(data, base.join("../public/examples"), base.join("../../../workers/blender/worker.py"));
+        let backend = Backend::new(
+            data,
+            base.join("../public/examples"),
+            base.join("../../../workers/blender/worker.py"),
+        );
         let status = backend.quality3d_status();
         assert_eq!(status["supported"], true);
         assert_eq!(status["installed"], true);
@@ -1561,13 +1581,21 @@ mod tests {
         let game = output.join("한글 게임 프로젝트");
         fs::create_dir(&game).unwrap();
         let original_game = game.join("project.godot");
-        fs::write(&original_game, b"[application]\nconfig/name=\"Windows production proof\"\n").unwrap();
+        fs::write(
+            &original_game,
+            b"[application]\nconfig/name=\"Windows production proof\"\n",
+        )
+        .unwrap();
         let original_game_hash = asset_core::sha256_file(&original_game).unwrap();
         let source = base.join("../../../workers/image3d/fixtures/blue-sphere.png");
         let source_hash = asset_core::sha256_file(&source).unwrap();
         backend.request(json!({"action":"create","root":root,"name":"Windows production reconstruction proof"})).unwrap();
-        backend.request(json!({"action":"import","paths":[source]})).unwrap();
-        backend.request(json!({"action":"game_connect","root":game})).unwrap();
+        backend
+            .request(json!({"action":"import","paths":[source]}))
+            .unwrap();
+        backend
+            .request(json!({"action":"game_connect","root":game}))
+            .unwrap();
         let image_job_id = Uuid::new_v4().to_string();
         let mut repo = Repository::open(&root).unwrap();
         let mut project = repo.project().unwrap();
@@ -1576,7 +1604,9 @@ mod tests {
         let concept = &mut project.assets[0].versions[0];
         concept.artifacts[0].role = ArtifactRole::Output;
         concept.settings.insert("jobId".into(), json!(image_job_id));
-        concept.settings.insert("localFixtureOnly".into(), json!(true));
+        concept
+            .settings
+            .insert("localFixtureOnly".into(), json!(true));
         repo.save_project(&project).unwrap();
         let mut task = job(&project, "production_model", "Windows production reconstruction", None, JobResource::Blender,
             json!({"name":"Windows reconstructed sphere","imageJobId":image_job_id,
@@ -1584,7 +1614,8 @@ mod tests {
             "gameRoot":game,"gameOutputFolder":OUTPUT_FOLDER,"quality":"high","heightMeters":1.,
             "maxTriangles":10000,"textureResolution":1024,"preserveMaterials":true,"sourceKind":"image3d",
             "spec":project.spec,"resources":{"ramMb":8192,"cpuThreads":2,"diskWeight":2}})).unwrap();
-        task.payload.insert("toolVersion".into(), json!(backend.inner.blender_version));
+        task.payload
+            .insert("toolVersion".into(), json!(backend.inner.blender_version));
         let queue = SchedulerStore::open(&root.join("scheduler.sqlite")).unwrap();
         queue.enqueue(task.clone()).unwrap();
         let admitted = queue.claim_ready(&backend.inner.limits).unwrap();
@@ -1594,7 +1625,9 @@ mod tests {
         let work = output.join("native-work");
         fs::create_dir(&work).unwrap();
         let started = Instant::now();
-        backend.run_production_model(&root, &task, &work, &AtomicBool::new(false)).unwrap();
+        backend
+            .run_production_model(&root, &task, &work, &AtomicBool::new(false))
+            .unwrap();
         queue.complete(&task.id).unwrap();
         let completed = Repository::open(&root).unwrap().project().unwrap();
         let (model, version) = asset_for_job(&completed, &task.id).unwrap();
@@ -1605,17 +1638,25 @@ mod tests {
         let delivered = PathBuf::from(delivery["path"].as_str().unwrap());
         assert!(delivered.starts_with(&game));
         for file in delivery["files"].as_array().unwrap() {
-            let (hash, bytes) = asset_core::sha256_file(&delivered.join(file["path"].as_str().unwrap())).unwrap();
+            let (hash, bytes) =
+                asset_core::sha256_file(&delivered.join(file["path"].as_str().unwrap())).unwrap();
             assert_eq!(file["sha256"], hash);
             assert_eq!(file["bytes"], bytes);
         }
         assert_eq!(asset_core::sha256_file(&source).unwrap(), source_hash);
-        assert_eq!(asset_core::sha256_file(&original_game).unwrap(), original_game_hash);
+        assert_eq!(
+            asset_core::sha256_file(&original_game).unwrap(),
+            original_game_hash
+        );
         let report = json!({"passed":true,"platform":"windows","fixtureImage":true,"providerCommands":0,
             "realGptGeneration":false,"nativeProductionModel":true,"sourceOriginalPreserved":true,
             "gameOriginalPreserved":true,"modelId":model.id,"jobId":task.id,"elapsedSeconds":started.elapsed().as_secs_f64(),
             "delivery":delivery,"reconstruction":version.settings["localReconstruction"],"project":root,"work":work});
-        fs::write(output.join("production-image3d-proof.json"), serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+        fs::write(
+            output.join("production-image3d-proof.json"),
+            serde_json::to_vec_pretty(&report).unwrap(),
+        )
+        .unwrap();
         backend.shutdown();
     }
 
@@ -1785,11 +1826,14 @@ mod tests {
                     requests: Mutex::new(()),
                     io: Mutex::new(()),
                     dispatch: Mutex::new(()),
+                    dispatch_epoch: Mutex::new(0),
+                    dispatch_wake: Condvar::new(),
                     initialize: Mutex::new(()),
                     runners: Mutex::new(BTreeMap::new()),
                     stop: AtomicBool::new(false),
                     limits: ResourceLimits::default(),
                     provider_runtime: Mutex::new(None),
+                    generation_runtime: Mutex::new(None),
                     provider_connection: Mutex::new(provider::unavailable_connection(
                         "단위 테스트는 외부 생성을 요청하지 않습니다.",
                     )),
@@ -1870,6 +1914,13 @@ mod tests {
     #[test]
     fn codex_manifest_preserves_distinct_items_and_rejects_invalid_batch_without_provider() {
         let f = Fixture::new();
+        let mut repo = Repository::open(&f.root).unwrap();
+        let mut project = repo.project().unwrap();
+        project.style_guide.name = "Approved game palette".into();
+        project.style_guide.detail = "Brushed metal, no gloss, orthographic silhouette".into();
+        project.style_guide.palette = vec!["#163c4c".into(), "#8bddc4".into()];
+        let approved_style = project.style_guide.clone();
+        repo.save_project(&project).unwrap();
         let manifest = json!({"schemaVersion":1,"brief":"Five individual tactical weapons","artDirection":"Readable original teal silhouettes", "items":[
             {"name":"Pistol","kind":"sprite","description":"One pistol icon","purpose":"Inventory"},
             {"name":"Rifle","kind":"sprite","description":"One rifle icon","purpose":"Inventory"},
@@ -1886,8 +1937,13 @@ mod tests {
         assert_eq!(saved["plan"]["items"].as_array().unwrap().len(), 5);
         assert_eq!(
             saved["plan"]["styleGuide"]["detail"],
-            "Readable original teal silhouettes"
+            "Brushed metal, no gloss, orthographic silhouette\n\n이번 제작 방향: Readable original teal silhouettes"
         );
+        assert_eq!(
+            saved["plan"]["styleGuide"]["palette"],
+            json!(approved_style.palette)
+        );
+        assert_eq!(saved["plan"]["styleGuide"]["name"], approved_style.name);
         assert!(f.backend.inner.provider_runtime.lock().unwrap().is_none());
         assert!(SchedulerStore::open(&f.root.join("scheduler.sqlite"))
             .unwrap()
@@ -1917,7 +1973,10 @@ mod tests {
         );
     }
 
-    #[cfg(not(any(all(target_os = "macos", target_arch = "aarch64"), all(target_os = "windows", target_arch = "x86_64"))))]
+    #[cfg(not(any(
+        all(target_os = "macos", target_arch = "aarch64"),
+        all(target_os = "windows", target_arch = "x86_64")
+    )))]
     #[test]
     fn unsupported_production_plan_preserves_project_before_provider_or_cache_creation() {
         let f = Fixture::new();

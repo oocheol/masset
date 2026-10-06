@@ -1,4 +1,4 @@
-# 스킬만 설치해서 시작하기 · 0.1.12
+# 스킬만 설치해서 시작하기 · 0.1.13
 
 Codex에서 Asset Studio 스킬을 사용하면 **Asset Studio 앱을 따로 설치하거나 열 필요가 없습니다.** 스킬의 첫 실행이 독립 네이티브 CLI와 작업자를 사용자 전용 폴더에 준비합니다. 이미 연결된 공식 Codex의 ChatGPT 계정은 재사용합니다.
 
@@ -12,14 +12,14 @@ Codex에서 작업을 열 수 있는 환경을 먼저 준비하세요. Asset Stu
 npx @oocheol/asset-studio@latest install
 ```
 
-설치된 스킬을 최신 npm 버전에 포함된 스킬로 업데이트하려면 다음을 실행합니다. 현재 npm 패키지는 **0.1.12**, 스킬이 준비하는 독립 CLI는 **Windows 0.1.12 · Mac 0.1.11**입니다. npm 설치 기능과 네이티브 런타임 버전은 별도로 관리하며 `status`에서 둘 다 표시합니다.
+설치된 스킬을 최신 npm 버전에 포함된 스킬로 업데이트하려면 다음을 실행합니다. 현재 npm 패키지는 **0.1.13**, 스킬이 준비하는 독립 CLI는 **Windows 0.1.13 · Mac 0.1.11**입니다. npm은 Windows·Mac 공통 패키지 하나이며, 처음 실행할 때 운영체제에 맞는 CLI를 선택합니다. 각 플랫폼의 CLI 버전은 별도로 관리하므로 Windows 업데이트가 기존 Mac 실행 파일을 바꾸지 않습니다. `status`에서 설치 기능과 네이티브 버전을 둘 다 표시합니다.
 
 ```sh
 npx @oocheol/asset-studio@latest update
 npx @oocheol/asset-studio@latest status
 ```
 
-한 버전을 고정하려면 `npx @oocheol/asset-studio@0.1.12 install`을 사용하세요. 전역 명령을 계속 쓰려면 다음과 같이 설치할 수 있습니다.
+한 버전을 고정하려면 `npx @oocheol/asset-studio@0.1.13 install`을 사용하세요. 전역 명령을 계속 쓰려면 다음과 같이 설치할 수 있습니다.
 
 ```sh
 npm install --global @oocheol/asset-studio

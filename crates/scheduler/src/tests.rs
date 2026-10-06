@@ -1350,3 +1350,510 @@ fn retry_and_crash_recovery_claims_get_distinct_durable_execution_ids() {
         next.payload["executionId"]
     );
 }
+
+fn reservation(ram_mb: u64, cpu_threads: u32, disk_weight: u32) -> ResourceReservation {
+    ResourceReservation {
+        ram_mb,
+        gpu_mb: 0,
+        cpu_threads,
+        disk_weight,
+    }
+}
+
+fn execution(job: &Job) -> &str {
+    job.payload["executionId"].as_str().unwrap()
+}
+
+#[test]
+fn remote_wait_overlaps_local_work_and_reacquires_before_finalization() {
+    let store = memory_store();
+    let mut external = job("image", JobResource::External, &[]);
+    external.payload.insert(
+        "resources".into(),
+        json!({"ramMb":512,"cpuThreads":1,"diskWeight":1}),
+    );
+    store
+        .enqueue_many(vec![
+            external,
+            job("model", JobResource::Blender, &[]),
+            job("next-image", JobResource::External, &[]),
+        ])
+        .unwrap();
+    let limits = ResourceLimits {
+        ram_mb: 4096,
+        disk_weight: 1,
+        ..ResourceLimits::default()
+    };
+    let image = store.claim_ready(&limits).unwrap().remove(0);
+    assert!(store.claim_ready(&limits).unwrap().is_empty());
+    assert!(store
+        .try_transition_resources("image", execution(&image), &reservation(512, 0, 0), &limits)
+        .unwrap());
+    assert_eq!(store.claim_ready(&limits).unwrap()[0].id, "model");
+    assert_eq!(store.running_resources().unwrap().external_jobs, 1);
+    assert!(!store
+        .try_transition_resources("image", execution(&image), &reservation(512, 1, 1), &limits)
+        .unwrap());
+    let current = store.get_job("image").unwrap().unwrap();
+    assert_eq!(current.payload["runningResources"]["cpuThreads"], 0);
+    assert_eq!(current.payload["resources"]["cpuThreads"], 1);
+    assert_eq!(status(&store, "next-image"), JobStatus::Ready);
+    store.complete("model").unwrap();
+    assert!(store
+        .try_transition_resources("image", execution(&image), &reservation(512, 1, 1), &limits)
+        .unwrap());
+    let usage = store.running_resources().unwrap();
+    assert_eq!(
+        (usage.external_jobs, usage.cpu_threads, usage.disk_weight),
+        (1, 1, 1)
+    );
+    store.complete("image").unwrap();
+    assert_eq!(store.claim_ready(&limits).unwrap()[0].id, "next-image");
+}
+
+#[test]
+fn resource_transitions_are_execution_scoped_bounded_idempotent_and_atomic() {
+    let store = memory_store();
+    store.enqueue(job("local", JobResource::Cpu, &[])).unwrap();
+    let limits = ResourceLimits::default();
+    let claimed = store.claim_ready(&limits).unwrap().remove(0);
+    let cursor = store.events_after(0, 32).unwrap().next_cursor;
+    let stale_id = uuid::Uuid::new_v4().to_string();
+    assert!(!store
+        .try_transition_resources("local", &stale_id, &reservation(512, 1, 1), &limits)
+        .unwrap());
+    for invalid in [
+        reservation(0, 1, 1),
+        reservation(512, 0, 1),
+        reservation(2049, 1, 1),
+    ] {
+        assert!(store
+            .try_transition_resources("local", execution(&claimed), &invalid, &limits)
+            .is_err());
+    }
+    assert_eq!(store.events_after(0, 32).unwrap().next_cursor, cursor);
+    store.connection().unwrap().execute_batch("CREATE TRIGGER reject_transition_event BEFORE INSERT ON scheduler_events BEGIN SELECT RAISE(ABORT,'transition event failure'); END;").unwrap();
+    assert!(store
+        .try_transition_resources(
+            "local",
+            execution(&claimed),
+            &reservation(512, 2, 2),
+            &limits
+        )
+        .is_err());
+    assert_eq!(store.running_resources().unwrap().ram_mb, 256);
+    assert!(!store
+        .get_job("local")
+        .unwrap()
+        .unwrap()
+        .payload
+        .contains_key("runningResources"));
+    store
+        .connection()
+        .unwrap()
+        .execute_batch("DROP TRIGGER reject_transition_event;")
+        .unwrap();
+    assert!(store
+        .try_transition_resources(
+            "local",
+            execution(&claimed),
+            &reservation(512, 2, 2),
+            &limits
+        )
+        .unwrap());
+    let transitioned_cursor = store.events_after(0, 32).unwrap().next_cursor;
+    assert!(store
+        .try_transition_resources(
+            "local",
+            execution(&claimed),
+            &reservation(512, 2, 2),
+            &limits
+        )
+        .unwrap());
+    assert_eq!(
+        store.events_after(0, 32).unwrap().next_cursor,
+        transitioned_cursor
+    );
+    store.cancel("local").unwrap();
+    assert!(!store
+        .try_transition_resources(
+            "local",
+            execution(&claimed),
+            &reservation(256, 1, 1),
+            &limits
+        )
+        .unwrap());
+    let held = store.running_resources().unwrap();
+    assert_eq!(
+        (
+            held.cpu_jobs,
+            held.ram_mb,
+            held.cpu_threads,
+            held.disk_weight
+        ),
+        (1, 512, 2, 2)
+    );
+    store.release_cancelled_resources("local").unwrap();
+    assert_eq!(store.running_resources().unwrap(), ResourceUsage::default());
+    assert!(!store
+        .try_transition_resources("missing", &stale_id, &reservation(256, 1, 1), &limits)
+        .unwrap());
+    assert!(store.get_job("missing").unwrap().is_none());
+}
+
+#[test]
+fn separate_connections_cannot_both_acquire_the_same_local_phase_capacity() {
+    let temporary = TempDb::new();
+    let store = SchedulerStore::open(&temporary.path()).unwrap();
+    let limits = ResourceLimits {
+        external_jobs: 2,
+        cpu_threads: 1,
+        disk_weight: 1,
+        ..ResourceLimits::default()
+    };
+    store
+        .enqueue_many(vec![
+            job("a", JobResource::External, &[]),
+            job("b", JobResource::External, &[]),
+        ])
+        .unwrap();
+    let claimed = store.claim_ready(&limits).unwrap();
+    let barrier = Arc::new(Barrier::new(3));
+    let handles: Vec<_> = claimed
+        .into_iter()
+        .map(|claimed| {
+            let barrier = Arc::clone(&barrier);
+            let store = SchedulerStore::open(&temporary.path()).unwrap();
+            let limits = limits.clone();
+            thread::spawn(move || {
+                barrier.wait();
+                store
+                    .try_transition_resources(
+                        &claimed.id,
+                        execution(&claimed),
+                        &reservation(128, 1, 1),
+                        &limits,
+                    )
+                    .unwrap()
+            })
+        })
+        .collect();
+    barrier.wait();
+    assert_eq!(
+        handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .filter(|acquired| *acquired)
+            .count(),
+        1
+    );
+    let usage = store.running_resources().unwrap();
+    assert_eq!(
+        (
+            usage.external_jobs,
+            usage.cpu_threads,
+            usage.disk_weight,
+            usage.ram_mb
+        ),
+        (2, 1, 1, 192)
+    );
+}
+
+#[test]
+fn unknown_external_preserves_its_slot_and_does_not_keep_a_local_phase_reservation() {
+    let store = memory_store();
+    store
+        .enqueue_many(vec![
+            job("remote", JobResource::External, &[]),
+            job("next", JobResource::External, &[]),
+        ])
+        .unwrap();
+    let limits = ResourceLimits::default();
+    let remote = store.claim_ready(&limits).unwrap().remove(0);
+    assert!(store
+        .try_transition_resources(
+            "remote",
+            execution(&remote),
+            &reservation(512, 1, 1),
+            &limits
+        )
+        .unwrap());
+    store
+        .set_external_identity("remote", "thread-a", "turn-a")
+        .unwrap();
+    store.cancel("remote").unwrap();
+    let usage = store.running_resources().unwrap();
+    assert_eq!(
+        (
+            usage.external_jobs,
+            usage.ram_mb,
+            usage.cpu_threads,
+            usage.disk_weight
+        ),
+        (1, 0, 0, 0)
+    );
+    assert!(store.claim_ready(&limits).unwrap().is_empty());
+    assert!(!store
+        .try_transition_resources(
+            "remote",
+            execution(&remote),
+            &reservation(64, 0, 0),
+            &limits
+        )
+        .unwrap());
+    assert_eq!(
+        store.get_job("remote").unwrap().unwrap().payload["externalTurnId"],
+        "turn-a"
+    );
+}
+
+#[test]
+fn runtime_reservations_cannot_change_intent_and_are_cleared_on_new_executions() {
+    let temporary = TempDb::new();
+    let store = SchedulerStore::open(&temporary.path()).unwrap();
+    let mut input = job("local", JobResource::Cpu, &[]);
+    input.payload.insert(
+        "runningResources".into(),
+        json!({"ramMb":1,"cpuThreads":0,"diskWeight":0,"gpuMb":0}),
+    );
+    store.enqueue_once("one-action", input.clone()).unwrap();
+    assert!(!store
+        .get_job("local")
+        .unwrap()
+        .unwrap()
+        .payload
+        .contains_key("runningResources"));
+    let limits = ResourceLimits::default();
+    let first = store.claim_ready(&limits).unwrap().remove(0);
+    store
+        .try_transition_resources("local", execution(&first), &reservation(512, 2, 2), &limits)
+        .unwrap();
+    input.payload.insert(
+        "runningResources".into(),
+        json!({"ramMb":1024,"cpuThreads":2,"diskWeight":2,"gpuMb":0}),
+    );
+    assert!(store.enqueue_once("one-action", input).unwrap().replayed);
+    store
+        .fail("local", FailureKind::Network, "known local failure")
+        .unwrap();
+    assert!(!store
+        .get_job("local")
+        .unwrap()
+        .unwrap()
+        .payload
+        .contains_key("runningResources"));
+    store
+        .connection()
+        .unwrap()
+        .execute(
+            "UPDATE scheduler_jobs SET available_at_ms=0 WHERE id='local'",
+            [],
+        )
+        .unwrap();
+    let retried = store.claim_ready(&limits).unwrap().remove(0);
+    assert!(!retried.payload.contains_key("runningResources"));
+    assert_eq!(store.running_resources().unwrap().ram_mb, 256);
+    store
+        .try_transition_resources(
+            "local",
+            execution(&retried),
+            &reservation(512, 2, 2),
+            &limits,
+        )
+        .unwrap();
+    drop(store);
+    let reopened = SchedulerStore::open(&temporary.path()).unwrap();
+    assert_eq!(reopened.running_resources().unwrap().ram_mb, 512);
+    reopened.recover().unwrap();
+    assert!(!reopened
+        .get_job("local")
+        .unwrap()
+        .unwrap()
+        .payload
+        .contains_key("runningResources"));
+    let recovered = reopened.claim_ready(&limits).unwrap().remove(0);
+    assert_eq!(reopened.running_resources().unwrap().ram_mb, 256);
+    assert!(!reopened
+        .try_transition_resources(
+            "local",
+            execution(&retried),
+            &reservation(512, 2, 2),
+            &limits
+        )
+        .unwrap());
+    reopened.complete("local").unwrap();
+    reopened.rerun("local").unwrap();
+    let rerun = reopened.claim_ready(&limits).unwrap().remove(0);
+    assert_ne!(execution(&recovered), execution(&rerun));
+    assert_eq!(reopened.running_resources().unwrap().ram_mb, 256);
+}
+
+fn insert_history(store: &SchedulerStore, count: usize) {
+    let mut connection = store.connection().unwrap();
+    let tx = connection.transaction().unwrap();
+    for index in 0..count {
+        let id = format!("history-{index}");
+        let mut archived = job(&id, JobResource::Cpu, &[]);
+        archived.status = match index % 3 {
+            0 => JobStatus::Succeeded,
+            1 => JobStatus::Cancelled,
+            _ => JobStatus::Failed,
+        };
+        if index >= 3 && archived.status == JobStatus::Succeeded {
+            archived.dependencies = vec![format!("history-{}", index - 3)];
+        }
+        archived
+            .payload
+            .insert("prompt".into(), json!("x".repeat(8192)));
+        let (status, resource) = state_text(&archived).unwrap();
+        tx.execute("INSERT INTO scheduler_jobs(id,status,resource,available_at_ms,document) VALUES (?1,?2,?3,0,?4)", params![id,status,resource,serde_json::to_string(&archived).unwrap()]).unwrap();
+    }
+    tx.commit().unwrap();
+}
+
+#[test]
+fn large_archives_do_not_enter_admission_and_terminal_dependencies_preserve_fifo_and_capacity() {
+    let store = memory_store();
+    insert_history(&store, 3000);
+    store.set_queue_capacity(2).unwrap();
+    let successful = "history-2997";
+    store
+        .enqueue_many(vec![
+            job("first", JobResource::Cpu, &[successful]),
+            job("second", JobResource::Cpu, &[]),
+        ])
+        .unwrap();
+    assert!(store
+        .enqueue(job("overflow", JobResource::Cpu, &[]))
+        .is_err());
+    assert!(store
+        .enqueue(job(successful, JobResource::Cpu, &[]))
+        .is_err());
+    {
+        let connection = store.connection().unwrap();
+        let (active, terminal) = load_scheduling_snapshot(&connection).unwrap();
+        assert_eq!(active.len(), 2);
+        assert_eq!(terminal.len(), 1);
+        let mut query = connection.prepare(ACTIVE_JOBS_SQL).unwrap();
+        let loaded: Vec<_> = query
+            .query_map([], persisted_row)
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap();
+        assert_eq!(loaded.len(), 2);
+        assert!(query.get_status(rusqlite::StatementStatus::FullscanStep) < 10);
+    }
+    let limits = ResourceLimits {
+        cpu_jobs: 1,
+        ..ResourceLimits::default()
+    };
+    let first = store.claim_ready(&limits).unwrap().remove(0);
+    assert_eq!(first.id, "first");
+    store.cancel("first").unwrap();
+    assert!(store
+        .enqueue(job("overflow", JobResource::Cpu, &[]))
+        .is_err());
+    assert!(store.claim_ready(&limits).unwrap().is_empty());
+    store.release_cancelled_resources("first").unwrap();
+    store
+        .enqueue(job("third", JobResource::Cpu, &[successful]))
+        .unwrap();
+    assert_eq!(store.claim_ready(&limits).unwrap()[0].id, "second");
+    store.complete("second").unwrap();
+    assert_eq!(store.claim_ready(&limits).unwrap()[0].id, "third");
+    assert_eq!(
+        store.get_job(successful).unwrap().unwrap().status,
+        JobStatus::Succeeded
+    );
+    assert!(store.rerun(successful).is_err());
+    store.complete("third").unwrap();
+    assert!(store
+        .enqueue(job(successful, JobResource::Cpu, &[]))
+        .is_err());
+    assert_eq!(store.jobs().unwrap().len(), 3003);
+}
+
+#[test]
+fn active_dag_and_referenced_terminal_metadata_still_fail_closed() {
+    let store = memory_store();
+    insert_history(&store, 3);
+    store
+        .enqueue(job("child", JobResource::Cpu, &["history-0"]))
+        .unwrap();
+    store
+        .connection()
+        .unwrap()
+        .execute(
+            "UPDATE scheduler_jobs SET status='failed' WHERE id='history-0'",
+            [],
+        )
+        .unwrap();
+    assert!(store.claim_ready(&ResourceLimits::default()).is_err());
+    store
+        .connection()
+        .unwrap()
+        .execute(
+            "UPDATE scheduler_jobs SET status='succeeded' WHERE id='history-0'",
+            [],
+        )
+        .unwrap();
+    let mut child = store.get_job("child").unwrap().unwrap();
+    child.dependencies = vec!["child".into()];
+    store
+        .connection()
+        .unwrap()
+        .execute(
+            "UPDATE scheduler_jobs SET document=?1 WHERE id='child'",
+            [serde_json::to_string(&child).unwrap()],
+        )
+        .unwrap();
+    assert!(store.claim_ready(&ResourceLimits::default()).is_err());
+}
+
+#[test]
+fn existing_schema_and_foreign_key_rows_survive_resource_phases_and_index_reopen() {
+    let temporary = TempDb::new();
+    let store = SchedulerStore::open(&temporary.path()).unwrap();
+    store
+        .enqueue(job("referenced", JobResource::Cpu, &[]))
+        .unwrap();
+    store.connection().unwrap().execute_batch("PRAGMA foreign_keys=ON; PRAGMA user_version=37; CREATE TABLE project_job_links(job_id TEXT REFERENCES scheduler_jobs(id) ON DELETE CASCADE); INSERT INTO project_job_links(job_id) VALUES('referenced');").unwrap();
+    let limits = ResourceLimits::default();
+    let task = store.claim_ready(&limits).unwrap().remove(0);
+    store
+        .try_transition_resources(
+            "referenced",
+            execution(&task),
+            &reservation(512, 2, 2),
+            &limits,
+        )
+        .unwrap();
+    store.complete("referenced").unwrap();
+    drop(store);
+    let reopened = SchedulerStore::open(&temporary.path()).unwrap();
+    let connection = reopened.connection().unwrap();
+    assert_eq!(
+        connection
+            .query_row(
+                "SELECT value FROM scheduler_metadata WHERE key='schema_version'",
+                [],
+                |row| row.get::<_, i64>(0)
+            )
+            .unwrap(),
+        2
+    );
+    assert_eq!(
+        connection
+            .pragma_query_value(None, "user_version", |row| row.get::<_, i64>(0))
+            .unwrap(),
+        37
+    );
+    assert_eq!(
+        connection
+            .query_row("SELECT job_id FROM project_job_links", [], |row| row
+                .get::<_, String>(0))
+            .unwrap(),
+        "referenced"
+    );
+    assert_eq!(connection.query_row("SELECT count(*) FROM sqlite_master WHERE type='index' AND name='scheduler_jobs_cancelled_hold'", [], |row| row.get::<_,i64>(0)).unwrap(), 1);
+}

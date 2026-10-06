@@ -11,7 +11,7 @@ and its bundled Python/NumPy; no network, paid services or Python installation.
   --input /absolute/job.json --output-dir /absolute/new-or-empty-directory
 ```
 
-The job is UTF-8 JSON, at most 16 KiB, containing **exactly**:
+The job is UTF-8 JSON, at most 16 KiB, containing these **eight required** fields:
 
 ```json
 {
@@ -30,6 +30,9 @@ The job is UTF-8 JSON, at most 16 KiB, containing **exactly**:
 `textureResolution` is exactly 512, 1024 or 2048. `sourceKind` is `image3d` or
 `model`. `preserveMaterials` is a boolean. Duplicate, missing and unknown keys,
 NaN/Infinity, unsafe names, relative source paths and .blend inputs are rejected.
+The sole optional field is `previewMode`: `cycles` (backwards-compatible
+default), `fast`, or `deferred`. `deferred` completes the verified GLBs,
+textures, editable scene and validation without thumbnail/turntable files.
 
 The source is a complete GLB 2.0, at most 64 MiB, with one embedded BIN buffer,
 static triangle meshes, and PNG/JPEG images in embedded bufferViews. **All URI
@@ -55,9 +58,41 @@ normal bake is included only when sampled projection and variation checks pass.
 It is labeled **mesh-derived normal**, never PBR inferred from a color image.
 If projection fails, base/PBR colors are baked from the decimated mesh's
 interpolated original attributes, explicitly reported; normal output is omitted.
-LOD1 uses fewer triangles and inherits the game atlas; it has no separate normal
-rebake. Collapse decimation is not retopology. Source holes/overlaps are retained.
+LOD1 inherits the source color/PBR atlas and uses fewer triangles when a safe
+reduction is available. The game
+tangent-space normal texture is deliberately omitted from LOD; changed topology
+and inherited UV names do not establish that its tangent basis still matches.
+There is no separate LOD normal rebake. Actual corner-normal deviation is
+measured against the game mesh and a bounded shading gate applies. Collapse
+decimation is not retopology. Source holes/overlaps are retained.
 Watertight volume, CAD, rigs and unseen geometry quality are not certified.
+
+UV islands are additionally packed with a final-square fraction gap of four
+pixels and a two-pixel bake dilation, replacing the former large scaled gap.
+`uvAtlas` records rasterized surface usage (excluding padding), strict-interior
+overlap and world-space texel-density quantiles. Shared edges are excluded from
+overlap counts. Interior overlap above 0.5 percent rejects the job; smaller
+nonzero overlap, usage below 20 percent or density variation above fourfold is
+reported as a warning. Subpixel overlaps are not certified by a pixel-grid test.
+Meshes with at most 64 triangles use cardinal rotation and axis-aligned island
+boxes to avoid disproportionate convex-packing searches on small symmetric
+islands. Larger meshes keep unrestricted convex packing. Both paths retain the
+four-pixel packing gap, two-pixel bake padding and actual atlas measurements.
+
+`qualityPreservation` measures deterministic bidirectional surface samples,
+64-pixel native BVH orthographic silhouettes in three axes and applicable
+source thin-surface opposing-ray samples. Jointly empty edge-on views of a
+planar card count as equal/nonapplicable. Open sheets have no certified opposing
+thickness; this is reported rather than failing an identical planar asset.
+The game rejects reduction exceeding measured shape limits and asks for a
+higher triangle budget. LOD tries half, 75 percent and 90 percent of the game
+count, accepting a smaller result only when it passes the measured shape and
+shading gates. If no lower-count candidate survives, an equal-count copy of the
+validated game mesh completes the job with `lod1Reduction.reductionApplied=false`,
+an explicit reason and a warning. This is useful for minimal cubes, cards and
+foliage; no triangle reduction is claimed. The actual budget and rejected
+attempts are recorded, and the game normal texture is still omitted from LOD.
+These sampled checks cannot prove every tiny feature or unseen geometry.
 
 ## Data and artifact contract
 
@@ -67,7 +102,8 @@ Fixed artifact basenames:
   and materials. Raw source remains in its parent project.
 - `game-ready.model.glb`: actual budgeted mesh, UVs, normals, embedded PBR base
   color; includes meaningful normal and source core PBR textures when available.
-- `lod1.glb`: actual mesh under half the game triangle budget/count.
+- `lod1.glb`: smaller mesh within its recorded shape-aware budget, or an
+  explicitly reported equal-count game copy when safe reduction is impossible.
 - `source.blend`: editable high-detail, game and LOD meshes, packed images,
   CPU render studio, four camera keyframes; no text blocks or drivers.
 - `basecolor.png`, optional `normal.png`, `orm.png`, `emission.png`.
@@ -90,6 +126,38 @@ Validation top-level is `{valid,checks,warnings,mesh,...}`. Every check contains
 `dimensions:[width,height,depth]`, `unit:"m"`, `axis:"Y-up"`, bottom-center pivot.
 Backend integration must independently parse artifact bytes, embedded images,
 UVs, normals and triangle budgets; reports are evidence, not authoritative data.
+
+## Separate preview worker
+
+Run `preview_worker.py` with the same factory-startup/disable-autoexec boundary
+and a new or empty output directory. Its bounded JSON contains exactly:
+
+```json
+{
+  "sourcePath": "/absolute/generated/source.blend",
+  "sourceSha256": "64 hexadecimal characters",
+  "name": "Safe preview name",
+  "previewMode": "fast"
+}
+```
+
+Only the coordinator's previously verified generated scene is eligible; this
+is not a general-purpose `.blend` importer. The worker hash-checks bounded bytes,
+opens a private snapshot with `use_scripts=False`, and requires scene marker
+`assetStudioGeneratedScene=quality-worker-v2`, `assetStudioPipelineVersion=2`,
+one fixed game mesh/camera and finite saved camera dimensions. Text blocks,
+drivers, linked libraries, external caches, movie/sequence images and unpacked
+external images/fonts are rejected. The original scene is never saved or edited.
+The consistency marker alone is not a signature for arbitrary Blender files.
+
+Fixed outputs are `thumbnail.png` (1024 square), `turntable-00.png` through
+`turntable-03.png` (512 square) and `preview-validation.json`. Actual decoded
+pixels, dimensions, source preservation, hashes and rendering time are checked.
+`fast` uses the installed Blender EEVEE engine; an unavailable/failed engine
+falls back to CPU Cycles with an explicit reason and per-file engine record.
+`cycles` preserves the old CPU Cycles rendering mode. The reconstruction device
+and model are unchanged. Deferred core metadata and the actual preview report
+remain separate.
 
 ### Neural source orientation (must agree upstream)
 
@@ -115,9 +183,57 @@ reimports each exported GLB and opens the saved .blend with autoexec disabled.
 It inspects actual UVs/normals/images, material references, dimensions, budgets,
 packed source images, no scripts/drivers, preview dimensions, source hashes, and
 artifact hashes. It writes its own evidence **outside** the artifact directory.
-The worker correctly reports independent reopen as unperformed; only a separate
-successful verifier run establishes that proof. Mac native verification is the
-current target; Windows native support is not claimed by this module.
+The worker reports independent reopen as unperformed; only a separate successful
+verifier run establishes that proof. Native platform evidence is scoped to the
+actual fixtures and runtime versions recorded below.
+
+## Native Windows evidence (2026-10-06)
+
+[Recorded hashes and measurements](tests/native-proof-quality-v2-windows.json)
+retain the earlier fixed raw-sphere proof and the new minimal-model proof.
+Blender 5.2.1 LTS ran with factory startup and script auto-execution disabled;
+there were no new model downloads or reconstruction/provider requests.
+
+| Case | High / game / LOD1 triangles | Actual outcome |
+| --- | --- | --- |
+| Existing raw reconstructed sphere, 5000-triangle game budget | 5738 / 4894 / 3591 | Core and separate EEVEE preview independently inspected |
+| Minimal cube | 12 / 12 / 12 | Unreduced LOD warning; 54 fresh-process checks pass |
+| Open vertical card | 2 / 2 / 2 | Unreduced LOD warning; 54 fresh-process checks pass |
+| One triangular face | 1 / 1 / 1 | Unreduced LOD warning; 54 fresh-process checks pass |
+
+Every minimal-model case records `reductionApplied=false`. The actual reopened
+game/LOD vertices and triangle centers match bidirectionally with zero measured
+error. LOD GLBs omit the game normal texture. The core contains no preview files
+in deferred mode. These equal-count results provide no polygon-count benefit.
+
+With the same cube source and 512-pixel profile, the earlier convex UV stage
+took 58.296 seconds; cardinal/AABB unwrap, pack, UV validation and measurement
+together took 0.014 seconds. Both yielded 238632/262144 surface texels (91.03
+percent), zero rasterized interior overlap and essentially uniform texel density.
+This is one small-mesh case and does not establish a whole-pipeline speed ratio.
+
+The preserved sphere atlas used 65659/262144 texels (25.05 percent), compared
+with the earlier same-profile 15044/262144 (5.74 percent). It retained 107
+overlapping interior texels, below the 0.5 percent rejection limit, and reported
+that limitation. Its recorded core and separate-preview stage totals were
+21.252 and 9.743 seconds, excluding reconstruction, process startup and final
+report/artifact serialization. EEVEE
+succeeded; a natural native EEVEE-failure fallback was not observed.
+
+Eight analytical native regressions cover identical/changed surface shape,
+missing thin protrusions, valid/overlapping UVs, edge-on planar cards, a retained
+versus filled L-shaped notch, and hard versus smoothed cube normals. Filling the
+notch produces minimum silhouette IoU 0.69927 and fails shape checks. Smoothing
+the hard faces produces measured p95 corner-normal deviation 25.24 degrees;
+the measurement does not certify normal-texture shading equivalence. Complex
+game models, tiny unsampled features, unseen reconstruction surfaces and new
+authored PBR/retopology are not certified by these fixtures. Six preview security
+cases and ten data-boundary unit tests also pass.
+
+`tests/native_minimal_fixtures.py` creates new fixed cube/card/triangle GLBs and
+deferred jobs in a new directory. Run `worker.py` and then `verify_native.py` for
+each job in separate native processes to exercise the complete fallback path.
+Use `--python-exit-code 1` for regression scripts and inspect their evidence JSON.
 
 ## Native Mac evidence (2026-10-04)
 

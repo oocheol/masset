@@ -3,8 +3,8 @@
   "target": "x86_64-pc-windows-msvc",
   "includeTools": false,
   "inputs": {
-    "packageLockSha256": "baa2fe016d40453f065c556fd134879658c18fd55f7f74f17ded0b139c0ec067",
-    "cargoLockSha256": "c1500ed324c5ff34b99de2da3200f960e764c2308162382d10ab9d215bbaafce"
+    "packageLockSha256": "c1fe25bf1dd254a5cb4a29c344525f2b58d21db708c1ab3f64059c8b59f4dd9f",
+    "cargoLockSha256": "b6d0f1fbc9b4a5a41b011ae735344699a1a7cafc4bd44c3b00eee9862b1a8292"
   },
   "collection": "Installed npm/Cargo source and pinned local upstream overrides; no installation or build performed",
   "scope": "Conservative locked dependency graph with separately labeled host macros/tools and vendor components; does not assert every package survives linking",
@@ -13002,7 +13002,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-desktop",
-      "version": "0.1.12",
+      "version": "0.1.13",
       "licenseExpression": "Apache-2.0",
       "path": "apps/desktop/src-tauri/Cargo.toml"
     },
@@ -13023,7 +13023,7 @@
     {
       "ecosystem": "cargo",
       "name": "asset-providers",
-      "version": "0.1.12",
+      "version": "0.1.13",
       "licenseExpression": "Apache-2.0",
       "path": "crates/providers/Cargo.toml"
     },

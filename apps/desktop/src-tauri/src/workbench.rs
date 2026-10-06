@@ -2,7 +2,7 @@ use crate::project_lease::ProjectLease;
 use anyhow::{anyhow, bail, Context, Result};
 use asset_core::{models::*, Repository};
 use asset_image_pipeline as raster;
-use asset_scheduler::{FailureKind, ResourceLimits, SchedulerStore};
+use asset_scheduler::{FailureKind, ResourceLimits, ResourceReservation, SchedulerStore};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
@@ -12,7 +12,7 @@ use std::{
     process::{Command, Stdio},
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc, Condvar, Mutex,
     },
     thread,
     time::{Duration, Instant},
@@ -24,9 +24,10 @@ mod glb;
 mod production;
 mod project_scan;
 mod provider;
-mod quality3d;
 #[cfg(windows)]
 mod python_windows;
+mod quality3d;
+mod quality3d_preview;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -48,11 +49,14 @@ struct Inner {
     requests: Mutex<()>,
     io: Mutex<()>,
     dispatch: Mutex<()>,
+    dispatch_epoch: Mutex<u64>,
+    dispatch_wake: Condvar,
     initialize: Mutex<()>,
     runners: Mutex<BTreeMap<String, Runner>>,
     stop: AtomicBool,
     limits: ResourceLimits,
     provider_runtime: Mutex<Option<asset_providers::runtime::CodexRuntime>>,
+    generation_runtime: Mutex<Option<provider::GenerationSession>>,
     provider_connection: Mutex<Value>,
     codex_installer: asset_providers::installer::CodexInstaller,
     planning_cancel: Mutex<Option<Arc<AtomicBool>>>,
@@ -62,6 +66,15 @@ struct Runner {
     cancel: Arc<AtomicBool>,
     pid: Option<u32>,
     execution_id: Option<String>,
+}
+
+struct DispatchWakeOnDrop<'a>(Option<&'a Backend>);
+impl Drop for DispatchWakeOnDrop<'_> {
+    fn drop(&mut self) {
+        if let Some(backend) = self.0 {
+            backend.wake_dispatch();
+        }
+    }
 }
 
 impl Backend {
@@ -84,7 +97,9 @@ impl Backend {
             blender = asset_providers::local_prerequisites::discover(
                 &runtime_data,
                 asset_providers::local_prerequisites::Kind::Blender,
-            ).ok().flatten();
+            )
+            .ok()
+            .flatten();
             blender_version = blender.as_deref().and_then(self::blender_version);
         }
         let worker_sha256 = asset_core::sha256_file(&worker).ok().map(|result| result.0);
@@ -108,11 +123,14 @@ impl Backend {
                 requests: Mutex::new(()),
                 io: Mutex::new(()),
                 dispatch: Mutex::new(()),
+                dispatch_epoch: Mutex::new(0),
+                dispatch_wake: Condvar::new(),
                 initialize: Mutex::new(()),
                 runners: Mutex::new(BTreeMap::new()),
                 stop: AtomicBool::new(false),
                 limits,
                 provider_runtime: Mutex::new(None),
+                generation_runtime: Mutex::new(None),
                 provider_connection: Mutex::new(provider::unavailable_connection(
                     "공식 Codex 연결을 확인해 주세요.",
                 )),
@@ -125,7 +143,11 @@ impl Backend {
     pub fn start(&self) {
         let backend = self.clone();
         thread::spawn(move || {
+            // The dispatch thread owns one SQLite connection per selected project.
+            // Opening and checking schema on every idle tick is unnecessary work.
+            let mut scheduling_queue: Option<(PathBuf, SchedulerStore)> = None;
             while !backend.inner.stop.load(Ordering::Relaxed) {
+                let observed_epoch = *backend.inner.dispatch_epoch.lock().unwrap();
                 {
                     let _dispatch = backend.inner.dispatch.lock().unwrap();
                     if backend.inner.stop.load(Ordering::SeqCst) {
@@ -135,8 +157,12 @@ impl Backend {
                     if let Some(root) = selected {
                         // Running jobs are confined to this project. Switching projects is
                         // refused while a worker is active, keeping global budgets bounded.
-                        if let Ok(mut queue) = SchedulerStore::open(&root.join("scheduler.sqlite"))
-                        {
+                        if scheduling_queue.as_ref().map(|entry| &entry.0) != Some(&root) {
+                            scheduling_queue = SchedulerStore::open(&root.join("scheduler.sqlite"))
+                                .ok()
+                                .map(|queue| (root.clone(), queue));
+                        }
+                        if let Some((_, queue)) = scheduling_queue.as_mut() {
                             if let Ok(jobs) = queue.claim_ready(&backend.inner.limits) {
                                 for job in jobs {
                                     let cancel = Arc::new(AtomicBool::new(false));
@@ -160,24 +186,114 @@ impl Backend {
                         }
                     }
                 }
-                thread::sleep(Duration::from_millis(150));
+                let epoch = backend.inner.dispatch_epoch.lock().unwrap();
+                if *epoch == observed_epoch && !backend.inner.stop.load(Ordering::SeqCst) {
+                    let delay = if backend.workers_idle() { 1000 } else { 250 };
+                    let _ = backend
+                        .inner
+                        .dispatch_wake
+                        .wait_timeout(epoch, Duration::from_millis(delay))
+                        .unwrap();
+                }
             }
         });
+    }
+    fn wake_dispatch(&self) {
+        let mut epoch = self.inner.dispatch_epoch.lock().unwrap();
+        *epoch = epoch.wrapping_add(1);
+        self.inner.dispatch_wake.notify_all();
+    }
+
+    /// Keep the external slot while releasing local CPU/disk during server wait.
+    /// Reacquire bounded local resources before accepting image bytes or decoding.
+    pub(super) fn set_generation_phase_resources(
+        &self,
+        root: &Path,
+        task: &Job,
+        remote_wait: bool,
+        cancel: &AtomicBool,
+    ) -> Result<()> {
+        let base = task
+            .payload
+            .get("resources")
+            .context("생성 자원 예약이 없습니다.")?;
+        let desired = ResourceReservation {
+            ram_mb: base["ramMb"]
+                .as_u64()
+                .context("생성 메모리 예약이 없습니다.")?,
+            gpu_mb: base["gpuMb"].as_u64().unwrap_or(0),
+            cpu_threads: if remote_wait {
+                0
+            } else {
+                base["cpuThreads"]
+                    .as_u64()
+                    .context("생성 CPU 예약이 없습니다.")?
+                    .try_into()?
+            },
+            disk_weight: if remote_wait {
+                0
+            } else {
+                base["diskWeight"]
+                    .as_u64()
+                    .context("생성 디스크 예약이 없습니다.")?
+                    .try_into()?
+            },
+        };
+        let identity = execution_id(task).context("생성 실행 식별자가 없습니다.")?;
+        let mut queue = SchedulerStore::open(&root.join("scheduler.sqlite"))?;
+        let started = Instant::now();
+        loop {
+            if cancel.load(Ordering::SeqCst) || self.inner.stop.load(Ordering::SeqCst) {
+                bail!("이미지 수신 대기를 취소했습니다. 외부 요청은 자동 재전송하지 않습니다.");
+            }
+            if queue.try_transition_resources(&task.id, identity, &desired, &self.inner.limits)? {
+                queue.set_progress(
+                    &task.id,
+                    if remote_wait {
+                        "공식 이미지 생성 대기"
+                    } else {
+                        "이미지 수신·파일 처리"
+                    },
+                    None,
+                    None,
+                )?;
+                self.wake_dispatch();
+                return Ok(());
+            }
+            let current = queue
+                .get_job(&task.id)?
+                .context("생성 작업이 큐에 없습니다.")?;
+            if current.status != JobStatus::Running || !same_execution(&current, task) {
+                bail!("생성 작업 상태가 바뀌어 파일 처리를 중단했습니다.");
+            }
+            if started.elapsed() > Duration::from_secs(1800) {
+                bail!("로컬 이미지 처리 자원 대기 시간이 초과됐습니다. 외부 요청은 재전송하지 않습니다.");
+            }
+            let epoch = self.inner.dispatch_epoch.lock().unwrap();
+            let _ = self
+                .inner
+                .dispatch_wake
+                .wait_timeout(epoch, Duration::from_millis(250))
+                .unwrap();
+        }
     }
     pub fn workers_idle(&self) -> bool {
         self.inner.runners.lock().unwrap().is_empty()
     }
     fn finish_job(&self, root: &Path, task: &Job, outcome: Result<()>) {
+        let _wake = DispatchWakeOnDrop(Some(self));
         let completion_guard = self.inner.io.lock().unwrap();
         let outcome = outcome.and_then(|_| commit::record_commit(root, task));
-        if let Ok(mut queue) = SchedulerStore::open(&root.join("scheduler.sqlite")) {
-            let active = queue
-                .jobs()
-                .ok()
-                .and_then(|jobs| jobs.into_iter().find(|job| job.id == task.id));
+        if let Ok(queue) = SchedulerStore::open(&root.join("scheduler.sqlite")) {
+            let active = queue.get_job(&task.id).ok().flatten();
             // A terminal queue status may precede the old worker's exit. Never
             // finalize or release resources belonging to a successor execution.
             if let Some(active) = active.filter(|job| same_execution(job, task)) {
+                if task.kind == "quality3d_preview" {
+                    if let Err(error) = &outcome {
+                        let _ = self.record_preview_failure(root, task, &error.to_string());
+                    }
+                }
                 if active.status == JobStatus::Running {
                     match outcome {
                         Ok(()) => {
@@ -205,6 +321,8 @@ impl Backend {
     }
     pub fn shutdown(&self) {
         self.inner.stop.store(true, Ordering::SeqCst);
+        self.wake_dispatch();
+        self.inner.generation_runtime.lock().unwrap().take();
         self.inner
             .quality3d_setup
             .cancel
@@ -291,6 +409,24 @@ impl Backend {
         }
         Ok(())
     }
+    fn ensure_export_io_available(&self) -> Result<()> {
+        let runners = self.inner.runners.lock().unwrap();
+        if runners.is_empty() {
+            return Ok(());
+        }
+        let queue = SchedulerStore::open(&self.root()?.join("scheduler.sqlite"))?;
+        // Preview rendering writes only its private work folder. The I/O mutex
+        // below freezes project metadata while exporting verified core files.
+        for (id, runner) in runners.iter() {
+            let task = queue
+                .get_job(id)?
+                .context("실행 중인 작업을 확인할 수 없습니다.")?;
+            if task.kind != "quality3d_preview" || !runner_matches(runner, &task) {
+                bail!("실행 중인 파일 제작이 끝나면 내보내기를 사용할 수 있습니다.");
+            }
+        }
+        Ok(())
+    }
     fn select_locked(&self, root: PathBuf) -> Result<()> {
         self.ensure_workers_idle()?;
         if !root.join("project.sqlite").is_file() {
@@ -321,6 +457,7 @@ impl Backend {
             &serde_json::to_vec(&json!({"root":root}))?,
         )?;
         *self.inner.current.lock().unwrap() = Some(root);
+        self.inner.generation_runtime.lock().unwrap().take();
         *selected_lease = Some(lease);
         Ok(())
     }
@@ -347,6 +484,17 @@ impl Backend {
     }
     pub fn request(&self, request: Value) -> Result<Value> {
         let action = text_field(&request, "action")?;
+        let read_only = matches!(
+            action,
+            "snapshot"
+                | "provider_status"
+                | "provider_setup_status"
+                | "quality3d_status"
+                | "production_state"
+                | "environment"
+                | "update_status"
+        );
+        let _wake = DispatchWakeOnDrop((!read_only).then_some(self));
         if action == "cancel_plan" {
             if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
                 cancel.store(true, Ordering::SeqCst);
@@ -373,7 +521,12 @@ impl Backend {
         }
         if matches!(
             action,
-            "quality3d_status" | "quality3d_verify_runtime" | "quality3d_prepare" | "quality3d_cancel_setup" | "quality3d_open_download_info" | "quality3d_open_runtime_guide"
+            "quality3d_status"
+                | "quality3d_verify_runtime"
+                | "quality3d_prepare"
+                | "quality3d_cancel_setup"
+                | "quality3d_open_download_info"
+                | "quality3d_open_runtime_guide"
         ) {
             if self.inner.stop.load(Ordering::SeqCst) {
                 bail!("작업 백엔드가 종료되었습니다.");
@@ -756,7 +909,7 @@ impl Backend {
             }
             "export" => {
                 let _dispatch = self.inner.dispatch.lock().unwrap();
-                self.ensure_local_io_idle()?;
+                self.ensure_export_io_available()?;
                 let _guard = self.inner.io.lock().unwrap();
                 let root = self.root()?;
                 let repo = Repository::open(&root)?;
@@ -1217,6 +1370,7 @@ impl Backend {
             }
             "blender_model" => self.run_blender(root, task, &work, cancel)?,
             "quality3d" => self.run_quality3d(root, task, &work, cancel)?,
+            "quality3d_preview" => self.run_quality3d_preview(root, task, &work, cancel)?,
             "image_generate" => {
                 if !self.reuse_production_image(root, task)? {
                     self.run_generation(root, task, &work, cancel)?;
@@ -1468,16 +1622,28 @@ fn blender_version(path: &Path) -> Option<String> {
     let output = bounded_native_stdout(&mut cmd, Duration::from_secs(5), 64 * 1024).ok()?;
     let output = String::from_utf8(output).ok()?;
     let line = output.lines().next()?;
-    let version = semver::Version::parse(line.strip_prefix("Blender ")?.split_whitespace().next()?).ok()?;
-    if version < semver::Version::new(5, 2, 1) { return None; }
+    let version =
+        semver::Version::parse(line.strip_prefix("Blender ")?.split_whitespace().next()?).ok()?;
+    if version < semver::Version::new(5, 2, 1) {
+        return None;
+    }
     Some(line.to_owned())
 }
 
-fn bounded_native_stdout(command: &mut Command, timeout: Duration, limit: usize) -> Result<Vec<u8>> {
+fn bounded_native_stdout(
+    command: &mut Command,
+    timeout: Duration,
+    limit: usize,
+) -> Result<Vec<u8>> {
     use std::io::Read;
-    command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
+    command
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null());
     let mut child = crate::process_guard::spawn_guarded(command)?;
-    let stdout = child.take_stdout().context("로컬 진단 출력 파이프가 없습니다.")?;
+    let stdout = child
+        .take_stdout()
+        .context("로컬 진단 출력 파이프가 없습니다.")?;
     let reader = thread::spawn(move || {
         let mut bytes = Vec::new();
         stdout.take(limit as u64 + 1).read_to_end(&mut bytes)?;
@@ -1485,7 +1651,9 @@ fn bounded_native_stdout(command: &mut Command, timeout: Duration, limit: usize)
     });
     let started = Instant::now();
     let success = loop {
-        if let Some(status) = child.try_wait()? { break status.success(); }
+        if let Some(status) = child.try_wait()? {
+            break status.success();
+        }
         if started.elapsed() >= timeout {
             let _ = child.kill();
             let _ = child.wait();
@@ -1493,8 +1661,12 @@ fn bounded_native_stdout(command: &mut Command, timeout: Duration, limit: usize)
         }
         thread::sleep(Duration::from_millis(25));
     };
-    let output = reader.join().map_err(|_| anyhow!("로컬 진단 출력을 읽지 못했습니다."))??;
-    if !success || output.len() > limit { bail!("로컬 실행 환경의 제한된 진단에 실패했습니다."); }
+    let output = reader
+        .join()
+        .map_err(|_| anyhow!("로컬 진단 출력을 읽지 못했습니다."))??;
+    if !success || output.len() > limit {
+        bail!("로컬 실행 환경의 제한된 진단에 실패했습니다.");
+    }
     Ok(output)
 }
 fn text_field<'a>(v: &'a Value, key: &str) -> Result<&'a str> {
@@ -1679,7 +1851,7 @@ fn job(
     })
 }
 fn cache_identity(project: &Project, kind: &str, payload: &Value) -> Result<Option<String>> {
-    if kind == "image_validate" || kind == "production_model" {
+    if kind == "image_validate" || kind == "production_model" || kind == "quality3d_preview" {
         return Ok(None);
     }
     let mut inputs = Vec::new();
@@ -1991,11 +2163,14 @@ mod lifecycle_tests {
                     requests: Mutex::new(()),
                     io: Mutex::new(()),
                     dispatch: Mutex::new(()),
+                    dispatch_epoch: Mutex::new(0),
+                    dispatch_wake: Condvar::new(),
                     initialize: Mutex::new(()),
                     runners: Mutex::new(BTreeMap::new()),
                     stop: AtomicBool::new(false),
                     limits: ResourceLimits::default(),
                     provider_runtime: Mutex::new(None),
+                    generation_runtime: Mutex::new(None),
                     provider_connection: Mutex::new(provider::unavailable_connection(
                         "단위 테스트는 외부 생성을 요청하지 않습니다.",
                     )),
@@ -2167,6 +2342,134 @@ mod lifecycle_tests {
             .remove(0)
             .payload
             .contains_key("cancellationAwaitingWorker"));
+    }
+
+    #[test]
+    fn optional_preview_queue_capacity_cannot_invalidate_core_output() {
+        let f = TestBackend::new();
+        let mut repo = Repository::open(&f.root).unwrap();
+        let project = repo.project().unwrap();
+        let queue = f.queue();
+        queue.set_queue_capacity(1).unwrap();
+        let task = job(
+            &project,
+            "production_model",
+            "Core fixture",
+            None,
+            JobResource::Blender,
+            json!({}),
+        )
+        .unwrap();
+        queue.enqueue(task).unwrap();
+        let task = queue
+            .claim_ready(&ResourceLimits::default())
+            .unwrap()
+            .remove(0);
+        let source = f.directory.join("source.blend");
+        fs::write(
+            &source,
+            b"unit fixture for scene identity; not native Blender proof",
+        )
+        .unwrap();
+        let mut scene = repo.copy_in(&source, "outputs", "source.blend").unwrap();
+        scene.role = ArtifactRole::Source;
+        let image = f.directory.join("model-fixture.png");
+        fs::write(
+            &image,
+            include_bytes!("../../../../tests/core/fixtures/reference.png"),
+        )
+        .unwrap();
+        let mut output = repo
+            .copy_in(&image, "outputs", "model-fixture.png")
+            .unwrap();
+        output.role = ArtifactRole::Output;
+        let validation = image_report(&output.id, &raster::inspect(&image).unwrap()).unwrap();
+        record_generated(
+            &mut repo,
+            new_asset(
+                "Core fixture".into(),
+                AssetKind::Model,
+                AssetSource::Procedural,
+                vec![output, scene],
+                None,
+                None,
+                Some(validation),
+                BTreeMap::new(),
+            ),
+            &task,
+        )
+        .unwrap();
+        let error = f
+            .backend
+            .enqueue_quality3d_preview(&mut repo, &task)
+            .unwrap_err();
+        f.backend
+            .record_preview_admission_failure(&mut repo, &task, &error.to_string())
+            .unwrap();
+        commit::record_commit(&f.root, &task).unwrap();
+        queue.complete(&task.id).unwrap();
+        let project = repo.project().unwrap();
+        let version = &project.assets[0].versions[0];
+        assert_eq!(version.settings["previewStatus"], "skipped");
+        assert!(version.validation.as_ref().unwrap().valid);
+        assert_eq!(queue.jobs().unwrap().len(), 1);
+        for artifact in &version.artifacts {
+            repo.verify_artifact(artifact).unwrap();
+        }
+    }
+
+    #[test]
+    fn verified_export_is_available_during_optional_preview_only() {
+        let f = TestBackend::new();
+        let input = f.directory.join("original.png");
+        fs::write(
+            &input,
+            include_bytes!("../../../../tests/core/fixtures/reference.png"),
+        )
+        .unwrap();
+        let original = asset_core::sha256_file(&input).unwrap();
+        f.backend
+            .request(json!({"action":"import","paths":[input]}))
+            .unwrap();
+        let repo = Repository::open(&f.root).unwrap();
+        let project = repo.project().unwrap();
+        let task = job(
+            &project,
+            "quality3d_preview",
+            "Preview lifecycle fixture",
+            Some(project.assets[0].id.clone()),
+            JobResource::Blender,
+            json!({}),
+        )
+        .unwrap();
+        let queue = f.queue();
+        queue.enqueue(task).unwrap();
+        let task = queue
+            .claim_ready(&ResourceLimits::default())
+            .unwrap()
+            .remove(0);
+        f.install_runner(&task);
+        let exported = f
+            .backend
+            .request(
+                json!({"action":"export","destination":f.directory.join("exports"),"assetIds":[]}),
+            )
+            .unwrap();
+        assert!(Path::new(exported["path"].as_str().unwrap()).is_dir());
+        assert_eq!(
+            queue.get_job(&task.id).unwrap().unwrap().status,
+            JobStatus::Running
+        );
+        assert_eq!(asset_core::sha256_file(&input).unwrap(), original);
+        f.backend.inner.runners.lock().unwrap().clear();
+        queue.complete(&task.id).unwrap();
+        let local = f.claimed();
+        assert!(f.backend.request(json!({"action":"export","destination":f.directory.join("blocked-export"),"assetIds":[]})).is_err());
+        f.backend.finish_job(
+            &f.root,
+            &local,
+            Err(anyhow!("synthetic local worker completed")),
+        );
     }
 
     #[test]

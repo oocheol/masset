@@ -1,6 +1,6 @@
 # Codex에서 게임을 만들며 에셋 제작하기
 
-**0.1.12 공통 스킬은 Windows x64와 Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudio_0.1.12_codex-plugin-windows-macos.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows·Mac 앱은 0.1.12이며, 공통 스킬이 준비하는 독립 CLI는 Windows 0.1.12 · Mac 0.1.11입니다. 공통 스킬 ZIP에는 Mac 독립 CLI의 고정 파일 목록도 포함됩니다. Mac 실행 검증은 잠금 상태로 생략했으며 [배포 기록](releases/v0.1.12-macos.md)에 명시합니다.
+**0.1.13 공통 스킬은 Windows x64와 Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows 앱·CLI는 0.1.13으로 업데이트하며 Mac 앱 0.1.12와 독립 CLI 0.1.11은 기존 배포본을 유지합니다. npm은 공통 패키지 하나이고 운영체제별 CLI 파일 목록과 버전을 독립적으로 고정합니다. 이번 배포는 Windows만 빌드합니다. Mac의 이전 실행 검증 범위는 [배포 기록](releases/v0.1.12-macos.md)에 명시합니다.
 
 | 방법 | 설치와 사용 | 선택 |
 | --- | --- | --- |
@@ -15,7 +15,7 @@
 
 새 사용자는 [스킬 설치 안내](skill-first-setup.md)에 따라 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하고 새 Codex 작업에서 호출합니다. 앱·Python·Node·Rust가 없어도 운영체제 기본 도구로 준비합니다.
 
-Mac 0.1.12 앱의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령은 그 앱에 포함된 0.1.11 스킬을 설치하고 앱의 CLI 경로를 함께 등록합니다. 최신 공통 스킬 0.1.12를 사용하려면 npm 설치·업데이트 명령 또는 새 공통 ZIP을 사용하세요. 이미 공개한 Mac 앱은 다시 포장하지 않습니다.
+Mac 0.1.12 앱의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령은 그 앱에 포함된 0.1.11 스킬을 설치하고 앱의 CLI 경로를 함께 등록합니다. 최신 공통 스킬 0.1.13을 사용하려면 npm 설치·업데이트 명령 또는 새 공통 ZIP을 사용하세요. 이미 공개한 Mac 앱은 다시 포장하지 않습니다.
 
 ```sh
 "$HOME/Applications/Asset Studio 0.1.12/Asset Studio.app/Contents/MacOS/asset-cli" install-codex

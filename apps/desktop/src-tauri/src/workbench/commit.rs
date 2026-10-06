@@ -72,9 +72,7 @@ pub fn record_commit(root: &Path, task: &Job) -> Result<()> {
     );
     let queue = SchedulerStore::open(&repository.root().join("scheduler.sqlite"))?;
     let current = queue
-        .jobs()?
-        .into_iter()
-        .find(|job| job.id == task.id)
+        .get_job(&task.id)?
         .context("commit job is not in the project queue")?;
     ensure!(
         same_attempt(&current, task) && current.status == JobStatus::Running,
@@ -224,6 +222,112 @@ fn marker_for(project: &Project, repository: &Repository, task: &Job) -> Result<
         let report = valid_report(version)?;
         verify_files(repository, version)?;
         versions.push(proof(&asset.id, version, producer, Some(report.clone())));
+    } else if task.kind == "quality3d_preview" {
+        let parent_id = task
+            .payload
+            .get("parentJobId")
+            .and_then(Value::as_str)
+            .context("preview parent is missing")?;
+        let parent = SchedulerStore::open(&repository.root().join("scheduler.sqlite"))?
+            .get_job(parent_id)?
+            .context("preview parent was removed")?;
+        ensure!(
+            parent.status == JobStatus::Succeeded
+                && parent.payload.get("executionId") == task.payload.get("parentExecutionId"),
+            "preview parent is no longer the completed producer execution"
+        );
+        let version = super::quality3d_preview::matching_version(project, task)?;
+        let scene = super::quality3d_preview::source_artifact(version, task)?;
+        repository.verify_artifact(scene)?;
+        ensure!(
+            version.settings.get("previewStatus") == Some(&json!("ready"))
+                && version
+                    .settings
+                    .get("previewExecutionId")
+                    .and_then(Value::as_str)
+                    == Some(execution_id),
+            "preview was not persisted by this execution"
+        );
+        let ids = version
+            .settings
+            .get("previewArtifactIds")
+            .and_then(Value::as_array)
+            .context("preview has no artifact receipt")?;
+        ensure!(
+            ids.len() == 6,
+            "preview receipt needs five images and a report"
+        );
+        let mut seen = std::collections::HashSet::new();
+        let mut reports = 0;
+        let mut images = std::collections::HashSet::new();
+        for id in ids {
+            let id = id.as_str().context("preview artifact ID is invalid")?;
+            ensure!(seen.insert(id), "duplicate preview artifact receipt");
+            let artifact = version
+                .artifacts
+                .iter()
+                .find(|a| a.id == id)
+                .context("preview artifact is absent")?;
+            repository.verify_artifact(artifact)?;
+            if artifact.role == asset_core::models::ArtifactRole::Metadata {
+                reports += 1;
+                let path = repository.artifact_path(&artifact.path)?;
+                ensure!(
+                    artifact.bytes <= 1024 * 1024,
+                    "preview report exceeds its bound"
+                );
+                let report: Value = serde_json::from_slice(&fs::read(path)?)?;
+                ensure!(
+                    version.settings.get("previewReport") == Some(&report)
+                        && report["valid"] == true
+                        && report["originalSourcePreserved"] == true
+                        && report["scriptAutoExecution"] == false
+                        && report.get("sourceSha256") == task.payload.get("sourceSha256"),
+                    "preview report does not match the scene and persisted receipt"
+                );
+            } else {
+                ensure!(
+                    artifact.role == asset_core::models::ArtifactRole::Thumbnail,
+                    "invalid preview artifact role"
+                );
+                let name = Path::new(&artifact.path)
+                    .file_name()
+                    .and_then(|v| v.to_str())
+                    .context("preview filename is invalid")?;
+                let expected_size = match name {
+                    "thumbnail.png" => 1024,
+                    "turntable-00.png" | "turntable-01.png" | "turntable-02.png"
+                    | "turntable-03.png" => 512,
+                    _ => anyhow::bail!("unexpected preview filename"),
+                };
+                ensure!(images.insert(name), "duplicate preview image filename");
+                let image =
+                    asset_image_pipeline::inspect(&repository.artifact_path(&artifact.path)?)?;
+                ensure!(
+                    image.width == expected_size
+                        && image.height == expected_size
+                        && image.non_empty,
+                    "persisted preview pixels failed their dimensions/content check"
+                );
+            }
+        }
+        ensure!(
+            reports == 1 && images.len() == 5,
+            "preview image/report inventory is incomplete"
+        );
+        valid_report(version)?;
+        verify_files(repository, version)?;
+        versions.push(proof(
+            task.asset_id
+                .as_deref()
+                .context("preview asset is missing")?,
+            version,
+            task.payload
+                .get("parentJobId")
+                .and_then(Value::as_str)
+                .context("preview parent is missing")?,
+            None,
+        ));
     } else {
         for asset in &project.assets {
             for version in &asset.versions {
@@ -597,6 +701,114 @@ mod tests {
         assert_eq!(recover_commits(&project.root).unwrap(), 1);
         assert_eq!(project.status(&task), JobStatus::Succeeded);
         assert_eq!(recover_commits(&project.root).unwrap(), 0);
+    }
+
+    #[test]
+    fn preview_recovery_requires_exact_parent_scene_pixels_and_report_receipt() {
+        let f = TestProject::new();
+        let parent = f.running("production_model", JobResource::Blender);
+        let (asset_id, _) = f.output(&parent);
+        let mut repo = Repository::open(&f.root).unwrap();
+        let mut project = repo.project().unwrap();
+        let input = f.directory.join("scene-unit-fixture.blend");
+        fs::write(
+            &input,
+            b"unit fixture for immutable source receipt, not a native Blender scene",
+        )
+        .unwrap();
+        let mut scene = repo.copy_in(&input, "outputs", "source.blend").unwrap();
+        scene.role = asset_core::models::ArtifactRole::Source;
+        let version_id = project.assets[0].versions[0].id.clone();
+        project.assets[0].versions[0].artifacts.push(scene.clone());
+        repo.save_project(&project).unwrap();
+        record_commit(&f.root, &parent).unwrap();
+        let queue = SchedulerStore::open(&f.root.join("scheduler.sqlite")).unwrap();
+        queue.complete(&parent.id).unwrap();
+        let mut child = parent.clone();
+        child.id = Uuid::new_v4().to_string();
+        child.asset_id = Some(asset_id.clone());
+        child.kind = "quality3d_preview".into();
+        child.status = JobStatus::Pending;
+        child.attempts = 0;
+        child.started_at = None;
+        child.cache_key = None;
+        child.payload = serde_json::from_value(json!({"versionId":version_id,"source":scene.path,
+            "sourceSha256":scene.sha256,"sourceBytes":scene.bytes,
+            "parentJobId":parent.id,"parentExecutionId":parent.payload["executionId"]}))
+        .unwrap();
+        queue.enqueue(child).unwrap();
+        let child = queue
+            .claim_ready(&ResourceLimits::default())
+            .unwrap()
+            .remove(0);
+        let report = json!({"valid":true,"originalSourcePreserved":true,"scriptAutoExecution":false,"sourceSha256":scene.sha256});
+        let mut artifacts = Vec::new();
+        for (name, size) in [
+            ("thumbnail.png", 1024),
+            ("turntable-00.png", 512),
+            ("turntable-01.png", 512),
+            ("turntable-02.png", 512),
+            ("turntable-03.png", 512),
+        ] {
+            let filename = f.directory.join(name);
+            image::RgbaImage::from_fn(size, size, |x, y| {
+                image::Rgba([(x % 256) as u8, (y % 256) as u8, 150, 255])
+            })
+            .save(&filename)
+            .unwrap();
+            let mut artifact = repo.copy_in(&filename, "outputs", name).unwrap();
+            artifact.role = asset_core::models::ArtifactRole::Thumbnail;
+            artifacts.push(artifact);
+        }
+        let filename = f.directory.join("preview-validation.json");
+        fs::write(&filename, serde_json::to_vec(&report).unwrap()).unwrap();
+        let mut artifact = repo
+            .copy_in(&filename, "outputs", "preview-validation.json")
+            .unwrap();
+        artifact.role = asset_core::models::ArtifactRole::Metadata;
+        artifacts.push(artifact);
+        project = repo.project().unwrap();
+        let version = &mut project.assets[0].versions[0];
+        version
+            .settings
+            .insert("previewStatus".into(), json!("ready"));
+        version
+            .settings
+            .insert("previewJobId".into(), json!(child.id));
+        version.settings.insert(
+            "previewExecutionId".into(),
+            child.payload["executionId"].clone(),
+        );
+        version.settings.insert(
+            "previewArtifactIds".into(),
+            json!(artifacts.iter().map(|a| &a.id).collect::<Vec<_>>()),
+        );
+        version
+            .settings
+            .insert("previewReport".into(), report.clone());
+        version.artifacts.extend(artifacts);
+        repo.save_project(&project).unwrap();
+        record_commit(&f.root, &child).unwrap();
+        project = repo.project().unwrap();
+        project.assets[0].versions[0]
+            .settings
+            .get_mut("previewReport")
+            .unwrap()["originalSourcePreserved"] = json!(false);
+        repo.save_project(&project).unwrap();
+        assert_eq!(recover_commits(&f.root).unwrap(), 0);
+        project = repo.project().unwrap();
+        project.assets[0].versions[0]
+            .settings
+            .insert("previewReport".into(), report);
+        repo.save_project(&project).unwrap();
+        assert_eq!(recover_commits(&f.root).unwrap(), 1);
+        assert_eq!(f.status(&child), JobStatus::Succeeded);
+        // Completed output pixels remain immutable across separate reopening.
+        for artifact in
+            &Repository::open(&f.root).unwrap().project().unwrap().assets[0].versions[0].artifacts
+        {
+            repo.verify_artifact(artifact).unwrap();
+        }
     }
 
     #[test]

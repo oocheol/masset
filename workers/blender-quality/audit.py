@@ -172,8 +172,8 @@ def read_bounded(path: Path, maximum: int) -> bytes:
 
 def read_parameters(path: Path) -> dict:
     job = json_data(read_bounded(path, INPUT_BYTES))
-    if not isinstance(job, dict) or set(job) != KEYS:
-        raise ValueError("Job must contain exactly the eight documented finishing fields")
+    if not isinstance(job, dict) or set(job) not in (KEYS, KEYS | {"previewMode"}):
+        raise ValueError("Job requires eight finishing fields and optional previewMode")
     source = job["sourcePath"]
     if (not isinstance(source, str) or not source or len(source) > 4096
             or "\0" in source or not Path(source).is_absolute()
@@ -198,6 +198,31 @@ def read_parameters(path: Path) -> dict:
         raise ValueError("sourceKind must be image3d or model")
     if type(job["preserveMaterials"]) is not bool:
         raise ValueError("preserveMaterials must be boolean")
+    preview = job.get("previewMode", "cycles")
+    if not isinstance(preview, str) or preview not in {"cycles", "fast", "deferred"}:
+        raise ValueError("previewMode must be cycles, fast or deferred")
+    job["previewMode"] = preview
+    return job
+
+
+def read_preview_parameters(path: Path) -> dict:
+    job = json_data(read_bounded(path, INPUT_BYTES))
+    if not isinstance(job, dict) or set(job) != {"sourcePath", "sourceSha256", "name", "previewMode"}:
+        raise ValueError("Preview job requires exactly sourcePath, sourceSha256, name and previewMode")
+    source = job["sourcePath"]
+    if (not isinstance(source, str) or not source or len(source) > 4096 or "\0" in source
+            or not Path(source).is_absolute() or Path(source).suffix.lower() != ".blend"):
+        raise ValueError("Preview sourcePath must be an absolute generated .blend file path")
+    filesystem_path(source)
+    if not isinstance(job["sourceSha256"], str) or not re.fullmatch(r"[0-9a-fA-F]{64}", job["sourceSha256"]):
+        raise ValueError("Preview sourceSha256 must be 64 hexadecimal characters")
+    name = job["name"]
+    if (not isinstance(name, str) or not 1 <= len(name) <= 80 or not name.strip()
+            or name != name.strip() or name in {".", ".."} or name.endswith(".")
+            or re.search(r'[\x00-\x1f\x7f<>:"/\\|?*]', name)):
+        raise ValueError("Preview name must be safe plain text of 1 to 80 characters")
+    if not isinstance(job["previewMode"], str) or job["previewMode"] not in {"cycles", "fast"}:
+        raise ValueError("Separate previewMode must be cycles or fast")
     return job
 
 

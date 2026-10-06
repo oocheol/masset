@@ -34,9 +34,12 @@ import bmesh
 import numpy as np
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
+from quality_metrics import atlas as measure_atlas, fidelity, shading_error
 
 THREADS = 2
 STAGE = "startup"
+STAGE_STARTED = time.monotonic()
+STAGE_DURATIONS = {}
 
 
 def emit(kind, **fields):
@@ -44,7 +47,10 @@ def emit(kind, **fields):
 
 
 def stage(name, **fields):
-    global STAGE
+    global STAGE, STAGE_STARTED
+    now = time.monotonic()
+    STAGE_DURATIONS[STAGE] = STAGE_DURATIONS.get(STAGE, 0.0) + now - STAGE_STARTED
+    STAGE_STARTED = now
     STAGE = name
     emit("stage", stage=name, **fields)
 
@@ -125,7 +131,7 @@ def cpu_scene():
     scene.render.threads = THREADS
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
-    scene.render.bake.margin = 8
+    scene.render.bake.margin = 2
     scene.render.bake.use_clear = True
     scene.render.bake.normal_space = "TANGENT"
     scene.render.bake.normal_r = "POS_X"
@@ -310,6 +316,9 @@ def decimate(obj, budget):
 
 def smart_uv(obj, resolution):
     select([obj])
+    small_atlas = triangles(obj) <= 64
+    packing_shape = "AABB" if small_atlas else "CONVEX"
+    packing_rotation = "CARDINAL" if small_atlas else "ANY"
     # Keep inherited UVs during baking/fallback; original materials still sample
     # them through explicit UVMap nodes. Only the baked atlas UV is exported.
     for layer in obj.data.uv_layers:
@@ -320,11 +329,21 @@ def smart_uv(obj, resolution):
     bpy.ops.object.mode_set(mode="EDIT")
     try:
         bpy.ops.mesh.select_all(action="SELECT")
-        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=16 / resolution,
+        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=4 / resolution,
                                  margin_method="SCALED", area_weight=0.5,
                                  correct_aspect=True, scale_to_bounds=True)
+        # FRACTION measures the final UV square, unlike the former per-island
+        # scaled gap. Four pixels separate islands while the bake dilates two.
+        # Small symmetric islands can make unrestricted convex rotation search
+        # disproportionately expensive. Bound that case to cardinal AABB pack;
+        # actual atlas coverage/overlap/density are still measured below.
+        stage("pack-game-uv", shapeMethod=packing_shape, rotationMethod=packing_rotation)
+        bpy.ops.uv.pack_islands(rotate=True, rotate_method=packing_rotation, scale=True,
+                               margin_method="FRACTION", margin=4 / resolution,
+                               shape_method=packing_shape, merge_overlap=False)
     finally:
         bpy.ops.object.mode_set(mode="OBJECT")
+    stage("validate-game-uv")
     # glTF flips V and writes float32. Extremely thin UV triangles can pass the
     # in-memory check but collapse in that round trip. Give a bounded number of
     # such faces their own texel-sized island before baking, not after export.
@@ -361,6 +380,8 @@ def smart_uv(obj, resolution):
         stage("repair-uv-export-precision", faces=len(bad), reservedPixels=rows*8+4)
     info = mesh_inspection(obj)
     info["uvExportPrecisionRepairFaces"] = len(bad)
+    info["packingShapeMethod"] = packing_shape
+    info["packingRotationMethod"] = packing_rotation
     if not info["uvFinite"] or not info["uvNonzero"] or info["degenerateUVTriangles"]:
         raise ValueError("Game atlas UVs contain non-finite or zero-area triangles")
     return info
@@ -574,7 +595,7 @@ def bake_image(high, low, mode, resolution, projection, source_materials, fallba
             select([low])
             scene.render.bake.use_selected_to_active = False
         scene.cycles.samples = 1
-        bpy.ops.object.bake(type="NORMAL" if mode == "normal" else "EMIT", margin=8)
+        bpy.ops.object.bake(type="NORMAL" if mode == "normal" else "EMIT", margin=2)
         image.update()
         texture_stats(image)  # Empty/non-finite output is never promoted.
         return image
@@ -753,13 +774,59 @@ def studio(game, high, lod, height):
     return camera
 
 
-def render_previews(output, camera, height, size):
+def configure_preview_animation(camera, height, size):
     scene = bpy.context.scene
+    saved = camera.location.copy()
+    if "assetStudioThumbnailLocation" not in camera:
+        camera["assetStudioThumbnailLocation"] = list(saved)
+    scene.frame_end = 4
+    for index in range(4):
+        angle = math.radians(-45 + index * 90)
+        camera.location = (math.cos(angle) * size * 3.2, math.sin(angle) * size * 3.2, height / 2 + size * 1.5)
+        aim(camera, (0, 0, height / 2))
+        camera.keyframe_insert(data_path="location", frame=index + 1)
+        camera.keyframe_insert(data_path="rotation_euler", frame=index + 1)
+    scene.frame_set(1)
+    scene.render.resolution_x = scene.render.resolution_y = 1024
+    scene.render.filepath = "//thumbnail.png"
+
+
+def render_previews(output, camera, height, size, mode="cycles"):
+    scene = bpy.context.scene
+    camera.animation_data_clear()
+    camera.location = camera.get("assetStudioThumbnailLocation", list(camera.location))
+    aim(camera, (0, 0, height / 2))
+    fallback = []
+    scene.render.engine = "CYCLES"
+    scene.cycles.device = "CPU"
+    if mode == "fast":
+        for candidate in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
+            try:
+                scene.render.engine = candidate
+                break
+            except (TypeError, ValueError):
+                pass
+        if scene.render.engine == "CYCLES":
+            fallback.append("Installed Blender does not expose an EEVEE render engine")
+    elif mode != "cycles":
+        raise ValueError("Preview rendering requires cycles or fast mode")
+    engines = {}
     def render(name, resolution):
         scene.render.resolution_x = scene.render.resolution_y = resolution
         temporary = output / (Path(name).stem + ".partial.png")
         scene.render.filepath = blender_filename(temporary)
-        bpy.ops.render.render(write_still=True)
+        try:
+            bpy.ops.render.render(write_still=True)
+        except Exception as exc:
+            if mode != "fast" or scene.render.engine == "CYCLES":
+                raise
+            fallback.append("EEVEE render failed; using CPU Cycles (" + type(exc).__name__ + ")")
+            stage("preview-cycles-fallback", reason=fallback[-1])
+            scene.render.engine = "CYCLES"
+            scene.cycles.device = "CPU"
+            scene.cycles.samples = 24
+            bpy.ops.render.render(write_still=True)
+        engines[name] = scene.render.engine
         promote(temporary, output / name)
     render("thumbnail.png", 1024)
     saved = camera.location.copy()
@@ -773,15 +840,12 @@ def render_previews(output, camera, height, size):
     aim(camera, (0, 0, height / 2))
     scene.render.resolution_x = scene.render.resolution_y = 1024
     scene.render.filepath = "//thumbnail.png"
-    # Actual editable scene animation, four documented viewpoints.
-    scene.frame_end = 4
-    for index in range(4):
-        angle = math.radians(-45 + index * 90)
-        camera.location = (math.cos(angle) * size * 3.2, math.sin(angle) * size * 3.2, height / 2 + size * 1.5)
-        aim(camera, (0, 0, height / 2))
-        camera.keyframe_insert(data_path="location", frame=index + 1)
-        camera.keyframe_insert(data_path="rotation_euler", frame=index + 1)
-    scene.frame_set(1)
+    configure_preview_animation(camera, height, size)
+    selected = sorted(set(engines.values()))
+    return {"mode": mode, "status": "completed", "engine": selected[0] if len(selected) == 1 else "mixed",
+            "engineByFile": engines, "fallbackReason": "; ".join(fallback) if fallback else None,
+            "thumbnailResolution": [1024, 1024], "turntableResolution": [512, 512], "turntableViews": 4,
+            "files": list(engines), "inferenceDeviceChanged": False}
 
 
 def write_json(path, value):
@@ -827,8 +891,26 @@ def execute(input_path, output_dir):
     reduction = decimate(game, job["maxTriangles"])
     game_cleanup = clean_game_geometry(game)
     game_centering = center_game(game, job["heightMeters"])
+    stage("verify-game-fidelity")
+    game_fidelity = fidelity(high, game, "game")
+    if not game_fidelity["passed"]:
+        raise ValueError("Triangle budget removes too much source shape (" + ", ".join(game_fidelity["failedMetrics"]) + "); increase the triangle budget and submit a new job")
     stage("unwrap-game-uv")
     uv_info = smart_uv(game, job["textureResolution"])
+    stage("measure-game-uv")
+    uv_atlas, uv_mask, uv_core = measure_atlas(game, job["textureResolution"])
+    uv_atlas.update({"paddingPixels": 2, "packingGapPixels": 4,
+                     "packingMethod": "Blender pack_islands " + uv_info["packingShapeMethod"] + "/" +
+                                      uv_info["packingRotationMethod"] + " with final atlas FRACTION margin",
+                     "smallMeshPacking": triangles(game) <= 64})
+    if uv_atlas["interiorOverlapFraction"] > 0.005:
+        raise ValueError("Game UV atlas contains overlapping triangle interiors")
+    if uv_atlas["overlappingInteriorTexels"]:
+        warnings.append("A small measured UV interior overlap remains below the 0.5 percent rejection limit; exact texel count and fraction are recorded.")
+    if uv_atlas["surfaceUsageFraction"] < 0.20:
+        warnings.append("Measured game UV surface uses less than 20 percent of the atlas; inspect the actual texture before increasing resolution.")
+    if uv_atlas["densityRatioP90P10"] > 4:
+        warnings.append("Game UV texel density varies more than fourfold between the measured p10 and p90 triangles.")
     if uv_info["uvExportPrecisionRepairFaces"]:
         warnings.append("Sub-texel UV faces received separate texel-sized islands before baking to preserve nonzero area through glTF float32 V conversion. Source geometry and source UVs were preserved.")
     source_materials = list(high.data.materials)
@@ -839,7 +921,6 @@ def execute(input_path, output_dir):
     transparent = any(m.get("alphaMode", "OPAQUE") != "OPAQUE" or m.get("pbrMetallicRoughness", {}).get("baseColorFactor", [1, 1, 1, 1])[3] < 1 for m in source.doc.get("materials", []))
     emissive = any(any(m.get("emissiveFactor", [0, 0, 0])) or "emissiveTexture" in m for m in source.doc.get("materials", []))
     stage("bake-basecolor", source="imported material/vertex color graph", projection=projection)
-    uv_mask, uv_core = uv_pixel_mask(game, job["textureResolution"])
     mask = bake_image(high, game, "coverage", job["textureResolution"], projection, source_materials, fallback_materials)
     coverage = np.clip(pixels(mask)[:, 0], 0, 1)
     bpy.data.images.remove(mask)
@@ -962,14 +1043,82 @@ def execute(input_path, output_dir):
     game_info = mesh_inspection(game)
     stage("build-lod1")
     lod = duplicate(game, job["name"] + " LOD1", "lod1")
-    lod_budget = max(1, min(job["maxTriangles"] // 2, triangles(game) // 2))
-    lod_reduction = decimate(lod, lod_budget)
-    lod_cleanup = clean_game_geometry(lod)
-    lod_centering = center_game(lod, job["heightMeters"])
+    game_triangles = triangles(game)
+    lod_targets = sorted(target for target in set(max(1, int(game_triangles * fraction))
+                         for fraction in (0.5, 0.75, 0.90)) if target < game_triangles)
+    untouched_lod = lod.data.copy()
+    lod_attempts = []
+    lod_fidelity = None
+    for index, lod_budget in enumerate(lod_targets):
+        if index:
+            previous = lod.data
+            lod.data = untouched_lod.copy()
+            bpy.data.meshes.remove(previous)
+        try:
+            lod_reduction = decimate(lod, lod_budget)
+            lod_cleanup = clean_game_geometry(lod)
+            lod_centering = center_game(lod, job["heightMeters"])
+            lod_fidelity = fidelity(high, lod, "lod1")
+            lod_shading = shading_error(game, lod)
+            lod_fidelity["shadingDeviationFromGame"] = lod_shading
+            if lod_shading["p95NormalDeviationDegrees"] > 35 or lod_shading["opposedNormalSampleFraction"] > 0.02:
+                lod_fidelity["passed"] = False
+                lod_fidelity["failedMetrics"].append("lod-shading")
+            lod_attempts.append({"budget": lod_budget, "triangles": triangles(lod),
+                                 "passed": lod_fidelity["passed"], "failedMetrics": lod_fidelity["failedMetrics"]})
+        except ValueError as exc:
+            # A minimal card/cube may have no valid lower-count collapse. That
+            # candidate must not invalidate an already validated game mesh.
+            lod_fidelity = None
+            lod_attempts.append({"budget": lod_budget, "triangles": triangles(lod),
+                                 "passed": False, "failedMetrics": ["candidate-geometry"], "reason": str(exc)})
+        if lod_fidelity and lod_fidelity["passed"]:
+            break
+    reduction_applied = bool(lod_fidelity and lod_fidelity["passed"])
+    if not reduction_applied:
+        previous = lod.data
+        lod.data = untouched_lod.copy()
+        bpy.data.meshes.remove(previous)
+        lod_budget = game_triangles
+        lod_fidelity = fidelity(high, lod, "lod1")
+        lod_shading = shading_error(game, lod)
+        lod_fidelity["shadingDeviationFromGame"] = lod_shading
+        if not lod_fidelity["passed"] or triangles(lod) != game_triangles:
+            raise ValueError("Unreduced LOD copy does not retain the validated game geometry")
+        lod_reduction = {"method": "Unreduced validated game mesh copy", "originalTriangles": game_triangles,
+                         "budget": lod_budget, "finalTriangles": game_triangles, "attempts": [], "retopology": False,
+                         "reason": "No lower-count candidate passed bounded geometry, source-shape and shading checks"}
+        lod_cleanup = {"method": "Validated game mesh copied without additional geometry changes",
+                       "before": game_info, "after": mesh_inspection(lod), "highDetailModified": False}
+        lod_centering = {"translationZUpMeters": [0, 0, 0], "uniformScale": 1,
+                         "purpose": "Retain the verified game mesh height and bottom-center pivot unchanged"}
+        warnings.append("LOD1 triangle count was not reduced: no lower-count candidate passed geometry, source-shape and shading checks. A validated game-mesh copy is retained; reductionApplied=false.")
+    bpy.data.meshes.remove(untouched_lod)
+    lod_reduction["reductionApplied"] = reduction_applied
+    lod_reduction["fidelityAttempts"] = lod_attempts
+    lod_reduction["relaxedForFidelity"] = reduction_applied and len(lod_attempts) > 1
+    if reduction_applied and len(lod_attempts) > 1:
+        warnings.append("LOD1 triangle target was relaxed above half the game count to retain measured source shape; the actual accepted budget is recorded.")
+    # A game tangent-space normal texture is tied to the game mesh's tangents.
+    # Its UV name surviving a collapse is not evidence of LOD shading validity.
+    # Retain source color/PBR and deliberately use measured LOD mesh normals.
+    lod_material = game_material(base, None, orm, emission, emission_strength, transparent,
+                                 any(not m.use_backface_culling for m in source_materials), 0.6 if neutral_image3d else 0.55)
+    lod_material.name = "LOD source color and geometric normals"
+    lod.data.materials.clear()
+    lod.data.materials.append(lod_material)
+    for poly in lod.data.polygons:
+        poly.material_index = 0
+    lod_normal_policy = {"gameNormalIncluded": normal is not None, "lodNormalTextureIncluded": False,
+                         "gameNormalTextureReused": False, "separateNormalRebake": False,
+                         "reason": "Game tangent-space normal reuse is not independently validated for LOD; its material uses its own measured corner normals",
+                         "shadingDeviation": lod_shading}
+    if lod_shading["maximumNormalDeviationDegrees"] > 60:
+        warnings.append("Some sampled LOD geometric normals differ by more than 60 degrees; sampled deviation/fraction are recorded. Inspect LOD shading directly.")
     lod_info = mesh_inspection(lod)
-    if lod_info["triangles"] >= game_info["triangles"]:
-        raise ValueError("LOD1 must have fewer triangles than game mesh")
-    warnings.append("LOD1 inherits the game atlas and its interpolated UVs; it has no separate high-detail normal rebake.")
+    if lod_info["triangles"] > game_info["triangles"]:
+        raise ValueError("LOD1 must not have more triangles than game mesh")
+    warnings.append("LOD1 inherits source-color/PBR atlas UVs but omits the game tangent normal texture; geometric normal deviation is measured separately. No separate LOD high-detail normal rebake is claimed.")
     warnings.append("Collapse decimation is not retopology. Watertight volume, CAD/manufacturing suitability, rigging and unseen image geometry are not certified.")
     if source.doc.get("extensionsUsed"):
         warnings.append("Optional source glTF extensions are recorded; the game shader bakes core color, alpha, roughness, metallic, emission and geometry normals only.")
@@ -985,10 +1134,15 @@ def execute(input_path, output_dir):
             pbr = material.get("pbrMetallicRoughness", {})
             if "baseColorTexture" not in pbr:
                 raise ValueError("Game/LOD material is missing embedded PBR base color")
-        if normal and not all("normalTexture" in m for m in glb.doc.get("materials", [])):
+        is_game = glb is game_glb
+        if normal and is_game and not all("normalTexture" in m for m in glb.doc.get("materials", [])):
             raise ValueError("Meaningful normal texture was not embedded in GLB")
+        if not is_game and any("normalTexture" in m for m in glb.doc.get("materials", [])):
+            raise ValueError("LOD unexpectedly reused the game tangent-space normal texture")
         for basename, key in (("basecolor.png", "baseColorTexture"), ("normal.png", "normalTexture"),
                               ("orm.png", "metallicRoughnessTexture"), ("emission.png", "emissiveTexture")):
+            if basename == "normal.png" and not is_game:
+                continue
             path = output / basename
             if not path.exists():
                 continue
@@ -1000,7 +1154,18 @@ def execute(input_path, output_dir):
                     raise ValueError("Standalone texture bytes do not match embedded material image")
     stage("render-thumbnail")
     camera = studio(game, high, lod, job["heightMeters"])
-    render_previews(output, camera, job["heightMeters"], max(game.dimensions))
+    if job["previewMode"] == "deferred":
+        configure_preview_animation(camera, job["heightMeters"], max(game.dimensions))
+        preview = {"mode": "deferred", "status": "deferred", "engine": None, "files": [],
+                   "thumbnailResolution": [1024, 1024], "turntableResolution": [512, 512], "turntableViews": 4}
+    else:
+        preview = render_previews(output, camera, job["heightMeters"], max(game.dimensions), job["previewMode"])
+    scene.render.engine = "CYCLES"
+    scene.cycles.device = "CPU"
+    scene["assetStudioGeneratedScene"] = "quality-worker-v2"
+    scene["assetStudioPipelineVersion"] = 2
+    scene["assetStudioHeightMeters"] = job["heightMeters"]
+    scene["assetStudioModelSizeMeters"] = max(game.dimensions)
     stage("save-editable-source")
     # GLB extras do not run scripts. Remove text blocks and any drivers anyway,
     # so the editable source has no runnable embedded script payload.
@@ -1025,6 +1190,7 @@ def execute(input_path, output_dir):
     _, after = verify_source(job)
     if after.sha256 != source.sha256:
         raise ValueError("Original source hash changed during processing")
+    stage("validate-final-artifacts")
     dimensions = game_info["dimensionsZUp"]
     mesh = {"vertices": game_glb.vertices, "triangles": game_glb.scene_triangles,
             "dimensions": [dimensions[0], dimensions[2], dimensions[1]],
@@ -1034,7 +1200,19 @@ def execute(input_path, output_dir):
         {"code": "bounded-self-contained-glb", "status": "pass", "measured": source.bytes},
         {"code": "high-detail-geometry-preserved", "status": "pass", "measured": high_glb.scene_triangles},
         {"code": "game-triangle-budget", "status": "pass", "measured": game_glb.scene_triangles, "limit": job["maxTriangles"]},
-        {"code": "lod1-lower-budget", "status": "pass", "measured": lod_glb.scene_triangles, "limit": lod_budget},
+        {"code": "lod1-lower-budget", "status": "pass" if reduction_applied else "warn",
+         "measured": lod_glb.scene_triangles, "limit": lod_budget,
+         "message": "Actual lower-count LOD fits the accepted shape-aware budget" if reduction_applied else
+                    "LOD triangle count is unchanged; validated game geometry retained because no lower-count candidate passed"},
+        {"code": "game-source-fidelity", "status": "pass", "measured": game_fidelity["maximumRelativeSurfaceError"],
+         "message": "Sampled source/game surface, silhouettes and applicable thin-feature checks passed"},
+        {"code": "lod-source-fidelity", "status": "pass", "measured": lod_fidelity["maximumRelativeSurfaceError"],
+         "message": "Sampled source/LOD fidelity passed the actual bounded triangle budget"},
+        {"code": "atlas-interior-overlap", "status": "pass", "measured": uv_atlas["interiorOverlapFraction"], "limit": 0.005,
+         "message": "Rasterized game UV triangle interiors do not materially overlap; shared edges excluded"},
+        {"code": "atlas-surface-usage", "status": "pass" if uv_atlas["surfaceUsageFraction"] >= 0.20 else "warn",
+         "measured": uv_atlas["surfaceUsageFraction"], "message": "Actual atlas surface fraction excludes dilated bake padding"},
+        {"code": "lod-normal-policy", "status": "pass", "message": "LOD does not reuse a game tangent normal texture; actual exported material checked"},
         {"code": "normalized-height-meters", "status": "pass" if abs(high_info["dimensionsZUp"][2] - job["heightMeters"]) <= job["heightMeters"] * 1e-5 else "fail",
          "measured": high_info["dimensionsZUp"][2], "requested": job["heightMeters"]},
         {"code": "game-height-meters", "status": "pass" if abs(dimensions[2] - job["heightMeters"]) <= job["heightMeters"] * 0.02 else "fail",
@@ -1052,7 +1230,7 @@ def execute(input_path, output_dir):
             for info in (high_info, game_info, lod_info)) else "fail",
          "message": "High/game/LOD measured bounds have bottom-center pivots in meter units"},
         {"code": "standalone-embedded-textures", "status": "pass",
-         "message": "All standalone texture PNG bytes exactly match their material image in both game and LOD GLBs"},
+         "message": "Actual embedded source-color/PBR textures match standalone PNGs; normal texture is game-only"},
         {"code": "source-color-uv-bake", "status": "pass", "measured": base_stats["sampleDistinctRGB8"]},
         {"code": "embedded-pbr-basecolor", "status": "pass", "measured": len(game_glb.images)},
         {"code": "normal-map", "status": "pass" if normal else "warn", "message": normal_reason},
@@ -1064,7 +1242,6 @@ def execute(input_path, output_dir):
         "bounded-self-contained-glb": "Preflight accepts bounded GLB 2.0 with embedded bufferView images and no URI/required extensions",
         "high-detail-geometry-preserved": "Normalized high-detail export has the original triangle count",
         "game-triangle-budget": "Actual exported game triangles fit the requested budget",
-        "lod1-lower-budget": "Actual LOD1 triangles are fewer than game triangles and fit half its budget",
         "normalized-height-meters": "Original high-detail height normalized to the requested meters",
         "game-height-meters": "Game height stays within two percent after collapse decimation",
         "game-uv-finite-area": "Smart-projected game UVs are finite with nonzero triangle area",
@@ -1086,6 +1263,8 @@ def execute(input_path, output_dir):
               "gameReduction": reduction, "lod1Reduction": lod_reduction,
               "gameSeamWeld": seam_repair, "gameCleanup": game_cleanup, "lod1Cleanup": lod_cleanup,
               "gameCentering": game_centering, "lod1Centering": lod_centering,
+              "uvAtlas": uv_atlas, "qualityPreservation": {"game": game_fidelity, "lod1": lod_fidelity},
+              "lodNormalPolicy": lod_normal_policy, "preview": preview,
               "textures": {"basecolor": base_stats, "orm": orm_stats, "emission": emission_stats,
                            "normal": {"included": normal is not None, "reason": normal_reason, "stats": normal_stats}},
               "bakeProjection": projection, "materialPreservation": {"highDetail": "original imported colors with explicitly recorded neutral neural display defaults" if neutral_image3d else "original imported material graphs/colors/textures",
@@ -1097,18 +1276,22 @@ def execute(input_path, output_dir):
                   "vertexColorInterpretation": "standard glTF linear; no sRGB reinterpretation"},
               "gltfInspection": {"highDetail": high_glb.inspection(), "game": game_glb.inspection(), "lod1": lod_glb.inspection()},
               "renderer": {"engine": "CYCLES", "device": "CPU", "threads": THREADS, "samples": 24,
+                           "scope": "Saved scene and CPU baking configuration; actual rendered engine is recorded in preview",
                            "thumbnailResolution": [1024, 1024], "turntableResolution": [512, 512], "turntableViews": 4},
+              "stageDurations": {key: round(value, 3) for key, value in STAGE_DURATIONS.items()},
               "elapsedSeconds": round(time.monotonic() - started, 3)}
     write_json(output / "validation.json", report)
     lock.unlink()
     if not valid:
         raise ValueError("Finished artifact validation failed; see validation.json")
     names = [("high-detail.glb", "high-detail"), ("game-ready.model.glb", "output"), ("lod1.glb", "lod"),
-             ("source.blend", "source"), ("basecolor.png", "texture"), ("thumbnail.png", "thumbnail"), ("validation.json", "metadata")]
+             ("source.blend", "source"), ("basecolor.png", "texture"), ("validation.json", "metadata")]
     for basename in ("normal.png", "orm.png", "emission.png"):
         if (output / basename).exists():
             names.append((basename, "texture"))
-    names.extend((f"turntable-{i:02d}.png", "thumbnail") for i in range(4))
+    if job["previewMode"] != "deferred":
+        names.append(("thumbnail.png", "thumbnail"))
+        names.extend((f"turntable-{i:02d}.png", "thumbnail") for i in range(4))
     files = [artifact(output / name, role) for name, role in names]
     for file in files:
         emit("artifact", **file)

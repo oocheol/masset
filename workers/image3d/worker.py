@@ -170,21 +170,60 @@ def orient_and_verify(mesh):
             "trianglesBelow1eMinus12SquareMeters": int((areas < 1e-12).sum())}
 
 
-def generate(root, job, output_arg, started):
-    offline_guard()
-    emit("stage", stage="runtime", message="Checking exact model/code hashes and isolated CPU runtime")
-    ready = verify_runtime(root, probe=False)
-    # Verify dependency versions without launching another torch process.
-    import importlib.metadata
-    if any(importlib.metadata.version(name) != version for name, version in ready["dependencies"].items()):
-        raise WorkerError("runtime_integrity", "Installed dependency versions differ from the pinned runtime")
-    from image_input import prepare_image
-    emit("stage", stage="prepare", message="Validating source hash and transparent single-object input")
-    prepared, preprocessing = prepare_image(job)
-    output = prepare_output(output_arg)
-    prepared_path = output / "prepared-input.png"
-    prepared.save(prepared_path, format="PNG")
-    emit("artifact", **file_receipt(prepared_path))
+def verify_cached_mesh(path, geometry):
+    """Reopen copied geometry; a cache receipt alone is not an artifact proof."""
+    try:
+        return _verify_cached_mesh(path, geometry)
+    except WorkerError:
+        raise
+    except (ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+        raise WorkerError("artifact_verification", "Raw cached GLB structure or geometry is invalid (" + type(exc).__name__ + ")") from None
+
+
+def _verify_cached_mesh(path, geometry):
+    import numpy as np
+    import trimesh
+    from glb_color import read_color0, unpack_glb
+    data = path.read_bytes()
+    document, _ = unpack_glb(data)
+    if document.get("images") or document.get("textures") or any("uri" in item for item in document.get("buffers", [])):
+        raise WorkerError("artifact_verification", "Raw cached GLB must contain only embedded vertex-colored geometry")
+    colors, accessor = read_color0(data)
+    reopened = trimesh.load(path, file_type="glb", force="mesh", process=False)
+    if (reopened.vertices.shape[1:] != (3,) or reopened.faces.shape[1:] != (3,)
+            or not np.issubdtype(reopened.faces.dtype, np.integer)
+            or not len(reopened.faces) or int(reopened.faces.min()) < 0
+            or int(reopened.faces.max()) >= len(reopened.vertices)):
+        raise WorkerError("artifact_verification", "Raw cached GLB contains invalid triangle indices")
+    if (type(geometry.get("vertexCount")) is not int or type(geometry.get("triangleCount")) is not int
+            or geometry["vertexCount"] < 4 or geometry["triangleCount"] < 4
+            or len(reopened.vertices) != geometry["vertexCount"] or len(reopened.faces) != geometry["triangleCount"]
+            or not np.isfinite(reopened.vertices).all() or not np.isfinite(reopened.area_faces).all()
+            or float(reopened.area_faces.min()) <= 1e-12
+            or not np.allclose(reopened.bounds, geometry["bounds"], atol=1e-6)
+            or not np.allclose(reopened.extents, geometry["extents"], atol=1e-6)
+            or colors.shape != (geometry["vertexCount"], 4) or not np.isfinite(colors).all()
+            or (colors < 0).any() or (colors > 1).any() or not np.all(colors[:, 3] == 1)
+            or accessor["componentType"] != 5126 or accessor.get("normalized", False)
+            or geometry.get("vertexColorSpace") != "linear RGB"
+            or geometry.get("coordinateSystem") != "right-handed-glTF-Y-up"
+            or geometry.get("upAxis") != "Y" or geometry.get("units") != "meters"
+            or not reopened.is_winding_consistent
+            or bool(reopened.is_watertight) != geometry.get("watertight")
+            or not np.isclose(reopened.extents[1], 1, atol=1e-6) or not np.isclose(reopened.bounds[0, 1], 0, atol=1e-6)):
+        raise WorkerError("artifact_verification", "Raw cached GLB did not pass actual geometry/color verification")
+    singular = np.linalg.svd(reopened.vertices - reopened.vertices.mean(axis=0), compute_uv=False)
+    if singular[-1] <= max(1e-5, singular[0] * 1e-4) or float(reopened.extents.min()) <= 1e-4:
+        raise WorkerError("artifact_verification", "Raw cached GLB is planar or degenerate")
+
+
+def verify_source_unchanged(job, expected_bytes):
+    source = file_receipt(job["sourcePath"])
+    if source["sha256"] != job["sourceSha256"] or source["bytes"] != expected_bytes:
+        raise WorkerError("source_changed", "Source image changed during reconstruction; select the image again")
+
+
+def infer_mesh(root, job, output, prepared):
     stages = {}
     import torch
     from omegaconf import OmegaConf
@@ -246,6 +285,51 @@ def generate(root, job, output_arg, started):
                         uniqueVertexColors=int(len(np.unique(colors[:, :3], axis=0))),
                         minimumExportedTriangleAreaSquareMeters=float(reopened.area_faces.min()))
     stages["meshSeconds"] = time.monotonic() - mark
+    return geometry, cleanup, color_encoding, stages
+
+
+def generate(root, job, output_arg, started, cache_root=None):
+    offline_guard()
+    emit("stage", stage="runtime", message="Checking exact model/code hashes and isolated CPU runtime")
+    ready = verify_runtime(root, probe=False)
+    # A cache hit does not bypass runtime/model/code/dependency verification.
+    import importlib.metadata
+    if any(importlib.metadata.version(name) != version for name, version in ready["dependencies"].items()):
+        raise WorkerError("runtime_integrity", "Installed dependency versions differ from the pinned runtime")
+    from image_input import prepare_image
+    emit("stage", stage="prepare", message="Validating source hash and transparent single-object input")
+    prepared, preprocessing = prepare_image(job)
+    output = prepare_output(output_arg)
+    prepared_path = output / "prepared-input.png"
+    prepared.save(prepared_path, format="PNG")
+    prepared_receipt = file_receipt(prepared_path)
+    emit("artifact", **prepared_receipt)
+    from raw_cache import RawCache, cache_descriptor
+    cache = RawCache(cache_root, cache_descriptor(job, ready)) if cache_root else None
+    with cache if cache else contextlib.nullcontext():
+        cache_mark = time.monotonic()
+        cached = cache.load(prepared_receipt, verify_cached_mesh) if cache else None
+        if cached:
+            emit("stage", stage="cache-hit", message="Reusing a byte-verified raw reconstruction; inference will not run", cacheKey=cache.key)
+            cache.restore_mesh(output)
+            verify_cached_mesh(output / "mesh.glb", cached["geometry"])
+            geometry, cleanup, color_encoding = cached["geometry"], cached["meshCleanup"], cached["colorEncoding"]
+            stages = {"cacheRestoreSeconds": time.monotonic() - cache_mark,
+                      "loadSeconds": 0.0, "inferenceSeconds": 0.0, "meshSeconds": 0.0}
+            cache_info = cache.info(hit=True)
+        else:
+            geometry, cleanup, color_encoding, stages = infer_mesh(root, job, output, prepared)
+            cache_info = cache.info() if cache else {"enabled": False, "hit": False, "integrityVerified": False, "state": "disabled"}
+        # Hash again after either inference or cache restore, before any success
+        # receipt or cache publication; user originals are never modified.
+        verify_source_unchanged(job, preprocessing["sourceBytes"])
+        return finish_generation(root, job, output, preprocessing, ready, geometry, cleanup,
+                                 color_encoding, stages, started, cache, cache_info, not bool(cached))
+
+
+def finish_generation(root, job, output, preprocessing, ready, geometry, cleanup, color_encoding,
+                      stages, started, cache, cache_info, inference_executed):
+    mesh_path, prepared_path = output / "mesh.glb", output / "prepared-input.png"
     primary = [file_receipt(mesh_path), file_receipt(prepared_path)]
     emit("artifact", **primary[0])
     elapsed = time.monotonic() - started
@@ -253,6 +337,7 @@ def generate(root, job, output_arg, started):
                "modelId": MODEL_ID, "model": MODEL_ID, "modelRevision": MODEL_REVISION, "codeRevision": CODE_REVISION,
                "modelSha256": MODEL_SHA256, "dinoRevision": DINO_REVISION, "device": "cpu", "quality": job["quality"],
                "cpuThreads": job["cpuThreads"], "elapsedSeconds": round(elapsed, 3),
+               "inferenceExecuted": inference_executed, "cache": cache_info,
                "stageDurations": {k: round(v, 3) for k, v in stages.items()},
                "peakRssBytes": peak_memory(), "hardware": hardware(root),
                "source": {"path": job["sourcePath"], "sha256": job["sourceSha256"], "bytes": preprocessing["sourceBytes"]},
@@ -270,18 +355,22 @@ def generate(root, job, output_arg, started):
     atomic_json(generation_path, receipt)
     artifacts = primary + [file_receipt(generation_path)]
     emit("artifact", **artifacts[2])
-    # An artifact-backed receipt distinguishes inference from the install probe.
-    ready["inferenceVerified"] = True
-    ready["inferenceProof"] = {"verifiedAt": utc_now(), "outputDir": str(output), "artifacts": artifacts,
-                               "quality": job["quality"], "device": "cpu", "geometry": geometry,
-                               "elapsedSeconds": receipt["elapsedSeconds"], "peakRssBytes": receipt["peakRssBytes"],
-                               "hardware": receipt["hardware"]}
-    atomic_json(root / "ready.json", ready)
+    if cache and inference_executed:
+        cache.publish(output)
+    # A cache restore verifies an earlier artifact; it cannot establish a new
+    # inference or rewrite this runtime's install/inference authorization proof.
+    if inference_executed:
+        ready["inferenceVerified"] = True
+        ready["inferenceProof"] = {"verifiedAt": utc_now(), "outputDir": str(output), "artifacts": artifacts,
+                                   "quality": job["quality"], "device": "cpu", "geometry": geometry,
+                                   "elapsedSeconds": receipt["elapsedSeconds"], "peakRssBytes": receipt["peakRssBytes"],
+                                   "hardware": receipt["hardware"]}
+        atomic_json(root / "ready.json", ready)
     (output / ".image3d-running").unlink()
     emit("completed", artifacts=artifacts, elapsedSeconds=round(time.monotonic() - started, 3),
          model=MODEL_ID, modelId=MODEL_ID, modelRevision=MODEL_REVISION, codeRevision=CODE_REVISION,
          device="cpu", quality=job["quality"], cpuThreads=job["cpuThreads"], geometry=geometry,
-         peakRssBytes=receipt["peakRssBytes"])
+         peakRssBytes=receipt["peakRssBytes"], inferenceExecuted=inference_executed, cache=cache_info)
     return 0
 
 
@@ -290,6 +379,7 @@ def main():
     parser.add_argument("--runtime-root", type=Path, required=True)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--cache-root", type=Path, help="Optional absolute private raw reconstruction cache; never an output directory")
     parser.add_argument("--_runtime-child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     started = time.monotonic()
@@ -305,6 +395,10 @@ def main():
             command = [str(runtime_python(root)), "-I", "-B", str(MODULE_ROOT / "worker.py"),
                        "--runtime-root", str(root), "--input", str(args.input.absolute()),
                        "--output-dir", str(output), "--_runtime-child"]
+            if args.cache_root is not None:
+                # Keep the caller's absolute spelling so cache validation can
+                # reject traversal and links before any path resolution.
+                command.extend(["--cache-root", str(args.cache_root)])
             # Windows exec creates a replacement process instead of a Unix PID
             # overlay. Keep the launcher alive so the coordinator's Job Object
             # contains both processes until inference completes or is cancelled.
@@ -315,7 +409,7 @@ def main():
             os.execve(command[0], command, clean_env(root, job["cpuThreads"]))
         if Path(sys.prefix).resolve() != (root / "venv").resolve():
             raise WorkerError("runtime_integrity", "Worker must run inside the isolated runtime interpreter")
-        return generate(root, job, output, started)
+        return generate(root, job, output, started, args.cache_root)
     except KeyboardInterrupt:
         emit("failed", code="cancelled", message="Image-to-3D generation was cancelled", elapsedSeconds=round(time.monotonic()-started, 3))
         return 130

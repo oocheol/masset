@@ -20,13 +20,28 @@ pub(super) fn wait(
                 None => job_ids.iter().any(|id| j["id"] == id.as_str()),
             })
             .collect();
+        let primary_ids: Vec<_> = jobs.iter().filter_map(|job| job["id"].as_str()).collect();
+        let previews: Vec<_> = snapshot["project"]["jobs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|job| {
+                job["kind"] == "quality3d_preview"
+                    && job["payload"]["parentJobId"]
+                        .as_str()
+                        .is_some_and(|id| primary_ids.contains(&id))
+            })
+            .collect();
         let mut counts = BTreeMap::<String, usize>::new();
         for j in &jobs {
             *counts
                 .entry(j["status"].as_str().unwrap_or("unknown").into())
                 .or_default() += 1;
         }
-        let progress = json!({"type":"progress","workspace":root,"runId":run_id,"counts":counts,"active":jobs.iter().filter(|j|j["status"]=="running").map(|j|json!({"id":j["id"],"kind":j["kind"],"progress":j["progress"]})).collect::<Vec<_>>()});
+        let progress = json!({"type":"progress","workspace":root,"runId":run_id,"counts":counts,
+            "coreComplete":!jobs.is_empty() && jobs.iter().all(|j|j["status"]=="succeeded"),
+            "optionalPreviews":previews.iter().map(|j|json!({"id":j["id"],"status":j["status"],"progress":j["progress"]})).collect::<Vec<_>>(),
+            "active":jobs.iter().filter(|j|j["status"]=="running").map(|j|json!({"id":j["id"],"kind":j["kind"],"progress":j["progress"]})).collect::<Vec<_>>()});
         if previous != progress {
             let temporary = root.join("cli-status.partial.json");
             fs::write(&temporary, serde_json::to_vec_pretty(&progress)?)?;
@@ -34,7 +49,7 @@ pub(super) fn wait(
             emit(&progress)?;
             previous = progress;
         }
-        let pending = jobs.iter().any(|j| {
+        let pending = jobs.iter().chain(previews.iter()).any(|j| {
             ["ready", "pending", "running", "retry_wait"]
                 .contains(&j["status"].as_str().unwrap_or(""))
         });

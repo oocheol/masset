@@ -13,18 +13,29 @@ const MINIMUM_MEMORY_MB: u64 = 16 * 1024;
 const IMAGE_MEMORY_MB: u64 = 8 * 1024;
 
 pub(super) fn reconstruction_supported() -> bool {
-    cfg!(any(all(target_os = "macos", target_arch = "aarch64"), all(target_os = "windows", target_arch = "x86_64")))
+    cfg!(any(
+        all(target_os = "macos", target_arch = "aarch64"),
+        all(target_os = "windows", target_arch = "x86_64")
+    ))
 }
 
 fn runtime_lock_name() -> &'static str {
-    if cfg!(windows) { "runtime-lock-windows.json" } else { "runtime-lock.json" }
+    if cfg!(windows) {
+        "runtime-lock-windows.json"
+    } else {
+        "runtime-lock.json"
+    }
 }
 
 fn windows_runtime_missing() -> bool {
     #[cfg(windows)]
-    { !super::python_windows::vc_runtime_available() }
+    {
+        !super::python_windows::vc_runtime_available()
+    }
     #[cfg(not(windows))]
-    { false }
+    {
+        false
+    }
 }
 
 fn display_stage(stage: &str) -> &str {
@@ -171,7 +182,11 @@ fn process_environment(command: &mut Command) {
 
 fn verify_locked_runtime_file(root: &Path, name: &str, expected: &Value) -> Result<()> {
     let relative = Path::new(name);
-    if relative.is_absolute() || relative.components().any(|part| !matches!(part, std::path::Component::Normal(_))) {
+    if relative.is_absolute()
+        || relative
+            .components()
+            .any(|part| !matches!(part, std::path::Component::Normal(_)))
+    {
         bail!("고정 런타임 파일 경로가 올바르지 않습니다.");
     }
     let mut path = root.to_path_buf();
@@ -181,24 +196,38 @@ fn verify_locked_runtime_file(root: &Path, name: &str, expected: &Value) -> Resu
         #[cfg(windows)]
         {
             use std::os::windows::fs::MetadataExt;
-            if metadata.file_attributes() & 0x400 != 0 { bail!("모델 파일은 reparse 경로를 사용할 수 없습니다."); }
+            if metadata.file_attributes() & 0x400 != 0 {
+                bail!("모델 파일은 reparse 경로를 사용할 수 없습니다.");
+            }
         }
-        if metadata.file_type().is_symlink() { bail!("모델 파일은 링크를 사용할 수 없습니다."); }
+        if metadata.file_type().is_symlink() {
+            bail!("모델 파일은 링크를 사용할 수 없습니다.");
+        }
     }
     let metadata = fs::metadata(&path)?;
-    let bytes = expected["bytes"].as_u64().context("고정 파일 크기가 없습니다.")?;
-    if !metadata.is_file() || metadata.len() != bytes { bail!("고정 런타임 파일 크기가 일치하지 않습니다."); }
+    let bytes = expected["bytes"]
+        .as_u64()
+        .context("고정 파일 크기가 없습니다.")?;
+    if !metadata.is_file() || metadata.len() != bytes {
+        bail!("고정 런타임 파일 크기가 일치하지 않습니다.");
+    }
     let mut input = fs::File::open(path)?;
     let mut hash = Sha256::new();
     let mut buffer = [0u8; 65536];
     let started = Instant::now();
     loop {
-        if started.elapsed() > Duration::from_secs(180) { bail!("로컬 파일 검증의 제한 시간을 초과했습니다."); }
+        if started.elapsed() > Duration::from_secs(180) {
+            bail!("로컬 파일 검증의 제한 시간을 초과했습니다.");
+        }
         let length = input.read(&mut buffer)?;
-        if length == 0 { break; }
+        if length == 0 {
+            break;
+        }
         hash.update(&buffer[..length]);
     }
-    if expected["sha256"] != format!("{:x}", hash.finalize()) { bail!("고정 런타임 파일 해시가 일치하지 않습니다."); }
+    if expected["sha256"] != format!("{:x}", hash.finalize()) {
+        bail!("고정 런타임 파일 해시가 일치하지 않습니다.");
+    }
     Ok(())
 }
 
@@ -268,7 +297,10 @@ impl Backend {
         for (folder, name) in [
             ("blender-quality", "worker.py"),
             ("blender-quality", "audit.py"),
+            ("blender-quality", "quality_metrics.py"),
+            ("blender-quality", "preview_worker.py"),
             ("image3d", "worker.py"),
+            ("image3d", "raw_cache.py"),
             ("image3d", "image_input.py"),
             ("image3d", "runtime_common.py"),
             ("image3d", "image3d_adapter.py"),
@@ -285,7 +317,7 @@ impl Backend {
         }
         Ok(format!("{:x}", digest.finalize()))
     }
-    fn quality3d_worker(&self, folder: &str, name: &str) -> Result<PathBuf> {
+    pub(super) fn quality3d_worker(&self, folder: &str, name: &str) -> Result<PathBuf> {
         let workers = self
             .inner
             .worker
@@ -304,7 +336,9 @@ impl Backend {
     }
 
     fn quality3d_ready(&self) -> Option<Value> {
-        if windows_runtime_missing() { return None; }
+        if windows_runtime_missing() {
+            return None;
+        }
         let path = self.quality3d_runtime().join("ready.json");
         if fs::metadata(&path).ok()?.len() > 1024 * 1024 {
             return None;
@@ -320,17 +354,31 @@ impl Backend {
         {
             return None;
         }
-        let interpreter = Path::new(ready["interpreterPath"].as_str()?).canonicalize().ok()?;
-        let expected = self.quality3d_runtime().join(if cfg!(windows) { "venv/python.exe" } else { "venv/bin/python" }).canonicalize().ok()?;
+        let interpreter = Path::new(ready["interpreterPath"].as_str()?)
+            .canonicalize()
+            .ok()?;
+        let expected = self
+            .quality3d_runtime()
+            .join(if cfg!(windows) {
+                "venv/python.exe"
+            } else {
+                "venv/bin/python"
+            })
+            .canonicalize()
+            .ok()?;
         let platform = if cfg!(windows) { "Windows" } else { "Darwin" };
         let machine = if cfg!(windows) { "amd64" } else { "arm64" };
-        if interpreter != expected || ready["platform"] != platform
+        if interpreter != expected
+            || ready["platform"] != platform
             || ready["machine"].as_str()?.to_ascii_lowercase() != machine
-            || ready["device"] != "cpu" {
+            || ready["device"] != "cpu"
+        {
             return None;
         }
         let lock = self.quality3d_worker("image3d", runtime_lock_name()).ok()?;
-        if ready["provenance"]["workerRuntimeLock"]["sha256"] != asset_core::sha256_file(&lock).ok()?.0 {
+        if ready["provenance"]["workerRuntimeLock"]["sha256"]
+            != asset_core::sha256_file(&lock).ok()?.0
+        {
             return None;
         }
         Some(ready)
@@ -348,36 +396,71 @@ impl Backend {
     fn quality3d_verify_runtime(&self) -> Value {
         let mut status = self.quality3d_status();
         let verified = (|| -> Result<Value> {
-            let ready = self.quality3d_ready().context("검증할 로컬 모델 준비 정보가 없습니다.")?;
+            let ready = self
+                .quality3d_ready()
+                .context("검증할 로컬 모델 준비 정보가 없습니다.")?;
             let runtime = self.quality3d_runtime();
             #[cfg(windows)]
             super::python_windows::verify_installed_embedded(&runtime)?;
             #[cfg(target_os = "macos")]
             {
-                let actual = Path::new(ready["interpreterPath"].as_str().context("Python 경로가 없습니다.")?).canonicalize()?;
-                let base = python(&self.inner.runtime_data).context("호환 Python을 확인하지 못했습니다.")?.canonicalize()?;
-                if actual != base { bail!("격리 Python의 원본 경로가 일치하지 않습니다."); }
+                let actual = Path::new(
+                    ready["interpreterPath"]
+                        .as_str()
+                        .context("Python 경로가 없습니다.")?,
+                )
+                .canonicalize()?;
+                let base = python(&self.inner.runtime_data)
+                    .context("호환 Python을 확인하지 못했습니다.")?
+                    .canonicalize()?;
+                if actual != base {
+                    bail!("격리 Python의 원본 경로가 일치하지 않습니다.");
+                }
             }
-            let lock: Value = serde_json::from_slice(&fs::read(self.quality3d_worker("image3d", runtime_lock_name())?)?)?;
-            for (name, entry) in lock["runtimeFiles"].as_object().context("고정 모델 파일 목록이 없습니다.")? {
+            let lock: Value = serde_json::from_slice(&fs::read(
+                self.quality3d_worker("image3d", runtime_lock_name())?,
+            )?)?;
+            for (name, entry) in lock["runtimeFiles"]
+                .as_object()
+                .context("고정 모델 파일 목록이 없습니다.")?
+            {
                 verify_locked_runtime_file(&runtime, name, entry)?;
             }
             let code = runtime.join("code");
-            let entries = lock["codeFiles"].as_object().context("고정 모델 코드 목록이 없습니다.")?;
-            for (name, entry) in entries { verify_locked_runtime_file(&code, name, entry)?; }
+            let entries = lock["codeFiles"]
+                .as_object()
+                .context("고정 모델 코드 목록이 없습니다.")?;
+            for (name, entry) in entries {
+                verify_locked_runtime_file(&code, name, entry)?;
+            }
             let adapter = code.join("image3d_adapter.py");
-            if asset_core::sha256_file(&adapter)?.0 != asset_core::sha256_file(&self.quality3d_worker("image3d", "image3d_adapter.py")?)?.0 {
+            if asset_core::sha256_file(&adapter)?.0
+                != asset_core::sha256_file(
+                    &self.quality3d_worker("image3d", "image3d_adapter.py")?,
+                )?
+                .0
+            {
                 bail!("로컬 모델 어댑터 해시가 일치하지 않습니다.");
             }
             // The status worker checks exact code file membership, embedded
             // Python pins and actual CPU imports after the trusted file hashes.
-            let mut command = Command::new(ready["interpreterPath"].as_str().context("Python 경로가 없습니다.")?);
-            command.args(["-I", "-B"]).arg(self.quality3d_worker("image3d", "status.py")?)
-                .arg("--runtime-root").arg(&runtime);
+            let mut command = Command::new(
+                ready["interpreterPath"]
+                    .as_str()
+                    .context("Python 경로가 없습니다.")?,
+            );
+            command
+                .args(["-I", "-B"])
+                .arg(self.quality3d_worker("image3d", "status.py")?)
+                .arg("--runtime-root")
+                .arg(&runtime);
             process_environment(&mut command);
-            let bytes = super::bounded_native_stdout(&mut command, Duration::from_secs(180), 64 * 1024)?;
+            let bytes =
+                super::bounded_native_stdout(&mut command, Duration::from_secs(180), 64 * 1024)?;
             let proof: Value = serde_json::from_slice(&bytes)?;
-            if proof["installed"] != true || proof["state"] != "ready" { bail!("로컬 모델의 파일·CPU 실행 검증이 실패했습니다."); }
+            if proof["installed"] != true || proof["state"] != "ready" {
+                bail!("로컬 모델의 파일·CPU 실행 검증이 실패했습니다.");
+            }
             Ok(proof)
         })();
         match verified {
@@ -389,7 +472,9 @@ impl Backend {
                 status["installed"] = json!(false);
                 status["state"] = json!("error");
                 status["runtimeIntegrityVerified"] = json!(false);
-                status["message"] = json!("로컬 모델의 파일·실행 환경 검증이 실패했습니다. 기존 파일은 보존했습니다.");
+                status["message"] = json!(
+                    "로컬 모델의 파일·실행 환경 검증이 실패했습니다. 기존 파일은 보존했습니다."
+                );
             }
         }
         status
@@ -457,7 +542,9 @@ impl Backend {
                 Ok(self.quality3d_status())
             }
             "quality3d_open_runtime_guide" => {
-                super::provider::open_trusted_browser("https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist")?;
+                super::provider::open_trusted_browser(
+                    "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+                )?;
                 Ok(self.quality3d_status())
             }
             "quality3d_cancel_setup" => {
@@ -523,8 +610,13 @@ impl Backend {
         #[cfg(windows)]
         let (python, embedded_archive) = super::python_windows::prepare(
             &self.inner.data.join("image3d/python312-embedded-v1"),
-            || self.inner.quality3d_setup.cancel.load(Ordering::SeqCst) || self.inner.stop.load(Ordering::SeqCst),
-            |stage, message| { *self.inner.quality3d_setup.progress.lock().unwrap() = (stage.into(), message); },
+            || {
+                self.inner.quality3d_setup.cancel.load(Ordering::SeqCst)
+                    || self.inner.stop.load(Ordering::SeqCst)
+            },
+            |stage, message| {
+                *self.inner.quality3d_setup.progress.lock().unwrap() = (stage.into(), message);
+            },
         )?;
         #[cfg(not(windows))]
         let python = python(&self.inner.runtime_data).context("Apple Silicon용 CPython 3.9가 필요합니다. CLI prepare --consent-downloads --needs-3d로 준비해 주세요.")?;
@@ -543,7 +635,10 @@ impl Backend {
             .stdout(output.try_clone()?)
             .stderr(output);
         #[cfg(windows)]
-        command.arg("--managed-embedded").arg("--embedded-archive").arg(embedded_archive);
+        command
+            .arg("--managed-embedded")
+            .arg("--embedded-archive")
+            .arg(embedded_archive);
         process_environment(&mut command);
         let mut child = crate::process_guard::spawn_guarded(&mut command)?;
         let start = Instant::now();
@@ -693,7 +788,7 @@ impl Backend {
         self.snapshot()
     }
 
-    fn quality3d_process(
+    pub(super) fn quality3d_process(
         &self,
         root: &Path,
         task: &Job,
@@ -779,7 +874,9 @@ impl Backend {
                 .arg("--input")
                 .arg(input)
                 .arg("--output-dir")
-                .arg(&raw);
+                .arg(&raw)
+                .arg("--cache-root")
+                .arg(self.inner.runtime_data.join("image3d/reconstruction-cache"));
             self.quality3d_process(
                 root,
                 task,
@@ -799,7 +896,8 @@ impl Backend {
             serde_json::to_vec(
                 &json!({"sourcePath":model,"sourceSha256":asset_core::sha256_file(&model)?.0,"name":task.payload["name"],
             "heightMeters":task.payload["heightMeters"],"maxTriangles":task.payload["maxTriangles"],"textureResolution":task.payload["textureResolution"],
-            "sourceKind":task.payload["sourceKind"],"preserveMaterials":task.payload["preserveMaterials"]}),
+            "sourceKind":task.payload["sourceKind"],"preserveMaterials":task.payload["preserveMaterials"],
+            "previewMode":if cfg!(windows) { "deferred" } else { "cycles" }}),
             )?,
         )?;
         let output = work.join("result");
@@ -871,7 +969,18 @@ impl Backend {
             ("turntable-03.png", ArtifactRole::Thumbnail),
         ] {
             let path = output.join(name);
-            if !path.is_file() && ["normal.png", "orm.png", "emission.png"].contains(&name) {
+            if !path.is_file()
+                && (["normal.png", "orm.png", "emission.png"].contains(&name)
+                    || (cfg!(windows)
+                        && [
+                            "thumbnail.png",
+                            "turntable-00.png",
+                            "turntable-01.png",
+                            "turntable-02.png",
+                            "turntable-03.png",
+                        ]
+                        .contains(&name)))
+            {
                 continue;
             }
             if ["png"].contains(&path.extension().and_then(|s| s.to_str()).unwrap_or("")) {
@@ -911,6 +1020,9 @@ impl Backend {
             "lod1":artifacts.iter().filter(|a|a.format=="glb" && a.role==ArtifactRole::Output).nth(1).map(|a|&a.id)}));
         settings.insert("qualityReport".into(), report);
         settings.insert("localReconstruction".into(), generation);
+        if cfg!(windows) {
+            settings.insert("previewStatus".into(), json!("queued"));
+        }
         let mut asset = new_asset(
             text_field(&payload, "name")?.into(),
             AssetKind::Model,
@@ -926,12 +1038,18 @@ impl Backend {
             settings,
         );
         asset.versions[0].provider_version =
-            Some("local image3d + Blender quality worker v1".into());
+            Some("local image3d + Blender quality worker v2".into());
         if image {
             asset.versions[0].requested_model = Some(MODEL_ID.into());
             asset.versions[0].confirmed_model = Some(format!("{MODEL_ID}@{MODEL_REVISION}"));
         }
         record_generated(&mut repo, asset, task)?;
+        if cfg!(windows) {
+            // Optional queue admission cannot invalidate a verified model.
+            if let Err(error) = self.enqueue_quality3d_preview(&mut repo, task) {
+                self.record_preview_admission_failure(&mut repo, task, &error.to_string())?;
+            }
+        }
         Ok(())
     }
 }
@@ -972,7 +1090,14 @@ mod tests {
         assert!(reconstruction_supported());
         let memory = physical_memory_mb();
         assert!(memory > 0, "Windows native memory query failed");
-        assert_eq!(memory_budget_mb(), if memory >= MINIMUM_MEMORY_MB { (memory / 2).min(16 * 1024) } else { 2048 });
+        assert_eq!(
+            memory_budget_mb(),
+            if memory >= MINIMUM_MEMORY_MB {
+                (memory / 2).min(16 * 1024)
+            } else {
+                2048
+            }
+        );
         assert_eq!(runtime_lock_name(), "runtime-lock-windows.json");
     }
     fn request() -> Request {

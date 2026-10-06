@@ -113,15 +113,18 @@ pub struct EnqueueBatchReceipt {
     pub replayed: bool,
 }
 
-#[derive(Clone, Debug)]
-struct ResourceRequest {
-    ram_mb: u64,
-    gpu_mb: u64,
-    cpu_threads: u32,
-    disk_weight: u32,
+/// A trusted worker's current local reservation. The job's resource slot does
+/// not change when these amounts change.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceReservation {
+    pub ram_mb: u64,
+    pub gpu_mb: u64,
+    pub cpu_threads: u32,
+    pub disk_weight: u32,
 }
 
-impl ResourceRequest {
+impl ResourceReservation {
     fn for_job(job: &Job) -> Result<Self> {
         let defaults = match job.resource {
             JobResource::Cpu => Self {
@@ -165,18 +168,35 @@ impl ResourceRequest {
             disk_weight: u32::try_from(number("diskWeight", u64::from(defaults.disk_weight))?)
                 .context("resources.diskWeight is too large")?,
         };
-        if request.ram_mb == 0 {
+        request.validate(&job.resource)?;
+        Ok(request)
+    }
+
+    fn validate(&self, resource: &JobResource) -> Result<()> {
+        if self.ram_mb == 0 {
             bail!("resources.ramMb must reserve at least 1 MB");
         }
-        if job.resource != JobResource::External && request.cpu_threads == 0 {
+        if *resource != JobResource::External && self.cpu_threads == 0 {
             bail!("local jobs must reserve at least one CPU thread");
         }
-        Ok(request)
+        Ok(())
+    }
+
+    fn for_running_job(job: &Job) -> Result<Self> {
+        match job.payload.get("runningResources") {
+            None => Self::for_job(job),
+            Some(value) => {
+                let request: Self = serde_json::from_value(value.clone())
+                    .context("invalid running resource reservation")?;
+                request.validate(&job.resource)?;
+                Ok(request)
+            }
+        }
     }
 }
 
 impl ResourceUsage {
-    fn reserve(&mut self, resource: &JobResource, request: &ResourceRequest) {
+    fn reserve(&mut self, resource: &JobResource, request: &ResourceReservation) {
         match resource {
             JobResource::Cpu => self.cpu_jobs = self.cpu_jobs.saturating_add(1),
             JobResource::Blender => self.blender_jobs = self.blender_jobs.saturating_add(1),
@@ -191,7 +211,7 @@ impl ResourceUsage {
     fn fits(
         &self,
         resource: &JobResource,
-        request: &ResourceRequest,
+        request: &ResourceReservation,
         limits: &ResourceLimits,
     ) -> bool {
         let slot = match resource {
@@ -232,7 +252,7 @@ struct FairnessBarrier {
 }
 
 impl FairnessBarrier {
-    fn conflicts(&self, resource: &JobResource, request: &ResourceRequest) -> bool {
+    fn conflicts(&self, resource: &JobResource, request: &ResourceReservation) -> bool {
         match resource {
             JobResource::Cpu if self.cpu => return true,
             JobResource::Blender if self.blender => return true,
@@ -248,7 +268,7 @@ impl FairnessBarrier {
     fn reserve_scarce(
         &mut self,
         resource: &JobResource,
-        request: &ResourceRequest,
+        request: &ResourceReservation,
         used: &ResourceUsage,
         limits: &ResourceLimits,
     ) {
@@ -308,6 +328,9 @@ impl SchedulerStore {
                  document TEXT NOT NULL
              );
              CREATE INDEX IF NOT EXISTS scheduler_jobs_state ON scheduler_jobs(status, sequence);
+             CREATE INDEX IF NOT EXISTS scheduler_jobs_cancelled_hold ON scheduler_jobs(sequence)
+                 WHERE status='cancelled' AND resource!='external'
+                 AND json_type(document,'$.payload.cancellationAwaitingWorker')='true';
              CREATE TABLE IF NOT EXISTS scheduler_events (
                  cursor INTEGER PRIMARY KEY AUTOINCREMENT,
                  job_id TEXT NOT NULL,
@@ -354,12 +377,7 @@ impl SchedulerStore {
         check_capacity(capacity)?;
         let mut connection = self.connection()?;
         let tx = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        if load_jobs(&tx)?
-            .iter()
-            .filter(|j| is_active_job(&j.job))
-            .count()
-            > capacity
-        {
+        if load_scheduling_snapshot(&tx)?.0.len() > capacity {
             bail!("cannot reduce queue capacity below currently active work");
         }
         tx.execute(
@@ -490,19 +508,24 @@ impl SchedulerStore {
         let connection = self.connection()?;
         Ok(load_jobs(&connection)?.into_iter().map(|j| j.job).collect())
     }
+
+    /// Reads one job without decoding unrelated historical documents.
+    pub fn get_job(&self, id: &str) -> Result<Option<Job>> {
+        let connection = self.connection()?;
+        Ok(load_job(&connection, id)?.map(|stored| stored.job))
+    }
 }
 
 fn enqueue_in_transaction(tx: &Connection, jobs: Vec<Job>, capacity: usize) -> Result<()> {
-    let mut all = load_jobs(tx)?;
-    let active = all.iter().filter(|j| is_active_job(&j.job)).count();
-    if active.saturating_add(jobs.len()) > capacity {
+    let (mut all, _) = load_scheduling_snapshot(tx)?;
+    if all.len().saturating_add(jobs.len()) > capacity {
         bail!("job queue capacity is {capacity}; finish or cancel queued jobs first");
     }
     let mut ids: HashSet<String> = all.iter().map(|j| j.job.id.clone()).collect();
     let now = now_text();
     for mut job in jobs {
         validate_new_job(&job)?;
-        if !ids.insert(job.id.clone()) {
+        if !ids.insert(job.id.clone()) || job_exists(tx, &job.id)? {
             bail!("duplicate job id {}", job.id)
         }
         job.status = JobStatus::Pending;
@@ -515,6 +538,7 @@ fn enqueue_in_transaction(tx: &Connection, jobs: Vec<Job>, capacity: usize) -> R
         }
         job.progress = progress("queued");
         job.payload.remove("executionId");
+        job.payload.remove("runningResources");
         job.payload.remove("externalSubmitted");
         job.payload.remove("cancellationAwaitingWorker");
         clear_external_identity(&mut job);
@@ -527,8 +551,9 @@ fn enqueue_in_transaction(tx: &Connection, jobs: Vec<Job>, capacity: usize) -> R
             original_status: JobStatus::Pending,
         });
     }
-    validate_graph(&all)?;
-    reconcile(&mut all, Utc::now().timestamp_millis());
+    let terminal_states = load_terminal_dependencies(tx, &all)?;
+    validate_graph_with_terminal(&all, &terminal_states)?;
+    reconcile_with_terminal(&mut all, Utc::now().timestamp_millis(), &terminal_states);
     for stored in all.iter().filter(|j| j.sequence == 0) {
         insert_job(tx, stored)?;
     }
@@ -542,9 +567,9 @@ impl SchedulerStore {
     pub fn claim_ready(&self, limits: &ResourceLimits) -> Result<Vec<Job>> {
         let mut connection = self.connection()?;
         let tx = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        let mut all = load_jobs(&tx)?;
+        let (mut all, terminal_states) = load_scheduling_snapshot(&tx)?;
         let now = Utc::now().timestamp_millis();
-        reconcile(&mut all, now);
+        reconcile_with_terminal(&mut all, now, &terminal_states);
         let mut used = usage_for(&all)?;
         let mut barrier = FairnessBarrier::default();
         let mut claimed = Vec::new();
@@ -552,7 +577,7 @@ impl SchedulerStore {
             if stored.job.status != JobStatus::Ready {
                 continue;
             }
-            let request = ResourceRequest::for_job(&stored.job)?;
+            let request = ResourceReservation::for_job(&stored.job)?;
             if !ResourceUsage::default().fits(&stored.job.resource, &request, limits) {
                 let (kind, slots) = match stored.job.resource {
                     JobResource::Cpu => ("CPU", limits.cpu_jobs),
@@ -584,6 +609,7 @@ impl SchedulerStore {
                 "executionId".into(),
                 json!(uuid::Uuid::new_v4().to_string()),
             );
+            stored.job.payload.remove("runningResources");
             stored.job.started_at = Some(now_text());
             stored.job.finished_at = None;
             stored.job.error = None;
@@ -595,7 +621,7 @@ impl SchedulerStore {
             });
             claimed.push(stored.job.clone());
         }
-        reconcile(&mut all, now);
+        reconcile_with_terminal(&mut all, now, &terminal_states);
         save_jobs(&tx, &all)?;
         tx.commit()?;
         Ok(claimed)
@@ -603,12 +629,60 @@ impl SchedulerStore {
 
     pub fn running_resources(&self) -> Result<ResourceUsage> {
         let connection = self.connection()?;
-        usage_for(&load_jobs(&connection)?)
+        usage_for(&load_scheduling_snapshot(&connection)?.0)
+    }
+
+    /// Atomically replaces the current execution's local reservation while
+    /// retaining its CPU/Blender/external slot. A stale/cancelled execution or
+    /// contention returns false without changing state. Invalid or individually
+    /// oversized reservations are errors; no worker may start the phase until true.
+    pub fn try_transition_resources(
+        &self,
+        id: &str,
+        execution_id: &str,
+        reservation: &ResourceReservation,
+        limits: &ResourceLimits,
+    ) -> Result<bool> {
+        uuid::Uuid::parse_str(execution_id).context("invalid execution id")?;
+        let mut connection = self.connection()?;
+        let tx = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let (mut all, _) = load_scheduling_snapshot(&tx)?;
+        let Some(index) = all.iter().position(|stored| stored.job.id == id) else {
+            return Ok(false);
+        };
+        let job = &all[index].job;
+        reservation.validate(&job.resource)?;
+        if !ResourceUsage::default().fits(&job.resource, reservation, limits) {
+            bail!("resource transition exceeds configured limits");
+        }
+        if job.status != JobStatus::Running
+            || job.payload.get("executionId").and_then(Value::as_str) != Some(execution_id)
+        {
+            return Ok(false);
+        }
+        let mut other_usage = ResourceUsage::default();
+        for (other_index, stored) in all.iter().enumerate() {
+            if other_index != index {
+                reserve_held_job(&mut other_usage, &stored.job)?;
+            }
+        }
+        if !other_usage.fits(&job.resource, reservation, limits) {
+            return Ok(false);
+        }
+        if ResourceReservation::for_running_job(job)? != *reservation {
+            all[index].job.payload.insert(
+                "runningResources".into(),
+                serde_json::to_value(reservation)?,
+            );
+            save_jobs(&tx, &all)?;
+        }
+        tx.commit()?;
+        Ok(true)
     }
 
     /// Only call after validating the actual worker/provider artifact.
     pub fn complete(&self, id: &str) -> Result<()> {
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.status == JobStatus::Succeeded {
                 return Ok(());
@@ -622,6 +696,7 @@ impl SchedulerStore {
             stored.job.status = JobStatus::Succeeded;
             stored.job.finished_at = Some(now_text());
             stored.job.error = None;
+            stored.job.payload.remove("runningResources");
             stored.job.progress.stage = "succeeded".into();
             if let Some(total) = stored.job.progress.total {
                 stored.job.progress.completed = Some(total);
@@ -635,7 +710,7 @@ impl SchedulerStore {
         if message.trim().is_empty() {
             bail!("a meaningful failure message is required")
         }
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if !matches!(stored.job.status, JobStatus::Running | JobStatus::Ready | JobStatus::ExternalUnknown) {
                 bail!("job {id} cannot fail from {:?}", stored.job.status);
@@ -669,6 +744,7 @@ impl SchedulerStore {
                 stored.job.finished_at = Some(now_text());
                 stored.job.progress = progress("failed");
             }
+            stored.job.payload.remove("runningResources");
             Ok(())
         })
     }
@@ -686,6 +762,7 @@ impl SchedulerStore {
                 if stored.job.resource == JobResource::External
                     && matches!(stored.job.status, JobStatus::Running | JobStatus::ExternalUnknown) {
                     stored.job.status = JobStatus::ExternalUnknown;
+                    stored.job.payload.remove("runningResources");
                     stored.job.finished_at = None;
                     stored.job.progress = progress("external_unknown");
                     stored.job.error = Some("로컬 대기와 후속 작업을 취소했습니다. 외부 요청의 원격 취소는 확인되지 않았으며 결과가 나올 수 있습니다.".into());
@@ -732,11 +809,13 @@ impl SchedulerStore {
         self.mutate(|all| {
             for stored in all.iter_mut().filter(|j| cancellation_hold(&j.job)) {
                 stored.job.payload.remove("cancellationAwaitingWorker");
+                stored.job.payload.remove("runningResources");
                 stored.job.progress = progress("cancelled");
             }
             for stored in all.iter_mut().filter(|j| j.job.status == JobStatus::Running) {
                 stored.job.finished_at = None;
                 stored.available_at_ms = 0;
+                stored.job.payload.remove("runningResources");
                 if stored.job.resource == JobResource::External {
                     stored.job.status = JobStatus::ExternalUnknown;
                     stored.job.progress = progress("external_unknown");
@@ -755,7 +834,7 @@ impl SchedulerStore {
     /// Call only after observing that the cancelled local worker/process exited.
     /// The cancelled status alone is not evidence that its CPU/RAM is available.
     pub fn release_cancelled_resources(&self, id: &str) -> Result<()> {
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.resource == JobResource::External
                 || stored.job.status != JobStatus::Cancelled
@@ -763,13 +842,14 @@ impl SchedulerStore {
                 bail!("job {id} is not cancelled local work");
             }
             stored.job.payload.remove("cancellationAwaitingWorker");
+            stored.job.payload.remove("runningResources");
             stored.job.progress = progress("cancelled");
             Ok(())
         })
     }
 
     pub fn resume_user(&self, id: &str) -> Result<()> {
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.status == JobStatus::ExternalUnknown {
                 bail!("external result is unknown; resume_external requires explicit duplicate-request risk acknowledgement");
@@ -786,7 +866,7 @@ impl SchedulerStore {
         if !acknowledge_duplicate_risk {
             bail!("explicit acknowledgement of possible duplicate external generation is required")
         }
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.resource != JobResource::External
                 || stored.job.status != JobStatus::ExternalUnknown
@@ -898,7 +978,7 @@ impl SchedulerStore {
     }
 
     pub fn mark_external_submitted(&self, id: &str) -> Result<()> {
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.resource != JobResource::External
                 || stored.job.status != JobStatus::Running
@@ -922,7 +1002,7 @@ impl SchedulerStore {
         if !valid_external_id(thread_id) || !valid_external_id(turn_id) {
             bail!("external thread/turn ids must be 1..256 safe identifier bytes");
         }
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.resource != JobResource::External
                 || !matches!(stored.job.status, JobStatus::Running | JobStatus::ExternalUnknown) {
@@ -945,7 +1025,7 @@ impl SchedulerStore {
     /// terminal interrupted/cancelled acknowledgement. A local abort or a sent
     /// interrupt request is insufficient evidence. It releases the external slot.
     pub fn confirm_external_cancelled(&self, id: &str) -> Result<()> {
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.resource != JobResource::External {
                 bail!("job {id} is not external work");
@@ -964,6 +1044,7 @@ impl SchedulerStore {
                 bail!("job {id} is not an unresolved external cancellation");
             }
             stored.job.status = JobStatus::Cancelled;
+            stored.job.payload.remove("runningResources");
             stored.job.finished_at = Some(now_text());
             stored.job.progress = progress("external_cancel_confirmed");
             stored.job.error =
@@ -995,7 +1076,7 @@ impl SchedulerStore {
                 bail!("progress must be indeterminate or a confirmed count within a positive total")
             }
         }
-        self.mutate(|all| {
+        self.mutate_job(id, |all| {
             let stored = find_mut(all, id)?;
             if stored.job.status != JobStatus::Running {
                 bail!("job {id} is not running")
@@ -1014,6 +1095,26 @@ impl SchedulerStore {
         F: FnOnce(&mut Vec<StoredJob>) -> Result<()>,
     {
         self.mutate_result(operation)
+    }
+
+    fn mutate_job<F>(&self, id: &str, operation: F) -> Result<()>
+    where
+        F: FnOnce(&mut Vec<StoredJob>) -> Result<()>,
+    {
+        let mut connection = self.connection()?;
+        let tx = connection.transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let mut all = load_active_jobs(&tx)?;
+        if !all.iter().any(|stored| stored.job.id == id) {
+            all.push(load_job(&tx, id)?.with_context(|| format!("unknown job {id}"))?);
+            all.sort_by_key(|stored| stored.sequence);
+        }
+        let terminal_states = load_terminal_dependencies(&tx, &all)?;
+        validate_graph_with_terminal(&all, &terminal_states)?;
+        operation(&mut all)?;
+        reconcile_with_terminal(&mut all, Utc::now().timestamp_millis(), &terminal_states);
+        save_jobs(&tx, &all)?;
+        tx.commit()?;
+        Ok(())
     }
 
     fn mutate_result<T, F>(&self, operation: F) -> Result<T>
@@ -1198,6 +1299,7 @@ fn intent_fingerprint(jobs: &[Job]) -> Result<String> {
             if let Some(fields) = payload.as_object_mut() {
                 for key in [
                     "executionId",
+                    "runningResources",
                     "externalSubmitted",
                     "cancellationAwaitingWorker",
                     "externalThreadId",
@@ -1243,6 +1345,7 @@ fn reset(stored: &mut StoredJob) {
     stored.job.error = None;
     stored.job.progress = progress("queued");
     stored.job.payload.remove("executionId");
+    stored.job.payload.remove("runningResources");
     stored.job.payload.remove("externalSubmitted");
     stored.job.payload.remove("externalSlotReleasedAt");
     stored.job.payload.remove("maintenancePause");
@@ -1271,7 +1374,7 @@ fn validate_new_job(job: &Job) -> Result<()> {
     if job.dependencies.iter().any(|id| id == &job.id) {
         bail!("job {} cannot depend on itself", job.id)
     }
-    ResourceRequest::for_job(job)?;
+    ResourceReservation::for_job(job)?;
     if serde_json::to_vec(job)?.len() > MAX_DOCUMENT_BYTES {
         bail!("job document exceeds 1 MB queue storage limit")
     }
@@ -1279,6 +1382,13 @@ fn validate_new_job(job: &Job) -> Result<()> {
 }
 
 fn validate_graph(all: &[StoredJob]) -> Result<()> {
+    validate_graph_with_terminal(all, &HashMap::new())
+}
+
+fn validate_graph_with_terminal(
+    all: &[StoredJob],
+    terminal_states: &HashMap<String, JobStatus>,
+) -> Result<()> {
     // Iterative Kahn traversal also handles deep historical graphs without stack
     // recursion on an imported project's untrusted metadata.
     let indexes: HashMap<_, _> = all
@@ -1289,14 +1399,16 @@ fn validate_graph(all: &[StoredJob]) -> Result<()> {
     if indexes.len() != all.len() {
         bail!("persisted graph contains duplicate job ids")
     }
-    let mut indegree: Vec<_> = all.iter().map(|j| j.job.dependencies.len()).collect();
+    let mut indegree = vec![0_usize; all.len()];
     let mut dependants = vec![Vec::new(); all.len()];
     for (index, stored) in all.iter().enumerate() {
         for dependency in &stored.job.dependencies {
-            let Some(parent) = indexes.get(dependency.as_str()) else {
+            if let Some(parent) = indexes.get(dependency.as_str()) {
+                indegree[index] += 1;
+                dependants[*parent].push(index);
+            } else if !terminal_states.contains_key(dependency) {
                 bail!("job {} has missing dependency {dependency}", stored.job.id)
-            };
-            dependants[*parent].push(index);
+            }
         }
     }
     let mut queue: VecDeque<_> = indegree
@@ -1361,27 +1473,35 @@ pub fn holds_unknown_external_slot(job: &Job) -> bool {
 fn usage_for(all: &[StoredJob]) -> Result<ResourceUsage> {
     let mut usage = ResourceUsage::default();
     for stored in all {
-        if stored.job.status == JobStatus::Running || cancellation_hold(&stored.job) {
-            usage.reserve(
-                &stored.job.resource,
-                &ResourceRequest::for_job(&stored.job)?,
-            );
-        } else if holds_unknown_external_slot(&stored.job) {
-            // The remote job may still be running. Keep its provider slot reserved,
-            // without pretending a local worker is still allocating memory.
-            usage.external_jobs = usage.external_jobs.saturating_add(1);
-        }
+        reserve_held_job(&mut usage, &stored.job)?;
     }
     Ok(usage)
 }
 
+fn reserve_held_job(usage: &mut ResourceUsage, job: &Job) -> Result<()> {
+    if job.status == JobStatus::Running || cancellation_hold(job) {
+        usage.reserve(&job.resource, &ResourceReservation::for_running_job(job)?);
+    } else if holds_unknown_external_slot(job) {
+        // The remote job may still be running. Keep its provider slot reserved,
+        // without pretending a local worker is still allocating memory.
+        usage.external_jobs = usage.external_jobs.saturating_add(1);
+    }
+    Ok(())
+}
+
 /// Resolve the DAG until a fixed point, including dependency error propagation.
 fn reconcile(all: &mut [StoredJob], now: i64) {
+    reconcile_with_terminal(all, now, &HashMap::new());
+}
+
+fn reconcile_with_terminal(
+    all: &mut [StoredJob],
+    now: i64,
+    terminal_states: &HashMap<String, JobStatus>,
+) {
     for _ in 0..=all.len() {
-        let states: HashMap<String, JobStatus> = all
-            .iter()
-            .map(|j| (j.job.id.clone(), j.job.status.clone()))
-            .collect();
+        let mut states = terminal_states.clone();
+        states.extend(all.iter().map(|j| (j.job.id.clone(), j.job.status)));
         let mut changed = false;
         for stored in all.iter_mut() {
             if stored.job.status == JobStatus::RetryWait && stored.available_at_ms <= now {
@@ -1503,7 +1623,9 @@ fn decode_stored(row: PersistedRow) -> Result<StoredJob> {
     if job.id != id || state_text(&job)? != (status, resource) {
         bail!("persisted scheduler metadata is inconsistent; database was preserved");
     }
-    ResourceRequest::for_job(&job).context("persisted resource reservation is invalid")?;
+    ResourceReservation::for_job(&job).context("persisted resource reservation is invalid")?;
+    ResourceReservation::for_running_job(&job)
+        .context("persisted running resource reservation is invalid")?;
     let digest: [u8; 32] = Sha256::digest(serde_json::to_vec(&job)?).into();
     Ok(StoredJob {
         sequence,
@@ -1522,6 +1644,110 @@ fn load_jobs(connection: &Connection) -> Result<Vec<StoredJob>> {
     validate_graph(&all)
         .context("persisted dependency graph is invalid; database was preserved")?;
     Ok(all)
+}
+
+// The indexed UNION excludes archived documents from normal admission work.
+// Cancelled local workers remain active until process exit is acknowledged.
+const ACTIVE_JOBS_SQL: &str =
+    "SELECT sequence,available_at_ms,document,id,status,resource FROM scheduler_jobs
+     WHERE status IN ('pending','ready','running','retry_wait','waiting_user','external_unknown')
+     UNION ALL
+     SELECT sequence,available_at_ms,document,id,status,resource FROM scheduler_jobs
+     WHERE status='cancelled' AND resource!='external'
+       AND json_type(document,'$.payload.cancellationAwaitingWorker')='true'
+     ORDER BY sequence";
+
+fn load_active_jobs(connection: &Connection) -> Result<Vec<StoredJob>> {
+    let mut statement = connection.prepare_cached(ACTIVE_JOBS_SQL)?;
+    let all = statement
+        .query_map([], persisted_row)?
+        .map(|row| decode_stored(row?))
+        .collect();
+    all
+}
+
+fn load_job(connection: &Connection, id: &str) -> Result<Option<StoredJob>> {
+    use rusqlite::OptionalExtension;
+    let mut statement = connection.prepare_cached(
+        "SELECT sequence,available_at_ms,document,id,status,resource FROM scheduler_jobs WHERE id=?1",
+    )?;
+    statement
+        .query_row([id], persisted_row)
+        .optional()?
+        .map(decode_stored)
+        .transpose()
+}
+
+fn job_exists(connection: &Connection, id: &str) -> Result<bool> {
+    let mut statement =
+        connection.prepare_cached("SELECT EXISTS(SELECT 1 FROM scheduler_jobs WHERE id=?1)")?;
+    Ok(statement.query_row([id], |row| row.get(0))?)
+}
+
+fn load_terminal_dependencies(
+    connection: &Connection,
+    all: &[StoredJob],
+) -> Result<HashMap<String, JobStatus>> {
+    use rusqlite::OptionalExtension;
+    let active_ids: HashSet<_> = all.iter().map(|stored| stored.job.id.as_str()).collect();
+    let needed: HashSet<_> = all
+        .iter()
+        .flat_map(|stored| stored.job.dependencies.iter())
+        .filter(|id| !active_ids.contains(id.as_str()))
+        .collect();
+    // Validate duplicated metadata for referenced terminal rows without decoding
+    // their large prompts/payloads or recursively expanding completed history.
+    let mut statement = connection.prepare_cached(
+        "SELECT id,status,resource,json_extract(document,'$.id'),
+                json_extract(document,'$.status'),json_extract(document,'$.resource')
+         FROM scheduler_jobs WHERE id=?1",
+    )?;
+    let mut states = HashMap::with_capacity(needed.len());
+    for id in needed {
+        let row = statement
+            .query_row([id], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, Option<String>>(3)?,
+                    row.get::<_, Option<String>>(4)?,
+                    row.get::<_, Option<String>>(5)?,
+                ))
+            })
+            .optional()?;
+        let Some((stored_id, status, resource, document_id, document_status, document_resource)) =
+            row
+        else {
+            bail!("job has missing dependency {id}; database was preserved");
+        };
+        if document_id.as_deref() != Some(stored_id.as_str())
+            || document_status.as_deref() != Some(status.as_str())
+            || document_resource.as_deref() != Some(resource.as_str())
+        {
+            bail!("persisted dependency metadata is inconsistent; database was preserved");
+        }
+        let parsed: JobStatus = serde_json::from_value(json!(status))
+            .context("persisted dependency status is invalid; database was preserved")?;
+        if !matches!(
+            parsed,
+            JobStatus::Succeeded | JobStatus::Failed | JobStatus::Cancelled
+        ) {
+            bail!("persisted active dependency was omitted; database was preserved");
+        }
+        states.insert(id.clone(), parsed);
+    }
+    Ok(states)
+}
+
+fn load_scheduling_snapshot(
+    connection: &Connection,
+) -> Result<(Vec<StoredJob>, HashMap<String, JobStatus>)> {
+    let all = load_active_jobs(connection)?;
+    let terminal_states = load_terminal_dependencies(connection, &all)?;
+    validate_graph_with_terminal(&all, &terminal_states)
+        .context("persisted active dependency graph is invalid; database was preserved")?;
+    Ok((all, terminal_states))
 }
 
 fn insert_job(connection: &Connection, stored: &StoredJob) -> Result<()> {

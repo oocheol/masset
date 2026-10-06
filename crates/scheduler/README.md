@@ -15,6 +15,18 @@ invalid reservations, and jobs larger than 1 MB are rejected atomically.
 ## Coordinator contract
 
 - `SchedulerStore::open(path)`; `enqueue(job)` / `enqueue_many(jobs)`; `jobs()`.
+  Retain one store per project: it owns one mutex-protected SQLite connection and
+  caches hot-path statements. Opening another store remains safe for concurrent
+  coordinators. `get_job(id)` returns one current row or `None` without reading the
+  entire history.
+  Admission, current resource usage, and single-job callbacks read indexed active
+  rows plus only the terminal dependency states they reference. The active DAG,
+  referenced metadata, immutable FIFO sequence, and queue capacity are still
+  validated. Completed history is never deleted or truncated; `jobs()` and graph
+  rerun/cancellation retain the full-history validation and descendant semantics.
+  A partial index for cancelled local worker holds avoids scanning every old
+  cancellation. It is installed idempotently without changing scheduler schema 2
+  or the project's `user_version`.
 - `enqueue_once(request_id, job)` and `enqueue_many_once(request_id, jobs)` persist
   one user action and its ordered receipt in the same transaction as the jobs.
   Replaying the same intent returns the original ids with `replayed=true`, including
@@ -48,6 +60,20 @@ invalid reservations, and jobs larger than 1 MB are rejected atomically.
 - `payload.resources` supports `ramMb`, `cpuThreads`, `gpuMb`, `diskWeight`.
   Defaults are CPU `(256 MB, 1 thread, disk 1)`, Blender `(1024 MB, 2 threads,
   disk 1)`, and external `(64 MB, 0 local threads, disk 0)`.
+- `try_transition_resources(id, execution_id, &ResourceReservation, &limits)`
+  atomically changes a running execution's RAM/GPU/thread/disk reservation. Its
+  CPU/Blender/external job slot stays reserved. The worker must wait for `true`
+  before beginning a phase that needs the new reservation. Contention, stale
+  execution ids, and cancelled/non-running jobs return `false`; invalid or
+  individually oversized requests return an error. Repeated identical transitions
+  create no writes/events. An external worker can hold its existing RAM while
+  releasing local CPU/disk during remote waiting, then reacquire CPU/disk before
+  downloading, decoding, or writing artifacts. External concurrency is unchanged.
+  `payload.runningResources` is coordinator-owned runtime state; enqueue, retry,
+  reset, new claims, completion, and startup recovery clear it, and request
+  fingerprinting ignores it. `payload.resources` remains the initial admission
+  reservation. Cancelled local workers retain their transitioned reservation until
+  observed exit; uncertain external jobs retain only their external slot.
 - Job reservations are estimates supplied by trusted workers, **not an OS memory
   sandbox**. Actual worker RSS, process trees, thread count, and artifacts still
   require coordinator measurement and enforcement.
@@ -113,3 +139,11 @@ while SQLite has an uncommitted write. The parent verifies committed state/event
 external ids, original artifact bytes, rollback of incomplete writes, local recovery,
 and no external resubmission. The ids in this fixture are local test data; no provider
 is contacted and no provider cancellation is claimed.
+
+Resource-transition tests race independent native SQLite connections, verify
+event-write rollback, reject stale executions/oversized requests, and check local
+cancellation holds, uncertain remote slots, and retries/recovery. The archive
+fixture contains 3,000 terminal jobs (including a deep successful dependency
+chain); real SQLite full-scan counters verify that normal admission does not scan
+that history. FIFO, capacity, reference validation, original schema/user version,
+and project-owned foreign-key rows remain covered.

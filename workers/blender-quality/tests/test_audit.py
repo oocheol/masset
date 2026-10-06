@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from audit import GLB, GLB_BYTES, read_parameters, verify_source, prepare_output
+from audit import GLB, GLB_BYTES, read_parameters, read_preview_parameters, verify_source, prepare_output
 
 
 def fixture():
@@ -53,9 +53,32 @@ class BoundaryTests(unittest.TestCase):
 
     def test_exact_valid_job_and_hash(self):
         result=self.parameters(self.job)
+        self.assertEqual(result["previewMode"], "cycles")
         data,glb=verify_source(result)
         self.assertEqual(glb.scene_triangles,1)
         self.assertEqual(data,self.source.read_bytes())
+
+    def test_finishing_preview_modes_are_optional_but_bounded(self):
+        for mode in ("cycles", "fast", "deferred"):
+            with self.subTest(mode=mode):
+                self.assertEqual(self.parameters({**self.job, "previewMode": mode})["previewMode"], mode)
+        for mode in (True, [], "", "GPU", "script.py"):
+            with self.subTest(invalid=mode), self.assertRaises(ValueError):
+                self.parameters({**self.job, "previewMode": mode})
+
+    def test_separate_preview_accepts_only_generated_blend_contract(self):
+        job={"sourcePath":str(self.root/"source.blend"), "sourceSha256":"a"*64,
+             "name":"Generated preview", "previewMode":"fast"}
+        self.path.write_text(json.dumps(job))
+        self.assertEqual(read_preview_parameters(self.path), job)
+        variants=({**job,"previewMode":"deferred"}, {**job,"previewMode":True},
+                  {**job,"sourcePath":str(self.root/"source.py")}, {**job,"sourcePath":"relative.blend"},
+                  {**job,"scriptPath":"execute.py"}, {**job,"sourceSha256":"z"*64}, {**job,"name":"../escape"})
+        for invalid in variants:
+            with self.subTest(invalid=invalid):
+                self.path.write_text(json.dumps(invalid))
+                with self.assertRaises(ValueError):
+                    read_preview_parameters(self.path)
 
     def test_json_boundary_table(self):
         cases=[("heightMeters",True),("heightMeters",float("nan")),("heightMeters",float("inf")),

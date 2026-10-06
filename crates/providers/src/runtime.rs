@@ -101,6 +101,7 @@ pub struct RuntimeOptions {
     pub rpc_timeout: Duration,
     pub generation_timeout: Duration,
     catalog_path: PathBuf,
+    configuration_fingerprint: Option<[u8; 32]>,
 }
 
 impl RuntimeOptions {
@@ -112,6 +113,7 @@ impl RuntimeOptions {
             rpc_timeout: Duration::from_secs(30),
             generation_timeout: Duration::from_secs(600),
             catalog_path: PathBuf::new(),
+            configuration_fingerprint: None,
         }
     }
 }
@@ -596,9 +598,7 @@ impl CodexRuntime {
         {
             return Err(RuntimeError::Unavailable);
         }
-        fs::create_dir_all(&options.output_root).map_err(|_| RuntimeError::Unavailable)?;
-        options.output_root =
-            fs::canonicalize(&options.output_root).map_err(|_| RuntimeError::Unavailable)?;
+        options.output_root = checked_output_root(&options.output_root)?;
         options.catalog_path = prepare_official_catalog(&options.output_root)?;
         if options
             .reasoning_model
@@ -634,6 +634,7 @@ impl CodexRuntime {
         if !official_provider_configuration(&config) {
             return Err(RuntimeError::PaidRouteRefused);
         }
+        options.configuration_fingerprint = Some(configuration_fingerprint(&config)?);
         let mcp = process.rpc(
             "mcpServerStatus/list",
             json!({"detail":"toolsAndAuthOnly","limit":100}),
@@ -714,6 +715,63 @@ impl CodexRuntime {
 
     pub fn status(&self) -> &RuntimeStatus {
         &self.status
+    }
+
+    /// Reuse only the image transport, never a conversation or an authentication
+    /// decision. A changed effective configuration invalidates the transport;
+    /// the caller may establish a fresh connection before any new submission.
+    /// `start_image_job` still reads the account and checks a new ephemeral
+    /// thread's sandbox, model and tool catalog for every job.
+    pub fn prepare_image_job(&mut self, output_root: &Path) -> Result<bool, RuntimeError> {
+        if self.purpose != RuntimePurpose::Image || self.poisoned || self.active_turn.is_some() {
+            return Err(RuntimeError::Busy);
+        }
+        let root = checked_output_root(output_root)?;
+        let config = self.process.rpc(
+            "config/read",
+            json!({"includeLayers":false}),
+            self.options.rpc_timeout,
+        )?;
+        let fingerprint = configuration_fingerprint(&config)?;
+        if self
+            .options
+            .configuration_fingerprint
+            .is_some_and(|previous| previous != fingerprint)
+        {
+            self.poisoned = true;
+            return Ok(false);
+        }
+        if !controls_verified_for(&config, RuntimePurpose::Image)
+            || !official_provider_configuration(&config)
+        {
+            self.poisoned = true;
+            return Err(RuntimeError::UnsafeToolConfiguration);
+        }
+        let mcp = self.process.rpc(
+            "mcpServerStatus/list",
+            json!({"detail":"toolsAndAuthOnly","limit":100}),
+            self.options.rpc_timeout,
+        )?;
+        if !mcp_disabled(&config, &mcp) {
+            self.poisoned = true;
+            return Err(RuntimeError::UnsafeToolConfiguration);
+        }
+        if !self.options.catalog_path.as_os_str().is_empty() {
+            check_plain_path(&self.options.catalog_path)?;
+            let bytes =
+                fs::read(&self.options.catalog_path).map_err(|_| RuntimeError::Unavailable)?;
+            if bytes.len() != OFFICIAL_CATALOG.len()
+                || format!("{:x}", Sha256::digest(&bytes)) != OFFICIAL_CATALOG_SHA256
+            {
+                self.poisoned = true;
+                return Err(RuntimeError::UnsafeToolConfiguration);
+            }
+        }
+        self.options.configuration_fingerprint = Some(fingerprint);
+        self.options.output_root = root;
+        // Account status is fetched again at submission; a live process or
+        // earlier successful image never grants permission for this job.
+        Ok(true)
     }
 
     pub fn refresh_status(&mut self) -> Result<RuntimeStatus, RuntimeError> {
@@ -931,7 +989,16 @@ impl CodexRuntime {
         job: &mut RunningJob,
         wait: Duration,
     ) -> Result<Option<ProviderEvent>, RuntimeError> {
-        match self.poll_job_inner(job, wait) {
+        self.poll_job_with_artifact_gate(job, wait, &mut || Ok(()))
+    }
+
+    fn poll_job_with_artifact_gate(
+        &mut self,
+        job: &mut RunningJob,
+        wait: Duration,
+        before_artifact: &mut dyn FnMut() -> Result<(), RuntimeError>,
+    ) -> Result<Option<ProviderEvent>, RuntimeError> {
+        match self.poll_job_inner(job, wait, before_artifact) {
             Ok(event) => Ok(event),
             Err(error) if !job.is_terminal() => {
                 let stage = match error {
@@ -949,6 +1016,7 @@ impl CodexRuntime {
         &mut self,
         job: &mut RunningJob,
         wait: Duration,
+        before_artifact: &mut dyn FnMut() -> Result<(), RuntimeError>,
     ) -> Result<Option<ProviderEvent>, RuntimeError> {
         if let Some(event) = job.events.pop_front() {
             return Ok(Some(event));
@@ -976,7 +1044,7 @@ impl CodexRuntime {
             let _ = self.cancel_job(job);
             return Ok(job.events.pop_front());
         }
-        self.process_job_notification(job, &message)?;
+        self.process_job_notification(job, &message, before_artifact)?;
         Ok(job.events.pop_front())
     }
 
@@ -1012,8 +1080,25 @@ impl CodexRuntime {
         &mut self,
         request: &ImageGenerationRequest,
         canceled: &AtomicBool,
-        mut on_event: F,
+        on_event: F,
     ) -> Result<GenerationOutcome, RuntimeError> {
+        self.generate_with_artifact_gate(request, canceled, || Ok(()), on_event)
+    }
+
+    /// The gate acquires local write/decode capacity before accepting a new
+    /// completed artifact. It never submits inference. A failure after remote
+    /// submission preserves an unknown outcome and cannot retry the turn.
+    pub fn generate_with_artifact_gate<G, F>(
+        &mut self,
+        request: &ImageGenerationRequest,
+        canceled: &AtomicBool,
+        mut before_artifact: G,
+        mut on_event: F,
+    ) -> Result<GenerationOutcome, RuntimeError>
+    where
+        G: FnMut() -> Result<(), RuntimeError>,
+        F: FnMut(ProviderEvent),
+    {
         if canceled.load(Ordering::Acquire) {
             return Err(RuntimeError::Interrupted);
         }
@@ -1023,7 +1108,11 @@ impl CodexRuntime {
             {
                 let _ = self.cancel_job(&mut job);
             }
-            match self.poll_job(&mut job, Duration::from_millis(100)) {
+            match self.poll_job_with_artifact_gate(
+                &mut job,
+                Duration::from_millis(100),
+                &mut before_artifact,
+            ) {
                 Ok(Some(event)) => on_event(event),
                 Ok(None) => {}
                 Err(error) => {
@@ -1065,6 +1154,7 @@ impl CodexRuntime {
         &mut self,
         job: &mut RunningJob,
         message: &Value,
+        before_artifact: &mut dyn FnMut() -> Result<(), RuntimeError>,
     ) -> Result<(), RuntimeError> {
         let method = message.get("method").and_then(Value::as_str).unwrap_or("");
         let params = &message["params"];
@@ -1119,7 +1209,9 @@ impl CodexRuntime {
                     let _ = self.cancel_job(job);
                 }
             }
-            "item/completed" => self.receive_image(job, &params["item"])?,
+            "item/completed" => {
+                self.receive_image_with_gate(job, &params["item"], before_artifact)?
+            }
             "turn/completed" => {
                 let turn = &params["turn"];
                 if turn.get("id").and_then(Value::as_str) != Some(job.turn_id.as_str()) {
@@ -1134,7 +1226,7 @@ impl CodexRuntime {
                         // do not publish a successful terminal job.
                         if let Some(items) = turn.get("items").and_then(Value::as_array) {
                             for item in items {
-                                self.receive_image(job, item)?;
+                                self.receive_image_with_gate(job, item, before_artifact)?;
                             }
                         }
                         if job.receipts.is_empty() && job.failure.is_some() {
@@ -1170,7 +1262,7 @@ impl CodexRuntime {
                                 item.get("type").and_then(Value::as_str) == Some("imageGeneration")
                                     && item.get("status").and_then(Value::as_str) == Some("failed")
                             }) {
-                                self.receive_image(job, item)?;
+                                self.receive_image_with_gate(job, item, before_artifact)?;
                             }
                         }
                         let reported_will_retry =
@@ -1207,7 +1299,17 @@ impl CodexRuntime {
         Ok(())
     }
 
+    #[cfg(test)]
     fn receive_image(&mut self, job: &mut RunningJob, item: &Value) -> Result<(), RuntimeError> {
+        self.receive_image_with_gate(job, item, &mut || Ok(()))
+    }
+
+    fn receive_image_with_gate(
+        &mut self,
+        job: &mut RunningJob,
+        item: &Value,
+        before_artifact: &mut dyn FnMut() -> Result<(), RuntimeError>,
+    ) -> Result<(), RuntimeError> {
         if item.get("type").and_then(Value::as_str) != Some("imageGeneration") {
             return Ok(());
         }
@@ -1234,6 +1336,14 @@ impl CodexRuntime {
         if job.cancellation_requested {
             return Ok(());
         }
+        let local_wait = Instant::now();
+        before_artifact()?;
+        // The remote timeout must not count time spent waiting for the caller's
+        // local write/decode reservation after an image has already arrived.
+        job.started = job
+            .started
+            .checked_add(local_wait.elapsed())
+            .ok_or(RuntimeError::Protocol)?;
         let artifact = write_image_artifact(item, &self.options.output_root)?;
         let receipt = ImageGenerationReceipt {
             requested_model: REQUESTED_IMAGE_MODEL.into(),
@@ -1768,6 +1878,56 @@ fn official_provider_configuration(value: &Value) -> bool {
         && config.get("chatgpt_base_url").and_then(Value::as_str) == Some("https://chatgpt.com")
 }
 
+fn configuration_fingerprint(value: &Value) -> Result<[u8; 32], RuntimeError> {
+    let bytes = serde_json::to_vec(&value["config"]).map_err(|_| RuntimeError::Protocol)?;
+    Ok(Sha256::digest(bytes).into())
+}
+
+fn check_plain_path(path: &Path) -> Result<(), RuntimeError> {
+    if !path.is_absolute()
+        || path
+            .components()
+            .any(|part| matches!(part, std::path::Component::ParentDir))
+    {
+        return Err(RuntimeError::InvalidInput);
+    }
+    for ancestor in path.ancestors() {
+        let metadata = match fs::symlink_metadata(ancestor) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(_) => return Err(RuntimeError::Unavailable),
+        };
+        let linked = metadata.file_type().is_symlink();
+        #[cfg(windows)]
+        let linked = {
+            use std::os::windows::fs::MetadataExt;
+            linked || metadata.file_attributes() & 0x400 != 0
+        };
+        if linked {
+            #[cfg(target_os = "macos")]
+            if matches!(ancestor.to_str(), Some("/var" | "/tmp" | "/etc")) {
+                let expected = Path::new("/private").join(ancestor.strip_prefix("/").unwrap());
+                if fs::canonicalize(ancestor).ok().as_deref() == Some(expected.as_path()) {
+                    continue;
+                }
+            }
+            return Err(RuntimeError::UnsafeToolConfiguration);
+        }
+    }
+    Ok(())
+}
+
+fn checked_output_root(path: &Path) -> Result<PathBuf, RuntimeError> {
+    check_plain_path(path)?;
+    fs::create_dir_all(path).map_err(|_| RuntimeError::Unavailable)?;
+    check_plain_path(path)?;
+    let canonical = fs::canonicalize(path).map_err(|_| RuntimeError::Unavailable)?;
+    if !canonical.is_dir() {
+        return Err(RuntimeError::InvalidArtifact);
+    }
+    Ok(canonical)
+}
+
 fn prepare_official_catalog(root: &Path) -> Result<PathBuf, RuntimeError> {
     let hash = format!("{:x}", Sha256::digest(OFFICIAL_CATALOG));
     if hash != OFFICIAL_CATALOG_SHA256 {
@@ -2213,6 +2373,185 @@ mod runtime_tests {
             transparent_background: None,
             mask_path: None,
             requires_confirmed_model: false,
+        }
+    }
+
+    fn reuse_config() -> Value {
+        let mut features = serde_json::Map::new();
+        for key in DISABLED_FEATURES {
+            features.insert((*key).into(), json!(false));
+        }
+        features.insert("image_generation".into(), json!(true));
+        features.insert("code_mode_host".into(), json!(true));
+        features.insert("multi_agent_v2".into(), json!(false));
+        json!({"config":{"model_provider":"openai","openai_base_url":OFFICIAL_NATIVE_CODEX_BASE,
+            "chatgpt_base_url":"https://chatgpt.com","forced_login_method":"chatgpt",
+            "web_search":"disabled","sandbox_mode":"read-only","analytics":{"enabled":false},
+            "feedback":{"enabled":false},"otel":{"exporter":"none","trace_exporter":"none",
+            "metrics_exporter":"none","log_user_prompt":false},"features":features,"agents":{"enabled":false},
+            "cloud":{"skills":{"enabled":false}},"skills":{"bundled":{"enabled":false},"include_instructions":false},
+            "orchestrator":{"mcp":{"enabled":false}},"mcp_servers":{}}})
+    }
+
+    #[test]
+    fn reused_transport_creates_new_isolated_thread_and_artifact_root() {
+        let png = STANDARD.encode(b"\x89PNG\r\n\x1a\nfixture");
+        let config = reuse_config();
+        let mut second_thread = fixture_thread_response();
+        second_thread["thread"]["id"] = json!("thread-2");
+        let (mut actor, sent, root) = fixture_actor(vec![
+            json!({"method":"turn/completed","params":{"threadId":"thread-1","turnId":"turn-1",
+                "turn":{"id":"turn-1","status":"completed","items":[{"type":"imageGeneration","id":"image-1","status":"completed","result":png}]}}}),
+            json!({"id":5,"result":config}),
+            json!({"id":6,"result":{"data":[],"nextCursor":null}}),
+            json!({"id":7,"result":{"account":{"type":"chatgpt","planType":"pro"}}}),
+            json!({"id":8,"result":second_thread}),
+            json!({"id":9,"result":{"data":[],"nextCursor":null}}),
+            json!({"id":10,"result":{"turn":{"id":"turn-2","status":"inProgress"}}}),
+            json!({"method":"item/completed","params":{"threadId":"thread-1","turnId":"turn-1",
+                "item":{"type":"imageGeneration","id":"late-old-image","status":"completed","result":png}}}),
+            json!({"method":"turn/completed","params":{"threadId":"thread-2","turnId":"turn-2",
+                "turn":{"id":"turn-2","status":"completed","items":[{"type":"imageGeneration","id":"image-2","status":"completed","result":png}]}}}),
+        ]);
+        actor.options.configuration_fingerprint = Some(configuration_fingerprint(&config).unwrap());
+        let first = actor
+            .generate(&fixture_request(), &AtomicBool::new(false), |_| {})
+            .unwrap();
+        let next_root = root.join("second-job");
+        assert!(actor.prepare_image_job(&next_root).unwrap());
+        let second = actor
+            .generate(&fixture_request(), &AtomicBool::new(false), |_| {})
+            .unwrap();
+        assert_eq!(first.receipts.len(), 1);
+        assert_eq!(second.receipts.len(), 1);
+        assert_eq!(first.receipts[0].image_path.parent(), Some(root.as_path()));
+        assert_eq!(
+            second.receipts[0].image_path.parent(),
+            Some(next_root.canonicalize().unwrap().as_path())
+        );
+        let calls = sent.lock().unwrap();
+        let threads: Vec<_> = calls
+            .iter()
+            .filter(|call| call["method"] == "thread/start")
+            .collect();
+        assert_eq!(threads.len(), 2);
+        assert!(threads
+            .iter()
+            .all(|call| call["params"]["ephemeral"] == true
+                && call["params"]["sandbox"] == "read-only"));
+        assert_eq!(
+            calls
+                .iter()
+                .filter(|call| call["method"] == "account/read")
+                .count(),
+            2
+        );
+        assert_eq!(
+            calls
+                .iter()
+                .filter(|call| call["method"] == "turn/start")
+                .count(),
+            2
+        );
+        drop(calls);
+        drop(actor);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn reuse_rechecks_authentication_and_never_submits_after_account_logout() {
+        let config = reuse_config();
+        let (mut actor, sent, root) = fixture_actor(vec![]);
+        let (tx, rx) = mpsc::sync_channel(4);
+        for message in [
+            json!({"id":1,"result":config}),
+            json!({"id":2,"result":{"data":[]}}),
+            json!({"id":3,"result":{"account":null}}),
+        ] {
+            tx.send(Ok(message)).unwrap();
+        }
+        drop(tx);
+        actor.process.messages = rx;
+        actor.status.live_generation_proven = true;
+        assert!(actor
+            .prepare_image_job(&root.join("logged-out-job"))
+            .unwrap());
+        assert!(matches!(
+            actor.generate(&fixture_request(), &AtomicBool::new(false), |_| {}),
+            Err(RuntimeError::AuthenticationRequired)
+        ));
+        assert!(!sent
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|call| call["method"] == "turn/start"));
+        drop(actor);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn changed_reuse_configuration_invalidates_without_inference() {
+        let config = reuse_config();
+        let (mut actor, sent, root) = fixture_actor(vec![]);
+        actor.options.configuration_fingerprint = Some(configuration_fingerprint(&config).unwrap());
+        let mut changed = config;
+        changed["config"]["features"]["shell_tool"] = json!(true);
+        let (tx, rx) = mpsc::sync_channel(1);
+        tx.send(Ok(json!({"id":1,"result":changed}))).unwrap();
+        drop(tx);
+        actor.process.messages = rx;
+        assert!(!actor.prepare_image_job(&root.join("new-job")).unwrap());
+        assert!(actor.poisoned);
+        assert!(!sent
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|call| call["method"] == "turn/start"));
+        drop(actor);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn artifact_gate_precedes_writes_deduplicates_items_and_failure_never_retries() {
+        for fail in [false, true] {
+            let image = json!({"type":"imageGeneration","id":"image-1","status":"completed","result":STANDARD.encode(b"\x89PNG\r\n\x1a\nfixture")});
+            let (mut actor, sent, root) = fixture_actor(vec![
+                json!({"method":"item/completed","params":{"threadId":"thread-1","turnId":"turn-1","item":image}}),
+                json!({"method":"turn/completed","params":{"threadId":"thread-1","turnId":"turn-1","turn":{"id":"turn-1","status":"completed","items":[image]}}}),
+            ]);
+            let mut gates = 0;
+            let outcome = actor.generate_with_artifact_gate(
+                &fixture_request(),
+                &AtomicBool::new(false),
+                || {
+                    gates += 1;
+                    assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+                    if fail {
+                        Err(RuntimeError::Interrupted)
+                    } else {
+                        Ok(())
+                    }
+                },
+                |_| {},
+            );
+            assert_eq!(gates, 1);
+            if fail {
+                assert!(matches!(outcome, Err(RuntimeError::OutcomeUnknown { .. })));
+                assert_eq!(fs::read_dir(&root).unwrap().count(), 0);
+                assert!(actor.poisoned);
+            } else {
+                assert_eq!(outcome.unwrap().receipts.len(), 1);
+            }
+            assert_eq!(
+                sent.lock()
+                    .unwrap()
+                    .iter()
+                    .filter(|call| call["method"] == "turn/start")
+                    .count(),
+                1
+            );
+            drop(actor);
+            fs::remove_dir_all(root).unwrap();
         }
     }
 

@@ -4,6 +4,227 @@ use asset_providers::runtime::{CodexRuntime, RuntimeOptions};
 use asset_providers::REQUESTED_IMAGE_MODEL;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::io::{Read as _, Write as _};
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReferenceCacheReceipt {
+    schema_version: u32,
+    source_sha256: String,
+    converter_sha256: String,
+    image_sha256: String,
+    image_bytes: u64,
+}
+
+fn reference_plain_path(path: &Path) -> Result<()> {
+    if !path.is_absolute()
+        || path
+            .components()
+            .any(|part| matches!(part, std::path::Component::ParentDir))
+    {
+        bail!("참고 이미지 캐시는 절대 경로만 사용할 수 있습니다.");
+    }
+    for ancestor in path.ancestors() {
+        let metadata = match fs::symlink_metadata(ancestor) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(error.into()),
+        };
+        let linked = metadata.file_type().is_symlink();
+        #[cfg(windows)]
+        let linked = {
+            use std::os::windows::fs::MetadataExt;
+            linked || metadata.file_attributes() & 0x400 != 0
+        };
+        if linked {
+            #[cfg(target_os = "macos")]
+            if matches!(ancestor.to_str(), Some("/var" | "/tmp" | "/etc")) {
+                let expected = Path::new("/private").join(ancestor.strip_prefix("/").unwrap());
+                if fs::canonicalize(ancestor).ok().as_deref() == Some(expected.as_path()) {
+                    continue;
+                }
+            }
+            bail!("참고 이미지 경로에는 링크·reparse point를 사용할 수 없습니다.");
+        }
+    }
+    Ok(())
+}
+
+fn copy_new_reference(source: &Path, destination: &Path) -> Result<()> {
+    reference_plain_path(source)?;
+    reference_plain_path(destination)?;
+    let mut input = fs::File::open(source)?;
+    let mut output = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(destination)?;
+    std::io::copy(&mut input, &mut output)?;
+    output.sync_all()?;
+    reference_plain_path(destination)?;
+    Ok(())
+}
+
+fn reference_owned_location(root: &Path, path: &Path) -> Result<()> {
+    reference_plain_path(path)?;
+    let mut ancestor = path;
+    let mut missing = Vec::new();
+    while !ancestor.try_exists()? {
+        missing.push(
+            ancestor
+                .file_name()
+                .context("참고 작업 폴더를 확인해 주세요.")?
+                .to_os_string(),
+        );
+        ancestor = ancestor
+            .parent()
+            .context("참고 작업 폴더의 상위 경로가 없습니다.")?;
+    }
+    let mut resolved = ancestor.canonicalize()?;
+    for part in missing.into_iter().rev() {
+        resolved.push(part);
+    }
+    if !resolved.starts_with(root.canonicalize()?) {
+        bail!("참고 이미지 작업 폴더가 프로젝트 밖입니다.");
+    }
+    Ok(())
+}
+
+fn reference_converter_identity() -> String {
+    let mut hash = Sha256::new();
+    hash.update(b"reference-lossless-png-full-resolution-v1");
+    hash.update(include_bytes!(
+        "../../../../../crates/image-pipeline/src/lib.rs"
+    ));
+    hash.update(include_bytes!("../../../../../Cargo.lock"));
+    format!("{:x}", hash.finalize())
+}
+
+fn verified_reference_cache(
+    directory: &Path,
+    source_sha256: &str,
+    converter_sha256: &str,
+) -> Result<Option<ReferenceCacheReceipt>> {
+    let image = directory.join("reference.png");
+    let receipt = directory.join("receipt.json");
+    reference_plain_path(&image)?;
+    reference_plain_path(&receipt)?;
+    let file = match fs::File::open(&receipt) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+    };
+    let mut bytes = Vec::new();
+    file.take(4097).read_to_end(&mut bytes)?;
+    if bytes.len() > 4096 {
+        return Ok(None);
+    }
+    let receipt: ReferenceCacheReceipt = match serde_json::from_slice(&bytes) {
+        Ok(receipt) => receipt,
+        Err(_) => return Ok(None),
+    };
+    if receipt.schema_version != 1
+        || receipt.source_sha256 != source_sha256
+        || receipt.converter_sha256 != converter_sha256
+        || receipt.image_bytes == 0
+        || receipt.image_bytes > raster::MAX_FILE_BYTES
+    {
+        return Ok(None);
+    }
+    let Ok((hash, bytes)) = asset_core::sha256_file(&image) else {
+        return Ok(None);
+    };
+    if hash != receipt.image_sha256 || bytes != receipt.image_bytes {
+        return Ok(None);
+    }
+    Ok(Some(receipt))
+}
+
+fn cached_reference_image(
+    root: &Path,
+    source: &Path,
+    artifact: &Artifact,
+) -> Result<(PathBuf, ReferenceCacheReceipt)> {
+    reference_plain_path(root)?;
+    let root = root.canonicalize()?;
+    let converter = reference_converter_identity();
+    let key = format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&json!([artifact.sha256, converter]))?)
+    );
+    let directory = root.join("cache/reference-normalized").join(key);
+    reference_plain_path(&directory)?;
+    fs::create_dir_all(&directory)?;
+    reference_plain_path(&directory)?;
+    if !directory.canonicalize()?.starts_with(&root) {
+        bail!("참고 캐시 경로가 프로젝트 밖입니다.");
+    }
+    let lock_path = directory.join("entry.lock");
+    reference_plain_path(&lock_path)?;
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(&lock_path)?;
+    reference_plain_path(&lock_path)?;
+    let start = Instant::now();
+    loop {
+        match lock.try_lock() {
+            Ok(()) => break,
+            Err(std::fs::TryLockError::WouldBlock) if start.elapsed() < Duration::from_secs(30) => {
+                thread::sleep(Duration::from_millis(20))
+            }
+            Err(error) => bail!("참고 이미지 캐시를 잠글 수 없습니다: {error}"),
+        }
+    }
+    let image = directory.join("reference.png");
+    if let Some(receipt) = verified_reference_cache(&directory, &artifact.sha256, &converter)? {
+        return Ok((image, receipt));
+    }
+    // Only app-owned cache entries are repaired, and damaged bytes are retained
+    // under a unique quarantine name. User originals never move or change.
+    for name in ["reference.png", "receipt.json"] {
+        let path = directory.join(name);
+        reference_plain_path(&path)?;
+        if path.try_exists()? {
+            if !fs::symlink_metadata(&path)?.is_file() {
+                bail!("참고 캐시 파일 형식을 확인해 주세요.");
+            }
+            fs::rename(
+                &path,
+                directory.join(format!("invalid-{}-{name}", Uuid::new_v4())),
+            )?;
+        }
+    }
+    let repo = Repository::open(&root)?;
+    repo.verify_artifact(artifact)?;
+    let temporary = directory.join(format!("pending-{}.png", Uuid::new_v4()));
+    raster::convert(source, &temporary, "png")?;
+    repo.verify_artifact(artifact)?;
+    let (hash, bytes) = asset_core::sha256_file(&temporary)?;
+    copy_new_reference(&temporary, &image)?;
+    if asset_core::sha256_file(&image)? != (hash.clone(), bytes) {
+        bail!("정규화 참고 이미지의 저장 바이트가 다릅니다.");
+    }
+    let receipt = ReferenceCacheReceipt {
+        schema_version: 1,
+        source_sha256: artifact.sha256.clone(),
+        converter_sha256: converter,
+        image_sha256: hash,
+        image_bytes: bytes,
+    };
+    let mut output = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(directory.join("receipt.json"))?;
+    output.write_all(&serde_json::to_vec(&receipt)?)?;
+    output.sync_all()?;
+    let receipt =
+        verified_reference_cache(&directory, &artifact.sha256, &receipt.converter_sha256)?
+            .context("참고 캐시의 최종 해시 검증에 실패했습니다.")?;
+    repo.verify_artifact(artifact)?;
+    Ok((image, receipt))
+}
 
 const TEMPLATES: [&str; 9] = [
     "crate",
@@ -176,7 +397,10 @@ pub(super) fn copy_reference_images(
     let repo = Repository::open(root)?;
     let project = repo.project()?;
     let directory = work.join("reference-images");
+    reference_owned_location(root, &directory)?;
     fs::create_dir_all(&directory)?;
+    reference_plain_path(&directory)?;
+    reference_owned_location(root, &directory)?;
     let mut result = Vec::new();
     for (n, f) in files.iter().enumerate() {
         let asset = project
@@ -204,7 +428,13 @@ pub(super) fn copy_reference_images(
         if copy.exists() {
             bail!("참고 이미지 작업 공간은 새 폴더여야 합니다.")
         }
-        raster::convert(&source, &copy, "png")?;
+        let (cached, receipt) = cached_reference_image(root, &source, artifact)?;
+        copy_new_reference(&cached, &copy)?;
+        if asset_core::sha256_file(&copy)? != (receipt.image_sha256.clone(), receipt.image_bytes)
+            || asset_core::sha256_file(&cached)? != (receipt.image_sha256, receipt.image_bytes)
+        {
+            bail!("참고 이미지 캐시 또는 작업 사본이 변경되었습니다.");
+        }
         repo.verify_artifact(artifact)?;
         result.push(copy);
     }
@@ -531,11 +761,14 @@ mod tests {
                     requests: Mutex::new(()),
                     io: Mutex::new(()),
                     dispatch: Mutex::new(()),
+                    dispatch_epoch: Mutex::new(0),
+                    dispatch_wake: std::sync::Condvar::new(),
                     initialize: Mutex::new(()),
                     runners: Mutex::new(BTreeMap::new()),
                     stop: AtomicBool::new(false),
                     limits: ResourceLimits::default(),
                     provider_runtime: Mutex::new(None),
+                    generation_runtime: Mutex::new(None),
                     provider_connection: Mutex::new(
                         json!({"ready":true,"reasoningModel":"test-admission-only","runtimeVersion":"test-admission-only"}),
                     ),
@@ -611,6 +844,154 @@ mod tests {
             self.backend.shutdown();
             let _ = fs::remove_dir_all(&self.directory);
         }
+    }
+
+    fn cache_reference(f: &Fixture) -> (Value, PathBuf, (String, u64)) {
+        let source = f.directory.join("original-reference.png");
+        image::RgbaImage::from_pixel(9, 5, image::Rgba([50, 140, 210, 200]))
+            .save(&source)
+            .unwrap();
+        let before = asset_core::sha256_file(&source).unwrap();
+        f.backend
+            .import_raster(&source, AssetSource::Import)
+            .unwrap();
+        let project = Repository::open(&f.root).unwrap().project().unwrap();
+        let refs = references(&project, &[project.assets[0].id.clone()]).unwrap();
+        (
+            reference_artifacts(&project, &refs).unwrap(),
+            source,
+            before,
+        )
+    }
+
+    #[test]
+    fn normalized_reference_cache_reuses_verified_bytes_and_repairs_damage() {
+        let f = Fixture::new();
+        let (files, source, before) = cache_reference(&f);
+        let first =
+            copy_reference_images(&f.root, &files, &f.root.join("cache/ref-first")).unwrap();
+        let expected = asset_core::sha256_file(&first[0]).unwrap();
+        let cache_root = f.root.join("cache/reference-normalized");
+        let entries: Vec<_> = fs::read_dir(&cache_root)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect();
+        assert_eq!(entries.len(), 1);
+        let entry = &entries[0];
+        let cached = entry.join("reference.png");
+        let initial_receipt = fs::read(entry.join("receipt.json")).unwrap();
+        let cache_modified = fs::metadata(&cached).unwrap().modified().unwrap();
+        let second =
+            copy_reference_images(&f.root, &files, &f.root.join("cache/ref-second")).unwrap();
+        assert_eq!(asset_core::sha256_file(&second[0]).unwrap(), expected);
+        assert_eq!(
+            fs::metadata(&cached).unwrap().modified().unwrap(),
+            cache_modified
+        );
+        assert_eq!(
+            fs::read(entry.join("receipt.json")).unwrap(),
+            initial_receipt
+        );
+        fs::write(&cached, b"damaged app-owned cache bytes").unwrap();
+        let repaired =
+            copy_reference_images(&f.root, &files, &f.root.join("cache/ref-repaired")).unwrap();
+        assert_eq!(asset_core::sha256_file(&repaired[0]).unwrap(), expected);
+        assert_eq!(asset_core::sha256_file(&cached).unwrap(), expected);
+        assert!(fs::read_dir(entry).unwrap().any(|item| item
+            .unwrap()
+            .file_name()
+            .to_string_lossy()
+            .starts_with("invalid-")));
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
+        // A cached output never bypasses the original's current integrity gate.
+        let repo = Repository::open(&f.root).unwrap();
+        let project = repo.project().unwrap();
+        let artifact = &project.assets[0].versions[0].artifacts[0];
+        fs::write(
+            repo.artifact_path(&artifact.path).unwrap(),
+            b"changed original project bytes",
+        )
+        .unwrap();
+        let work = f.root.join("cache/ref-source-changed");
+        assert!(copy_reference_images(&f.root, &files, &work).is_err());
+        assert!(!work.join("reference-images/reference-0.png").exists());
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
+    }
+
+    #[test]
+    fn concurrent_reference_cache_publish_and_copies_preserve_single_receipt() {
+        let f = Fixture::new();
+        let (files, source, before) = cache_reference(&f);
+        let barrier = Arc::new(std::sync::Barrier::new(4));
+        let handles: Vec<_> = (0..4)
+            .map(|n| {
+                let root = f.root.clone();
+                let files = files.clone();
+                let barrier = barrier.clone();
+                thread::spawn(move || {
+                    barrier.wait();
+                    let result = copy_reference_images(
+                        &root,
+                        &files,
+                        &root.join(format!("cache/ref-concurrent-{n}")),
+                    )?;
+                    asset_core::sha256_file(&result[0])
+                })
+            })
+            .collect();
+        let actual: Vec<_> = handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap().unwrap())
+            .collect();
+        assert!(actual.iter().all(|hash| hash == &actual[0]));
+        assert_eq!(
+            fs::read_dir(f.root.join("cache/reference-normalized"))
+                .unwrap()
+                .count(),
+            1
+        );
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
+    }
+
+    #[test]
+    fn reference_copies_reject_outside_work_and_existing_destinations() {
+        let f = Fixture::new();
+        let (files, source, before) = cache_reference(&f);
+        let outside = f.directory.join("outside-work");
+        assert!(copy_reference_images(&f.root, &files, &outside).is_err());
+        assert!(!outside.join("reference-images/reference-0.png").exists());
+        let work = f.root.join("cache/ref-existing");
+        let first = copy_reference_images(&f.root, &files, &work).unwrap();
+        let copy_hash = asset_core::sha256_file(&first[0]).unwrap();
+        assert!(copy_reference_images(&f.root, &files, &work).is_err());
+        assert_eq!(asset_core::sha256_file(&first[0]).unwrap(), copy_hash);
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
+    }
+
+    #[cfg(any(windows, unix))]
+    #[test]
+    fn reference_cache_rejects_symlink_or_reparse_directory() {
+        let f = Fixture::new();
+        let (files, source, before) = cache_reference(&f);
+        let outside = f.directory.join("outside-cache");
+        fs::create_dir_all(&outside).unwrap();
+        let link = f.root.join("cache/reference-normalized");
+        fs::create_dir_all(link.parent().unwrap()).unwrap();
+        #[cfg(windows)]
+        let created = std::os::windows::fs::symlink_dir(&outside, &link);
+        #[cfg(unix)]
+        let created = std::os::unix::fs::symlink(&outside, &link);
+        if let Err(error) = created {
+            #[cfg(windows)]
+            if error.raw_os_error() == Some(1314) {
+                eprintln!("SKIPPED symlink creation: privilege unavailable");
+                return;
+            }
+            panic!("cannot create boundary fixture: {error}");
+        }
+        assert!(copy_reference_images(&f.root, &files, &f.root.join("cache/ref-linked")).is_err());
+        assert_eq!(fs::read_dir(&outside).unwrap().count(), 0);
+        assert_eq!(asset_core::sha256_file(&source).unwrap(), before);
     }
 
     #[test]
