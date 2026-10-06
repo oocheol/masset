@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.11",
+  "platform": "darwin-aarch64",
+  "packagedAt": "2026-10-06T01:03:01.741Z",
+  "status": "built-with-execution-validation-skipped",
+  "nativeSourceBaselineCommit": "ccfab6eef2306acdf478cbf55ce3e1fef0fc0693",
+  "nativeCodeAdjustments": [
+    "Allow the bounded 256 KiB common Windows/Mac runtime inventory during native skill installation."
+  ],
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.11",
+  "windowsReleasePreserved": "0.1.11",
+  "package": {
+    "dmg": {
+      "filename": "AssetStudio_0.1.11_macos-arm64.dmg",
+      "bytes": 15387409,
+      "sha256": "e77d96487b5bccdba425eb25c82a09a2957b705ac1e586418085b7561dad4d48"
+    },
+    "installer": {
+      "filename": "install-macos.sh",
+      "bytes": 6285,
+      "sha256": "17e0af5b2e3e6142e20f4d99089abbf2b48a523124a3f60d8c90bdd2a561351b"
+    },
+    "codexPlugin": {
+      "filename": "AssetStudio_0.1.11_codex-plugin-windows-macos.zip",
+      "bytes": 75683,
+      "sha256": "1cb629977685d5587bc55d27de0160fba6c284bb81704235cd56e23574af9283"
+    },
+    "standaloneCli": {
+      "filename": "AssetStudioCLI-0.1.11-macos-arm64.zip",
+      "bytes": 6816741,
+      "sha256": "e9b65653a117aabce02443b7a77352ea1e7e0bb15248bac236a5ff7d7054014f"
+    },
+    "standaloneCliInventory": {
+      "filename": "native-cli-macos-arm64.json",
+      "bytes": 90588,
+      "sha256": "8fbdf65cc998babe2a16857cc1d6f9faf073450d2fe136ae3adb13f1cba0735c"
+    },
+    "updater": {
+      "filename": "AssetStudio_0.1.11_macos-arm64.app.tar.gz",
+      "bytes": 15738556,
+      "sha256": "fbf3e56641f301ce94d9a1c35a936be6babfd555cd99853107db78b7bbbbf673"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1172,
+      "sha256": "d22b3c9be2acf5428d774f87a2be476015864a665fc6b4b138267aa5ed1fe3e8"
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 998,
+      "sha256": "bb0c0e23dfe03843df9443daffb42b4ddb23064fd3f080e61e52c2e886961c28"
+    }
+  },
+  "validation": {
+    "skipReason": "User requested omission of execution validation because the Mac was locked.",
+    "additionalUnitTestsRun": false,
+    "nativeExecutionVerified": false,
+    "skillLoaderInstallationTested": false,
+    "dmgInstallationTested": false,
+    "nativeWindowTested": false,
+    "updaterReplacementLifecycleTested": false,
+    "newGptGenerationTested": false,
+    "local3dPreparationTested": false,
+    "newWindowsBuildPerformed": false,
+    "publicDownloadsReverified": false,
+    "gameEndToEndCompletionTested": false
+  },
+  "boundaries": {
+    "appleDeveloperIdSigned": false,
+    "appleNotarized": false,
+    "appAdHocSigned": true,
+    "standaloneCliAdHocSigned": true,
+    "updateSignedWithProjectKey": true,
+    "intelMacDistributed": false,
+    "paidApiFallback": false
+  }
+}

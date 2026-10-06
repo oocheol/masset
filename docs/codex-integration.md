@@ -1,6 +1,6 @@
 # Codex에서 게임을 만들며 에셋 제작하기
 
-**0.1.11 스킬은 Windows x64에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows 앱도 0.1.11로 배포하며 Mac은 기존 0.1.10을 유지합니다. 독립 Mac 패키지는 별도 빌드·검증 후 추가합니다.
+**0.1.11 공통 스킬은 Windows x64와 Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows와 Mac 앱도 0.1.11로 제공합니다. 공통 스킬 ZIP에는 Mac 독립 CLI의 고정 파일 목록도 포함됩니다. Mac 실행 검증은 잠금 상태로 생략했으며 [배포 기록](releases/v0.1.11-macos.md)에 명시합니다.
 
 | 방법 | 설치와 사용 | 선택 |
 | --- | --- | --- |
@@ -15,10 +15,10 @@
 
 새 사용자는 [스킬 설치 안내](skill-first-setup.md)에 따라 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하고 새 Codex 작업에서 호출합니다. 앱·Python·Node·Rust가 없어도 운영체제 기본 도구로 준비합니다.
 
-기존 Mac 0.1.10 앱 사용자는 제작 홈의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령으로 기존 스킬을 설치할 수도 있습니다. 앱에 포함된 이전 스킬을 사용하는 경로입니다.
+Mac 0.1.11 앱 사용자는 제작 홈의 **Codex 스킬 설치** 버튼이나 다음 CLI 명령으로 공통 스킬을 설치할 수도 있습니다. 앱에 포함된 CLI 경로를 함께 등록합니다.
 
 ```sh
-"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" install-codex
+"$HOME/Applications/Asset Studio 0.1.11/Asset Studio.app/Contents/MacOS/asset-cli" install-codex
 ```
 
 위 명령은 터미널 설치의 기본 앱 위치입니다. 다른 폴더에 설치했다면 해당 앱의 `Contents/MacOS/asset-cli` 경로를 사용하세요.
@@ -33,11 +33,11 @@ Codex에 다음처럼 요청합니다.
 
 ## CLI 사용
 
-0.1.11 독립 CLI는 스킬이 검증·설치한 경로와 `--resources /absolute/runtime/resources`로 호출합니다. 아래는 기존 Mac 0.1.10 앱에 포함된 CLI의 호출 예입니다. 독립 개발 빌드에는 `--resources /absolute/masset`를 전달합니다.
+0.1.11 독립 CLI는 스킬이 검증·설치한 경로와 `--resources /absolute/runtime/resources`로 호출합니다. 아래는 Mac 0.1.11 앱에 포함된 CLI의 호출 예입니다. 독립 개발 빌드에는 `--resources /absolute/masset`를 전달합니다.
 
 ```sh
-"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" doctor --check-gpt
-"$HOME/Applications/Asset Studio 0.1.10/Asset Studio.app/Contents/MacOS/asset-cli" produce \
+"$HOME/Applications/Asset Studio 0.1.11/Asset Studio.app/Contents/MacOS/asset-cli" doctor --check-gpt
+"$HOME/Applications/Asset Studio 0.1.11/Asset Studio.app/Contents/MacOS/asset-cli" produce \
   --game-root /absolute/MyGame \
   --manifest /absolute/assets.json \
   --request-id 5130c051-cd41-4eaa-9f91-caa1e9808131 --allow-gpt

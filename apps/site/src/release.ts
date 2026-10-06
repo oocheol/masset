@@ -22,23 +22,23 @@ export type MacRelease = {
 // Native package metadata comes from the shipping bytes; QA scope is in the release record.
 export const macReleases: MacRelease[] = [
   {
-    "version": "0.1.10",
+    "version": "0.1.11",
     "architecture": "arm64",
     "label": "Apple Silicon",
-    "filename": "AssetStudio_0.1.10_macos-arm64.dmg",
-    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.10/AssetStudio_0.1.10_macos-arm64.dmg",
-    "bytes": 15111194,
-    "sha256": "e47fe42b39539f0d883251c1b6a5e944aa2c92f790f37eb3ba34d6e5ce778974"
+    "filename": "AssetStudio_0.1.11_macos-arm64.dmg",
+    "downloadUrl": "https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_macos-arm64.dmg",
+    "bytes": 15387409,
+    "sha256": "e77d96487b5bccdba425eb25c82a09a2957b705ac1e586418085b7561dad4d48"
   }
 ];
 
 // The script itself is verified before it runs; its DMG checks are additional.
-export const macInstallerSha256 = '02bb8da6d5405ac0fc66bf8d0c96f240495bcd195fdd59b915b4d043ce659572';
+export const macInstallerSha256 = '17e0af5b2e3e6142e20f4d99089abbf2b48a523124a3f60d8c90bdd2a561351b';
 export const macInstallCommand = `(
   set -eu
   install_tmp="$(mktemp -d)"
   trap 'rm -rf "$install_tmp"' EXIT
-  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.10/install-macos.sh -o "$install_tmp/install-macos.sh"
+  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.11/install-macos.sh -o "$install_tmp/install-macos.sh"
   printf '%s  %s\\n' '${macInstallerSha256}' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
   bash "$install_tmp/install-macos.sh"
 )`;

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.11 — Mac app and standalone Codex skill (2026-10-06)
+
+- Built the latest master for Apple Silicon, including the standalone asset CLI and consented preparation of missing local tools.
+- Added a Mac DMG, a signed updater, a standalone CLI ZIP and a common Windows/Mac skill ZIP with pinned platform inventories.
+- Preserved the published Windows 0.1.11 native artifacts and update channel.
+- Skipped Mac execution, loader installation and updater replacement validation at the user's request because the Mac was locked.
+
 ## 0.1.10 — Mac Codex asset workflow (2026-10-06)
 
 - Added a bundled native CLI and installable Codex skill for individual assets during game development, with a portable skill/plugin ZIP.

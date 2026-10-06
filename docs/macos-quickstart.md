@@ -1,19 +1,19 @@
 # Mac 설치와 앱 내부 업데이트
 
-Apple Silicon(M 시리즈)용 정식 배포 버전은 **0.1.10**입니다. 게임 설명과 프로젝트 루트를 연결해 개별 2D·3D 에셋을 제작하고 결과를 검수합니다. GPT 구독 연결·공식 Codex 준비·로컬 TripoSR와 Blender 변환·앱 내부 업데이트를 지원하며 Codex 스킬·네이티브 CLI도 포함합니다. [배포 기록](releases/v0.1.10-macos.md)을 확인하세요. Apple 개발자 계정 없이 설치할 수 있으며 Intel 빌드는 제공하지 않습니다.
+Apple Silicon(M 시리즈)용 정식 배포 버전은 **0.1.11**입니다. 게임 설명과 프로젝트 루트를 연결해 개별 2D·3D 에셋을 제작하고 결과를 검수합니다. GPT 구독 연결·공식 Codex 준비·로컬 TripoSR와 Blender 변환·앱 내부 업데이트를 지원하며 Codex 스킬·네이티브 CLI도 포함합니다. [배포 기록](releases/v0.1.11-macos.md)을 확인하세요. Apple 개발자 계정 없이 설치할 수 있으며 Intel 빌드는 제공하지 않습니다.
 
 ## Apple 계정 없이 터미널로 설치
 
-[공식 README의 Mac 설치 명령](https://github.com/oocheol/masset#mac-설치)을 터미널에 붙여 넣으세요. 명령은 설치 스크립트의 SHA-256을 먼저 확인한 뒤 실행합니다. 안내를 읽고 `y`를 입력하면 공식 0.1.10 DMG의 크기·SHA-256, 앱 버전·식별자·Apple Silicon 아키텍처와 ad-hoc 서명 무결성을 확인해 설치합니다.
+[공식 README의 Mac 설치 명령](https://github.com/oocheol/masset#mac-설치)을 터미널에 붙여 넣으세요. 명령은 설치 스크립트의 SHA-256을 먼저 확인한 뒤 실행합니다. 안내를 읽고 `y`를 입력하면 공식 0.1.11 DMG의 크기·SHA-256, 앱 버전·식별자·Apple Silicon 아키텍처와 ad-hoc 서명 무결성을 확인해 설치합니다.
 
-기본 설치 위치는 **`~/Applications/Asset Studio 0.1.10/Asset Studio.app`**입니다. 관리자 암호와 Apple 계정은 필요하지 않습니다. 같은 위치에 앱이 있으면 덮어쓰지 않고 중단합니다. 기존 0.1.3 앱과 프로젝트는 그대로 두고 새 앱을 설치하므로, 이전 앱을 종료한 뒤 새 앱을 사용하세요. 새 앱도 기존의 로컬 프로젝트 저장 위치를 사용합니다.
+기본 설치 위치는 **`~/Applications/Asset Studio 0.1.11/Asset Studio.app`**입니다. 관리자 암호와 Apple 계정은 필요하지 않습니다. 같은 위치에 앱이 있으면 덮어쓰지 않고 중단합니다. 기존 0.1.3 앱과 프로젝트는 그대로 두고 새 앱을 설치하므로, 이전 앱을 종료한 뒤 새 앱을 사용하세요. 새 앱도 기존의 로컬 프로젝트 저장 위치를 사용합니다.
 
-소스를 먼저 읽으려면 [설치 스크립트](https://github.com/oocheol/masset/releases/download/v0.1.10/install-macos.sh)를 확인하세요. 설치 스크립트는 GitHub에서 내려받은 검증된 DMG를 새 앱으로 복사하며, 브라우저의 quarantine 정보를 새 사본에 전달하지 않습니다. GitHub 배포나 이 설치 방법이 Apple 공증을 부여하지는 않습니다.
+소스를 먼저 읽으려면 [설치 스크립트](https://github.com/oocheol/masset/releases/download/v0.1.11/install-macos.sh)를 확인하세요. 설치 스크립트는 GitHub에서 내려받은 검증된 DMG를 새 앱으로 복사하며, 브라우저의 quarantine 정보를 새 사본에 전달하지 않습니다. GitHub 배포나 이 설치 방법이 Apple 공증을 부여하지는 않습니다.
 
 ## 브라우저로 DMG 설치
 
-1. [공식 0.1.10 DMG](https://github.com/oocheol/masset/releases/download/v0.1.10/AssetStudio_0.1.10_macos-arm64.dmg)를 받습니다. 릴리스의 SHA-256과 비교하세요.
-2. Finder에서 홈 폴더의 `Applications` 안에 `Asset Studio 0.1.10` 폴더를 만듭니다. DMG의 **Asset Studio.app**을 그 폴더로 복사합니다. DMG 안에서 직접 실행하면 업데이트할 수 없습니다.
+1. [공식 0.1.11 DMG](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_macos-arm64.dmg)를 받습니다. 릴리스의 SHA-256과 비교하세요.
+2. Finder에서 홈 폴더의 `Applications` 안에 `Asset Studio 0.1.11` 폴더를 만듭니다. DMG의 **Asset Studio.app**을 그 폴더로 복사합니다. DMG 안에서 직접 실행하면 업데이트할 수 없습니다.
 3. 복사한 앱을 실행합니다. 기존 앱과 프로젝트·원본 파일은 삭제할 필요가 없습니다.
 
 ## 첫 실행 경고
@@ -40,7 +40,7 @@ Apple Silicon(M 시리즈)용 정식 배포 버전은 **0.1.10**입니다. 게�
 
 ## 사용 범위와 개발 빌드
 
-Node.js·Rust 개발 도구와 Windows WebView2는 앱 사용에 필요하지 않습니다. macOS 12.0은 설정상 최소값이며, 모든 Mac·최소 OS의 실행을 보장하지 않습니다. 이전 앱의 네이티브 검증은 [0.1.8 기록](releases/v0.1.8-macos.md), 0.1.10의 배포 범위는 [현재 배포 기록](releases/v0.1.10-macos.md)을 확인하세요. 요청에 따라 최종 패키지의 추가 설치·화면 테스트는 생략했습니다.
+Node.js·Rust 개발 도구와 Windows WebView2는 앱 사용에 필요하지 않습니다. macOS 12.0은 설정상 최소값이며, 모든 Mac·최소 OS의 실행을 보장하지 않습니다. 이전 앱의 네이티브 검증은 [0.1.8 기록](releases/v0.1.8-macos.md), 0.1.11의 배포 범위는 [현재 배포 기록](releases/v0.1.11-macos.md)을 확인하세요. 잠금 상태로 최종 패키지의 설치·화면·업데이트 교체 실행 검증은 생략했습니다.
 
 ### GPT 구독 연결
 
@@ -53,7 +53,7 @@ Mac 네이티브 백엔드에서 새 요청 한 번으로 PNG 수신·디코딩�
 
 ### Codex로 게임과 에셋 함께 제작
 
-제작 홈의 **Codex 스킬 설치**를 한 번 실행하세요. Codex의 새 작업에서 `$asset-studio 게임을 만들어줘`라고 요청하면 프로젝트를 확인하고 필요한 개별 에셋을 제작해 엔진에 반영하는 흐름을 사용합니다. 무기 5개는 독립 항목 5개로 작성합니다. 스킬과 CLI 사용은 [Codex 연동 안내](codex-integration.md)를 참고하세요.
+앱 없이 시작하려면 [공통 스킬 ZIP 설치 안내](skill-first-setup.md)를 따르세요. 앱을 사용한다면 제작 홈의 **Codex 스킬 설치**를 한 번 실행하세요. Codex의 새 작업에서 `$asset-studio 게임을 만들어줘`라고 요청하면 프로젝트를 확인하고 필요한 개별 에셋을 제작해 엔진에 반영하는 흐름을 사용합니다. 무기 5개는 독립 항목 5개로 작성합니다. 스킬과 CLI 사용은 [Codex 연동 안내](codex-integration.md)를 참고하세요.
 
 ### 기본 화면에서 프로젝트 제작
 

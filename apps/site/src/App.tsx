@@ -11,7 +11,7 @@ const portableUrl = `${sourceUrl}/releases/download/v${release.version}/${releas
 const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 const hasMacRelease = macReleases.length > 0;
 const skillVersion = '0.1.11';
-const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin.zip`;
+const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos.zip`;
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -38,7 +38,7 @@ const models = [
 
 const statuses = [
   { feature: 'Windows 0.1.11 · 앱 없이 Codex에서 제작', status: 'Windows CLI·CPU 생성 확인', tone: 'verified', detail: '독립 스킬과 CLI가 기존 공식 Codex 로그인을 재사용합니다. 필요한 도구는 승인 후 사용자 전용 공간에 준비합니다. 실제 이미지 편집·저장·재열기·내보내기, Windows CPU TripoSR와 Blender의 GLB·.blend 재열기를 확인했습니다. 앱의 이미지·3D·혼합 제작도 유지합니다. 이번 검증은 로컬 이미지 입력이며 새로운 GPT 요청은 보내지 않았습니다.' },
-  { feature: 'Mac 0.1.10 · Codex와 함께 개별 에셋 제작', status: 'Mac 0.1.10 제공', tone: 'experimental', detail: '앱에서 Codex 스킬을 설치하면 게임 제작 중 필요한 개별 이미지와 정적 3D 소품을 CLI로 제작할 수 있습니다. 게임 설명·프로젝트 루트로 시작하는 앱 제작 화면도 유지합니다. 긴 제작 목록의 분석 대기와 큐 이어받기, 모델 UV 처리를 개선했습니다. 배포 전 추가 검증 범위는 릴리스 기록을 확인하세요.' },
+  { feature: 'Mac 0.1.11 · Codex와 함께 개별 에셋 제작', status: 'Mac 0.1.11 제공', tone: 'experimental', detail: '공통 Codex 스킬이 앱 없이 독립 CLI를 준비하도록 Mac 패키지를 추가했습니다. 필요한 도구는 승인 후 사용자 폴더에 준비하며 기존 공식 Codex 로그인을 재사용합니다. Mac DMG와 서명된 업데이트도 제공합니다. 잠금 상태로 실행 검증을 생략했으며 릴리스 기록에 구분합니다.' },
   { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
   { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
   { feature: 'Mac 0.1.6 게임 에셋 묶음', status: 'Mac 백엔드 제작 확인', tone: 'experimental', detail: 'GPT-5.5에 텍스트 구성안을 요청하고, 개별 이름·설명·참고 자료와 포함 여부를 수정해 한 번에 큐에 제출하는 흐름입니다. Mac 네이티브 백엔드에서 개별 PNG 5장과 모델 2개의 제작·저장·재열기·독립 내보내기를 확인했습니다.' },
@@ -51,22 +51,22 @@ const statuses = [
 ];
 
 const faqs = [
-  { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64용 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. 독립 Mac 패키지는 별도 빌드 후 추가하며, 현재 Mac은 기존 앱의 CLI를 제공합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
+  { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64·Apple Silicon Mac용 공통 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. Mac 독립 CLI도 제공합니다. 앱 없이 사용하려면 두 플랫폼이 포함된 공통 스킬 ZIP을 설치하세요.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
   { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
   { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
-  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.9로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.10으로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
-  { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows 0.1.9와 Apple Silicon Mac 0.1.10의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
+  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.11로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.11으로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
+  { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows 0.1.11과 Apple Silicon Mac 0.1.11의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
   { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
-  { question: '게임 설명과 프로젝트 폴더로 에셋을 만들 수 있나요?', answer: 'Windows 0.1.9와 Mac 0.1.10은 게임 에셋 제작 → 게임 프로젝트 루트 연결 → 게임 설명 → 필요한 에셋 분석 → 필요한 에셋 모두 제작 → 결과 검수가 기본 흐름입니다. 상대 파일 목록과 누락 참조를 참고하고 소스 코드 내용은 GPT에 전송하지 않습니다. Windows와 Apple Silicon Mac에서 개별 이미지와 이미지 기반 3D를 제작합니다. 기존 파일을 보존하고 새 결과 폴더에 저장합니다. 한 계획은 최대 120개 시각 에셋이며 생략한 요구 사항은 경고로 표시합니다.', link: `${sourceUrl}/blob/master/docs/game-production.md`, label: '프로젝트에서 제작하는 흐름' },
-  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5는 텍스트 제작 목록을 계획하고, GPT-6.1 Sol이 공식 구독 경로의 GPT Image 2 요청을 담당합니다. Mac 0.1.10의 3D 항목은 개별 참고 이미지 → 로컬 TripoSR → Blender 변환과 검증으로 이어집니다. 실제 메시를 직접 GPT에서 받는 기능은 아닙니다. 이전 0.1.6의 묶음 모델은 기존 Blender 고정 레시피를 사용합니다. 응답에 실제 이미지 모델 ID가 없으면 미확인으로 기록합니다.' },
+  { question: '게임 설명과 프로젝트 폴더로 에셋을 만들 수 있나요?', answer: 'Windows 0.1.11과 Mac 0.1.11은 게임 에셋 제작 → 게임 프로젝트 루트 연결 → 게임 설명 → 필요한 에셋 분석 → 필요한 에셋 모두 제작 → 결과 검수가 기본 흐름입니다. 상대 파일 목록과 누락 참조를 참고하고 소스 코드 내용은 GPT에 전송하지 않습니다. Windows와 Apple Silicon Mac에서 개별 이미지와 이미지 기반 3D를 제작합니다. 기존 파일을 보존하고 새 결과 폴더에 저장합니다. 한 계획은 최대 120개 시각 에셋이며 생략한 요구 사항은 경고로 표시합니다.', link: `${sourceUrl}/blob/master/docs/game-production.md`, label: '프로젝트에서 제작하는 흐름' },
+  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5는 텍스트 제작 목록을 계획하고, GPT-6.1 Sol이 공식 구독 경로의 GPT Image 2 요청을 담당합니다. Mac 0.1.11의 3D 항목은 개별 참고 이미지 → 로컬 TripoSR → Blender 변환과 검증으로 이어집니다. 실제 메시를 직접 GPT에서 받는 기능은 아닙니다. 이전 0.1.6의 묶음 모델은 기존 Blender 고정 레시피를 사용합니다. 응답에 실제 이미지 모델 ID가 없으면 미확인으로 기록합니다.' },
   { question: '요청 이미지 수는 모델까지 합친 수인가요?', answer: '요청 이미지 수는 이미지·스프라이트·텍스처 행의 정확한 수이며, 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 이름과 설명이 다른 오브젝트 하나를 개별 PNG로 요청합니다. 구성안에서 행을 추가·삭제하거나 제외한 뒤에는 포함한 이미지·모델 행 수가 실제 제출 수입니다.' },
   { question: '참고 이미지나 GLB는 어떻게 사용하나요?', answer: 'PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개를 직접 선택하고, 이미지·미리보기·메타데이터의 외부 전송에 동의합니다. GLB는 측정한 메시 치수·정점 수·삼각형 수와 이미 있는 썸네일로 참고합니다. 임의 모델의 형상을 재구성·편집하거나 원본 메시를 코드로 실행하는 기능은 제공하지 않습니다.' },
-  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Windows 0.1.9와 Mac 0.1.10은 제작 목록의 3D 항목마다 GPT 참고 이미지를 만들고 로컬 모델로 변환합니다. 게임용 GLB·LOD·텍스처는 새 프로젝트 결과 폴더에 저장하고, 고해상도 형상·편집 가능한 .blend·미리보기는 로컬 보관함에도 남깁니다. 기존 이미지·GLB를 최대 5개씩 다듬는 별도 도구도 제공합니다.', link: `${sourceUrl}/blob/master/docs/model-quality.md`, label: '이미지에서 3D·모델 다듬기 안내' },
+  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Windows 0.1.11과 Mac 0.1.11은 제작 목록의 3D 항목마다 GPT 참고 이미지를 만들고 로컬 모델로 변환합니다. 게임용 GLB·LOD·텍스처는 새 프로젝트 결과 폴더에 저장하고, 고해상도 형상·편집 가능한 .blend·미리보기는 로컬 보관함에도 남깁니다. 기존 이미지·GLB를 최대 5개씩 다듬는 별도 도구도 제공합니다.', link: `${sourceUrl}/blob/master/docs/model-quality.md`, label: '이미지에서 3D·모델 다듬기 안내' },
   { question: '현재 Tripo Studio와 같은 모델인가요?', answer: '구형 오픈 모델 TripoSR을 사용합니다. 한 장에서 보이지 않는 뒷면을 추정하고 얇거나 각진 물체는 형태가 흐려질 수 있습니다. 8K·자동 리깅·쿼드 리토폴로지는 제공하지 않습니다. Windows는 최초 동의 후 Python·CPU 라이브러리·모델을 약 1.89GiB 내려받습니다. 준비 후 Windows·Mac CPU에서 로컬 실행하며 입력 이미지를 외부에 전송하거나 유료 API로 대체하지 않습니다.' },
   { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
   { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
-  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.10은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Mac Blender 작업자는 새 게임 레시피의 실제 생성과 GLB·.blend 재열기를 검증했습니다. Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.' },
+  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.11은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. Mac Blender 작업자는 새 게임 레시피의 실제 생성과 GLB·.blend 재열기를 검증했습니다. Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.' },
   { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
 ];
 
@@ -198,7 +198,7 @@ export default function App() {
         <section id="download-skill" className="skill-download" aria-labelledby="skill-download-title">
           <div className="mac-download-heading"><h3 id="skill-download-title">Codex에서 바로 시작.</h3><span className="mac-trial-label">독립 스킬 · v{skillVersion}</span></div>
           <div className="skill-download-layout">
-            <div><p>스킬만 설치하세요. 필요한 도구는 첫 사용에서 준비합니다.<br />이미 연결된 공식 Codex 로그인을 사용합니다.</p><a className="button button-primary" href={skillDownloadUrl}><ArrowDownToLine size={19} aria-hidden="true" />Codex 스킬 ZIP 다운로드</a><p className="skill-download-platform">Windows x64 · 독립 Mac 패키지는 별도 배포 예정</p></div>
+            <div><p>스킬만 설치하세요. 필요한 도구는 첫 사용에서 준비합니다.<br />이미 연결된 공식 Codex 로그인을 사용합니다.</p><a className="button button-primary" href={skillDownloadUrl}><ArrowDownToLine size={19} aria-hidden="true" />Codex 스킬 ZIP 다운로드</a><p className="skill-download-platform">Windows x64 · Mac Apple Silicon</p></div>
             <ol><li><strong>스킬 설치</strong><span>ZIP의 skills/asset-studio를 사용자 ~/.agents/skills 폴더에 넣습니다.</span></li><li><strong>새 Codex 작업에서 요청</strong><span>“$asset-studio 필요한 도구를 설치하고 에셋을 만들어줘”</span></li><li><strong>필요한 구성요소만 준비</strong><span>2D는 CLI로 시작합니다. 3D 작업에는 Blender·Python·모델을 추가로 준비합니다.</span></li></ol>
           </div>
           <p className="skill-download-note">Asset Studio 앱과 Node·Rust 개발 도구는 필요하지 않습니다. 다운로드 정보와 준비 상태를 확인하며, 계정 인증이 필요한 경우 공식 로그인으로 안내합니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/skill-first-setup.md`}>설치·준비 안내 <ArrowUpRight size={16} aria-hidden="true" /></a>
@@ -217,8 +217,8 @@ export default function App() {
             <dl><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>
           </article>)}</div> : <p className="mac-release-pending">다운로드 파일을 확인 중입니다. 실행 검증을 마치면 Apple Silicon용 DMG를 이곳에 공개합니다.</p>}
           <div className="mac-install-guide">
-            <div><h4>Apple 계정 없이 터미널로 설치</h4><ol><li>기존 앱을 닫고 아래 명령을 터미널에 붙여 넣습니다.</li><li>파일 검증과 설치 위치 안내를 확인하고 y를 입력합니다.</li><li>~/Applications/Asset Studio 0.1.10의 새 앱을 사용합니다.</li></ol><p>스크립트와 DMG의 SHA-256을 확인한 뒤 새 사본을 설치합니다. 기존 앱·프로젝트는 보존하며 관리자 암호는 필요하지 않습니다.</p></div>
-            <div className="mac-install-notes"><h4>브라우저로 DMG를 받은 경우</h4><p>홈 폴더의 Applications 안에 Asset Studio 0.1.10 폴더를 만들고 앱을 복사하세요. DMG 안에서 직접 실행하지 마세요.</p><p>Apple 공증이 없어 확인 경고가 나타날 수 있습니다. 경고를 닫은 뒤 <strong>시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기</strong>를 선택하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>자세한 설치 안내</a></p><p>업데이트 파일은 별도의 키로 서명합니다. Apple 공증과는 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><p>macOS 12는 설정상 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. Mac Blender 작업자는 검증했으며, Mac 네이티브 백엔드의 게임 묶음 제작을 확인했습니다.</p></div>
+            <div><h4>Apple 계정 없이 터미널로 설치</h4><ol><li>기존 앱을 닫고 아래 명령을 터미널에 붙여 넣습니다.</li><li>파일 검증과 설치 위치 안내를 확인하고 y를 입력합니다.</li><li>~/Applications/Asset Studio 0.1.11의 새 앱을 사용합니다.</li></ol><p>스크립트와 DMG의 SHA-256을 확인한 뒤 새 사본을 설치합니다. 기존 앱·프로젝트는 보존하며 관리자 암호는 필요하지 않습니다.</p></div>
+            <div className="mac-install-notes"><h4>브라우저로 DMG를 받은 경우</h4><p>홈 폴더의 Applications 안에 Asset Studio 0.1.11 폴더를 만들고 앱을 복사하세요. DMG 안에서 직접 실행하지 마세요.</p><p>Apple 공증이 없어 확인 경고가 나타날 수 있습니다. 경고를 닫은 뒤 <strong>시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기</strong>를 선택하세요. <a href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>자세한 설치 안내</a></p><p>업데이트 파일은 별도의 키로 서명합니다. Apple 공증과는 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><p>macOS 12는 설정상 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. Mac Blender 작업자는 검증했으며, Mac 네이티브 백엔드의 게임 묶음 제작을 확인했습니다.</p></div>
           </div>
           <div className="mac-terminal-install"><div className="checksum-heading"><span>Mac 설치 명령</span><button type="button" onClick={copyMacInstall}><Copy size={15} aria-hidden="true" />{installCopyState === 'copied' ? '복사됨' : '설치 명령 복사'}</button></div><pre><code ref={installCommandElement}>{macInstallCommand}</code></pre><p role="status" aria-live="polite">{installCopyState === 'copied' ? '설치 명령을 복사했습니다. 터미널에 붙여 넣으세요.' : installCopyState === 'failed' ? '명령을 선택했습니다. 직접 복사해 주세요.' : '설치 안내를 읽고 y를 입력하면 진행합니다.'}</p></div>
           <div className="mac-update-guide"><h4>다음 버전부터는 앱에서 업데이트</h4><p>앱이 새 버전을 자동 확인합니다. 상단 앱 업데이트에서 출처·버전·크기·해시를 확인하고 승인하면 다운로드·검증·설치·재실행합니다. 제작 작업이 끝난 뒤 진행하며, 이전 앱을 백업하고 프로젝트·원본·버전을 보존합니다.</p></div>

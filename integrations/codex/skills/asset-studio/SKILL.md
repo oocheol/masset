@@ -5,7 +5,7 @@ description: Build or improve a playable game in Codex with automatically prepar
 
 Use Asset Studio as the asset producer within the user's game-development task. Keep implementing the game after assets arrive; the asset list or a folder of renders alone is not a completed game.
 
-The standalone 0.1.11 runtime is released for Windows x64. Apple Silicon packaging is a separate release; the Mac loader reports unavailable until a verified Mac package is pinned. The existing Mac 0.1.10 app includes its prior CLI. No MCP server or API key is needed.
+The standalone 0.1.11 runtime is released for Windows x64 and Apple Silicon Mac, with both immutable package inventories pinned in the common skill ZIP. Mac app/loader execution validation was skipped because the Mac was locked; do not claim that build success establishes native execution support. No MCP server or API key is needed.
 
 ## Prepare automatically on first use
 

@@ -66,7 +66,13 @@ pub(crate) fn install(
         let path = source.join(name);
         no_links(&path)?;
         let bytes = fs::read(&path)?;
-        if bytes.len() > 128 * 1024 {
+        // The runtime index now pins both Windows and Mac file inventories.
+        let maximum = if name == "references/native-runtime.json" {
+            256 * 1024
+        } else {
+            128 * 1024
+        };
+        if bytes.len() > maximum {
             bail!("Skill resource too large");
         }
         files.insert(

@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/oocheol/masset/releases/tag/v0.1.11"><img src="https://img.shields.io/badge/release-0.1.11-334c60?style=flat-square&amp;labelColor=101d29" alt="Release 0.1.11"></a>
   <a href="https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-x64-334c60?style=flat-square&amp;labelColor=101d29" alt="Windows x64"></a>
-  <a href="https://github.com/oocheol/masset/releases/download/v0.1.10/AssetStudio_0.1.10_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon"></a>
+  <a href="https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_macos-arm64.dmg"><img src="https://img.shields.io/badge/macOS-Apple_Silicon-334c60?style=flat-square&amp;labelColor=101d29" alt="macOS Apple Silicon"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-334c60?style=flat-square&amp;labelColor=101d29" alt="Core license Apache-2.0"></a>
 </p>
 
@@ -23,9 +23,9 @@
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
 
-Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.11과 Apple Silicon Mac 0.1.10에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
+Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.11과 Apple Silicon Mac 0.1.11에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
 
-**Windows는 0.1.11, Mac은 0.1.10을 배포합니다.** Windows에는 앱 없이 쓰는 독립 Codex 스킬·네이티브 CLI와 필요한 도구의 자동 준비를 추가했습니다. 기존 공식 Codex 로그인을 재사용하고, 3D 작업에 필요한 Blender·Python·모델은 승인한 경우 사용자 전용 공간에 준비합니다. 앱과 포터블에도 제작 CLI가 포함됩니다. Mac 빌드는 별도 진행하며 기존 다운로드·업데이트 채널을 유지합니다. [게임 제작 흐름](docs/game-production.md) · [Windows 0.1.11 검증](docs/releases/v0.1.11-windows.md) · [Mac 배포 기록](docs/releases/v0.1.10-macos.md)
+**Windows와 Apple Silicon Mac 모두 0.1.11을 배포합니다.** 두 플랫폼에 앱 없이 쓰는 독립 Codex 스킬·네이티브 CLI와 필요한 도구의 자동 준비를 추가했습니다. 기존 공식 Codex 로그인을 재사용하고, 3D 작업에 필요한 Blender·Python·모델은 승인한 경우 사용자 전용 공간에 준비합니다. 앱과 포터블에도 제작 CLI가 포함됩니다. Mac DMG와 서명된 업데이트, 독립 CLI를 추가했습니다. Mac 실행 검증은 잠금 상태로 생략했으며 배포 기록에 구분합니다. [게임 제작 흐름](docs/game-production.md) · [Windows 0.1.11 검증](docs/releases/v0.1.11-windows.md) · [Mac 배포 기록](docs/releases/v0.1.11-macos.md)
 
 **3D 만들기**에서 투명 배경의 단일 물체 이미지 또는 GLB를 최대 5개 선택하세요. 이미지마다 모델 하나를 만들고, 기존 GLB는 원본을 남긴 새 버전으로 저장합니다. 게임용·고해상도 형상·LOD, UV 색상 텍스처, 지원되는 경우 메시에서 베이크한 노멀맵, 편집 가능한 `.blend`, 썸네일·턴테이블을 함께 내보냅니다. 이미지 복원은 Windows x64 또는 Apple Silicon, 최소 16GB 메모리와 Blender가 필요합니다. Windows는 CPython 3.12.10을 앱 전용 공간에 준비하므로 시스템 Python이나 CUDA가 필요하지 않습니다. 최초 동의 후 Python·CPU 라이브러리·모델을 약 1.89GiB 내려받으며 Microsoft Visual C++ x64 런타임이 필요합니다. Mac은 CPython 3.9를 사용합니다. 준비 후 CPU에서 로컬로 실행하고 유료 API로 대체하지 않습니다. 구형 TripoSR을 사용하며 최신 Tripo Studio와 같은 품질이나 8K·리깅·쿼드 리토폴로지는 제공하지 않습니다. [사용 방법과 결과 범위](docs/model-quality.md)를 확인하세요.
 
@@ -65,7 +65,7 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 | 이미지 편집 | PNG/WebP/JPEG 가져오기, 크기·색상·배경·마스크 처리 | 원본과 구분된 새 이미지 버전 |
 | 스프라이트·아틀라스 | 프레임을 나누고 여러 이미지를 묶어 패킹 | 실제 이미지와 프레임 메타데이터 |
 | 게임 에셋 묶음 · Mac 0.1.6 | 게임 설명 → 텍스트 구성안 → 개별 행 편집·승인 → 포함한 행을 한 번에 큐 등록 | 개별 이미지·새 독립 모델 또는 기존 2D의 새 버전 |
-| 게임 프로젝트 제작 · Windows 0.1.11 · Mac 0.1.10 | 게임 설명·루트 폴더 분석 → 개별 제작 → 결과 확인·검수 | 새 게임 결과 폴더, 개별 PNG·GLB·해시 명세, 최대 120개 |
+| 게임 프로젝트 제작 · Windows 0.1.11 · Mac 0.1.11 | 게임 설명·루트 폴더 분석 → 개별 제작 → 결과 확인·검수 | 새 게임 결과 폴더, 개별 PNG·GLB·해시 명세, 최대 120개 |
 | 절차적 3D · Mac 0.1.6 | 상자·테이블·선반·검·소총·우주선·배럴·바위·나무의 치수·베벨·색상 지정 | 개별 GLB, 편집 가능한 `.blend`, 렌더 |
 | 이미지→3D · 모델 다듬기 · Windows·Mac | 투명 이미지의 개별 메시 복원 또는 기존 GLB의 예산·UV·재질 정리 | 원본 보존, 게임용·고해상도·LOD GLB, 텍스처·`.blend`·턴테이블 |
 | 버전·캐시 | 이전 결과 비교, 검증된 결과의 명시적 재사용 | 해시와 제작 이력이 있는 에셋 |
@@ -77,17 +77,18 @@ Mac 0.1.6의 **게임 에셋 묶음**은 게임 설명으로 GPT-5.5 (`gpt-5.5`)
 
 [공급자 실증](docs/provider-feasibility.md) · [ima2-gen 구조 비교](docs/ima2-gen-comparison.md) · [현재 구현 범위](docs/completion-status.md)
 
-Mac 0.1.6 묶음의 **요청 이미지 수**는 이미지·스프라이트·텍스처 행을 합친 정확한 수입니다. 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 오브젝트 하나를 개별 PNG로 요청하며, 구성안을 수정한 뒤에는 포함한 행의 현재 수가 제출 수입니다. 참고 자료는 PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개까지 선택하고 외부 전송에 명시적으로 동의합니다. GLB는 측정한 메시 메타데이터와 이미 있는 썸네일로 참고합니다. Mac 0.1.10의 모델 개선 도구도 원본을 보존한 새 버전으로 저장합니다.
+Mac 0.1.6 묶음의 **요청 이미지 수**는 이미지·스프라이트·텍스처 행을 합친 정확한 수입니다. 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 오브젝트 하나를 개별 PNG로 요청하며, 구성안을 수정한 뒤에는 포함한 행의 현재 수가 제출 수입니다. 참고 자료는 PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개까지 선택하고 외부 전송에 명시적으로 동의합니다. GLB는 측정한 메시 메타데이터와 이미 있는 썸네일로 참고합니다. Mac 0.1.11의 모델 개선 도구도 원본을 보존한 새 버전으로 저장합니다.
 
-**GPT-5.5는 도구 실행 없이 텍스트 구성안을 제안하는 플래너**, **GPT-6.1 Sol은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트**입니다. Windows 0.1.11과 Mac 0.1.10의 기본 제작은 GPT 참고 이미지에서 로컬 TripoSR와 Blender로 3D를 만듭니다. 공개 0.1.6 묶음의 모델은 Blender 고정 레시피를 사용합니다. 모델 설정이나 카탈로그 등록을 실제 플래너 응답의 성공으로 표시하지 않습니다.
+**GPT-5.5는 도구 실행 없이 텍스트 구성안을 제안하는 플래너**, **GPT-6.1 Sol은 항목 승인 후 별도로 이미지 제작을 요청하는 이미지 에이전트**입니다. Windows 0.1.11과 Mac 0.1.11의 기본 제작은 GPT 참고 이미지에서 로컬 TripoSR와 Blender로 3D를 만듭니다. 공개 0.1.6 묶음의 모델은 Blender 고정 레시피를 사용합니다. 모델 설정이나 카탈로그 등록을 실제 플래너 응답의 성공으로 표시하지 않습니다.
 
 ## 다운로드와 시작하기
 
 | 플랫폼 | 현재 다운로드 | 현재 범위 |
 | --- | --- | --- |
 | Windows x64 · 0.1.11 | [설치 파일](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_x64-setup.exe) · [포터블 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio-windows-x64-portable.zip) | 프로젝트 기반 2D·이미지→3D 제작 · Codex 스킬·CLI · 앱 내부 업데이트 |
-| 독립 Windows CLI · 0.1.11 | [스킬 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin.zip) · [CLI ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudioCLI-0.1.11-windows-x64.zip) | 앱 없이 Codex에서 사용 · 기존 로그인 재사용 · 필요한 도구 자동 준비 |
-| Mac Apple Silicon · 0.1.10 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.10/AssetStudio_0.1.10_macos-arm64.dmg) | 프로젝트 기반 개별 2D·3D 제작 · Codex 스킬·CLI · GPT 구독 연결 · 앱 내부 업데이트 |
+| 독립 Windows CLI · 0.1.11 | [스킬 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip) · [CLI ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudioCLI-0.1.11-windows-x64.zip) | 앱 없이 Codex에서 사용 · 기존 로그인 재사용 · 필요한 도구 자동 준비 |
+| 독립 Mac CLI · 0.1.11 | [공통 스킬 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip) · [CLI ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudioCLI-0.1.11-macos-arm64.zip) | 앱 없이 Codex에서 사용 · CLI와 작업자 자동 준비 |
+| Mac Apple Silicon · 0.1.11 | [DMG](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_macos-arm64.dmg) | 프로젝트 기반 개별 2D·3D 제작 · Codex 스킬·CLI · GPT 구독 연결 · 앱 내부 업데이트 |
 
 **Windows:** 설치 파일을 실행하거나 포터블 ZIP 전체를 새 폴더에 풀어 사용합니다. 기존 설치 사용자는 앱의 업데이트 패널에서 0.1.11을 확인하세요. WebView2와 3D용 Blender는 별도 필요하며, Node.js·Rust 개발 도구는 필요하지 않습니다. Codex가 없으면 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 시작합니다. 이미지→3D는 **로컬 3D 준비**에서 다운로드 정보를 확인하고 동의하면 사용할 수 있습니다. 제작 화면에서 이미지·3D·혼합을 선택할 수 있고, Python·모델은 앱 전용 공간에 준비합니다. Codex 스킬만 사용하려면 아래 독립 설치 안내를 따르세요.
 
@@ -100,31 +101,31 @@ Apple 개발자 계정 없이 설치하려면 다음 명령을 **터미널에 �
   set -eu
   install_tmp="$(mktemp -d)"
   trap 'rm -rf "$install_tmp"' EXIT
-  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.10/install-macos.sh -o "$install_tmp/install-macos.sh"
-  printf '%s  %s\n' '02bb8da6d5405ac0fc66bf8d0c96f240495bcd195fdd59b915b4d043ce659572' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
+  curl -fsSL https://github.com/oocheol/masset/releases/download/v0.1.11/install-macos.sh -o "$install_tmp/install-macos.sh"
+  printf '%s  %s\n' '17e0af5b2e3e6142e20f4d99089abbf2b48a523124a3f60d8c90bdd2a561351b' "$install_tmp/install-macos.sh" | shasum -a 256 -c -
   bash "$install_tmp/install-macos.sh"
 )
 ```
 
-새 앱은 `~/Applications/Asset Studio 0.1.10/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 공개 최신 앱을 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
+새 앱은 `~/Applications/Asset Studio 0.1.11/Asset Studio.app`에 설치합니다. 기존 앱을 닫고 새 앱을 사용하세요. 기존 앱·프로젝트·원본은 보존합니다. **Mac 0.1.3 이하는 업데이트 기능이 없으므로 공개 최신 앱을 한 번 직접 설치해야 합니다.** 이후에는 앱이 새 버전을 확인하고, 업데이트 패널에서 승인하면 서명·버전·크기·해시 검사 → 이전 앱 백업 → 교체 → 재실행 순서로 진행합니다. 제작 작업이 끝난 뒤 설치하며 프로젝트와 에셋 버전은 유지합니다.
 
 브라우저로 DMG를 받았다면 앱을 홈 폴더의 Applications 안에 새 폴더를 만들어 복사하세요. 최초 실행 경고는 **시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기**로 허용할 수 있습니다. DMG 안에서 직접 실행하지 마세요. 업데이트가 설치 폴더에 쓰기 권한을 필요로 합니다.
 
-**Mac 구독 연결:** 0.1.10에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 0.1.4 이상은 앱 내부 업데이트로 0.1.10을 받을 수 있습니다.
+**Mac 구독 연결:** 0.1.11에서 **구독 연결 → Codex 준비 → 공식 계정 연결 → 연결 확인** 순서로 진행합니다. OpenAI 서명이 유효한 공식 ChatGPT/Codex Mac 앱의 런타임을 재사용하고, 없으면 동의 후 검증된 Apple Silicon용 Codex 0.160.0을 앱 전용 공간에 준비합니다. 인증 정보는 공식 Codex가 관리하며 유료 API로 대체하지 않습니다. 0.1.4 이상은 앱 내부 업데이트로 0.1.11을 받을 수 있습니다.
 
 Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이트 파일은 프로젝트의 별도 키로 서명하며 Apple 공증과 구분합니다. 구독 연결에 쓰는 Codex 실행 파일·이미지 호스트의 OpenAI Developer ID 서명은 별도로 확인합니다. Mac Blender 작업자는 실제 생성·GLB·`.blend` 재열기를 검증했습니다. 새 Mac 네이티브 백엔드에서 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다.
 
-[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.10 배포 기록](docs/releases/v0.1.10-macos.md) · [Windows 0.1.11 검증 기록](docs/releases/v0.1.11-windows.md)
+[Windows 사용 가이드](docs/windows-quickstart.md) · [Mac 설치·업데이트 안내](docs/macos-quickstart.md) · [Mac 0.1.11 배포 기록](docs/releases/v0.1.11-macos.md) · [Windows 0.1.11 검증 기록](docs/releases/v0.1.11-windows.md)
 
 ## 앱 없이 Codex로 에셋 제작하기 · 독립 스킬 0.1.11
 
-**Windows x64에서 스킬만 설치해 시작할 수 있습니다.** 첫 실행이 필요한 네이티브 CLI와 작업자를 사용자 폴더에 준비하고 기존 공식 Codex 로그인을 재사용합니다. 3D를 요청할 때만 Blender·Python·TripoSR를 준비합니다. Asset Studio GUI·Node·Rust·별도 MCP 서버·유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며, 실제 처리는 검증한 독립 CLI가 수행합니다. Apple Silicon 독립 패키지는 별도 Mac 빌드·검증 후 추가합니다.
+**Windows x64와 Apple Silicon Mac에서 스킬만 설치해 시작할 수 있습니다.** 첫 실행이 필요한 네이티브 CLI와 작업자를 사용자 폴더에 준비하고 기존 공식 Codex 로그인을 재사용합니다. 3D를 요청할 때만 Blender·Python·TripoSR를 준비합니다. Asset Studio GUI·Node·Rust·별도 MCP 서버·유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며, 실제 처리는 검증한 독립 CLI가 수행합니다. Apple Silicon 독립 CLI ZIP과 해당 파일의 고정 해시가 포함된 공통 스킬 ZIP을 제공합니다.
 
-[스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하고 새 Codex 작업에서 **`$asset-studio 필요한 도구를 설치하고 게임 에셋을 만들어줘`**라고 요청하세요. 출처·크기·고정 해시·라이선스를 확인하고 승인한 다운로드만 진행합니다. 계정 인증이 필요하면 공식 로그인만 안내하며, 이미 연결한 계정은 다시 연결하지 않습니다. Windows 앱은 0.1.11, Mac 앱은 기존 0.1.10을 제공합니다.
+[스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하고 새 Codex 작업에서 **`$asset-studio 필요한 도구를 설치하고 게임 에셋을 만들어줘`**라고 요청하세요. 출처·크기·고정 해시·라이선스를 확인하고 승인한 다운로드만 진행합니다. 계정 인증이 필요하면 공식 로그인만 안내하며, 이미 연결한 계정은 다시 연결하지 않습니다. Windows 앱은 0.1.11, Mac 앱도 0.1.11을 제공합니다.
 
 [앱 없이 시작하는 설치 안내](docs/skill-first-setup.md) · [CLI·방식 비교](docs/codex-integration.md) · [이전 Mac 검증 범위](docs/codex-integration-validation.md) · [배포용 스킬 플러그인](integrations/codex/plugin.json)
 
-## 게임 설명에서 제작과 검수까지 · Windows 0.1.11 · Mac 0.1.10
+## 게임 설명에서 제작과 검수까지 · Windows 0.1.11 · Mac 0.1.11
 
 1. **GPT 구독 연결** — 공식 계정과 연결 상태를 확인합니다.
 2. **게임 프로젝트 루트 연결** — 기존 게임 폴더를 선택하고 장르·시점·세계관·스타일을 설명합니다. 참고 이미지·모델도 선택할 수 있습니다.
