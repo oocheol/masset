@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.11",
+  "platform": "windows-x86_64",
+  "checkedAt": "2026-10-06T00:52:32.355Z",
+  "status": "native-artifacts-verified-publication-pending",
+  "sourceBuildCommit": "849c2344b0283fa7281d4de16d8ab234dd99c582",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.11",
+  "macReleasePreserved": "0.1.10",
+  "newMacPackageBuilt": false,
+  "packages": {
+    "installer": {
+      "filename": "AssetStudio_0.1.11_x64-setup.exe",
+      "bytes": 11321763,
+      "sha256": "b542cdd1580157ca6a11426eb6db93bc88dbd300e4014f615b80a9a017cfe6ef"
+    },
+    "portable": {
+      "filename": "AssetStudio-windows-x64-portable.zip",
+      "bytes": 16949834,
+      "sha256": "6fdde0ad9bf4a98b5e3eba2377556eeab869cbfb4c045bad6fe63071f8a1c328"
+    },
+    "standaloneCli": {
+      "filename": "AssetStudioCLI-0.1.11-windows-x64.zip",
+      "bytes": 7171955,
+      "sha256": "44d3697a2b8608283a5994fd6e29dade2bbfbca8a3ed087860490dbf64305278",
+      "verifiedInventoryFiles": 377
+    },
+    "codexSkill": {
+      "filename": "AssetStudio_0.1.11_codex-plugin.zip",
+      "bytes": 55666,
+      "sha256": "c490f78ef2b07a32e36cd00b5b4b01a083610d530b4576b1e841c5fb8b407bad",
+      "files": 11
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 998,
+      "sha256": "bb0c0e23dfe03843df9443daffb42b4ddb23064fd3f080e61e52c2e886961c28"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1248,
+      "sha256": "0a9641bb1be4821162ad8c4af4f5b5e0f9d2db5e0a89f8fd274852ddd5c40245"
+    }
+  },
+  "validation": {
+    "bootstrapBoundaryTests": 52,
+    "frontendTestsPassed": 153,
+    "frontendTestsExplicitlySkipped": 3,
+    "rustWorkspacePassed": true,
+    "windowsCiChecksRun": "https://github.com/oocheol/masset/actions/runs/37394330735",
+    "windowsCliCiJob": "https://github.com/oocheol/masset/actions/runs/37394330514/job/112046589894",
+    "standaloneNativeCli": {
+      "guiStarted": false,
+      "originalPreserved": true,
+      "reopenedInSeparateProcess": true,
+      "actualResize": [
+        7,
+        9
+      ],
+      "exportVerified": true
+    },
+    "firstBlenderSetup": {
+      "version": "5.2.1",
+      "source": "https://download.blender.org/release/Blender5.2/blender-5.2.1-windows-x64.zip",
+      "bytes": 404851964,
+      "sha256": "0e631dad7d0cad6d5d18abdd2e2550f6c0213215334eda00ddbd3d22b96ecb2c",
+      "nativeVersionExecuted": true,
+      "sourceDerivedFileIntegrityVerified": true,
+      "systemInstallation": false
+    },
+    "prepareExistingAccount": {
+      "existingAuthReused": true,
+      "loginStarted": false,
+      "freshGptRequests": 0,
+      "credentialsCopied": false,
+      "paidApiFallback": false,
+      "localRuntimeHashesAndNativeCpuImportsVerified": true
+    },
+    "actualImage3d": {
+      "source": "workers/image3d/fixtures/blue-sphere.png",
+      "sourceSha256": "e6bd604de5a71c69cc2400bd5c88053a134fc962f17cde3a06801723cb7a7ff4",
+      "artifactFilesVerified": 16,
+      "exportVerified": true,
+      "projectReopenedInSeparateProcess": true,
+      "blendAndGlbReopenedWithBlender": true,
+      "gameGlbTriangles": 4894,
+      "heightMeters": 1,
+      "textureResolution": 512,
+      "blenderAutoExecution": false
+    },
+    "installerAudit": {
+      "sourceBuildCommit": "849c2344b0283fa7281d4de16d8ab234dd99c582",
+      "installerExecuted": false,
+      "developerProofExecutablesExcluded": true,
+      "passed": true,
+      "schemaVersion": 1,
+      "tauriResourcesVerified": 387,
+      "productionCliVerified": true,
+      "portableCompatibilityCopiesSeparate": 5,
+      "version": "0.1.11"
+    },
+    "portableFilesRoundtripVerified": 395,
+    "nativePortableWindowAndActualGlbDrawPassed": true,
+    "nativeExtractedInstallerWindowPassed": true,
+    "nativeExtractedInstallerCliPassed": true,
+    "updaterLocalSignature": {
+      "checkedAt": "2026-10-06T00:48:50.992151900+00:00",
+      "installerBytes": 11321763,
+      "installerExecuted": false,
+      "installerSha256": "b542cdd1580157ca6a11426eb6db93bc88dbd300e4014f615b80a9a017cfe6ef",
+      "nativeLibrary": true,
+      "networkRequests": 0,
+      "payloadSignatureVerified": true,
+      "providerGenerationRequested": false,
+      "scope": "Independent minisign-verify 0.2.5 check of actual local release bytes and authenticated version; excludes the plugin download path, cross-version installer execution and clean-machine behavior",
+      "signedVersionVerified": true,
+      "tamperedPayloadRejected": true,
+      "version": "0.1.11",
+      "versionReplayRejected": true
+    },
+    "publicDownloadsVerified": false,
+    "publicNativeUpdaterVerified": false,
+    "installedUserSkillVerified": false,
+    "productionSiteVerified": false
+  },
+  "boundaries": {
+    "windowsAuthenticodeSigned": false,
+    "cleanMachineTested": false,
+    "installerReplacementLifecycleTested": false,
+    "newGptGenerationTested": false,
+    "imageInferenceAccess": "unknown",
+    "newMacRuntimePublished": false,
+    "intelMacPublished": false
+  }
+}
