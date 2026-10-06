@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "product": "Asset Studio",
+  "version": "0.1.12",
+  "platform": "darwin-aarch64",
+  "packagedAt": "2026-10-06T03:58:28.303Z",
+  "status": "artifact-verified-native-execution-skipped",
+  "sourceBaselineCommit": "a4f66bc5154e772a4cad8f4361238ba9db1f80a1",
+  "sourceChange": "Design refresh and Mac release version; release tag identifies final source commit.",
+  "releaseUrl": "https://github.com/oocheol/masset/releases/tag/v0.1.12",
+  "windowsReleasePreserved": "0.1.11",
+  "standaloneSkillAndCliPreserved": "0.1.11",
+  "package": {
+    "dmg": {
+      "filename": "AssetStudio_0.1.12_macos-arm64.dmg",
+      "bytes": 19259262,
+      "sha256": "7ca56c53f6b469c4f8ee4df3f4bea1457a83c7aabbd1960bd5c6145587777f27"
+    },
+    "installer": {
+      "filename": "install-macos.sh",
+      "bytes": 6285,
+      "sha256": "62048d7f4fe46ad14eca27eb3a2c9299e0e6f0ecaa8cd4aad73a2f31e19e2a62"
+    },
+    "updater": {
+      "filename": "AssetStudio_0.1.12_macos-arm64.app.tar.gz",
+      "bytes": 16853234,
+      "sha256": "d35f2cd819c2cae1071d7834571b92047afcb1fc7c741805a1019511711db11e"
+    },
+    "macChannel": {
+      "filename": "latest-macos.json",
+      "bytes": 1046,
+      "sha256": "10dbac22aa5d0aad6fa0d3e7e8a986f035de14896b66c9d264fd4fe4f57ce35a"
+    },
+    "windowsChannel": {
+      "filename": "latest.json",
+      "bytes": 998,
+      "sha256": "bb0c0e23dfe03843df9443daffb42b4ddb23064fd3f080e61e52c2e886961c28"
+    }
+  },
+  "nativeBundle": {
+    "architecture": "arm64",
+    "version": "0.1.12",
+    "executableSha256": "91001c8e49161a7a5602ae7608aac40714f9cb02414186a031c07d5b65db7ed9",
+    "embeddedFrontendAssets": [
+      {
+        "name": "index-DIZOF3a9.js",
+        "embedded": true
+      },
+      {
+        "name": "index-WrAXNy8c.css",
+        "embedded": true
+      },
+      {
+        "name": "webview-BEX487py.js",
+        "embedded": true
+      }
+    ],
+    "updaterBundleMatches": true
+  },
+  "validation": {
+    "desktopBuildPassed": true,
+    "siteBuildAndTypecheckPassed": true,
+    "productionUiTestsPassed": 35,
+    "packageTestsPassed": 5,
+    "browserBoundaryTestsPassed": 1,
+    "dmgChecksumVerified": true,
+    "dmgMountedAndAppInspected": true,
+    "dmgInstallerCheckOnlyPassed": true,
+    "appSignatureVerified": true,
+    "updaterSignatureVerified": true,
+    "authenticatedVersionVerified": true,
+    "tamperedUpdateRejected": true,
+    "versionReplayRejected": true,
+    "windowsChannelBytesPreserved": true,
+    "nativeWindowTested": false,
+    "dmgInstallationTested": false,
+    "updaterReplacementLifecycleTested": false,
+    "newGptGenerationTested": false,
+    "local3dGenerationTested": false,
+    "newWindowsBuildPerformed": false,
+    "publicDownloadsVerifiedAtPackaging": false,
+    "skipReason": "Mac GUI, installation and update replacement execution omitted while Mac is locked, as authorized by user."
+  },
+  "boundaries": {
+    "appAdHocSigned": true,
+    "updateSignedWithProjectKey": true,
+    "appleDeveloperIdSigned": false,
+    "appleNotarized": false,
+    "intelMacDistributed": false,
+    "paidApiFallback": false
+  }
+}

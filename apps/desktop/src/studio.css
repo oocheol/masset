@@ -1,0 +1,59 @@
+@import url('../../../packages/ui/src/tokens.css');
+
+:root {
+  font-family: var(--studio-font);
+  --ink: var(--studio-ink);
+  --rail: #18221d;
+  --panel: var(--studio-surface);
+  --edge: var(--studio-line);
+  --cyan: var(--studio-mint);
+  --paper: var(--studio-text);
+  --muted: var(--studio-muted);
+  --warning: var(--studio-warning);
+}
+
+.workbench .titlebar { background: var(--ink); gap: 18px; }
+.workbench.generation-workbench .titlebar-actions { margin-left: auto; }
+.workbench .brand-symbol { color: var(--cyan); background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; }
+.workbench .brand small { color: var(--muted); }
+.workbench .button, .workbench .icon-button, .workbench input, .workbench select,
+.workbench textarea, .workbench .project-entry, .workbench .nav-item, .workbench .preset-entry { border-radius: 8px; }
+.workbench .button:not(.primary), .workbench input, .workbench select, .workbench textarea { border-color: var(--studio-control-line); }
+.workbench button { transition: background-color var(--studio-motion), border-color var(--studio-motion), color var(--studio-motion); }
+.workbench .button:hover:not(:disabled) { background: #293c30; border-color: #70957b; }
+.workbench .button.primary { background: var(--cyan); color: var(--ink); }
+.workbench .button.primary:hover:not(:disabled) { background: #d0f9df; }
+.workbench .button.primary kbd { color: var(--ink); }
+.workbench .runtime-badge { border: 0; background: var(--panel); border-radius: 6px; }
+.workbench .workspace-tabs { background: var(--ink); gap: 12px; padding-inline: 20px; }
+.workbench .workspace-tabs > button { border-radius: 0; font-weight: 500; }
+.workbench .workspace-tabs > button.active { background: none; color: var(--cyan); border-bottom-color: var(--cyan); }
+.workbench .workspace-tabs .advanced-toggle { color: var(--muted); }
+.workbench .asset-card { border-radius: var(--studio-radius); overflow: hidden; }
+.workbench .asset-card.selected { outline-color: var(--cyan); }
+.workbench .asset-thumbnail { background-color: var(--inset); }
+.workbench .asset-card-info { background: var(--panel); }
+.workbench .queue-heading { background: var(--ink); }
+.workbench .queue-filter button { border-radius: 6px; }
+.workbench .queue-filter button.active { background: var(--panel); }
+.workbench .dialog { border-radius: 16px; border-top: 1px solid var(--edge); box-shadow: 0 24px 80px #0008; }
+.workbench .dialog-header { margin-bottom: 24px; }
+.workbench .inline-note, .workbench .provider-warning, .workbench .provider-card,
+.workbench .notification, .workbench .plan-preview, .workbench .export-summary,
+.workbench .model-template-list button, .workbench .environment-mark .brand-symbol { border-radius: var(--studio-radius); }
+.workbench .notification { box-shadow: 0 10px 30px #0005; }
+.workbench .dialog-backdrop { background: #0b120ed9; }
+.workbench .production-review-image { background: var(--inset); border-radius: 16px; }
+.workbench .production-review-heading h1 { line-height: 1.5; }
+.workbench.generation-workbench { grid-template-rows: 64px minmax(0, 1fr) 170px 30px; }
+.workbench.generation-workbench.queue-collapsed { grid-template-rows: 64px minmax(0, 1fr) 42px 30px; }
+.production-home-shell { flex: 1; min-height: 0; overflow: hidden; }
+.production-home-shell[hidden] { display: none; }
+.generation-workbench .workspace-tabs .tab-trailing { margin-left: 0; }
+@media (max-width: 1100px) {
+  .generation-workbench .runtime-badge { display: none; }
+  .generation-workbench .workspace-tabs { gap: 4px; padding-inline: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workbench *, .workbench *::before, .workbench *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

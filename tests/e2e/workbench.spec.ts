@@ -41,7 +41,7 @@ test.afterEach(async ({page}, testInfo) => {
 
 test('workstation renders actual fixtures and keeps provider requests desktop-only', async ({page}, testInfo) => {
   const production = page.getByRole('region', {name: '에셋 제작 홈', exact: true});
-  await expect(production.getByRole('heading', {name: '게임에 필요한 에셋을 한 번에', exact: true})).toBeVisible();
+  await expect(production.getByRole('heading', {name: '게임의 아이디어를 에셋으로.', exact: true})).toBeVisible();
   await expect(production.getByRole('complementary', {name: 'GPT 연결 상태', exact: true}).getByRole('status')).toHaveText('데스크톱 전용');
   await expect(production.getByRole('button', {name: 'GPT 연결하기', exact: true})).toBeDisabled();
   await expect(production.getByRole('button', {name: '게임 프로젝트 루트 연결', exact: true})).toBeDisabled();

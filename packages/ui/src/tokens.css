@@ -1,0 +1,18 @@
+:root {
+  --studio-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --studio-ink: #141c19;
+  --studio-surface: #1d2823;
+  --studio-inset: #111914;
+  --studio-line: #3c5045;
+  --studio-control-line: #617b69;
+  --studio-text: #f0f4ed;
+  --studio-muted: #b4c4b9;
+  --studio-mint: #b9efcf;
+  --studio-warning: #f4ce94;
+  --studio-paper: #f5f6f0;
+  --studio-paper-line: #d2d9ce;
+  --studio-paper-control-line: #708370;
+  --studio-paper-muted: #526254;
+  --studio-radius: 12px;
+  --studio-motion: 150ms;
+}

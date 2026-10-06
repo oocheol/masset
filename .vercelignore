@@ -13,6 +13,8 @@
 !packages/contracts/package.json
 !packages/ui
 !packages/ui/package.json
+!packages/ui/src
+!packages/ui/src/tokens.css
 apps/site/dist
 **/node_modules
 **/.vercel

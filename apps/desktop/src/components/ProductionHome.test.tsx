@@ -109,7 +109,7 @@ beforeAll(async () => {
     reactModule('react-dom', 'react-dom.development.js', [], ['react']),
     reactModule('react-dom/client', 'react-dom-client.development.js', ['createRoot'], ['scheduler', 'react', 'react-dom']),
     reactModule('scheduler', 'scheduler.development.js', []),
-    ...['../styles.css', '../readability.css', './ProductionHome.css'].map(path => readFile(new URL(path, import.meta.url), 'utf8')),
+    ...['../../../../packages/ui/src/tokens.css', '../styles.css', '../readability.css', '../studio.css', './ProductionHome.css'].map(path => readFile(new URL(path, import.meta.url), 'utf8')),
   ]);
   modules = {
     '/modules/react.js': react, '/modules/react-jsx-runtime.js': jsx, '/modules/react-dom.js': reactDOM,
@@ -198,7 +198,7 @@ async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixturePro
   });
   await page.addInitScript(value => {window.__PRODUCTION_UI_FIXTURE__ = value;}, fixture);
   await page.goto('https://production-ui.test/');
-  await uiExpect(page.getByRole('heading', {name: '게임에 필요한 에셋을 한 번에', exact: true})).toBeVisible();
+  await uiExpect(page.getByRole('heading', {name: '게임의 아이디어를 에셋으로.', exact: true})).toBeVisible();
   if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('production_state')) await uiExpect.poll(async () => (await commands('production_state')).length).toBe(1);
   if (fixture.props.native && fixture.bridgeNative && !fixture.hold.includes('quality3d_status')) {
     if (fixture.failures.quality3d_status > 0) await uiExpect(page.locator('.production-local').getByRole('alert')).toBeVisible();
@@ -431,7 +431,7 @@ describe('ProductionHome UI (mocked desktop boundary)', () => {
     expect(await commands('quality3d_cancel_setup')).toEqual([{action: 'quality3d_cancel_setup'}]); await uiExpect(startButton()).toBeDisabled();
     await page.evaluate(value => {window.__PRODUCTION_UI_FIXTURE__.local = value;}, local());
     await page.getByRole('button', {name: '3D 상태 다시 확인', exact: true}).click(); await uiExpect(startButton()).toBeEnabled();
-    await uiExpect(page.getByText(/GPT로 개념 이미지를 만든 뒤, 로컬 TripoSR로 3D 모델을 재구성/)).toBeVisible();
+    await uiExpect(page.getByText(/GPT 개념 이미지를 로컬 TripoSR로 재구성/)).toBeVisible();
     await page.evaluate(() => {window.__PRODUCTION_UI_FIXTURE__.props.connection!.ready = false; window.__PRODUCTION_UI_RENDER__();});
     await uiExpect(startButton()).toBeDisabled(); expect(await commands('production_start')).toEqual([]);
   });

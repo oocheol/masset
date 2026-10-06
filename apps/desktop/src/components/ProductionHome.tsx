@@ -461,6 +461,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   }
 
   const readyLabel = !desktop ? '데스크톱 전용' : providerChecking ? '연결 확인 중' : providerReady ? '연결 준비됨' : '연결 필요';
+  const currentStep = plan ? 2 : state.connection ? 1 : 0;
   async function installCodexSkill() {
     if (!desktop || skillInstalling) return;
     setSkillInstalling(true); setSkillNotice('');
@@ -473,18 +474,21 @@ export default function ProductionHome({snapshot, native, connection, providerCh
   return <section className="production-home" aria-label="에셋 제작 홈">
     <div className="production-home-inner">
       <header className="production-hero">
-        <div><p className="production-eyebrow"><Sparkles size={18}/> ASSET STUDIO</p><h1>게임에 필요한 에셋을 한 번에</h1><p className="production-lead">만들고 싶은 게임을 설명하세요.<br/>필요한 이미지와 3D 모델을 계획하고, 제작한 결과를 검수합니다.</p></div>
+        <div><p className="production-eyebrow"><Sparkles size={16}/> 게임 에셋 제작</p><h1>게임의 아이디어를 에셋으로.</h1><p className="production-lead">필요한 이미지와 3D 모델을 함께 제작하고, 결과를 확인하세요.</p></div>
         <aside className="production-provider" aria-label="GPT 연결 상태"><div className="production-heading"><strong><Link2 size={18}/> GPT 구독 연결</strong><span className={`production-badge ${providerReady ? 'ready' : ''}`} role="status">{readyLabel}</span></div>
-          <p>{providerReady ? '연결이 준비됐습니다. 실제 생성 결과는 수신 파일에서 확인합니다.' : '계정 연결 상태를 확인한 뒤 분석과 제작을 시작하세요.'}</p>
+          <p>{providerReady ? '분석과 제작을 시작할 수 있습니다.' : '분석을 시작하려면 계정을 연결하세요.'}</p>
           <button className="production-button" type="button" onClick={onProvider} disabled={!desktop || working || providerChecking}>{providerChecking ? <LoaderCircle className="production-spin" size={18}/> : <Link2 size={18}/>} {providerReady ? 'GPT 연결 확인' : 'GPT 연결하기'}<ArrowRight size={16}/></button>
         </aside>
       </header>
-      <aside className="production-codex" aria-label="Codex 게임 제작 연결">
-        <div><strong>Codex로 게임을 만들고 있나요?</strong><p>필요한 에셋 제작부터 게임에 넣고 실행하는 작업까지 이어가세요.</p>{skillNotice && <p role="status">{skillNotice}</p>}</div>
-        <button className="production-button" type="button" disabled={!desktop || skillInstalling} onClick={() => void installCodexSkill()}>{skillInstalling ? <LoaderCircle className="production-spin" size={18}/> : <Link2 size={18}/>} Codex 스킬 설치</button>
-      </aside>
 
-      <ol className="production-steps" aria-label="제작 순서"><li><span>1</span>프로젝트 연결</li><li><span>2</span>게임 설명</li><li><span>3</span>제작하고 검수</li></ol>
+
+      <ol className="production-steps" aria-label="제작 순서">{[
+        {title: '프로젝트 연결', detail: state.connection ? '게임 폴더 연결됨' : '게임 폴더 선택'},
+        {title: '게임 설명', detail: operation === 'plan' ? '제작 목록 분석 중' : plan ? '제작 목록 준비됨' : '설명과 참고 자료'},
+        {title: '제작하고 검수', detail: running ? '개별 에셋 제작 중' : '개별 결과 확인'},
+      ].map((step, index) => <li key={step.title} className={index === currentStep ? 'current' : index < currentStep ? 'done' : ''} aria-current={index === currentStep ? 'step' : undefined}>
+        <span>{index < currentStep ? <Check size={16}/> : index + 1}</span><div><strong>{step.title}</strong><small>{step.detail}</small></div>
+      </li>)}</ol>
       {!desktop && <p className="production-message" role="status">분석과 제작은 데스크톱 앱에서 연결 상태를 확인한 뒤 사용할 수 있습니다.</p>}
       {loadError && <p className="production-message warning" role="alert">{loadError}</p>}
       {error && <p className="production-message warning" role="alert">{error}</p>}
@@ -540,11 +544,11 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             {!!plan.warnings.length && <ul className="production-warnings">{plan.warnings.map((warning, index) => <li key={index}>{safeText(warning, '제작 계획을 확인하세요.')}</li>)}</ul>}
             <p className="production-limit"><AlertTriangle size={16}/>한 계획에서 최대 120개까지 제작합니다. 더 많은 에셋은 나누어 요청하세요.</p>
             {plan.items.length > 120 && <p className="production-message warning" role="alert">120개를 초과한 계획입니다. 범위를 줄이고 다시 분석하세요.</p>}
-          </> : <div className="production-plan-empty"><Layers size={36} strokeWidth={1.4}/><h3>{operation === 'plan' ? '제작 목록을 정리하고 있어요' : '설명에서 제작 목록으로'}</h3><p>게임 설명을 분석하면 에셋의 이름, 종류와 용도를 여기에서 확인할 수 있습니다.</p></div>}
+          </> : <div className="production-plan-empty"><span className="production-empty-icon"><Layers size={28} strokeWidth={1.5}/></span><h3>{operation === 'plan' ? '제작 목록을 정리하고 있어요' : '제작할 목록이 여기에 모입니다'}</h3><p>게임 설명을 분석한 뒤,<br/>각 에셋의 이름·종류·용도를 확인하세요.</p><div className="production-empty-formats"><span><FileImage size={16}/>개별 이미지</span><span><Box size={16}/>독립 3D 모델</span></div></div>}
           {modelUnavailable && (output !== 'images' || incompatiblePlan) && <div className="production-message warning" role="status"><p>기존 계획과 입력은 보존합니다. 이 환경에서 제작할 이미지 전용 계획으로 전환한 뒤 다시 분석하세요.</p><button className="production-button" type="button" disabled={working || running} onClick={switchToImagePlan}>이미지 전용으로 전환</button></div>}
           {needsLocal && !modelUnavailable && <section className="production-local" aria-labelledby={`${id}-local`}><div className="production-heading"><h3 id={`${id}-local`}><Box size={18}/>3D 제작 준비</h3><span className="production-badge" role="status">{!desktop ? '데스크톱 전용' : localLoading ? '확인 중' : localError ? '확인 필요' : localStatus ? localReady ? '준비 완료' : LOCAL_LABELS[localStatus.state] === '준비 완료' ? '준비 확인 필요' : LOCAL_LABELS[localStatus.state] : '확인 필요'}</span></div>
-            <p>GPT로 개념 이미지를 만든 뒤, 로컬 TripoSR로 3D 모델을 재구성합니다. 형상과 텍스처는 제작 결과에서 확인하세요.</p>
-            <p className="production-muted">Windows x64 · Apple Silicon Mac 지원. 최소 메모리 16 GB와 Blender가 필요합니다. 아래에서 로컬 모델을 한 번 준비하세요.</p>
+            <p>GPT 개념 이미지를 로컬 TripoSR로 재구성합니다. 형상과 텍스처는 결과에서 검수하세요.</p>
+            <p className="production-muted">Windows x64 · Apple Silicon · 메모리 16 GB 이상 · Blender 필요</p>
             {download && <p>최초 준비 용량은 총 약 {downloadSize}입니다. Python도 앱이 함께 준비하므로 따로 설치할 필요가 없습니다.</p>}
             {desktop && localStatus && <p role="status">{safeText(localStatus.message, '이 기기의 로컬 3D 준비 상태를 확인하세요.')}</p>}
             {desktop && localStatus && !memoryReady && <p className="production-message warning">기기의 메모리가 로컬 모델의 요구량을 충족하는지 확인하세요.</p>}
@@ -574,9 +578,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
       </div>
 
       <section className="production-results" aria-labelledby={`${id}-results`}><div className="production-heading"><div><h2 id={`${id}-results`}>제작 결과와 검수</h2><p className="production-muted">저장된 제작 기록은 앱을 다시 열어도 여기에서 이어서 확인합니다.</p></div><button className="production-text-button" type="button" onClick={onAdvanced} disabled={working}>에셋 작업실<ArrowRight size={16}/></button></div>
-        {!state.runs.length && <p className="production-results-empty">{!desktop ? '데스크톱 앱에서 제작한 결과를 확인하세요.' : loadError ? '제작 기록을 확인하려면 상태를 다시 불러오세요.' : !loaded ? '저장된 제작 기록을 불러오는 중입니다.' : '제작을 시작하면 실제 결과 파일이 여기에 모입니다.'}</p>}
+        {!state.runs.length && <div className="production-results-empty"><FileImage size={24}/><div><strong>{!desktop ? '제작 결과가 이곳에 모입니다' : loadError ? '제작 기록을 확인하세요' : !loaded ? '제작 기록을 불러오는 중' : '아직 제작한 에셋이 없습니다'}</strong><p>{!desktop ? '데스크톱 앱에서 제작한 결과를 확인하세요.' : loadError ? '제작 기록을 확인하려면 상태를 다시 불러오세요.' : !loaded ? '저장된 제작 기록을 불러오는 중입니다.' : '제작을 시작하면 실제 결과 파일이 여기에 모입니다.'}</p></div></div>}
         {state.runs.map(run => <article key={run.id} className="production-run production-surface" aria-label={`제작 기록 ${safeText(run.brief, '게임 에셋 제작', 100)}`}><header className="production-heading"><div><h3>{safeText(run.brief, '게임 에셋 제작', 180)}</h3><p className="production-muted">{STATUS_LABELS[run.status]} · 제작 완료 {run.items.filter(item => item.status === 'completed').length}/{run.items.length}개 · 검수 승인 {run.items.filter(item => item.review === 'approved').length}개</p></div>
           {activeRun(run) && <button type="button" className="production-button" disabled={!desktop || working} onClick={() => void runAction('production_cancel', run)}><Square size={16}/>제작 취소</button>}</header>
+          <progress className="production-run-progress" value={run.items.filter(item => item.status === 'completed').length} max={run.items.length || 1} aria-label="개별 에셋 제작 완료 수"/>
           {run.blockedBy?.reason === 'unconfirmed_external' && <div className="production-message warning" role="status">
             <p>이전 GPT 요청 {run.blockedBy.requestCount}건의 결과를 확인하지 못해 새 제작이 대기 중입니다. 계속하면 대기 중인 에셋을 제작합니다. 이전 요청은 다시 제출하지 않으며, 늦게 결과가 도착할 수 있습니다.</p>
             {!run.blockedBy.canContinue && <p>이전 요청의 로컬 작업이 종료되는 중입니다.</p>}
@@ -593,7 +598,7 @@ export default function ProductionHome({snapshot, native, connection, providerCh
             const counts = progress && typeof progress.completed === 'number' && typeof progress.total === 'number'
               && Number.isFinite(progress.completed) && Number.isFinite(progress.total) && progress.completed >= 0 && progress.total > 0
               ? `${progress.completed.toLocaleString('ko-KR')}/${progress.total.toLocaleString('ko-KR')}` : '';
-            return <article className="production-result" key={item.id} aria-label={`${safeText(item.name, '제작 에셋')} 제작 결과`}>
+            return <article className="production-result" key={item.id} data-status={item.status} aria-label={`${safeText(item.name, '제작 에셋')} 제작 결과`}>
               <button type="button" className="production-result-preview" aria-label={`${safeText(item.name, '제작 에셋')} 결과 살펴보기`} disabled={!inspectable || working} onClick={() => {if (asset && inspectable) onInspect(asset);}}><Thumbnail snapshot={snapshot} asset={inspectable ? asset : undefined} kind={item.kind}/><span>결과 살펴보기<ArrowRight size={16}/></span></button>
               <div className="production-result-info"><div className="production-heading"><strong>{safeText(item.name, '제작 에셋')}</strong><span className="production-badge">{KIND_LABELS[item.kind]}</span></div><p className="production-item-status" role="status">{item.review === 'approved' ? <CheckCircle2 size={16}/> : item.status === 'running' ? <LoaderCircle size={16} className="production-spin"/> : null}{STATUS_LABELS[item.status]}{item.review === 'approved' ? ' · 검수 승인됨' : item.status === 'completed' ? ' · 검수 대기' : ''}</p>
                 {task && ['pending', 'running'].includes(item.status) && <p className="production-job-progress production-muted" role="status">{taskProgress(task)}{counts ? ` · ${counts}` : ''}</p>}
@@ -608,6 +613,10 @@ export default function ProductionHome({snapshot, native, connection, providerCh
           })}</div>
         </article>)}
       </section>
+      <aside className="production-codex" aria-label="Codex 게임 제작 연결">
+        <div><strong>Codex와 함께 제작하기</strong><p>게임을 구현하는 과정에서 필요한 에셋도 이어서 만드세요.</p>{skillNotice && <p role="status">{skillNotice}</p>}</div>
+        <button className="production-button" type="button" disabled={!desktop || skillInstalling} onClick={() => void installCodexSkill()}>{skillInstalling ? <LoaderCircle className="production-spin" size={18}/> : <Link2 size={18}/>} Codex 스킬 설치</button>
+      </aside>
     </div>
   </section>;
 }

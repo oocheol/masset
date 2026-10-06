@@ -1,5 +1,5 @@
 export const workbenchTokens = {
-  canvas: '#171c24', surface: '#212733', inset: '#1b212b',
-  border: '#343d4b', text: '#dce3ee', muted: '#8793a6',
-  accent: '#91b6e9', warning: '#d2b078', success: '#a4bda7',
+  canvas: '#141c19', surface: '#1d2823', inset: '#111914',
+  border: '#3c5045', text: '#f0f4ed', muted: '#b4c4b9',
+  accent: '#b9efcf', warning: '#f4ce94', success: '#b9efcf',
 } as const;
