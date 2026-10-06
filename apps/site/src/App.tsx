@@ -12,7 +12,7 @@ const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 const hasMacRelease = macReleases.length > 0;
 const skillVersion = '0.1.13';
 const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos-cli13.zip`;
-const skillInstallCommand = 'npx @oocheol/asset-studio@latest install';
+const skillInstallCommand = 'npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install';
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -52,11 +52,11 @@ const statuses = [
 ];
 
 const faqs = [
-  { question: 'Windows와 Mac의 npm 패키지는 따로인가요?', answer: '@oocheol/asset-studio 하나를 두 운영체제에서 사용합니다. 스킬이 Windows x64 또는 Apple Silicon Mac에 맞는 실행 도구를 선택합니다. 공용 npm 설치 기능 0.1.14는 Windows·Mac CLI 0.1.13을 준비합니다. 이미 공개한 npm 0.1.13은 그대로 보존합니다. 플랫폼별 런타임 버전은 독립적으로 관리하므로 Windows를 업데이트해도 Mac 실행 도구가 바뀌지 않습니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '공용 설치와 플랫폼별 버전' },
+  { question: 'Windows와 Mac의 npm 패키지는 따로인가요?', answer: '@oocheol/asset-studio 하나를 두 운영체제에서 사용합니다. 스킬이 Windows x64 또는 Apple Silicon Mac에 맞는 실행 도구를 선택합니다. GitHub 공용 설치 패키지 0.1.14는 Windows·Mac CLI 0.1.13을 준비합니다. npm 레지스트리의 latest는 아직 0.1.13이며 새 게시 인증을 준비 중입니다. 현재 화면의 설치 명령은 검증된 GitHub 패키지를 직접 사용합니다. 이미 공개한 npm 0.1.13은 그대로 보존합니다. 플랫폼별 런타임 버전은 독립적으로 관리하므로 Windows를 업데이트해도 Mac 실행 도구가 바뀌지 않습니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '공용 설치와 플랫폼별 버전' },
   { question: '0.1.13에서는 속도와 3D 품질이 어떻게 달라졌나요?', answer: 'Windows에서는 동일 입력의 검증된 원시 3D 모델을 재사용하고, 원격 이미지 응답을 기다리는 동안 CPU·디스크 자원을 다른 제작에 돌려줍니다. UV 간격과 작은 메시의 펼치기를 개선하고, LOD의 형태 손실을 검사합니다. 모델·텍스처는 미리보기보다 먼저 저장합니다. 실제 CPU 예제의 첫 제작은 80.9초, 캐시 재사용은 31.2초였습니다. 입력에 따른 결과 차이와 한 장에서 보이지 않는 형상의 한계는 남습니다.', link: `${sourceUrl}/blob/master/docs/releases/v0.1.13-windows.md`, label: '실제 측정과 검증 범위' },
   { question: 'npm으로 설치하면 Asset Studio 앱 없이 Codex에서 쓸 수 있나요?', answer: '네. npm으로 Codex 스킬을 설치하면 Asset Studio 앱을 설치하거나 열지 않고 사용할 수 있습니다. Codex가 필요하며 npm 설치에는 Node.js 22.20 이상을 사용하세요. 설치 후 새 Codex 작업에서 $asset-studio로 요청합니다. 기존 공식 Codex 로그인을 재사용하고, 처리용 CLI는 첫 사용 시 다운로드 동의를 받아 준비합니다. 3D를 요청할 때만 Blender·Python·모델을 추가로 준비합니다. Windows x64와 Apple Silicon Mac을 지원합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
-  { question: 'npm 전역 설치 후에는 무엇을 실행하나요?', answer: 'npm install --global @oocheol/asset-studio로 설치했다면 asset-studio-skill install을 한 번 실행해 Codex 스킬을 등록하세요. 그다음 새 Codex 작업을 열면 됩니다. 상단 npx 명령은 설치와 스킬 등록을 함께 진행합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: 'npm 설치·스킬 등록 안내' },
-  { question: 'npm으로 설치한 스킬은 어떻게 업데이트하나요?', answer: '터미널에서 npx @oocheol/asset-studio@latest update를 실행하세요. 이전 스킬은 별도 폴더에 백업하며, 같은 버전의 파일이 온전하면 그대로 유지합니다. npm 설치 기능 버전과 Windows·Mac 실행 도구 버전은 별도로 관리합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '스킬 설치·업데이트 안내' },
+  { question: 'npm 전역 설치 후에는 무엇을 실행하나요?', answer: '전역으로 설치했다면 asset-studio-skill install을 한 번 실행해 Codex 스킬을 등록하세요. Mac CLI 0.1.13을 준비하려면 설치 안내의 GitHub 0.1.14 패키지를 사용하세요. 그다음 새 Codex 작업을 열면 됩니다. 상단 npx 명령은 설치와 스킬 등록을 함께 진행합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: 'npm 설치·스킬 등록 안내' },
+  { question: 'npm으로 설치한 스킬은 어떻게 업데이트하나요?', answer: '터미널에서 npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update를 실행하세요. 이전 스킬은 별도 폴더에 백업하며, 같은 버전의 파일이 온전하면 그대로 유지합니다. npm 설치 기능 버전과 Windows·Mac 실행 도구 버전은 별도로 관리합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '스킬 설치·업데이트 안내' },
   { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
   { question: '개발 도구를 설치해야 하나요?', answer: 'Node.js나 Rust는 앱 사용과 스킬 ZIP 설치에 필요하지 않습니다. npx로 스킬을 설치하려면 Node.js 22.20 이상이 필요합니다. Windows 앱에는 WebView2 Runtime이 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
   { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.13로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.13로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },

@@ -1,6 +1,6 @@
 # Codex에서 게임을 만들며 에셋 제작하기
 
-**0.1.13 공통 스킬은 Windows x64와 Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos-cli13.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. 공용 npm 설치 기능 0.1.14는 운영체제별 CLI 0.1.13의 파일 목록과 해시를 고정합니다. 이미 공개한 npm 0.1.13과 이전 배포 파일은 보존합니다. [Mac 배포 기록](releases/v0.1.13-macos.md)에 실제 CLI 검사와 잠금 상태의 GUI 실행 생략 범위를 구분합니다.
+**0.1.13 공통 스킬은 Windows x64와 Apple Silicon Mac에서 앱 없이 시작할 수 있습니다.** 필요한 독립 CLI·작업자·3D 런타임을 동의 후 사용자 전용 폴더에 준비하고, 기존 공식 Codex 로그인을 재사용합니다. [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos-cli13.zip) · [앱 없이 시작하는 설치 안내](skill-first-setup.md). Codex가 게임을 구현하며 개별 에셋 제작·엔진 반영·실행 검증을 이어가는 구성입니다. 별도 MCP 서버·포트·API 키는 필요하지 않습니다. Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. GitHub 공용 설치 기능 0.1.14는 운영체제별 CLI 0.1.13의 파일 목록과 해시를 고정합니다. 이미 공개한 npm 0.1.13과 이전 배포 파일은 보존합니다. npm 0.1.14 레지스트리 게시는 인증 준비 중이며 설치 안내의 GitHub 패키지를 직접 사용할 수 있습니다. [Mac 배포 기록](releases/v0.1.13-macos.md)에 실제 CLI 검사와 잠금 상태의 GUI 실행 생략 범위를 구분합니다.
 
 | 방법 | 설치와 사용 | 선택 |
 | --- | --- | --- |

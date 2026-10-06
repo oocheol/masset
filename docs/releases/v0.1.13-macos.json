@@ -115,11 +115,13 @@
     "local3dGenerationTested": false,
     "mac3dPerformanceMeasured": false,
     "newWindowsBuildPerformed": false,
-    "publicDownloadsVerified": false,
+    "publicDownloadsVerified": true,
     "npmPublished": false,
-    "siteDeploymentVerified": false,
+    "siteDeploymentVerified": true,
     "skipReason": "Mac GUI, installation and update replacement execution omitted while Mac is locked, as authorized by user.",
-    "siteBuildPassed": true
+    "siteBuildPassed": true,
+    "publicReleaseFilesVerified": 20,
+    "publicGithubInstallerCommandsPassed": true
   },
   "boundaries": {
     "appAdHocSigned": true,
@@ -128,5 +130,31 @@
     "appleNotarized": false,
     "intelMacDistributed": false,
     "paidApiFallback": false
+  },
+  "nativeSourceCommit": "e05242588510d462ec11512011c88b5bcad0125f",
+  "npmRegistryPublication": {
+    "status": "blocked_by_authentication",
+    "latestRegistryVersion": "0.1.13",
+    "requestedVersion": "0.1.14",
+    "code": "ENEEDAUTH",
+    "workflow": "https://github.com/oocheol/masset/actions/runs/37433001194",
+    "windowsAndMacInstallerChecksPassed": true,
+    "githubTarballPublishedAndVerified": true
+  },
+  "publicDownloadsVerification": {
+    "checkedAt": "2026-10-06T07:58:17.000Z",
+    "versions": {
+      "windows": "0.1.13",
+      "macos": "0.1.13"
+    },
+    "windowsChannelSha256": "cbf3271e9414aba105fb207c612e3f2c3fa96a4014eb49a78997adbbad872ad4",
+    "macChannelSha256": "443874a3e79375206efb2cd5fdea3885e6317f9b7a36ceddd0555b40dd1f8d22"
+  },
+  "productionSite": {
+    "url": "https://masset-nu.vercel.app/",
+    "deploymentUrl": "https://masset-gxwas5r9r-oocheols-projects.vercel.app",
+    "macVersion": "0.1.13",
+    "windowsVersion": "0.1.13",
+    "horizontalOverflowAt1280": false
   }
 }

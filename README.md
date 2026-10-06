@@ -25,7 +25,7 @@
 
 Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.13과 Apple Silicon Mac 0.1.13에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
 
-**Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. 공용 npm 설치 기능은 0.1.14이며 양쪽 CLI 0.1.13을 준비합니다.** 검증된 원시 3D 캐시, 단계별 자원 배분, 형태를 보존하는 LOD와 UV 개선을 Mac에도 반영했습니다. 완성된 모델은 선택 미리보기보다 먼저 저장하며, 미리보기 오류가 모델 제작을 실패로 바꾸지 않습니다. 두 플랫폼의 앱 없는 Codex 스킬은 기존 공식 로그인을 재사용하고, 필요한 도구는 동의 후 사용자 전용 공간에 준비합니다. Apple Silicon Mac 앱·DMG·서명된 업데이트·독립 CLI를 추가 빌드했습니다. [게임 제작 흐름](docs/game-production.md) · [Windows 0.1.13 검증](docs/releases/v0.1.13-windows.md) · [Mac 0.1.13 검증 범위](docs/releases/v0.1.13-macos.md)
+**Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. GitHub 공용 설치 기능은 0.1.14이며 양쪽 CLI 0.1.13을 준비합니다. npm 레지스트리 게시는 인증 준비 중입니다.** 검증된 원시 3D 캐시, 단계별 자원 배분, 형태를 보존하는 LOD와 UV 개선을 Mac에도 반영했습니다. 완성된 모델은 선택 미리보기보다 먼저 저장하며, 미리보기 오류가 모델 제작을 실패로 바꾸지 않습니다. 두 플랫폼의 앱 없는 Codex 스킬은 기존 공식 로그인을 재사용하고, 필요한 도구는 동의 후 사용자 전용 공간에 준비합니다. Apple Silicon Mac 앱·DMG·서명된 업데이트·독립 CLI를 추가 빌드했습니다. [게임 제작 흐름](docs/game-production.md) · [Windows 0.1.13 검증](docs/releases/v0.1.13-windows.md) · [Mac 0.1.13 검증 범위](docs/releases/v0.1.13-macos.md)
 
 Windows 실제 CLI의 한 이미지→3D 예제에서 첫 제작은 **80.9초**, 같은 원시 모델을 검증해 재사용한 제작은 **31.2초**였습니다. 원시 GLB는 바이트가 같고 재사용 시 재추론하지 않았습니다. 같은 원시 구형 메시의 512px UV 표면 사용률은 이전 결과 **5.74% → 25.05%**로 늘었습니다. 단일 CPU 예제의 관측값이며 모든 입력의 속도나 보이지 않는 형상의 정확도를 보장하지 않습니다. [측정 범위와 재열기 검사](docs/releases/v0.1.13-windows.md)를 확인하세요.
 
@@ -130,10 +130,12 @@ Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이
 
 ## 앱 없이 Codex로 에셋 제작하기 · 독립 스킬 0.1.13
 
+npm 레지스트리의 `latest`는 아직 0.1.13(Mac CLI 0.1.11 고정)입니다. 아래 설치·업데이트 명령은 공개 GitHub의 검증된 설치 패키지 0.1.14를 직접 사용해 Mac CLI도 0.1.13으로 준비합니다. npm 게시 인증을 완료한 뒤에는 `@latest` 명령도 같은 버전을 제공합니다.
+
 **Asset Studio 앱을 설치하거나 열지 않고 Codex에서 사용할 수 있습니다.** Windows x64와 Apple Silicon Mac에서 Codex 스킬로 시작합니다. Codex가 필요하며, 아래 npm 설치 명령에는 Node.js 22.20 이상을 사용하세요.
 
 ```sh
-npx @oocheol/asset-studio@latest install
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install
 ```
 
 설치 후 **새 Codex 작업**에서 요청하세요.
@@ -143,7 +145,7 @@ npx @oocheol/asset-studio@latest install
 npm 전역 설치를 선택했다면 **`asset-studio-skill install`도 한 번 실행**해야 Codex 스킬이 등록됩니다.
 
 ```sh
-npm install --global @oocheol/asset-studio
+npm install --global https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz
 asset-studio-skill install
 ```
 
@@ -152,10 +154,10 @@ asset-studio-skill install
 최신 npm 버전에 포함된 스킬로 업데이트하려면 다음을 실행하세요.
 
 ```sh
-npx @oocheol/asset-studio@latest update
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update
 ```
 
-[전용 npm 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)는 Windows·Mac 공용 패키지 하나입니다. 운영체제에 맞는 CLI를 선택하며 각 플랫폼의 런타임 버전은 독립적으로 관리합니다. 이전·수정된 스킬을 백업하고 고정 배포 파일의 SHA-256을 검사합니다. npm 설치 기능 0.1.14는 Windows·Mac CLI 0.1.13을 준비합니다. 공개 npm 0.1.13은 이전 내용으로 보존합니다. Node.js를 사용하지 않으려면 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos-cli13.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하세요. ZIP 설치에는 Node.js가 필요하지 않습니다.
+[전용 npm 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)는 Windows·Mac 공용 패키지 하나입니다. 운영체제에 맞는 CLI를 선택하며 각 플랫폼의 런타임 버전은 독립적으로 관리합니다. 이전·수정된 스킬을 백업하고 고정 배포 파일의 SHA-256을 검사합니다. GitHub 설치 기능 0.1.14는 Windows·Mac CLI 0.1.13을 준비하며 npm 레지스트리 게시는 인증 준비 중입니다. 공개 npm 0.1.13은 이전 내용으로 보존합니다. Node.js를 사용하지 않으려면 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.13/AssetStudio_0.1.13_codex-plugin-windows-macos-cli13.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하세요. ZIP 설치에는 Node.js가 필요하지 않습니다.
 
 [앱 없이 시작하는 설치 안내](docs/skill-first-setup.md) · [CLI·방식 비교](docs/codex-integration.md) · [이전 Mac 검증 범위](docs/codex-integration-validation.md) · [배포용 스킬 플러그인](integrations/codex/plugin.json)
 

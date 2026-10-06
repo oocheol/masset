@@ -6,28 +6,30 @@ Codex에서 Asset Studio 스킬을 사용하면 **Asset Studio 앱을 따로 설
 
 ## 설치
 
+npm 레지스트리의 `latest`는 아직 0.1.13입니다. 새 0.1.14 게시 인증이 준비되지 않아 아래 명령은 공개 GitHub의 검증된 0.1.14 설치 패키지를 직접 사용합니다. 양쪽 CLI는 0.1.13을 준비합니다. npm 게시 후에는 `npx @oocheol/asset-studio@latest install`로도 같은 스킬을 받을 수 있습니다.
+
 Codex에서 작업을 열 수 있는 환경을 먼저 준비하세요. Asset Studio 앱은 설치하지 않아도 됩니다. Node.js 22.20 이상에서 아래 명령을 실행하면 Codex 스킬 설치·등록을 함께 진행합니다. Windows x64·Apple Silicon Mac 공통입니다.
 
 ```sh
-npx @oocheol/asset-studio@latest install
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install
 ```
 
-설치된 스킬을 최신 npm 버전에 포함된 스킬로 업데이트하려면 다음을 실행합니다. 현재 npm 설치 패키지는 **0.1.14**, 스킬이 준비하는 독립 CLI는 **Windows 0.1.13 · Mac 0.1.13**입니다. npm은 Windows·Mac 공통 패키지 하나이며, 처음 실행할 때 운영체제에 맞는 CLI를 선택합니다. 각 플랫폼의 CLI 버전은 별도로 관리하므로 Windows 업데이트가 기존 Mac 실행 파일을 바꾸지 않습니다. `status`에서 설치 기능과 네이티브 버전을 둘 다 표시합니다.
+설치된 스킬을 새 GitHub 설치 패키지에 포함된 스킬로 업데이트하려면 다음을 실행합니다. 현재 GitHub 설치 패키지는 **0.1.14**, 스킬이 준비하는 독립 CLI는 **Windows 0.1.13 · Mac 0.1.13**입니다. npm은 Windows·Mac 공통 패키지 하나이며, 처음 실행할 때 운영체제에 맞는 CLI를 선택합니다. 각 플랫폼의 CLI 버전은 별도로 관리하므로 Windows 업데이트가 기존 Mac 실행 파일을 바꾸지 않습니다. `status`에서 설치 기능과 네이티브 버전을 둘 다 표시합니다.
 
 ```sh
-npx @oocheol/asset-studio@latest update
-npx @oocheol/asset-studio@latest status
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz status
 ```
 
-한 버전을 고정하려면 `npx @oocheol/asset-studio@0.1.14 install`을 사용하세요. 전역 명령을 계속 쓰려면 다음과 같이 설치할 수 있습니다.
+한 버전을 고정하려면 `npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install`을 사용하세요. 전역 명령을 계속 쓰려면 다음과 같이 설치할 수 있습니다.
 
 ```sh
-npm install --global @oocheol/asset-studio
+npm install --global https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz
 asset-studio-skill install
 asset-studio-skill status
 ```
 
-**npm 전역 설치 뒤에는 `asset-studio-skill install`도 한 번 실행해야 Codex 스킬이 등록됩니다.** 전역 npm 패키지는 `npm install --global @oocheol/asset-studio@latest`로 업데이트하고 `asset-studio-skill update`를 실행합니다. `npm install` 자체는 스킬을 바꾸거나 실행 파일·모델을 내려받지 않습니다. 설치 훅과 외부 npm 의존성은 없습니다.
+**npm 전역 설치 뒤에는 `asset-studio-skill install`도 한 번 실행해야 Codex 스킬이 등록됩니다.** 전역 npm 패키지는 `npm install --global https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz`로 업데이트하고 `asset-studio-skill update`를 실행합니다. `npm install` 자체는 스킬을 바꾸거나 실행 파일·모델을 내려받지 않습니다. 설치 훅과 외부 npm 의존성은 없습니다.
 
 사용자 기본 경로는 `~/.agents/skills/asset-studio`이며, 기존 스킬이 `~/.codex/skills/asset-studio` 한 곳에만 있으면 그 경로를 재사용합니다. 이전·수정된 스킬 전체는 `~/.agents/.asset-studio-skill/backups`에 보존한 후 새 버전으로 교체합니다. 백업은 스킬 탐색 폴더 밖에 두며 자동 삭제하지 않습니다. 두 위치에 이미 같은 스킬이 있으면 중복 경로를 표시하고 이전 사본을 임의로 지우지 않습니다. 프로젝트 하나에만 설치하려면 `--project "절대 프로젝트 경로"`를 추가하세요. 그 경우 프로젝트 `.agents/skills/asset-studio`와 `.agents/.asset-studio-skill/backups`를 사용합니다.
 
@@ -95,4 +97,4 @@ Blender SHA-256: Windows `0e631dad7d0cad6d5d18abdd2e2550f6c0213215334eda00ddbd3d
 
 이미지→3D에는 최소 16GB RAM이 필요합니다. Windows는 Microsoft Visual C++ x64 런타임이 없으면 `needs_attention`으로 알립니다. 이 시스템 구성요소를 관리자 권한으로 몰래 설치하지 않습니다. Mac CLI에는 Apple Developer ID 공증이 없습니다. 운영체제의 신뢰 확인이 필요한 경우 해당 파일만 확인하며 시스템 전체 보안을 끄지 않습니다.
 
-GUI 앱은 제작 현황·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. npm 설치 기능은 이미 공개한 0.1.13을 변경할 수 없어 0.1.14로 배포하며, 실행 도구 자체의 버전은 0.1.13입니다. [Windows 검증](releases/v0.1.13-windows.md)과 [Mac 빌드·CLI 검사 및 GUI 실행 생략 범위](releases/v0.1.13-macos.md)를 확인하세요. Mac 0.1.13 앱의 설치 버튼도 새 공통 스킬과 앱의 CLI를 등록합니다. 이전 Mac 0.1.12 앱은 기존 0.1.11 스킬을 포함하므로 앱 또는 npm 스킬을 업데이트하세요.
+GUI 앱은 제작 현황·결과 검수·라이브러리를 직접 사용할 때 선택할 수 있습니다. Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. 설치 기능은 이미 공개한 npm 0.1.13을 변경할 수 없어 0.1.14를 GitHub에서 제공하며, 실행 도구 자체의 버전은 0.1.13입니다. [Windows 검증](releases/v0.1.13-windows.md)과 [Mac 빌드·CLI 검사 및 GUI 실행 생략 범위](releases/v0.1.13-macos.md)를 확인하세요. Mac 0.1.13 앱의 설치 버튼도 새 공통 스킬과 앱의 CLI를 등록합니다. 이전 Mac 0.1.12 앱은 기존 0.1.11 스킬을 포함하므로 앱 또는 npm 스킬을 업데이트하세요.

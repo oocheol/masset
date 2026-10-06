@@ -2,7 +2,20 @@
 
 전용 패키지는 `@oocheol/asset-studio`, 명령은 `asset-studio-skill`입니다. [설치·업데이트 안내](skill-first-setup.md)와 [패키지 소스](../integrations/npm)를 참고하세요.
 
-## 0.1.13 공개 확인 · 2026-10-06
+## 0.1.14 · GitHub 배포 완료, npm 인증 대기
+
+Mac 앱·CLI를 Windows와 같은 0.1.13으로 맞추면서 공용 설치 기능 0.1.14에 두 CLI 0.1.13을 고정했습니다. [공개 GitHub 설치 패키지](https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz)는 **79,487바이트**, SHA-256 `93989dff447153916041dc28ffe4d7fd52b7dd4c08b4b71e72fc4d617dd351f2`이며 스킬 목록 SHA-256은 `7c63fdfc823a10d8e3bfaee161d71215dbc5f008997ba6f6e4617a6ca3a8383c`입니다.
+
+새 npm 캐시·격리 프로젝트에서 아래 공개 URL로 실제 `install`·`update`·`status`를 실행했습니다. 설치 기능 0.1.14, Windows·Mac 실행 도구 0.1.13, `current`와 동일 버전의 `unchanged`를 확인했습니다. 전역 스킬·인증은 변경하지 않았으며 네이티브 도구·모델 다운로드도 요청하지 않았습니다. Mac CLI의 실제 처리는 [별도 네이티브 기록](releases/v0.1.13-macos.md)으로 구분합니다.
+
+```sh
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install
+npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update
+```
+
+npm 레지스트리의 `latest`는 아직 **0.1.13**입니다. 이 Mac의 npm 로그인이 없고, [GitHub 게시 작업](https://github.com/oocheol/masset/actions/runs/37433001194)도 `ENEEDAUTH`로 거절됐습니다. 같은 작업의 Windows·Apple Silicon Mac 설치 검사 19개와 실제 tarball 검사는 각각 통과했습니다. 자동 게시 인증이 구성됐다고 주장하지 않습니다. npm 로그인 또는 trusted publisher 구성을 완료한 뒤 0.1.14를 게시할 수 있으며, 현재 사이트·README의 기본 명령은 검증된 GitHub 패키지를 사용합니다.
+
+## 0.1.13 npm 최초 공개 확인 · 후속 Mac 0.1.13 배포 전
 
 [npm 공개 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)의 `latest`는 **0.1.13**입니다. Windows·Mac 공용 패키지 하나이며 운영체제별 실행 도구를 선택합니다. 이번에는 **Windows 앱·독립 CLI 0.1.13**, **Mac 앱 0.1.12·독립 CLI 0.1.11**을 사용합니다. 새 Mac 실행 파일은 만들지 않았습니다.
 
