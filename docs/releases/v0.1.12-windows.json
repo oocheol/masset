@@ -231,7 +231,31 @@
       "macRuntimeUnchanged": true,
       "repeatedUpdate": "unchanged"
     },
-    "productionSiteVerified": false
+    "productionSiteVerified": true,
+    "productionSite": {
+      "url": "https://masset-nu.vercel.app/",
+      "deploymentUrl": "https://masset-523ipv0qw-oocheols-projects.vercel.app",
+      "deploymentId": "dpl_FydfwzN2jbJqLgRgUX2Mjq3qeuDW",
+      "status": "READY",
+      "sourceCommit": "72be0342cd316263218c33a462d5627e09f21449",
+      "checkedAt": "2026-10-06T04:34:42.993Z",
+      "viewportWidths": [
+        390,
+        1440
+      ],
+      "horizontalOverflow": false,
+      "decodedImages": 9,
+      "publicConsoleErrors": 0,
+      "installCommand": "npx @oocheol/asset-studio@latest install",
+      "skillAboveAppDownloads": true,
+      "downloadLinksVerified": [
+        "https://www.npmjs.com/package/@oocheol/asset-studio",
+        "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudio_0.1.12_codex-plugin-windows-macos.zip",
+        "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudio_0.1.12_x64-setup.exe",
+        "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudio-windows-x64-portable.zip",
+        "https://github.com/oocheol/masset/releases/download/v0.1.12/AssetStudio_0.1.12_macos-arm64.dmg"
+      ]
+    }
   },
   "boundaries": {
     "windowsAuthenticodeSigned": false,
