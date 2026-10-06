@@ -49,7 +49,7 @@ h1{font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:clamp(50px,6.1vw,88px
 .skill-command-copy{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:8px 12px;border:1px solid var(--edge);border-radius:2px;background:var(--panel);color:var(--paper);font-size:16px;line-height:1.5}
 .skill-command-copy:hover{border-color:var(--cyan);color:var(--cyan)}
 .skill-install-command{display:block;font-family:Consolas,"SFMono-Regular",monospace;font-size:16px;line-height:1.8;white-space:normal;overflow-wrap:anywhere;user-select:all}
-.skill-install-command span{white-space:nowrap}
+.skill-install-command span{display:inline-block;width:max-content;max-width:100%;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
 .skill-install-help{margin-top:12px;color:var(--muted);font-size:16px;line-height:1.8;word-break:keep-all}
 .skill-install-help a{text-decoration:underline;text-decoration-color:var(--edge);text-underline-offset:4px}
 .skill-install-help a:hover{color:var(--cyan);text-decoration-color:var(--cyan)}

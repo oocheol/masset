@@ -2,6 +2,14 @@
 
 전용 패키지는 `@oocheol/asset-studio`, 명령은 `asset-studio-skill`입니다. [설치·업데이트 안내](skill-first-setup.md)와 [패키지 소스](../integrations/npm)를 참고하세요.
 
+## 0.1.11 공개 확인 · 2026-10-06
+
+[npm 공개 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)의 `latest`는 0.1.11입니다. 공개 레지스트리에서 받은 77,013바이트의 실제 배포 파일이 게시한 파일과 일치했습니다. SHA-256은 `3694f028ac698d379f5cfd7520fe1fc910b0b77531b3836172a9bef3972061fb`입니다.
+
+새 npm 캐시와 격리된 프로젝트에서 `npx @oocheol/asset-studio@latest`의 `install`·`update`·`status`를 실행해 설치, 같은 버전 유지, 정상 상태를 확인했습니다. 설치된 스킬 8개 파일과 설치 기록의 무결성도 검사했습니다. 이 검증은 사용자 전역 스킬을 변경하거나 새 네이티브 도구·모델을 다운로드하지 않았습니다.
+
+[Windows·Apple Silicon Mac CI](https://github.com/oocheol/masset/actions/runs/37402478433)에서 설치·백업·손상 거부·실패 복구 검사 19개와 실제 npm 배포 파일 설치가 각각 통과했습니다. npm 설치 기능과 스킬 배포 검사이며 네이티브 앱·이미지 제공자의 새로운 실행 실증과는 구분합니다.
+
 ## 버전과 산출물
 
 - `integrations/npm/package.json`의 버전은 npm 설치 기능 버전입니다. 한번 게시한 버전은 다시 사용하지 않습니다.

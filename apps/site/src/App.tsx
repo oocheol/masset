@@ -12,7 +12,7 @@ const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 const hasMacRelease = macReleases.length > 0;
 const skillVersion = '0.1.11';
 const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos.zip`;
-const skillInstallCommand = 'npx skills@1.7.0 add oocheol/masset --skill asset-studio --agent codex --global --copy';
+const skillInstallCommand = 'npx @oocheol/asset-studio@latest install';
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -53,6 +53,7 @@ const statuses = [
 
 const faqs = [
   { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64·Apple Silicon Mac용 공통 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. Mac 독립 CLI도 제공합니다. 상단 터미널 명령이나 아래 공통 스킬 ZIP으로 설치하세요.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
+  { question: 'npm으로 설치한 스킬은 어떻게 업데이트하나요?', answer: '터미널에서 npx @oocheol/asset-studio@latest update를 실행하세요. 이전 스킬은 별도 폴더에 백업하며, 같은 버전의 파일이 온전하면 그대로 유지합니다. npm 설치 기능 버전과 Windows·Mac 실행 도구 버전은 별도로 관리합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '스킬 설치·업데이트 안내' },
   { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
   { question: '개발 도구를 설치해야 하나요?', answer: 'Node.js나 Rust는 앱 사용과 스킬 ZIP 설치에 필요하지 않습니다. npx로 스킬을 설치하려면 Node.js 22.20 이상이 필요합니다. Windows 앱에는 WebView2 Runtime이 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
   { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.11로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.11으로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
@@ -157,7 +158,7 @@ export default function App() {
               </button>
             </div>
             <code className="skill-install-command" ref={skillCommandElement}>{skillInstallCommand.split(' ').map((part, index) => <Fragment key={index}>{index > 0 && ' '}<span>{part}</span></Fragment>)}</code>
-            <p className="skill-install-help" id="skill-install-help">Node.js 22.20 이상 · <a href="#download-skill">ZIP 설치 안내</a><br />설치 후 새 Codex 작업에서 <code>$asset-studio</code>로 요청하세요.</p>
+            <p className="skill-install-help" id="skill-install-help">Node.js 22.20 이상 · <a href="https://www.npmjs.com/package/@oocheol/asset-studio">npm 패키지</a> · <a href="#download-skill">ZIP 안내</a><br />설치 후 새 Codex 작업에서 <code>$asset-studio</code>로 요청하세요.</p>
             <p className="skill-copy-status" role="status" aria-live="polite">{skillCopyState === 'copied' ? '복사했습니다. 터미널에 붙여넣어 실행하세요.' : skillCopyState === 'failed' ? '명령을 선택했습니다. 직접 복사해 주세요.' : ''}</p>
           </div>
           <div className="hero-actions"><DownloadLink /><MacDownloadLink /></div>
