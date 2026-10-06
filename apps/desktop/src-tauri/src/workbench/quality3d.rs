@@ -105,15 +105,14 @@ pub(super) fn memory_budget_mb() -> u64 {
 }
 
 #[cfg(not(windows))]
-fn python() -> Option<PathBuf> {
-    [
-        "/usr/bin/python3",
-        "/opt/homebrew/bin/python3",
-        "/usr/local/bin/python3",
-    ]
-    .into_iter()
-    .map(PathBuf::from)
-    .find(|p| p.is_file())
+fn python(data: &Path) -> Option<PathBuf> {
+    if let Ok(Some(path)) = asset_providers::local_prerequisites::discover(
+        data,
+        asset_providers::local_prerequisites::Kind::MacPython,
+    ) {
+        return Some(path);
+    }
+    asset_providers::local_prerequisites::system_mac_python()
 }
 
 fn validate_request(request: &Request) -> Result<()> {
@@ -168,6 +167,39 @@ fn process_environment(command: &mut Command) {
         .env("PYTHONUNBUFFERED", "1");
     #[cfg(windows)]
     command.creation_flags(0x08000000);
+}
+
+fn verify_locked_runtime_file(root: &Path, name: &str, expected: &Value) -> Result<()> {
+    let relative = Path::new(name);
+    if relative.is_absolute() || relative.components().any(|part| !matches!(part, std::path::Component::Normal(_))) {
+        bail!("고정 런타임 파일 경로가 올바르지 않습니다.");
+    }
+    let mut path = root.to_path_buf();
+    for part in relative.components() {
+        path.push(part);
+        let metadata = fs::symlink_metadata(&path)?;
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::MetadataExt;
+            if metadata.file_attributes() & 0x400 != 0 { bail!("모델 파일은 reparse 경로를 사용할 수 없습니다."); }
+        }
+        if metadata.file_type().is_symlink() { bail!("모델 파일은 링크를 사용할 수 없습니다."); }
+    }
+    let metadata = fs::metadata(&path)?;
+    let bytes = expected["bytes"].as_u64().context("고정 파일 크기가 없습니다.")?;
+    if !metadata.is_file() || metadata.len() != bytes { bail!("고정 런타임 파일 크기가 일치하지 않습니다."); }
+    let mut input = fs::File::open(path)?;
+    let mut hash = Sha256::new();
+    let mut buffer = [0u8; 65536];
+    let started = Instant::now();
+    loop {
+        if started.elapsed() > Duration::from_secs(180) { bail!("로컬 파일 검증의 제한 시간을 초과했습니다."); }
+        let length = input.read(&mut buffer)?;
+        if length == 0 { break; }
+        hash.update(&buffer[..length]);
+    }
+    if expected["sha256"] != format!("{:x}", hash.finalize()) { bail!("고정 런타임 파일 해시가 일치하지 않습니다."); }
+    Ok(())
 }
 
 fn last_stage(path: &Path) -> Option<String> {
@@ -311,6 +343,58 @@ impl Backend {
         Ok(())
     }
 
+    /// Explicit read-only validation for headless preparation. UI status polls
+    /// remain cheap; a ready marker alone is not proof of installed runtime files.
+    fn quality3d_verify_runtime(&self) -> Value {
+        let mut status = self.quality3d_status();
+        let verified = (|| -> Result<Value> {
+            let ready = self.quality3d_ready().context("검증할 로컬 모델 준비 정보가 없습니다.")?;
+            let runtime = self.quality3d_runtime();
+            #[cfg(windows)]
+            super::python_windows::verify_installed_embedded(&runtime)?;
+            #[cfg(target_os = "macos")]
+            {
+                let actual = Path::new(ready["interpreterPath"].as_str().context("Python 경로가 없습니다.")?).canonicalize()?;
+                let base = python(&self.inner.runtime_data).context("호환 Python을 확인하지 못했습니다.")?.canonicalize()?;
+                if actual != base { bail!("격리 Python의 원본 경로가 일치하지 않습니다."); }
+            }
+            let lock: Value = serde_json::from_slice(&fs::read(self.quality3d_worker("image3d", runtime_lock_name())?)?)?;
+            for (name, entry) in lock["runtimeFiles"].as_object().context("고정 모델 파일 목록이 없습니다.")? {
+                verify_locked_runtime_file(&runtime, name, entry)?;
+            }
+            let code = runtime.join("code");
+            let entries = lock["codeFiles"].as_object().context("고정 모델 코드 목록이 없습니다.")?;
+            for (name, entry) in entries { verify_locked_runtime_file(&code, name, entry)?; }
+            let adapter = code.join("image3d_adapter.py");
+            if asset_core::sha256_file(&adapter)?.0 != asset_core::sha256_file(&self.quality3d_worker("image3d", "image3d_adapter.py")?)?.0 {
+                bail!("로컬 모델 어댑터 해시가 일치하지 않습니다.");
+            }
+            // The status worker checks exact code file membership, embedded
+            // Python pins and actual CPU imports after the trusted file hashes.
+            let mut command = Command::new(ready["interpreterPath"].as_str().context("Python 경로가 없습니다.")?);
+            command.args(["-I", "-B"]).arg(self.quality3d_worker("image3d", "status.py")?)
+                .arg("--runtime-root").arg(&runtime);
+            process_environment(&mut command);
+            let bytes = super::bounded_native_stdout(&mut command, Duration::from_secs(180), 64 * 1024)?;
+            let proof: Value = serde_json::from_slice(&bytes)?;
+            if proof["installed"] != true || proof["state"] != "ready" { bail!("로컬 모델의 파일·CPU 실행 검증이 실패했습니다."); }
+            Ok(proof)
+        })();
+        match verified {
+            Ok(proof) => {
+                status["runtimeIntegrityVerified"] = json!(true);
+                status["runtimeProof"] = proof;
+            }
+            Err(_) => {
+                status["installed"] = json!(false);
+                status["state"] = json!("error");
+                status["runtimeIntegrityVerified"] = json!(false);
+                status["message"] = json!("로컬 모델의 파일·실행 환경 검증이 실패했습니다. 기존 파일은 보존했습니다.");
+            }
+        }
+        status
+    }
+
     pub(super) fn quality3d_status(&self) -> Value {
         let supported = reconstruction_supported();
         let busy = self.inner.quality3d_setup.busy.load(Ordering::SeqCst);
@@ -362,6 +446,7 @@ impl Backend {
     pub(super) fn quality3d_setup_request(&self, request: &Value) -> Result<Value> {
         match text_field(request, "action")? {
             "quality3d_status" => Ok(self.quality3d_status()),
+            "quality3d_verify_runtime" => Ok(self.quality3d_verify_runtime()),
             "quality3d_open_download_info" => {
                 let url = if cfg!(windows) {
                     "https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json"
@@ -442,7 +527,7 @@ impl Backend {
             |stage, message| { *self.inner.quality3d_setup.progress.lock().unwrap() = (stage.into(), message); },
         )?;
         #[cfg(not(windows))]
-        let python = python().context("Apple Silicon용 CPython 3.9가 필요합니다. 시스템 Python 버전을 확인해 주세요.")?;
+        let python = python(&self.inner.runtime_data).context("Apple Silicon용 CPython 3.9가 필요합니다. CLI prepare --consent-downloads --needs-3d로 준비해 주세요.")?;
         let log_root = self.inner.data.join("image3d/setup-logs");
         fs::create_dir_all(&log_root)?;
         let log_path = log_root.join(format!("{}.log", Uuid::new_v4()));
@@ -854,6 +939,20 @@ impl Backend {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn stale_ready_markers_cannot_hide_missing_or_modified_runtime_files() {
+        let root = std::env::temp_dir().join(format!("asset-runtime-integrity-{}", Uuid::new_v4()));
+        fs::create_dir(&root).unwrap();
+        let expected = json!({"bytes":4,"sha256":format!("{:x}", Sha256::digest(b"good"))});
+        assert!(verify_locked_runtime_file(&root, "model.bin", &expected).is_err());
+        fs::write(root.join("model.bin"), b"good").unwrap();
+        assert!(verify_locked_runtime_file(&root, "model.bin", &expected).is_ok());
+        fs::write(root.join("model.bin"), b"evil").unwrap();
+        assert!(verify_locked_runtime_file(&root, "model.bin", &expected).is_err());
+        assert!(verify_locked_runtime_file(&root, "../model.bin", &expected).is_err());
+        fs::remove_file(root.join("model.bin")).unwrap();
+        fs::remove_dir(root).unwrap();
+    }
     #[test]
     fn generation_geometry_numbers_survive_project_json_roundtrips() {
         // Values from the first actual Windows receipt. Approximate parsing

@@ -47,6 +47,41 @@ fn bootstrap_lock(path: &Path) -> Result<fs::File> {
     Ok(file)
 }
 
+/// Check the isolated interpreter against the retained compiled archive pins
+/// before executing a runtime status script. This performs no installation.
+pub(super) fn verify_installed_embedded(runtime: &Path) -> Result<()> {
+    let archive_path = runtime.join("downloads/python-3.12.10-embed-amd64.zip");
+    if !valid_archive(&archive_path) { bail!("공식 Python 원본 아카이브 검증에 실패했습니다."); }
+    let directory = runtime.join("venv");
+    let metadata = fs::symlink_metadata(&directory)?;
+    if !metadata.is_dir() || metadata.file_attributes() & 0x400 != 0 { bail!("격리 Python 폴더가 올바르지 않습니다."); }
+    let mut archive = zip::ZipArchive::new(fs::File::open(archive_path)?)?;
+    if archive.len() > 256 { bail!("Python 파일 수 제한을 초과했습니다."); }
+    let mut names = std::collections::HashSet::new();
+    let mut total = 0u64;
+    for i in 0..archive.len() {
+        let mut entry = archive.by_index(i)?;
+        let name = entry.name().to_owned();
+        if !flat_name(&name) || !names.insert(name.clone()) || entry.is_dir() || entry.size() > 50 * 1024 * 1024 {
+            bail!("공식 Python 파일 목록이 올바르지 않습니다.");
+        }
+        total += entry.size();
+        if total > 100 * 1024 * 1024 { bail!("Python 파일 크기 제한을 초과했습니다."); }
+        let mut bytes = Vec::new();
+        entry.read_to_end(&mut bytes)?;
+        if name == "python312._pth" { bytes = b"python312.zip\n.\nLib/site-packages\nimport site\n".to_vec(); }
+        let path = directory.join(&name);
+        if !regular(&path) || fs::read(path)? != bytes { bail!("격리 Python 실행 파일이 변경됐습니다. 기존 파일은 보존했습니다."); }
+    }
+    for entry in fs::read_dir(&directory)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file() && !names.contains(&entry.file_name().to_string_lossy().to_string()) {
+            bail!("격리 Python 폴더에 알 수 없는 실행 파일이 있습니다.");
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn prepare(
     root: &Path,
     cancelled: impl Fn() -> bool,

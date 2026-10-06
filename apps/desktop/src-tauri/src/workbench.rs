@@ -78,8 +78,15 @@ impl Backend {
     ) -> Self {
         let codex_installer =
             asset_providers::installer::CodexInstaller::new(runtime_data.join("codex-runtimes"));
-        let blender = find_blender();
-        let blender_version = blender.as_deref().and_then(blender_version);
+        let mut blender = find_blender();
+        let mut blender_version = blender.as_deref().and_then(blender_version);
+        if blender_version.is_none() && std::env::var_os("BLENDER_EXECUTABLE").is_none() {
+            blender = asset_providers::local_prerequisites::discover(
+                &runtime_data,
+                asset_providers::local_prerequisites::Kind::Blender,
+            ).ok().flatten();
+            blender_version = blender.as_deref().and_then(self::blender_version);
+        }
         let worker_sha256 = asset_core::sha256_file(&worker).ok().map(|result| result.0);
         let mut limits = ResourceLimits::default();
         limits.cpu_threads = thread::available_parallelism()
@@ -366,7 +373,7 @@ impl Backend {
         }
         if matches!(
             action,
-            "quality3d_status" | "quality3d_prepare" | "quality3d_cancel_setup" | "quality3d_open_download_info" | "quality3d_open_runtime_guide"
+            "quality3d_status" | "quality3d_verify_runtime" | "quality3d_prepare" | "quality3d_cancel_setup" | "quality3d_open_download_info" | "quality3d_open_runtime_guide"
         ) {
             if self.inner.stop.load(Ordering::SeqCst) {
                 bail!("작업 백엔드가 종료되었습니다.");
@@ -1428,11 +1435,8 @@ impl Backend {
 }
 
 fn find_blender() -> Option<PathBuf> {
-    if let Some(path) = std::env::var_os("BLENDER_EXECUTABLE")
-        .map(PathBuf::from)
-        .filter(|p| p.is_file())
-    {
-        return Some(path);
+    if let Some(path) = std::env::var_os("BLENDER_EXECUTABLE").map(PathBuf::from) {
+        return path.is_file().then_some(path);
     }
     #[cfg(windows)]
     {
@@ -1461,13 +1465,37 @@ fn find_blender() -> Option<PathBuf> {
 fn blender_version(path: &Path) -> Option<String> {
     let mut cmd = Command::new(path);
     cmd.arg("--version");
-    #[cfg(windows)]
-    cmd.creation_flags(0x08000000);
-    cmd.output()
-        .ok()
-        .filter(|o| o.status.success())
-        .and_then(|o| String::from_utf8(o.stdout).ok())
-        .and_then(|s| s.lines().next().map(str::to_owned))
+    let output = bounded_native_stdout(&mut cmd, Duration::from_secs(5), 64 * 1024).ok()?;
+    let output = String::from_utf8(output).ok()?;
+    let line = output.lines().next()?;
+    let version = semver::Version::parse(line.strip_prefix("Blender ")?.split_whitespace().next()?).ok()?;
+    if version < semver::Version::new(5, 2, 1) { return None; }
+    Some(line.to_owned())
+}
+
+fn bounded_native_stdout(command: &mut Command, timeout: Duration, limit: usize) -> Result<Vec<u8>> {
+    use std::io::Read;
+    command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
+    let mut child = crate::process_guard::spawn_guarded(command)?;
+    let stdout = child.take_stdout().context("로컬 진단 출력 파이프가 없습니다.")?;
+    let reader = thread::spawn(move || {
+        let mut bytes = Vec::new();
+        stdout.take(limit as u64 + 1).read_to_end(&mut bytes)?;
+        Ok::<_, std::io::Error>(bytes)
+    });
+    let started = Instant::now();
+    let success = loop {
+        if let Some(status) = child.try_wait()? { break status.success(); }
+        if started.elapsed() >= timeout {
+            let _ = child.kill();
+            let _ = child.wait();
+            break false;
+        }
+        thread::sleep(Duration::from_millis(25));
+    };
+    let output = reader.join().map_err(|_| anyhow!("로컬 진단 출력을 읽지 못했습니다."))??;
+    if !success || output.len() > limit { bail!("로컬 실행 환경의 제한된 진단에 실패했습니다."); }
+    Ok(output)
 }
 fn text_field<'a>(v: &'a Value, key: &str) -> Result<&'a str> {
     v[key]

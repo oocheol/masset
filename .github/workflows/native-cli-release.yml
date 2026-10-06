@@ -1,0 +1,119 @@
+name: Standalone CLI packages
+
+on:
+  push:
+    branches:
+      - codex/skill-first-cli-0.1.11
+  workflow_dispatch:
+    inputs:
+      verify_macos_3d_setup:
+        description: 'Download pinned Blender, Python and TripoSR for an actual Mac setup check'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary: asset-cli.exe
+          - platform: macos-arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+            binary: asset-cli
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.99.0'
+          targets: ${{ matrix.target }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.10'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+      - run: npm ci
+      - name: Native runtime and CLI contract tests
+        run: cargo test --workspace --locked --target ${{ matrix.target }}
+      - name: Skill package boundary tests (no runtime downloads)
+        run: python -m unittest discover -s integrations/codex/skills/asset-studio/scripts/tests -p "test_*.py"
+      - name: Build the headless native binary
+        run: cargo build --release --locked -p asset-desktop --bin asset-cli --target ${{ matrix.target }}
+      - name: Ad hoc sign Apple Silicon CLI
+        if: runner.os == 'macOS'
+        run: codesign --force --sign - target/${{ matrix.target }}/release/asset-cli
+      - name: Collect target dependency licenses
+        run: node scripts/collect-third-party-notices.mjs --target ${{ matrix.target }} --strict
+      - name: Package immutable native bytes
+        run: node scripts/package-native-cli.mjs --platform ${{ matrix.platform }} --binary target/${{ matrix.target }}/release/${{ matrix.binary }} --destination output/cli-package/${{ matrix.platform }}
+      - name: Native Windows skill loader and relocated CLI
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $meta = Get-Content output/cli-package/windows-x64/native-cli-windows-x64.json -Raw | ConvertFrom-Json
+          $pkg = $meta.packages.'windows-x64'
+          $archive = Join-Path $PWD "output/cli-package/windows-x64/$([IO.Path]::GetFileName($pkg.url))"
+          $proofRoot = Join-Path $env:RUNNER_TEMP 'asset-studio-cli-proof'
+          ./integrations/codex/skills/asset-studio/scripts/bootstrap.ps1 -TestMode -Package $archive -Manifest "$PWD/output/cli-package/windows-x64/native-cli-windows-x64.json" -RuntimeRoot "$proofRoot/runtimes" -ConsentDownloads -PrintCommand > output/cli-package/windows-x64/loader.jsonl
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $receipt = Get-ChildItem "$proofRoot/runtimes" -Filter installation.json -Recurse | Select-Object -First 1
+          $installed = Get-Content $receipt.FullName -Raw | ConvertFrom-Json
+          node scripts/native-cli-proof.mjs --cli $installed.cliPath --resources $installed.resourcePath --output output/cli-package/windows-x64/native-proof
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Native Mac skill loader and relocated CLI
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=$(find "$PWD/output/cli-package/macos-arm64" -maxdepth 1 -name '*.zip')
+          bash integrations/codex/skills/asset-studio/scripts/bootstrap.sh --test-mode --package "$archive" --manifest "$PWD/output/cli-package/macos-arm64/native-cli-macos-arm64.json" --runtime-root "$RUNNER_TEMP/asset-studio-cli-proof/runtimes" --consent-downloads --print-command > output/cli-package/macos-arm64/loader.jsonl
+          installed=$(find "$RUNNER_TEMP/asset-studio-cli-proof/runtimes" -name installation.json -print -quit)
+          cli=$(/usr/bin/plutil -extract cliPath raw -o - "$installed")
+          resources=$(/usr/bin/plutil -extract resourcePath raw -o - "$installed")
+          node scripts/native-cli-proof.mjs --cli "$cli" --resources "$resources" --output output/cli-package/macos-arm64/native-proof
+      - name: Actual Mac local prerequisites and model preparation
+        if: runner.os == 'macOS' && (inputs.verify_macos_3d_setup || github.event_name == 'push')
+        shell: bash
+        run: |
+          set -euo pipefail
+          installed=$(find "$RUNNER_TEMP/asset-studio-cli-proof/runtimes" -name installation.json -print -quit)
+          cli=$(/usr/bin/plutil -extract cliPath raw -o - "$installed")
+          resources=$(/usr/bin/plutil -extract resourcePath raw -o - "$installed")
+          memory=$(/usr/sbin/sysctl -n hw.memsize)
+          if [ "$memory" -lt 17179869184 ]; then
+            # Prove portable native installers on the real host, preserving the
+            # product's 16 GiB model gate instead of lowering it for a runner.
+            cargo run --release --locked -p asset-desktop --example prerequisite-proof -- --consent-downloads "$RUNNER_TEMP/asset-studio-cli-tools" | tee output/cli-package/macos-arm64/prerequisite-proof.jsonl
+            set +e
+            "$cli" prepare --resources "$resources" --data-dir "$RUNNER_TEMP/asset-studio-cli-3d" --local-only --needs-3d --consent-downloads --timeout 2400 > output/cli-package/macos-arm64/prepare-3d.jsonl
+            result=$?
+            set -e
+            [ "$result" -ne 0 ]
+            grep -q 'local3d_memory_required' output/cli-package/macos-arm64/prepare-3d.jsonl
+          else
+            "$cli" prepare --resources "$resources" --data-dir "$RUNNER_TEMP/asset-studio-cli-3d" --local-only --needs-3d --consent-downloads --timeout 2400 | tee output/cli-package/macos-arm64/prepare-3d.jsonl
+          fi
+          "$cli" doctor --resources "$resources" --data-dir "$RUNNER_TEMP/asset-studio-cli-3d" | tee output/cli-package/macos-arm64/doctor-3d.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-cli-${{ matrix.platform }}
+          path: output/cli-package/${{ matrix.platform }}/
+          if-no-files-found: error
+
+# Builds and real native file checks are distinct from provider generation and GUI certification.
+# Release publication happens only after the coordinator verifies downloaded artifact bytes.

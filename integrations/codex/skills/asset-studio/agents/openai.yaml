@@ -1,6 +1,6 @@
 interface:
   display_name: "Asset Studio"
-  short_description: "Create game assets and integrate them as Codex builds"
+  short_description: "Prepare local tools and create game assets without the GUI app"
   default_prompt: "Use $asset-studio to create the assets needed for this game, integrate them, and test the playable result."
 policy:
   allow_implicit_invocation: true

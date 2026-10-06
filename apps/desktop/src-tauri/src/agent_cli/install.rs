@@ -1,10 +1,14 @@
 use super::*;
 
-const FILES: [&str; 4] = [
+const FILES: [&str; 8] = [
     "SKILL.md",
     "agents/openai.yaml",
     "references/cli.md",
     "references/manifest.json",
+    "references/native-runtime.json",
+    "scripts/bootstrap.py",
+    "scripts/bootstrap.ps1",
+    "scripts/bootstrap.sh",
 ];
 fn home() -> Result<PathBuf> {
     std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })
@@ -83,10 +87,15 @@ pub(crate) fn install(
         if marker["format"] != "asset-studio-codex-skill" {
             bail!("Existing skill is not managed by Asset Studio");
         }
-        for name in FILES {
+        let prior = marker["files"].as_object().context("Managed skill inventory missing")?;
+        if prior.is_empty() || prior.keys().any(|name| !FILES.contains(&name.as_str())) {
+            bail!("Managed skill inventory is invalid; existing files preserved");
+        }
+        // Verify the previous inventory, including the four-file 0.1.10 layout.
+        for name in prior.keys() {
             no_links(&destination.join(name))?;
             let hash = format!("{:x}", Sha256::digest(fs::read(destination.join(name))?));
-            if marker["files"][name] != hash {
+            if prior[name] != hash {
                 bail!("Existing skill was edited; preserved without overwrite");
             }
         }

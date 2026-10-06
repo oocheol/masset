@@ -55,7 +55,7 @@ pub(super) fn produce(args: &Args, backend: &Backend, root: &Path) -> Result<()>
     } else {
         let status = backend.request(json!({"action":"provider_status"}))?;
         if status["ready"] != true {
-            bail!("Official GPT subscription/image tool unavailable. Connect in Asset Studio; no API fallback.");
+            bail!("Official GPT subscription/image tool unavailable. Run asset-cli prepare --consent-downloads --login-if-needed, then check doctor --check-gpt. No paid API fallback.");
         }
         backend.request(json!({"action":"game_connect","root":game}))?;
         let before = backend.snapshot()?;

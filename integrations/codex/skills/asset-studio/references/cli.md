@@ -1,6 +1,14 @@
 # Native CLI
 
-Use the absolute executable path from `installation.json` and quote paths using the host shell. The CLI is bundled with the Mac app. A development binary requires `--resources /absolute/masset`. Windows code is included; the new agent workflow is only verified on Apple Silicon Mac.
+Use the verified absolute `cliPath` and `resourcePath` returned by the skill loader, and quote paths using the host shell. Standalone Windows x64 and Apple Silicon packages contain the native CLI and workers without the GUI app. Pass `--resources /absolute/runtime/resources`. A development binary requires `--resources /absolute/masset`.
+
+## Automatic prerequisites
+
+`prepare --consent-downloads` finds the official Codex runtime and reuses its existing ChatGPT login. It prepares a pinned official runtime only when missing. `--login-if-needed` starts the official browser login only if the current account is not authenticated. It never copies credentials or opens a login flow for an already authenticated account.
+
+Add `--needs-3d` for model work: existing compatible Blender/Python are reused, otherwise fixed, SHA-256-checked user-local packages are installed before TripoSR setup. Windows uses managed CPython 3.12.10; Mac uses CPython 3.9. A missing Microsoft Visual C++ x64 runtime is reported for attention. `--local-only` skips Codex setup and account checks for local editing/model operations. `--data-dir /absolute/path` isolates runtime and session data. No image generation happens during preparation.
+
+Omitting `--consent-downloads` emits metadata and `needs_consent` before a missing package is downloaded. CLI installation, local 3D readiness and provider readiness are separate fields; inspect each one. `doctor` never downloads.
 
 ```sh
 "/Applications/Asset Studio.app/Contents/MacOS/asset-cli" doctor --check-gpt
@@ -31,7 +39,7 @@ Use `init --workspace /absolute/assets-workspace` for an empty project. `command
 {"action":"export","destination":"/absolute/MyGame/Assets/AssetStudioGenerated","assetIds":[]}
 ```
 
-Import accepts validated raster images or self-contained GLB, preserving originals. `quality3d` refines an imported GLB or reconstructs an image if the local model is ready. Snapshot output contains actual assets, versions, artifacts and jobs. `model` accepts the trusted procedural recipes described by Asset Studio, not generated Python. `production_manifest` and `game_connect` are local planning/scan commands. GPT commands additionally require `--allow-gpt`. `doctor` does not download runtimes; use the app's existing preparation UI once if prerequisites are missing.
+Import accepts validated raster images or self-contained GLB, preserving originals. `quality3d` refines an imported GLB or reconstructs an image if the local model is ready. Snapshot output contains actual assets, versions, artifacts and jobs. `model` accepts trusted procedural recipes, not generated Python. `production_manifest` and `game_connect` are local planning/scan commands. GPT commands additionally require `--allow-gpt`. Use `prepare --needs-3d --consent-downloads` for missing local prerequisites; no app screen is required.
 
 ## Recovery
 

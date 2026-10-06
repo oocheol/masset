@@ -3,6 +3,7 @@
 mod install;
 mod jobs;
 mod production;
+mod prepare;
 use crate::workbench::Backend;
 use anyhow::{bail, Context, Result};
 pub(crate) use install::install_default as install_codex_skill;
@@ -22,6 +23,7 @@ use uuid::Uuid;
 
 const HELP: &str = "Asset Studio CLI\n\
   asset-cli doctor [--check-gpt] [--data-dir PATH]\n\
+  asset-cli prepare [--consent-downloads] [--needs-3d] [--login-if-needed] [--local-only] [--data-dir PATH]\n\
   asset-cli install-codex [--destination PATH]\n\
   asset-cli init --workspace PATH [--name NAME]\n\
   asset-cli command --workspace PATH --json FILE [--allow-gpt] [--timeout SECONDS]\n\
@@ -48,6 +50,7 @@ impl Args {
         }
         if ![
             "doctor",
+            "prepare",
             "install-codex",
             "init",
             "command",
@@ -62,7 +65,7 @@ impl Args {
             command: command.into(),
             ..Self::default()
         };
-        let flags = ["--allow-gpt", "--check-gpt"];
+        let flags = ["--allow-gpt", "--check-gpt", "--consent-downloads", "--needs-3d", "--login-if-needed", "--local-only"];
         let values = [
             "--workspace",
             "--resources",
@@ -262,6 +265,9 @@ pub fn run(values: &[String]) -> Result<()> {
         "install-codex" => {
             return install::run(&args);
         }
+        "prepare" => {
+            return prepare::run(&args);
+        }
         "status" => {
             return emit(&read_json(
                 &args.path("--workspace")?.join("cli-status.json"),
@@ -349,7 +355,7 @@ pub fn run(values: &[String]) -> Result<()> {
         args.allow_gpt()?;
         let c = backend.request(json!({"action":"provider_status"}))?;
         if c["ready"] != true {
-            bail!("Official GPT subscription/image tool unavailable. Connect in Asset Studio; no API fallback.");
+            bail!("Official GPT subscription/image tool unavailable. Run asset-cli prepare --consent-downloads --login-if-needed, then check doctor --check-gpt. No paid API fallback.");
         }
     }
     let before: Vec<String> = snapshot["project"]["jobs"]
