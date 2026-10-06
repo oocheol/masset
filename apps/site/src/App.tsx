@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { ArrowDownToLine, ArrowUpRight, Box, Check, Copy, Expand, Github, Image, Layers, PackageOpen, X } from 'lucide-react';
 
 import { macInstallCommand, macReleases, release } from './release';
@@ -12,6 +12,7 @@ const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
 const hasMacRelease = macReleases.length > 0;
 const skillVersion = '0.1.11';
 const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos.zip`;
+const skillInstallCommand = 'npx skills@1.7.0 add oocheol/masset --skill asset-studio --agent codex --global --copy';
 
 function Mark() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
@@ -51,9 +52,9 @@ const statuses = [
 ];
 
 const faqs = [
-  { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64·Apple Silicon Mac용 공통 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. Mac 독립 CLI도 제공합니다. 앱 없이 사용하려면 두 플랫폼이 포함된 공통 스킬 ZIP을 설치하세요.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
+  { question: '스킬만 설치하면 앱 없이 쓸 수 있나요?', answer: '네. Windows x64·Apple Silicon Mac용 공통 0.1.11 스킬을 설치하면 첫 사용에서 필요한 독립 CLI와 작업자를 사용자 폴더에 준비합니다. 공식 Codex의 기존 로그인은 재사용하며 3D를 요청할 때만 Blender·Python·모델을 준비합니다. 승인한 다운로드만 진행합니다. Mac 독립 CLI도 제공합니다. 상단 터미널 명령이나 아래 공통 스킬 ZIP으로 설치하세요.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
   { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
-  { question: '개발 도구를 설치해야 하나요?', answer: '아니요. 설치 파일을 실행하고 안내를 따르면 됩니다. Node.js나 Rust는 앱 사용에 필요하지 않습니다. Windows WebView2 Runtime은 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
+  { question: '개발 도구를 설치해야 하나요?', answer: 'Node.js나 Rust는 앱 사용과 스킬 ZIP 설치에 필요하지 않습니다. npx로 스킬을 설치하려면 Node.js 22.20 이상이 필요합니다. Windows 앱에는 WebView2 Runtime이 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
   { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.11로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.11으로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
   { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows 0.1.11과 Apple Silicon Mac 0.1.11의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
   { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
@@ -74,7 +75,9 @@ export default function App() {
   const [inspectedModel, setInspectedModel] = useState(0);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [installCopyState, setInstallCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [skillCopyState, setSkillCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const installCommandElement = useRef<HTMLElement>(null);
+  const skillCommandElement = useRef<HTMLElement>(null);
   const screenshotDialog = useRef<HTMLDialogElement>(null);
   const screenshotTrigger = useRef<HTMLButtonElement>(null);
   const checksumElement = useRef<HTMLElement>(null);
@@ -108,6 +111,22 @@ export default function App() {
     }
   }
 
+  async function copySkillInstall() {
+    try {
+      await navigator.clipboard.writeText(skillInstallCommand);
+      setSkillCopyState('copied');
+    } catch {
+      if (skillCommandElement.current) {
+        const range = document.createRange();
+        range.selectNodeContents(skillCommandElement.current);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+      setSkillCopyState('failed');
+    }
+  }
+
   return <>
     <a className="skip-link" href="#main">본문으로 이동</a>
     <header className="site-header">
@@ -128,7 +147,19 @@ export default function App() {
           <p className="release-note">로컬 에셋 제작 작업실 <span>Windows {release.version} · Mac {macReleases[0]?.version}</span></p>
           <h1 id="hero-title">Asset Studio</h1>
           <p className="hero-purpose">게임을 설명하고,<br />필요한 에셋을 한 번에.</p>
-          <p className="hero-description">프로젝트 연결 → GPT 제작 목록 → 개별 이미지·3D 생성 → 결과 검수. Windows에서도 로컬 이미지→3D를 사용할 수 있습니다. Windows {release.version} · Mac {macReleases[0]?.version}을 내려받으세요.</p>
+          <p className="hero-description">프로젝트 연결 → GPT 제작 목록 → 개별 이미지·3D 생성 → 결과 검수.</p>
+          <div className="hero-skill-install" aria-labelledby="hero-skill-title">
+            <div className="hero-skill-heading">
+              <h2 id="hero-skill-title">앱 없이 Codex 시작</h2>
+              <button className="skill-command-copy" type="button" onClick={copySkillInstall} aria-label="Codex 스킬 설치 명령 복사" aria-describedby="skill-install-help">
+                {skillCopyState === 'copied' ? <Check size={17} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}
+                {skillCopyState === 'copied' ? '복사 완료' : '명령 복사'}
+              </button>
+            </div>
+            <code className="skill-install-command" ref={skillCommandElement}>{skillInstallCommand.split(' ').map((part, index) => <Fragment key={index}>{index > 0 && ' '}<span>{part}</span></Fragment>)}</code>
+            <p className="skill-install-help" id="skill-install-help">Node.js 22.20 이상 · <a href="#download-skill">ZIP 설치 안내</a><br />설치 후 새 Codex 작업에서 <code>$asset-studio</code>로 요청하세요.</p>
+            <p className="skill-copy-status" role="status" aria-live="polite">{skillCopyState === 'copied' ? '복사했습니다. 터미널에 붙여넣어 실행하세요.' : skillCopyState === 'failed' ? '명령을 선택했습니다. 직접 복사해 주세요.' : ''}</p>
+          </div>
           <div className="hero-actions"><DownloadLink /><MacDownloadLink /></div>
           <p className="download-hint">Windows x64 · Mac Apple Silicon<br /><a href="#requirements">Windows는 WebView2 필요 · 3D는 Blender 별도 설치</a></p>
           <a className="text-link mac-hero-link" href="#download-mac">Mac 설치·업데이트 안내 <ArrowDownToLine size={16} aria-hidden="true" /></a>
@@ -196,12 +227,12 @@ export default function App() {
       <section id="download" className="download-section section-space page-width" aria-labelledby="download-title">
         <nav className="platform-picker" aria-label="사용 방법별 다운로드"><a href="#download-skill">Codex 스킬 · 앱 없이</a><a href="#download-windows">Windows 앱</a><a href="#download-mac">Mac 앱</a></nav>
         <section id="download-skill" className="skill-download" aria-labelledby="skill-download-title">
-          <div className="mac-download-heading"><h3 id="skill-download-title">Codex에서 바로 시작.</h3><span className="mac-trial-label">독립 스킬 · v{skillVersion}</span></div>
+          <div className="mac-download-heading"><h3 id="skill-download-title">ZIP으로 스킬 설치.</h3><span className="mac-trial-label">독립 스킬 · v{skillVersion}</span></div>
           <div className="skill-download-layout">
             <div><p>스킬만 설치하세요. 필요한 도구는 첫 사용에서 준비합니다.<br />이미 연결된 공식 Codex 로그인을 사용합니다.</p><a className="button button-primary" href={skillDownloadUrl}><ArrowDownToLine size={19} aria-hidden="true" />Codex 스킬 ZIP 다운로드</a><p className="skill-download-platform">Windows x64 · Mac Apple Silicon</p></div>
             <ol><li><strong>스킬 설치</strong><span>ZIP의 skills/asset-studio를 사용자 ~/.agents/skills 폴더에 넣습니다.</span></li><li><strong>새 Codex 작업에서 요청</strong><span>“$asset-studio 필요한 도구를 설치하고 에셋을 만들어줘”</span></li><li><strong>필요한 구성요소만 준비</strong><span>2D는 CLI로 시작합니다. 3D 작업에는 Blender·Python·모델을 추가로 준비합니다.</span></li></ol>
           </div>
-          <p className="skill-download-note">Asset Studio 앱과 Node·Rust 개발 도구는 필요하지 않습니다. 다운로드 정보와 준비 상태를 확인하며, 계정 인증이 필요한 경우 공식 로그인으로 안내합니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/skill-first-setup.md`}>설치·준비 안내 <ArrowUpRight size={16} aria-hidden="true" /></a>
+          <p className="skill-download-note">ZIP 설치에는 Asset Studio 앱과 Node·Rust 개발 도구가 필요하지 않습니다. 다운로드 정보와 준비 상태를 확인하며, 계정 인증이 필요한 경우 공식 로그인으로 안내합니다.</p><a className="text-link" href={`${sourceUrl}/blob/master/docs/skill-first-setup.md`}>설치·준비 안내 <ArrowUpRight size={16} aria-hidden="true" /></a>
         </section>
         <div id="download-windows" className="download-card">
           <div className="download-main"><div className="download-heading-mark"><Mark /><span>Windows x64 · v{release.version}</span></div><h2 id="download-title">당신의 작업실을<br />준비하세요.</h2><p>설치 파일을 실행하고 안내를 따르세요.<br />앱 안의 사용 가이드로 시작할 수 있습니다.</p><DownloadLink secondary /><a className="portable-link" href={portableUrl}>설치 없이 쓰는 포터블 ZIP</a><a className="release-link" href={releaseUrl}>v{release.version} 릴리스 기록 <ArrowUpRight size={14} aria-hidden="true" /></a></div>

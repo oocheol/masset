@@ -43,6 +43,19 @@ h2{font-size:clamp(30px,3.3vw,44px);font-weight:650;letter-spacing:-1.6px;line-h
 h1{font-family:Bahnschrift,"Segoe UI",sans-serif;font-size:clamp(50px,6.1vw,88px);font-weight:600;line-height:1.05;letter-spacing:-3.8px;white-space:nowrap}
 .hero-purpose{font-size:clamp(25px,2.7vw,36px);font-weight:550;letter-spacing:-1.4px;line-height:1.5;margin-top:23px;word-break:keep-all}
 .hero-description{font-size:17px;line-height:1.8;color:var(--muted);margin-top:22px;word-break:keep-all}
+.hero-skill-install{min-width:0;margin-top:26px;padding:18px 20px;border:1px solid var(--edge);border-left:2px solid var(--cyan);background:var(--rail)}
+.hero-skill-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 14px;margin-bottom:14px}
+.hero-skill-heading h2{font-size:18px;font-weight:600;letter-spacing:-.4px;line-height:1.5}
+.skill-command-copy{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:8px 12px;border:1px solid var(--edge);border-radius:2px;background:var(--panel);color:var(--paper);font-size:16px;line-height:1.5}
+.skill-command-copy:hover{border-color:var(--cyan);color:var(--cyan)}
+.skill-install-command{display:block;font-family:Consolas,"SFMono-Regular",monospace;font-size:16px;line-height:1.8;white-space:normal;overflow-wrap:anywhere;user-select:all}
+.skill-install-command span{white-space:nowrap}
+.skill-install-help{margin-top:12px;color:var(--muted);font-size:16px;line-height:1.8;word-break:keep-all}
+.skill-install-help a{text-decoration:underline;text-decoration-color:var(--edge);text-underline-offset:4px}
+.skill-install-help a:hover{color:var(--cyan);text-decoration-color:var(--cyan)}
+.skill-install-help code{font-family:Consolas,"SFMono-Regular",monospace;color:var(--paper);white-space:nowrap}
+.skill-copy-status{font-size:16px;line-height:1.8;color:var(--cyan);word-break:keep-all}
+.skill-copy-status:not(:empty){margin-top:12px}
 .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 22px;margin-top:30px}
 .button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:52px;max-width:100%;padding:14px 23px;border:1px solid var(--cyan);border-radius:2px;font-size:16px;font-weight:650;line-height:1.5;text-align:center}
 .button-primary,.button-light{background:var(--cyan);color:var(--ink)}
