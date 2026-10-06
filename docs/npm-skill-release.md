@@ -2,9 +2,33 @@
 
 전용 패키지는 `@oocheol/asset-studio`, 명령은 `asset-studio-skill`입니다. [설치·업데이트 안내](skill-first-setup.md)와 [패키지 소스](../integrations/npm)를 참고하세요.
 
+## 0.1.13 공개 확인 · 2026-10-06
+
+[npm 공개 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)의 `latest`는 **0.1.13**입니다. Windows·Mac 공용 패키지 하나이며 운영체제별 실행 도구를 선택합니다. 이번에는 **Windows 앱·독립 CLI 0.1.13**, **Mac 앱 0.1.12·독립 CLI 0.1.11**을 사용합니다. 새 Mac 실행 파일은 만들지 않았습니다.
+
+공개 레지스트리에서 받은 실제 파일은 게시한 **77,296바이트**와 동일했습니다. SHA-256은 `7afaf6b28c4cc80f58ee5505c9a4e9c6b00542334bda491154a489ee51ffaa65`, 스킬 8개 파일의 목록 SHA-256은 `f9faecd287f84bbc332e752e0aec4ccf80fb52a3b92b35451dcedbc8a96c9809`입니다. SRI는 다음과 같습니다.
+
+```text
+sha512-bwle1msaUGhxTA7oaeg5qj/0cTx0BTGnjBghMOoHlDEDexyHEf2YEPrBjVpHv1dSxUbdrpAxvxsRaR0MgJBUBQ==
+```
+
+새 npm 캐시·격리 프로젝트에서 공개 0.1.13의 `install`·`update`·`status`를 실제 실행했습니다. 공개 **0.1.12 → `latest` 0.1.13** 업데이트는 이전 스킬 8개 파일·설치 기록·사용자 추가 파일을 모두 백업했습니다. 다시 업데이트하면 `unchanged`, 상태 확인은 `current`였습니다. Mac 런타임 고정 정보 전체도 기존 값과 같았습니다. 사용자 전역 스킬은 변경하지 않았습니다.
+
+공개 npm으로 설치한 스킬의 실제 Windows PowerShell 5.1 로더는 공개 CLI ZIP을 받아 **380개 파일과 설치 영수증**을 검사하고 새 격리 폴더에 준비했습니다. 테스트용 패키지·manifest 지정 없이 기본 개인 런타임 폴더 구조를 사용했고, 마지막 준비 명령은 출력만 했습니다. 이번 공개 로더 검사는 로그인·모델 다운로드·새 이미지 생성 요청을 보내지 않았습니다. 동일한 CLI ZIP의 실제 2D·3D 저장·재열기·내보내기는 [Windows 릴리스 기록](releases/v0.1.13-windows.md)에 별도로 있습니다. 보조 검사기의 영수증 버전 필드와 파일 정렬 가정을 실제 형식에 맞춰 바로잡았으며 처음 검사와 다운로드 기록도 보존했습니다.
+
+[Windows 빌드·브라우저·독립 내보내기 CI](https://github.com/oocheol/masset/actions/runs/37429774705)와 [Windows·Apple Silicon Mac npm 설치 CI](https://github.com/oocheol/masset/actions/runs/37429774774)가 통과했습니다. Mac의 npm 설치 검사는 새 Mac 네이티브 앱 검증과 구분합니다.
+
+```sh
+npx @oocheol/asset-studio@latest install
+npx @oocheol/asset-studio@latest update
+npx @oocheol/asset-studio@latest status
+```
+
+Asset Studio 앱 설치는 선택입니다. Node.js 22.20 이상으로 스킬을 등록한 뒤 새 Codex 작업에서 `$asset-studio`로 요청합니다. 기존 공식 Codex 인증을 재사용하며 필요한 실행 도구·3D 모델은 승인한 범위에서 준비합니다. [소개 사이트](https://masset-nu.vercel.app/)와 [Windows 0.1.13 다운로드](https://github.com/oocheol/masset/releases/tag/v0.1.13)에도 같은 플랫폼별 버전을 표시합니다.
+
 ## 0.1.12 공개 확인 · 2026-10-06
 
-[npm 공개 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)의 `latest`는 **0.1.12**입니다. 앱을 설치하지 않고 `npx @oocheol/asset-studio@latest install`로 Codex 스킬을 등록합니다. npm 설치에는 Node.js 22.20 이상이 필요하며, 등록한 스킬의 첫 사용 시 별도의 네이티브 CLI를 해시 검증 후 준비합니다. 기존 Codex 인증을 재사용하고, 인증이 없거나 만료된 경우에만 공식 로그인 절차를 진행합니다.
+[npm 공개 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)의 당시 `latest`는 **0.1.12**였습니다. 앱을 설치하지 않고 `npx @oocheol/asset-studio@latest install`로 Codex 스킬을 등록합니다. npm 설치에는 Node.js 22.20 이상이 필요하며, 등록한 스킬의 첫 사용 시 별도의 네이티브 CLI를 해시 검증 후 준비합니다. 기존 Codex 인증을 재사용하고, 인증이 없거나 만료된 경우에만 공식 로그인 절차를 진행합니다.
 
 공개 레지스트리의 실제 배포 파일은 게시한 **77,089바이트**와 일치했습니다. SHA-256은 `190808356fcb52b7704debf2c3660f27504b6113f0aa6ede337a0321cd2edbaa`이며, 스킬 8개 파일의 목록 SHA-256은 `438fcbbc3c31c9ff94942d3a2b3f182a461b805031dd978c9d2aa83efd792d33`입니다. SRI는 다음과 같습니다.
 
@@ -43,7 +67,7 @@ npx @oocheol/asset-studio@latest status
 npm run skill:test
 npm run skill:pack
 npm run skill:verify
-npm publish ./output/npm-skill/oocheol-asset-studio-0.1.12.tgz --ignore-scripts --access public
+npm publish ./output/npm-skill/oocheol-asset-studio-0.1.13.tgz --ignore-scripts --access public
 ```
 
 게시 후 `npm view @oocheol/asset-studio@버전 dist --json`으로 실제 레지스트리의 무결성을 확인하고, 새 캐시·격리 프로젝트에서 `npx @oocheol/asset-studio@버전 install --project "절대 경로" --json`으로 실제 배포본을 설치해 확인합니다. 공개 메타데이터와 실제 설치가 확인되기 전에는 사이트의 기본 설치 명령을 바꾸지 않습니다.

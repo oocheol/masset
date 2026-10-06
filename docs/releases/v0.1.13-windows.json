@@ -90,7 +90,12 @@
       "macos-arm64": "0.1.11"
     },
     "actualPackedInstallUpdateStatus": true,
-    "published": false
+    "published": true,
+    "actualPublicInstallUpdateStatus": true,
+    "publicRegistryTarball": "https://registry.npmjs.org/@oocheol/asset-studio/-/asset-studio-0.1.13.tgz",
+    "upgradeFrom": "0.1.12",
+    "previousSkillReceiptAndUserFileBackupVerified": true,
+    "macRuntimePinPreserved": true
   },
   "checks": {
     "rust": {
@@ -550,9 +555,146 @@
     }
   },
   "publication": {
-    "githubVerified": false,
-    "npmVerified": false,
-    "siteVerified": false
+    "verifiedAt": "2026-10-06T07:37:51.880Z",
+    "githubVerified": true,
+    "npmVerified": true,
+    "siteVerified": true,
+    "releaseTagCommit": "8ed017b1b669e2541fce236155cf63e1ddfd1556",
+    "github": {
+      "url": "https://github.com/oocheol/masset/releases/tag/v0.1.13",
+      "releaseId": 404434315,
+      "latest": true,
+      "actualAnonymousAssetsDownloadedAndHashed": 9,
+      "windowsUpdateVersion": "0.1.13",
+      "macUpdateVersion": "0.1.12",
+      "preservedMacDownloadsVerified": 3,
+      "checksumsAsset": {
+        "filename": "SHA256SUMS.txt",
+        "bytes": 781,
+        "sha256": "a13201f81f4df1e5023712ced8df1008dda31db1129af51141931a862a4e40b1",
+        "url": "https://github.com/oocheol/masset/releases/download/v0.1.13/SHA256SUMS.txt",
+        "listedDigestVerified": true,
+        "actualDownloadedBytesVerified": true,
+        "authenticatedRequest": false,
+        "finalHost": "release-assets.githubusercontent.com"
+      }
+    },
+    "npm": {
+      "package": "@oocheol/asset-studio",
+      "latest": "0.1.13",
+      "actualAnonymousTarballBytesVerified": true,
+      "actualPublicInstallUpdateStatus": true,
+      "publicCommandCount": 7,
+      "upgradeFrom": "0.1.12",
+      "previousSkillReceiptAndUserNotesPreserved": true,
+      "macRuntimePinPreserved": true,
+      "userGlobalSkillModified": false
+    },
+    "publicSkillBootstrap": {
+      "actualPublicRegistrySkill": true,
+      "productionPowerShellLoader": true,
+      "testMode": false,
+      "publicCliArchiveDownloadedAndVerified": true,
+      "filesVerified": 380,
+      "completeInstallationReceiptVerified": true,
+      "preparationCommandExecuted": false,
+      "newLoginOrModelOrGenerationRequested": false,
+      "isolatedProcessLocalAppData": true,
+      "verifierCorrection": {
+        "firstHelperIncorrectlyRead": "receipt.version",
+        "actualSchemaField": "receipt.package.version",
+        "receiptFileOrderCanonicalizedWithoutChangingAnyEntry": true,
+        "originalHelperAndLogsPreserved": true,
+        "productionLoaderModifiedOrRepeated": false
+      }
+    },
+    "updater": {
+      "bytes": 11457090,
+      "installerExecuted": false,
+      "payloadSignatureAndVersionVerified": true,
+      "plugin": "tauri-plugin-updater 2.13.1",
+      "publicMetadataChecked": true,
+      "sameVersionComparatorOverride": true,
+      "scope": "Actual official Tauri check/download of current public release; download verification only, no cross-version install",
+      "sha256": "747dc7c26472f10832c4cbe5bada3451178c37441ab014b94418131e6e061d84"
+    },
+    "site": {
+      "url": "https://masset-nu.vercel.app/",
+      "deploymentId": "dpl_FXX3Ls5SUTmXH5jLZBgxXDGECyPw",
+      "target": "production",
+      "readyState": "READY",
+      "method": "GitHub master integration",
+      "actualRenderedDomVerified": true,
+      "localProductionAssetsMatchPublic": [
+        {
+          "url": "/assets/index-BW1t-VzA.js",
+          "bytes": 266085,
+          "sha256": "a6fc8e8985a8c07a570a234ed6ae201e2a01034365c42a221022111b88674262",
+          "sameAsLocalProductionBuild": true
+        },
+        {
+          "url": "/assets/index-BtGdTaMN.css",
+          "bytes": 20151,
+          "sha256": "22bd4a6654f7eb29cbe62fe8dbb97010140a255ce7a3f3be777f5f1731bd2991",
+          "sameAsLocalProductionBuild": true
+        }
+      ],
+      "windowsDownloadVersion": "0.1.13",
+      "macDownloadVersion": "0.1.12",
+      "commonNpmAndPlatformVersionFAQVerified": true,
+      "horizontalOverflowAt1280": false
+    },
+    "ci": [
+      {
+        "url": "https://github.com/oocheol/masset/actions/runs/37429774705",
+        "sourceCommit": "8ed017b1b669e2541fce236155cf63e1ddfd1556",
+        "conclusion": "success",
+        "scope": "Windows browser checks, native backend build and independent export; macOS native job skipped"
+      },
+      {
+        "url": "https://github.com/oocheol/masset/actions/runs/37429774774",
+        "sourceCommit": "8ed017b1b669e2541fce236155cf63e1ddfd1556",
+        "conclusion": "success",
+        "scope": "Windows and Apple Silicon Mac npm installer tests and packed installation; no Mac native app build"
+      }
+    ],
+    "evidenceRecords": {
+      "github": {
+        "path": "output/publication-013-20261006-163016-b047c04c/github-public-verification.json",
+        "bytes": 6009,
+        "sha256": "6cc333cfd4a944a97e5636532606ede22083fa609476e94918bc9b1afba0da6a"
+      },
+      "npm": {
+        "path": "output/publication-013-20261006-163016-b047c04c/npm-public-verification.json",
+        "bytes": 5306,
+        "sha256": "8a512f7e9b876793448541907cc4c5ae900fe79f562ad462ad137003405e72f8"
+      },
+      "site": {
+        "path": "output/publication-013-20261006-163016-b047c04c/site-public-verification.json",
+        "bytes": 1862,
+        "sha256": "20a9d828b5971dc499eb16f39a09f48c51a2de66cfda68f638215247bec62eeb"
+      },
+      "bootstrap": {
+        "path": "output/publication-013-20261006-163016-b047c04c/bootstrap-public-verification.json",
+        "bytes": 1622,
+        "sha256": "ba5ce0e9fa4317973543d20fa743fc48e74ff02ab6c3af3d699f3f5ae52c095d"
+      },
+      "updater": {
+        "path": "output/publication-013-20261006-163016-b047c04c/native-public-updater/update-proof.json",
+        "bytes": 1220,
+        "sha256": "da2724fdc1e167e9e1f9ceb80510371a0531a0493efb892813a89ed37400002c"
+      },
+      "windowsCI": {
+        "path": "output/publication-013-20261006-163016-b047c04c/github-ci-windows.json",
+        "bytes": 6201,
+        "sha256": "0b48bec064a03950eaf1a3dc4421e5c3c7858b8d4e6b804389642f709ac0d299"
+      },
+      "npmCI": {
+        "path": "output/publication-013-20261006-163016-b047c04c/github-ci-npm.json",
+        "bytes": 4390,
+        "sha256": "e372b9a6c5df6665f7cc8644b68f06c48acbcd34a5d18521b8cb46381a92c1a6"
+      }
+    }
   },
   "limitations": {
     "newLiveGptRequest": false,
