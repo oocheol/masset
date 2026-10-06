@@ -6,7 +6,7 @@ Codex에서 Asset Studio 스킬을 사용하면 **Asset Studio 앱을 따로 설
 
 ## 설치
 
-Node.js 22.20 이상에서 전용 npm 설치 명령을 실행하세요. Windows·Apple Silicon Mac 공통입니다.
+Codex에서 작업을 열 수 있는 환경을 먼저 준비하세요. Asset Studio 앱은 설치하지 않아도 됩니다. Node.js 22.20 이상에서 아래 명령을 실행하면 Codex 스킬 설치·등록을 함께 진행합니다. Windows x64·Apple Silicon Mac 공통입니다.
 
 ```sh
 npx @oocheol/asset-studio@latest install
@@ -27,15 +27,21 @@ asset-studio-skill install
 asset-studio-skill status
 ```
 
-전역 npm 패키지는 `npm install --global @oocheol/asset-studio@latest`로 업데이트하고 `asset-studio-skill update`를 실행합니다. `npm install` 자체는 스킬을 바꾸거나 실행 파일·모델을 내려받지 않습니다. 설치 훅과 외부 npm 의존성은 없습니다.
+**npm 전역 설치 뒤에는 `asset-studio-skill install`도 한 번 실행해야 Codex 스킬이 등록됩니다.** 전역 npm 패키지는 `npm install --global @oocheol/asset-studio@latest`로 업데이트하고 `asset-studio-skill update`를 실행합니다. `npm install` 자체는 스킬을 바꾸거나 실행 파일·모델을 내려받지 않습니다. 설치 훅과 외부 npm 의존성은 없습니다.
 
 사용자 기본 경로는 `~/.agents/skills/asset-studio`이며, 기존 스킬이 `~/.codex/skills/asset-studio` 한 곳에만 있으면 그 경로를 재사용합니다. 이전·수정된 스킬 전체는 `~/.agents/.asset-studio-skill/backups`에 보존한 후 새 버전으로 교체합니다. 백업은 스킬 탐색 폴더 밖에 두며 자동 삭제하지 않습니다. 두 위치에 이미 같은 스킬이 있으면 중복 경로를 표시하고 이전 사본을 임의로 지우지 않습니다. 프로젝트 하나에만 설치하려면 `--project "절대 프로젝트 경로"`를 추가하세요. 그 경우 프로젝트 `.agents/skills/asset-studio`와 `.agents/.asset-studio-skill/backups`를 사용합니다.
 
 Node.js를 사용하지 않으려면 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip)을 받고 `skills/asset-studio` 폴더를 사용자 `~/.agents/skills/asset-studio`에 설치하세요. Windows의 `~`는 사용자 홈 폴더입니다. ZIP 수동 설치 시에는 기존 사본을 먼저 백업하세요. 어느 방법으로 설치했든 Codex의 스킬 목록을 다시 읽는 새 작업에서 시작합니다.
 
-> $asset-studio 필요한 도구가 없으면 설치하고 준비해줘. 기존 게임에 필요한 이미지와 정적 3D 소품을 제작해 넣고 실행해서 확인해줘.
+## Codex에서 요청하기
 
-독립 0.1.11 패키지는 **Windows x64와 Apple Silicon Mac**에 제공합니다. Python·Node.js·Rust 개발 도구와 앱 화면 없이 운영체제 기본 도구로 첫 설치를 진행합니다. 공통 스킬 ZIP에는 두 플랫폼의 독립 CLI 파일 크기·SHA-256·전체 파일 목록이 포함됩니다. Mac 실행 검증은 잠금 상태로 생략했습니다. Intel Mac 패키지는 제공하지 않습니다.
+설치 후 **새 Codex 작업**을 열고 `$asset-studio`와 함께 필요한 에셋을 설명하세요.
+
+> $asset-studio 게임에 사용할 캐릭터 이미지와 3D 소품을 만들어줘
+
+기존 게임에 반영하려면 프로젝트 폴더와 필요한 이미지·정적 3D 소품을 함께 설명하고, 결과를 넣은 뒤 게임을 실행해 확인하도록 요청하세요. 기존 공식 Codex 로그인을 재사용하며 처리용 CLI는 첫 사용 시 다운로드 동의를 받아 준비합니다. 3D 작업에는 Blender·Python·모델을 추가로 준비합니다.
+
+독립 0.1.11 패키지는 **Windows x64와 Apple Silicon Mac**에 제공합니다. npm 설치 명령에는 Node.js가 필요하며, ZIP 스킬 설치와 독립 CLI 준비는 운영체제 기본 도구로 진행합니다. 공통 스킬 ZIP에는 두 플랫폼의 독립 CLI 파일 크기·SHA-256·전체 파일 목록이 포함됩니다. Mac 네이티브 CLI 실행 검증은 잠금 상태로 생략했습니다. Intel Mac 패키지는 제공하지 않습니다.
 
 ## 첫 실행에서 하는 일
 

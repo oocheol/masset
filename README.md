@@ -119,15 +119,32 @@ Asset Studio의 Apple Developer ID 서명·공증은 없습니다. 앱 업데이
 
 ## 앱 없이 Codex로 에셋 제작하기 · 독립 스킬 0.1.11
 
-**Windows x64와 Apple Silicon Mac에서 스킬만 설치해 시작할 수 있습니다.** 첫 실행이 필요한 네이티브 CLI와 작업자를 사용자 폴더에 준비하고 기존 공식 Codex 로그인을 재사용합니다. 3D를 요청할 때만 Blender·Python·TripoSR를 준비합니다. Asset Studio GUI·Rust·별도 MCP 서버·유료 API 키는 필요하지 않습니다. npm 설치에는 Node.js 22.20 이상이 필요하며, ZIP 설치와 설치 후 네이티브 도구 준비에는 Node.js가 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며, 실제 처리는 검증한 독립 CLI가 수행합니다. Apple Silicon 독립 CLI ZIP과 해당 파일의 고정 해시가 포함된 공통 스킬 ZIP을 제공합니다.
+**Asset Studio 앱을 설치하거나 열지 않고 Codex에서 사용할 수 있습니다.** Windows x64와 Apple Silicon Mac에서 Codex 스킬로 시작합니다. Codex가 필요하며, 아래 npm 설치 명령에는 Node.js 22.20 이상을 사용하세요.
 
 ```sh
 npx @oocheol/asset-studio@latest install
-# 최신 npm 버전에 포함된 스킬로 업데이트
+```
+
+설치 후 **새 Codex 작업**에서 요청하세요.
+
+> $asset-studio 게임에 사용할 캐릭터 이미지와 3D 소품을 만들어줘
+
+npm 전역 설치를 선택했다면 **`asset-studio-skill install`도 한 번 실행**해야 Codex 스킬이 등록됩니다.
+
+```sh
+npm install --global @oocheol/asset-studio
+asset-studio-skill install
+```
+
+기존 공식 Codex 로그인을 재사용합니다. 처리용 네이티브 CLI와 작업자는 첫 사용 시 다운로드 동의를 받아 사용자 전용 폴더에 준비합니다. 3D 작업을 요청할 때만 Blender·Python·TripoSR를 추가로 준비합니다. 출처·크기·고정 해시·라이선스를 확인하며, 계정 인증이 필요한 경우 공식 로그인으로 안내합니다. 스킬은 지침과 설치 진입점이며 실제 처리는 독립 CLI가 수행합니다.
+
+최신 npm 버전에 포함된 스킬로 업데이트하려면 다음을 실행하세요.
+
+```sh
 npx @oocheol/asset-studio@latest update
 ```
 
-[전용 npm 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)는 이전·수정된 스킬을 자동 백업하고 고정된 배포 파일의 SHA-256을 검사해 설치합니다. 설치 훅과 외부 npm 의존성은 없습니다. npm 설치 기능과 Windows·Mac 실행 도구 버전은 각각 관리합니다. Node.js를 사용하지 않으려면 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하세요. 새 Codex 작업에서 **`$asset-studio 필요한 도구를 설치하고 게임 에셋을 만들어줘`**라고 요청하세요. 출처·크기·고정 해시·라이선스를 확인하고 승인한 다운로드만 진행합니다. 계정 인증이 필요하면 공식 로그인만 안내하며, 이미 연결한 계정은 다시 연결하지 않습니다. Windows 앱은 0.1.11, Mac 앱도 0.1.11을 제공합니다.
+[전용 npm 패키지](https://www.npmjs.com/package/@oocheol/asset-studio)는 이전·수정된 스킬을 자동 백업하고 고정된 배포 파일의 SHA-256을 검사해 설치합니다. npm 설치 기능과 Windows·Mac 실행 도구 버전은 각각 관리합니다. Node.js를 사용하지 않으려면 [스킬 플러그인 ZIP](https://github.com/oocheol/masset/releases/download/v0.1.11/AssetStudio_0.1.11_codex-plugin-windows-macos.zip)의 `skills/asset-studio`를 `~/.agents/skills/asset-studio`에 설치하세요. ZIP 설치에는 Node.js가 필요하지 않습니다.
 
 [앱 없이 시작하는 설치 안내](docs/skill-first-setup.md) · [CLI·방식 비교](docs/codex-integration.md) · [이전 Mac 검증 범위](docs/codex-integration-validation.md) · [배포용 스킬 플러그인](integrations/codex/plugin.json)
 
