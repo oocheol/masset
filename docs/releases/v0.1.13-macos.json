@@ -121,7 +121,8 @@
     "skipReason": "Mac GUI, installation and update replacement execution omitted while Mac is locked, as authorized by user.",
     "siteBuildPassed": true,
     "publicReleaseFilesVerified": 20,
-    "publicGithubInstallerCommandsPassed": true
+    "publicGithubInstallerCommandsPassed": true,
+    "publicMetadataReverified": true
   },
   "boundaries": {
     "appAdHocSigned": true,
@@ -152,9 +153,16 @@
   },
   "productionSite": {
     "url": "https://masset-nu.vercel.app/",
-    "deploymentUrl": "https://masset-gxwas5r9r-oocheols-projects.vercel.app",
+    "deploymentUrl": "https://masset-5l29dh7vn-oocheols-projects.vercel.app",
     "macVersion": "0.1.13",
     "windowsVersion": "0.1.13",
-    "horizontalOverflowAt1280": false
+    "horizontalOverflowAt1280": false,
+    "previousVerifiedDeploymentUrl": "https://masset-gxwas5r9r-oocheols-projects.vercel.app",
+    "cliInstallerSource": "published GitHub tarball 0.1.14",
+    "cliRuntimeVersions": {
+      "windows-x64": "0.1.13",
+      "macos-arm64": "0.1.13"
+    },
+    "horizontalOverflowAt320": false
   }
 }
