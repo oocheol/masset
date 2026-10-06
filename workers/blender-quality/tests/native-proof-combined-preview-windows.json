@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "nativePlatform": "Windows",
+  "blenderVersion": "5.2.1 LTS",
+  "verifiedAt": "2026-10-06T06:25:27.0105323+00:00",
+  "verifierSha256": "85b2cc88e925980b849b5ba85a3ef3f20b5f5e3185fc24d1483fba0c2d6ebf0c",
+  "frozenRuntimeSources": [
+    {
+      "path": "workers\\blender-quality\\worker.py",
+      "sha256": "e71a7525d08378972d738b9cfaa861a57edcb6ff6decd431b25867b73fac7f2e"
+    },
+    {
+      "path": "workers\\blender-quality\\audit.py",
+      "sha256": "38bfba7ef0c35373fd4369cc46235cc625af2f5bbd7ec2623a673eccd17dc6d8"
+    },
+    {
+      "path": "workers\\blender-quality\\preview_worker.py",
+      "sha256": "9dce00678445756f49bb3eb901514e913e51e4777096ee3ccfe14ec46c6da905"
+    },
+    {
+      "path": "workers\\blender-quality\\quality_metrics.py",
+      "sha256": "14baebdb5f46634830f7eecb60829db22e82fdfb86d1c26f914c942fd327848e"
+    }
+  ],
+  "regression": {
+    "cases": 17,
+    "passed": true,
+    "sourceOriginalPreserved": true,
+    "evidencePath": "C:\\masset\\workers\\blender-quality\\output\\receipt-contract-1791267794644\\receipt-cases\\receipt-regression.json",
+    "evidenceSha256": "68a6ef0e7a878588261e4b1b89a73dd6ab24d6a9719cc5abd68f01d4760acddb",
+    "checks": [
+      {
+        "case": "valid-combined",
+        "passed": true,
+        "rejected": false,
+        "mode": "combined-deferred-and-separate-preview"
+      },
+      {
+        "case": "empty-deferred",
+        "passed": true,
+        "rejected": false,
+        "mode": "deferred"
+      },
+      {
+        "case": "missing-receipt",
+        "passed": true,
+        "rejected": true,
+        "reason": "Deferred previews require a separate preview receipt"
+      },
+      {
+        "case": "incomplete-previews",
+        "passed": true,
+        "rejected": true,
+        "reason": "Deferred result has incomplete or unexpected preview files"
+      },
+      {
+        "case": "unexpected-preview",
+        "passed": true,
+        "rejected": true,
+        "reason": "Deferred result has incomplete or unexpected preview files"
+      },
+      {
+        "case": "mismatched-scene-hash",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt does not bind the actual generated scene and safe generation fields"
+      },
+      {
+        "case": "unsafe-scriptAutoExecution",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt does not bind the actual generated scene and safe generation fields"
+      },
+      {
+        "case": "unsafe-drivers",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt contains unsafe or missing scene security counts"
+      },
+      {
+        "case": "unsafe-textBlocks",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt contains unsafe or missing scene security counts"
+      },
+      {
+        "case": "unsafe-linkedLibraries",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt contains unsafe or missing scene security counts"
+      },
+      {
+        "case": "unsafe-externalResources",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt contains unsafe or missing scene security counts"
+      },
+      {
+        "case": "mismatched-pixel-receipt",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt disagrees with native-decoded image pixels"
+      },
+      {
+        "case": "same-resolution-swapped-frame",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt disagrees with native-decoded image pixels"
+      },
+      {
+        "case": "same-resolution-changed-pixels",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt disagrees with native-decoded image pixels"
+      },
+      {
+        "case": "mismatched-renderer",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview renderer summary disagrees with actual file records"
+      },
+      {
+        "case": "malformed-mode",
+        "passed": true,
+        "rejected": true,
+        "reason": "Separate preview receipt has a mismatched fixed image contract"
+      },
+      {
+        "case": "receipt-without-images",
+        "passed": true,
+        "rejected": true,
+        "reason": "Deferred result has incomplete or unexpected preview files"
+      }
+    ]
+  },
+  "samples": [
+    {
+      "case": 1,
+      "artifacts": "C:\\masset\\output\\performance-013-image3d\\native-artifacts-1",
+      "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\receipt-contract-1791267794644\\independent-combined-1.json",
+      "independentEvidenceSha256": "e05a8e937dfaebf7d501147f5fe2f9f7467bdc871c57741a120a9ddd8a69565a",
+      "valid": true,
+      "checks": 59,
+      "originalSourceSha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+      "previewSetMode": "combined-deferred-and-separate-preview",
+      "sourceBlendSha256": "b63b5db80e5dd5ae99e8251baa43f2fb2357511a12ebcbb4fdad53a74f56ceca",
+      "previewReceipt": {
+        "path": "preview-validation.json",
+        "format": "json",
+        "role": "metadata",
+        "bytes": 5797,
+        "sha256": "7952eeabb38098e9e0b2f61297790b7db07e97204f2869ebfb0d13db753cd2da"
+      },
+      "actualImageArtifacts": [
+        {
+          "path": "thumbnail.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 1198232,
+          "sha256": "1f6ed4c545462922cc7cd47b6e66c1fe6300746756095ce3bf48b0f85267c0f4"
+        },
+        {
+          "path": "turntable-00.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 322525,
+          "sha256": "587125e5ab255b9b009d79354e83792a92df5e85f63f90099c5a743cf4d78225"
+        },
+        {
+          "path": "turntable-01.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 323404,
+          "sha256": "df2be0c75ef7d178e5c04ef843cb6358f0a16a6c6c1e52ed1cd9146f1d711c8b"
+        },
+        {
+          "path": "turntable-02.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 319990,
+          "sha256": "2180143f9cff159e957281550dc282db4d6d52c1f402b4964c3f05cd7c6be6b7"
+        },
+        {
+          "path": "turntable-03.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 328287,
+          "sha256": "73d24cb1f8f064f86528955a9eff0d62440c47f46df2df1fa1a7eaa855d3633d"
+        }
+      ],
+      "pixelMeasurementsMatch": true,
+      "scriptAutoexec": false,
+      "nativeSceneSecurityCheck": {
+        "code": "separate-preview-native-scene-security",
+        "status": "pass",
+        "message": "Actual reopened scene passes generated marker, all datablock drivers, library/cache and external image/font checks"
+      }
+    },
+    {
+      "case": 2,
+      "artifacts": "C:\\masset\\output\\performance-013-image3d\\native-artifacts-2",
+      "independentEvidencePath": "C:\\masset\\workers\\blender-quality\\output\\receipt-contract-1791267794644\\independent-combined-2.json",
+      "independentEvidenceSha256": "fc2bd9137e52977eabe0e11dccf328206c49295692205b22fedd41e08e4d211c",
+      "valid": true,
+      "checks": 59,
+      "originalSourceSha256": "0685afab8f4ae7be52cc58f5cb720d21054cd75c14ac514ff6f89ef56c6d27b0",
+      "previewSetMode": "combined-deferred-and-separate-preview",
+      "sourceBlendSha256": "97c0d52a2b132b5f3a9f239978e123156c8c976fa0bafd25937dd4791c27232a",
+      "previewReceipt": {
+        "path": "preview-validation.json",
+        "format": "json",
+        "role": "metadata",
+        "bytes": 5796,
+        "sha256": "dc18c76781a7784943a08c5ccd00180463e57ffdaaeb76e26d21122d168ad3f6"
+      },
+      "actualImageArtifacts": [
+        {
+          "path": "thumbnail.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 1198232,
+          "sha256": "364946b816363623e0cfda75350d1c626b4bbbb0bd4b8bb919b76dfe805d677c"
+        },
+        {
+          "path": "turntable-00.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 322525,
+          "sha256": "c3ec7b2f8401924079c8c960696d0d6582a135467e74ceb835f990e6c1d88cae"
+        },
+        {
+          "path": "turntable-01.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 323404,
+          "sha256": "f75c2826f4ed5848d056ce363f302538e7c143426562ccb6ac13440831c92050"
+        },
+        {
+          "path": "turntable-02.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 319990,
+          "sha256": "2e5eef6430d52595b2c77bb7a9d92629a679005a9c7d8de606699634f92ca023"
+        },
+        {
+          "path": "turntable-03.png",
+          "format": "png",
+          "role": "thumbnail",
+          "bytes": 328287,
+          "sha256": "16c791967c7d2763715199e21010e0a4608ac211cd6f386b93095aa630563574"
+        }
+      ],
+      "pixelMeasurementsMatch": true,
+      "scriptAutoexec": false,
+      "nativeSceneSecurityCheck": {
+        "code": "separate-preview-native-scene-security",
+        "status": "pass",
+        "message": "Actual reopened scene passes generated marker, all datablock drivers, library/cache and external image/font checks"
+      }
+    }
+  ],
+  "limitations": [
+    "Existing producer receipt v2 contains native pixel statistics but no PNG SHA values; every recorded statistic is compared with actual decoded pixels and actual file hashes are recorded independently",
+    "The preview receipt is artifact consistency evidence, not a cryptographic signature",
+    "No frozen runtime file changed; original root artifact sets were read only; no new reconstruction or rendering requested"
+  ]
+}

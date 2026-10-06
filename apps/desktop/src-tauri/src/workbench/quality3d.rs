@@ -158,6 +158,9 @@ fn process_environment(command: &mut Command) {
     for key in [
         "SystemRoot",
         "WINDIR",
+        // CPython needs these OS fields if a Windows WMI lookup is unavailable.
+        "PROCESSOR_ARCHITECTURE",
+        "PROCESSOR_ARCHITEW6432",
         "TEMP",
         "TMP",
         "PATH",
@@ -1057,6 +1060,25 @@ impl Backend {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(windows)]
+    #[test]
+    fn isolated_workers_keep_windows_architecture_without_credentials() {
+        let mut command = Command::new("unused-qa-command");
+        command.env("HF_TOKEN", "qa-token-must-be-removed");
+        command.env("HTTPS_PROXY", "qa-proxy");
+        command.env("PYTHONPATH", "qa-user-code");
+        process_environment(&mut command);
+        let environment: std::collections::HashMap<_, _> = command.get_envs().collect();
+        for key in ["PROCESSOR_ARCHITECTURE", "PROCESSOR_ARCHITEW6432"] {
+            if let Some(value) = std::env::var_os(key) {
+                assert_eq!(environment.get(std::ffi::OsStr::new(key)), Some(&Some(value.as_os_str())));
+            }
+        }
+        assert!(std::env::var_os("PROCESSOR_ARCHITECTURE").is_some());
+        for key in ["HF_TOKEN", "HTTPS_PROXY", "PYTHONPATH"] {
+            assert!(!environment.contains_key(std::ffi::OsStr::new(key)));
+        }
+    }
     #[test]
     fn stale_ready_markers_cannot_hide_missing_or_modified_runtime_files() {
         let root = std::env::temp_dir().join(format!("asset-runtime-integrity-{}", Uuid::new_v4()));

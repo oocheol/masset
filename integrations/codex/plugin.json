@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "asset-studio",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Generate individual game assets locally and integrate them while Codex builds a game.",
   "repository": "https://github.com/oocheol/masset",
   "license": "Apache-2.0",

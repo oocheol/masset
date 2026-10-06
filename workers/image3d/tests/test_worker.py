@@ -148,6 +148,40 @@ class Boundaries(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(WorkerError):
                 validate_interpreter({**base, **change}, windows)
 
+    @unittest.skipUnless(sys.platform == "win32" and sys.version_info[:2] == (3, 12),
+                         "Pinned Windows CPython 3.12 WMI fallback")
+    def test_isolated_python_identifies_cpu_when_wmi_is_unavailable(self):
+        # CPython 3.12 uses these OS fields when WMI is unavailable. Exercise
+        # the real interpreter after environment sanitation, including an
+        # unsupported architecture; missing WMI must not relax the platform gate.
+        probe = ("import json,platform,struct,sys,_wmi; "
+                 "_wmi.exec_query=lambda *_: (_ for _ in ()).throw(OSError('QA WMI unavailable')); "
+                 "platform._uname_cache=None; "
+                 "print(json.dumps({'implementation':platform.python_implementation(), "
+                 "'platform':platform.system(),'machine':platform.machine(), "
+                 "'version':list(sys.version_info[:3]),'pointerBits':struct.calcsize('P')*8}))")
+        target = read_json(lock_path("Windows"))
+        for architecture in ("AMD64", "ARM64"):
+            with self.subTest(architecture=architecture), patch.dict(os.environ, {
+                "PROCESSOR_ARCHITECTURE": architecture,
+                "PROCESSOR_ARCHITEW6432": architecture,
+                "HF_TOKEN": "qa-token-must-be-removed", "HTTPS_PROXY": "qa-proxy",
+                "PYTHONPATH": "qa-user-code",
+            }):
+                env = clean_env(self.root)
+                for secret in ("HF_TOKEN", "HTTPS_PROXY", "PYTHONPATH"):
+                    self.assertNotIn(secret, env)
+                result = subprocess.run([sys.executable, "-I", "-B", "-c", probe],
+                                        env=env, cwd=str(self.root), capture_output=True,
+                                        text=True, timeout=20, check=True)
+                identity = json.loads(result.stdout)
+                self.assertEqual(identity["machine"], architecture)
+                if architecture == "AMD64":
+                    validate_interpreter(identity, target)
+                else:
+                    with self.assertRaises(WorkerError):
+                        validate_interpreter(identity, target)
+
     def embedded_zip(self, extras=()):
         archive = self.root / "embedded.zip"
         with zipfile.ZipFile(archive, "w") as handle:

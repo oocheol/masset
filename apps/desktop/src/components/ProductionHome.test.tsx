@@ -183,7 +183,8 @@ beforeEach(async () => {
   await page.clock.install({time: new Date(stamp)}); await page.clock.pauseAt(new Date(stamp));
 });
 afterEach(async () => {try {expect(pageErrors).toEqual([]);} finally {await context?.close();}});
-afterAll(async () => {await browser?.close();});
+// Allow Windows Chrome's bounded process cleanup to finish under build load.
+afterAll(async () => {await browser?.close();}, 45_000);
 
 async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixtureProps> = {}) {
   const fixture: Fixture = {props: {snapshot: snapshot(), native: true, connection: connection(), providerChecking: false, busy: false, ...props}, bridgeNative: true,

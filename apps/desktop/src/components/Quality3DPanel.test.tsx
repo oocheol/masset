@@ -173,7 +173,10 @@ beforeEach(async () => {
   await page.clock.pauseAt(new Date('2026-10-04T00:00:00Z'));
 });
 afterEach(async () => { await context?.close(); });
-afterAll(async () => { await browser?.close(); });
+// Windows Chrome's bounded graceful process cleanup can outlast Vitest's
+// default 10s hook budget during concurrent native builds. Still fail if the
+// actual browser does not close within this finite cleanup window.
+afterAll(async () => { await browser?.close(); }, 45_000);
 
 async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixtureProps> = {}) {
   const pageErrors: string[] = [];

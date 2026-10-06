@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.13 — Windows production performance and 3D fidelity (2026-10-06)
+
+- Reuse a bounded Codex generation session while creating a fresh isolated thread per image. Invalidate it on runtime/configuration, login, cancellation, failure and project shutdown.
+- Retain the scheduler connection, inspect only active dependencies and release CPU/disk reservations while waiting for the remote image. Reacquire local resources before decoding and saving.
+- Cache hash-verified raw TripoSR output by input, model/runtime, preprocessing and quality identity. Reopen cached GLB files, quarantine corrupt entries and preserve inference provenance on reuse.
+- Improve UV spacing and small-mesh projection. Check sampled distance, silhouette and thin-feature loss before accepting game/LOD meshes; retain the original triangle count if safe LOD reduction is impossible.
+- Save core model outputs before optional, separately bounded previews. Protect preview recovery and metadata from stale executions; keep successful model exports available while previews run.
+- Preserve approved palette/detail instructions and use aspect-preserving image output framing with texture-specific cover mode.
+- Preserve Windows CPU identity in both isolated Python process environments, including CPython's fallback when WMI is unavailable; unsupported architectures remain rejected.
+- Give Windows browser test cleanup a finite process-exit budget so successful parallel assertions do not fail at the default 10-second teardown limit.
+- Publish Windows app/CLI and the common npm skill as 0.1.13. Retain Mac GUI 0.1.12, Mac CLI 0.1.11 and the existing Mac updater channel; no new Mac build.
+- Verified a real Windows CLI cold/cache pair, separate-process artifact reopen/export, independent Blender reopens and actual preview pixels. Timings and limits are in the Windows release record; no new live GPT benchmark is claimed.
+
 ## 0.1.11 — Mac app and standalone Codex skill (2026-10-06)
 
 - Built the latest master for Apple Silicon, including the standalone asset CLI and consented preparation of missing local tools.

@@ -11,12 +11,97 @@ import sys
 from datetime import datetime, timezone
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit import GLB, artifact, blender_filename, filesystem_path, image_dimensions, verify_source
+from audit import GLB, artifact, blender_filename, filesystem_path, image_dimensions, json_data, read_bounded, verify_source
 import bpy
 import numpy as np
 import bmesh
 from mathutils import Vector
 from mathutils.kdtree import KDTree
+
+PREVIEW_NAMES=("thumbnail.png",)+tuple(f"turntable-{i:02d}.png" for i in range(4))
+
+
+def same_measurement(recorded,actual):
+    """Compare native-decoded receipt measurements, never trust just dimensions."""
+    if type(recorded) is not type(actual):
+        return False
+    if isinstance(actual,dict):
+        return recorded.keys()==actual.keys() and all(same_measurement(recorded[k],v) for k,v in actual.items())
+    if isinstance(actual,list):
+        return len(recorded)==len(actual) and all(same_measurement(a,b) for a,b in zip(recorded,actual))
+    if isinstance(actual,float):
+        return math.isfinite(recorded) and math.isfinite(actual) and math.isclose(recorded,actual,rel_tol=1e-9,abs_tol=1e-9)
+    return recorded==actual
+
+
+def verify_deferred_preview_set(directory,job,core_report,measurements):
+    """Accept an empty deferred core or its exact later validated preview set.
+
+    The frozen v2 producer receipt records pixel statistics, not PNG hashes.
+    Compare its full native-decoded measurements and record actual file hashes
+    here. This verifies artifact consistency; the receipt is not a signature.
+    """
+    if core_report.get("preview",{}).get("status")!="deferred":
+        raise ValueError("Deferred core has an unexpected preview status")
+    preview_files={path.name for path in directory.iterdir()
+                   if path.name.startswith(("thumbnail","turntable"))}
+    receipt_path=directory/"preview-validation.json"
+    if not preview_files and not receipt_path.exists():
+        return {"mode":"deferred","receipt":None}
+    if preview_files!=set(PREVIEW_NAMES) or set(measurements)!=set(PREVIEW_NAMES):
+        raise ValueError("Deferred result has incomplete or unexpected preview files")
+    if not receipt_path.is_file():
+        raise ValueError("Deferred previews require a separate preview receipt")
+    receipt=json_data(read_bounded(receipt_path,256*1024))
+    source_sha=hashlib.sha256(read_bounded(directory/"source.blend",256*1024*1024)).hexdigest()
+    if (not isinstance(receipt,dict) or type(receipt.get("schemaVersion")) is not int
+            or receipt["schemaVersion"]!=2 or receipt.get("valid") is not True
+            or receipt.get("name")!=job["name"] or receipt.get("sourceSha256")!=source_sha
+            or receipt.get("originalSourcePreserved") is not True
+            or receipt.get("generatedSceneMarker")!="quality-worker-v2"
+            or receipt.get("scriptAutoExecution") is not False):
+        raise ValueError("Separate preview receipt does not bind the actual generated scene and safe generation fields")
+    if any(type(receipt.get(key)) is not int or receipt[key]!=0
+           for key in ("textBlocks","drivers","linkedLibraries","externalResources")):
+        raise ValueError("Separate preview receipt contains unsafe or missing scene security counts")
+    preview=receipt.get("preview",{})
+    if (not isinstance(preview,dict) or not isinstance(preview.get("mode"),str)
+            or preview["mode"] not in {"cycles","fast"}
+            or preview.get("status")!="completed" or preview.get("files")!=list(PREVIEW_NAMES)
+            or preview.get("thumbnailResolution")!=[1024,1024]
+            or preview.get("turntableResolution")!=[512,512]
+            or type(preview.get("turntableViews")) is not int or preview["turntableViews"]!=4
+            or preview.get("inferenceDeviceChanged") is not False):
+        raise ValueError("Separate preview receipt has a mismatched fixed image contract")
+    engines=preview.get("engineByFile")
+    allowed_engines={"CYCLES","BLENDER_EEVEE","BLENDER_EEVEE_NEXT"}
+    if (not isinstance(engines,dict) or set(engines)!=set(PREVIEW_NAMES)
+            or any(not isinstance(engine,str) or engine not in allowed_engines for engine in engines.values())):
+        raise ValueError("Separate preview receipt has missing or invalid renderer records")
+    selected=sorted(set(engines.values()))
+    if preview.get("engine")!=(selected[0] if len(selected)==1 else "mixed"):
+        raise ValueError("Separate preview renderer summary disagrees with actual file records")
+    if preview["mode"]=="cycles" and set(selected)!={"CYCLES"}:
+        raise ValueError("Cycles preview receipt claims a different renderer")
+    if preview["mode"]=="fast" and "CYCLES" in selected and not (
+            isinstance(preview.get("fallbackReason"),str) and preview["fallbackReason"].strip()):
+        raise ValueError("Fast preview using Cycles lacks an explicit fallback reason")
+    recorded=receipt.get("imageMeasurements")
+    if not isinstance(recorded,dict) or set(recorded)!=set(PREVIEW_NAMES):
+        raise ValueError("Separate preview receipt does not measure exactly five images")
+    for name in PREVIEW_NAMES:
+        measured=measurements[name]
+        expected=[1024,1024] if name=="thumbnail.png" else [512,512]
+        if (measured.get("resolution")!=expected or measured.get("finite") is not True
+                or type(measured.get("sampleDistinctRGB8")) is not int or measured["sampleDistinctRGB8"]<16
+                or not same_measurement(recorded[name],measured)):
+            raise ValueError("Separate preview receipt disagrees with native-decoded image pixels")
+    hashes={name:artifact(directory/name,"thumbnail") for name in PREVIEW_NAMES}
+    if len({hashes[name]["sha256"] for name in PREVIEW_NAMES[1:]})!=4:
+        raise ValueError("Separate turntable previews are not four distinct image files")
+    return {"mode":"combined-deferred-and-separate-preview","receipt":receipt,
+            "receiptArtifact":artifact(receipt_path,"metadata"),"sourceBlendSha256":source_sha,
+            "actualImageArtifacts":list(hashes.values()),"pixelMeasurementsMatch":True}
 
 
 def clear():
@@ -134,6 +219,7 @@ def run(directory,evidence,log=None):
                 check("hash-"+item["path"],path.name==item["path"] and actual["sha256"]==item["sha256"] and actual["bytes"]==item["bytes"],
                       "Completed basename/hash/bytes match actual artifact")
     clear()
+    preview_measurements={}
     bpy.ops.import_scene.gltf(filepath=blender_filename(job["sourcePath"]),import_pack_images=True)
     original,vertices,centers=mesh_data([o for o in bpy.context.scene.objects if o.type=="MESH"])
     array=np.asarray([list(v) for v in vertices])
@@ -250,10 +336,18 @@ def run(directory,evidence,log=None):
                 check("orm-source-factors",not errors or max(errors)<0.005,"Source roughness/metallic factors appear in actual ORM interior pixels",max(errors,default=0))
         if basename=="thumbnail.png" or basename.startswith("turntable-"):
             check("preview-not-solid-"+basename,stats["sampleDistinctRGB8"]>100,"Rendered preview contains actual non-solid image pixels",stats["sampleDistinctRGB8"])
+            if job.get("previewMode")=="deferred":
+                from worker import texture_stats
+                image.colorspace_settings.name="sRGB"
+                preview_measurements[basename]=texture_stats(image)
     if job.get("previewMode")=="deferred":
-        check("deferred-preview-separated",report.get("preview",{}).get("status")=="deferred"
-              and not any((directory/name).exists() for name in ("thumbnail.png",*[f"turntable-{i:02d}.png" for i in range(4)])),
-              "Core result completes without preview files in deferred mode")
+        try:
+            preview_set=verify_deferred_preview_set(directory,job,report,preview_measurements)
+            result["previewSet"]=preview_set
+            check("deferred-preview-separated",True,
+                  "Deferred core has no previews, or later previews have a scene-bound receipt matching all actual decoded images")
+        except ValueError as exc:
+            check("deferred-preview-separated",False,str(exc))
     else:
         hashes={hashlib.sha256((directory/f"turntable-{i:02d}.png").read_bytes()).hexdigest() for i in range(4)}
         check("distinct-turntable",len(hashes)==4,"Four viewpoints produce four different PNGs",len(hashes))
@@ -292,6 +386,14 @@ def run(directory,evidence,log=None):
     check("blend-packed-images",all(i["packed"] for i in info["images"]),"All editable source texture pixels are packed")
     check("blend-cpu-studio",info["engine"]=="CYCLES" and info["device"]=="CPU" and info["threads"]==2 and info["unitScale"]==1 and info["camera"] and info["lights"]==3,
           "CPU studio scene has bounded threads, camera/lights and meter units")
+    if result.get("previewSet",{}).get("mode")=="combined-deferred-and-separate-preview":
+        try:
+            from preview_worker import verify_generated_scene
+            verify_generated_scene()
+            check("separate-preview-native-scene-security",True,
+                  "Actual reopened scene passes generated marker, all datablock drivers, library/cache and external image/font checks")
+        except ValueError as exc:
+            check("separate-preview-native-scene-security",False,str(exc))
     _,after=verify_source(job)
     check("original-unchanged",after.sha256==source.sha256,"Original source hash is preserved",after.sha256)
     result["valid"]=all(c["status"]=="pass" for c in checks)

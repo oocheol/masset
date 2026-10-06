@@ -124,7 +124,10 @@ def clean_env(root, threads=CPU_THREADS):
            "OMP_NUM_THREADS": str(threads), "OPENBLAS_NUM_THREADS": str(threads),
            "MKL_NUM_THREADS": str(threads), "VECLIB_MAXIMUM_THREADS": str(threads),
            "NUMEXPR_NUM_THREADS": str(threads), "LANG": "en_US.UTF-8"}
-    for key in ("SystemRoot", "WINDIR", "COMSPEC"):
+    # CPython's Windows machine() falls back to these OS fields when WMI is
+    # unavailable. Keep the architecture gate reliable in nested isolated
+    # workers without inheriting credentials, proxies or user Python paths.
+    for key in ("SystemRoot", "WINDIR", "COMSPEC", "PROCESSOR_ARCHITECTURE", "PROCESSOR_ARCHITEW6432"):
         if key in os.environ:
             env[key] = os.environ[key]
     return env
