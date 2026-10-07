@@ -78,6 +78,11 @@
       "../../../workers/blender-quality/README.md": "workers/blender-quality/README.md",
       "../../../docs/model-quality.md": "docs/model-quality.md",
       "../../../workers/image3d/glb_color.py": "workers/image3d/glb_color.py",
+      "../../../workers/trellis2/worker.py": "workers/trellis2/worker.py",
+      "../../../workers/trellis2/runtime-lock.json": "workers/trellis2/runtime-lock.json",
+      "../../../workers/trellis2/README.md": "workers/trellis2/README.md",
+      "../../../workers/trellis2/LICENSE": "workers/trellis2/LICENSE",
+      "../../../docs/trellis2-analysis.md": "docs/trellis2-analysis.md",
       "../../../integrations/codex/": "integrations/codex/",
       "../../../docs/codex-integration.md": "docs/codex-integration.md",
       "../../../docs/skill-first-setup.md": "docs/skill-first-setup.md"

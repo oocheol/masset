@@ -2,8 +2,8 @@
 //! A command owns its project until its workers exit; JSON is data, never code.
 mod install;
 mod jobs;
-mod production;
 mod prepare;
+mod production;
 use crate::workbench::Backend;
 use anyhow::{bail, Context, Result};
 pub(crate) use install::install_default as install_codex_skill;
@@ -65,7 +65,14 @@ impl Args {
             command: command.into(),
             ..Self::default()
         };
-        let flags = ["--allow-gpt", "--check-gpt", "--consent-downloads", "--needs-3d", "--login-if-needed", "--local-only"];
+        let flags = [
+            "--allow-gpt",
+            "--check-gpt",
+            "--consent-downloads",
+            "--needs-3d",
+            "--login-if-needed",
+            "--local-only",
+        ];
         let values = [
             "--workspace",
             "--resources",
@@ -329,6 +336,7 @@ pub fn run(values: &[String]) -> Result<()> {
         "model",
         "quality3d",
         "quality3d_status",
+        "quality3d_trellis_configure",
         "game_connect",
         "production_state",
         "production_verify",

@@ -378,6 +378,25 @@ class GLB:
             elif isinstance(value, float) and not math.isfinite(value):
                 raise ValueError("Non-finite GLB JSON value")
         walk(doc)
+        for material in doc.get("materials", []):
+            if not isinstance(material, dict):
+                raise ValueError("GLB material must be an object")
+            mode = material.get("alphaMode", "OPAQUE")
+            if not isinstance(mode, str) or mode not in {"OPAQUE", "MASK", "BLEND"}:
+                raise ValueError("GLB material alpha mode is unsupported")
+            cutoff = material.get("alphaCutoff", 0.5)
+            if type(cutoff) not in (int, float) or not math.isfinite(cutoff) or cutoff < 0:
+                raise ValueError("GLB material alpha cutoff must be finite and nonnegative")
+            if type(material.get("doubleSided", False)) is not bool:
+                raise ValueError("GLB material doubleSided must be boolean")
+            if "occlusionTexture" in material:
+                occlusion = material["occlusionTexture"]
+                if not isinstance(occlusion, dict):
+                    raise ValueError("GLB occlusion texture must be an object")
+                self.ref("textures", occlusion.get("index"))
+                strength = occlusion.get("strength", 1.0)
+                if type(strength) not in (int, float) or not math.isfinite(strength) or not 0 <= strength <= 1:
+                    raise ValueError("GLB occlusion strength must be between zero and one")
         for key, bound in (("nodes", 1024), ("meshes", 256), ("materials", 256),
                            ("textures", 128), ("images", 64), ("accessors", 8192),
                            ("bufferViews", 8192), ("scenes", 32), ("buffers", 1)):

@@ -6,7 +6,7 @@ import {chromium, expect as uiExpect} from '@playwright/test';
 import type {Browser, BrowserContext, Page} from '@playwright/test';
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from 'vitest';
 import {DEFAULT_SPEC, DEFAULT_STYLE} from '@local-assets/contracts';
-import type {Asset, Local3DStatus, ProjectSnapshot, Quality3DRequest} from '@local-assets/contracts';
+import type {Asset, Image3DEngineCapability, Local3DStatus, ProjectSnapshot, Quality3DRequest} from '@local-assets/contracts';
 import type {Quality3DPanelProps} from './Quality3DPanel';
 
 // UI-only fixtures: real React rendering in Chromium, fake bridge responses and tiny
@@ -18,11 +18,13 @@ type Fixture = {
   status: Local3DStatus;
   prepareStatus: Local3DStatus;
   cancelStatus: Local3DStatus;
+  configureStatus: Local3DStatus;
   commands: Array<{action: string; confirmed?: boolean}>;
   requests: Quality3DRequest[];
   closed: boolean;
   failStatus: boolean;
   failSubmit: boolean;
+  failConfigure: boolean;
   holdSubmit: boolean;
   deferStatus: boolean;
   releaseStatus?: () => void;
@@ -64,6 +66,17 @@ function status(overrides: Partial<Local3DStatus> = {}): Local3DStatus {
   return {supported: true, installed: true, busy: false, state: 'ready', message: 'UI 모형: 로컬 모델 준비 완료', stage: 'ready',
     modelId: 'UI-fixture-TripoSR', modelRevision: 'ui-fixture', device: 'cpu', pythonVersion: '3.11', weightBytes: 1680000000,
     memoryMb: 16384, minimumMemoryMb: 16384, blenderReady: true, ...overrides};
+}
+function trellisStatus(capability: Partial<Image3DEngineCapability> = {}, runtime: Partial<Local3DStatus> = {}): Local3DStatus {
+  const local = status({memoryMb: 32768, ...runtime});
+  return {...local, engines: [
+    {id: 'triposr', name: 'UI fixture TripoSR', execution: 'local', available: local.supported && local.installed,
+      requiresImageUpload: false, requestedModel: 'UI-fixture-TripoSR', state: local.installed ? 'ready' : 'requires_setup',
+      reason: 'UI fixture CPU path', localMinimumVramMb: null},
+    {id: 'trellis2_local', name: 'UI fixture TRELLIS.2', execution: 'local', available: true, requiresImageUpload: false,
+      requestedModel: 'UI-fixture-TRELLIS.2', state: 'experimental', reason: 'UI 모형: 로컬 실행 환경만 연결됨. 실제 생성 미검증.',
+      localMinimumVramMb: 24576, vramMb: 24576, gpuName: 'UI fixture NVIDIA', runtimeRoot: '/home/fixture/trellis2-runtime', distribution: 'Ubuntu', ...capability},
+  ]};
 }
 function windowsDownload(): NonNullable<Local3DStatus['download']> {
   return {totalBytes: 2034000316, runtime: 'CPython 3.12.10 · PyTorch 2.2.2 CPU · TripoSR',
@@ -160,6 +173,11 @@ beforeAll(async () => {
             fixture.status = structuredClone(fixture.cancelStatus);
             return structuredClone(fixture.status);
           }
+          if (request.action === 'quality3d_trellis_configure') {
+            if (fixture.failConfigure) throw new Error('authorization UI-secret-must-not-render');
+            fixture.status = structuredClone(fixture.configureStatus);
+            return structuredClone(fixture.status);
+          }
           throw new Error('Unexpected UI fixture command');
         };
       `,
@@ -183,8 +201,8 @@ async function mount(overrides: Partial<Fixture> = {}, props: Partial<FixturePro
   page.on('pageerror', error => pageErrors.push(error.message));
   const fixture: Fixture = {props: {snapshot: snapshot(), selectedIds: ['png'], native: true, blenderReady: true, busy: false, ...props},
     bridgeNative: true, status: status(), prepareStatus: status({state: 'preparing', installed: false, busy: true, message: 'UI 모형: 준비 중'}),
-    cancelStatus: status({state: 'cancelled', installed: false, message: 'UI 모형: 준비 취소됨'}), commands: [], requests: [], closed: false,
-    failStatus: false, failSubmit: false, holdSubmit: false, deferStatus: false, ...overrides};
+    cancelStatus: status({state: 'cancelled', installed: false, message: 'UI 모형: 준비 취소됨'}), configureStatus: trellisStatus(), commands: [], requests: [], closed: false,
+    failStatus: false, failSubmit: false, failConfigure: false, holdSubmit: false, deferStatus: false, ...overrides};
   await page.route('http://quality3d-ui.test/**', async route => {
     const path = new URL(route.request().url()).pathname;
     const body = modules[path];
@@ -205,8 +223,170 @@ const modelSubmit = () => page.getByRole('button', {name: '모델다듬기 새 �
 const consent = () => page.getByRole('checkbox', {name: /1회 다운로드에 동의합니다/});
 const commands = () => page.evaluate(() => window.__QUALITY3D_UI_FIXTURE__.commands);
 const requests = () => page.evaluate(() => window.__QUALITY3D_UI_FIXTURE__.requests);
+const trellisEngine = () => page.getByRole('button', {name: /TRELLIS.2 · 로컬 GPU/});
+const triposrEngine = () => page.getByRole('button', {name: /TripoSR · 로컬 CPU/});
+async function expectReadablePanel() {
+  const overflow = await page.locator('.quality3d-panel').evaluate(element => {
+    const bounds = element.getBoundingClientRect();
+    return {wide: element.scrollWidth > element.clientWidth, elements: [...element.querySelectorAll('*')]
+      .filter(child => child.getClientRects().length && child.getBoundingClientRect().right > bounds.right + 1)
+      .map(child => ({className: child.className, text: child.textContent?.slice(0, 90)}))};
+  });
+  expect(overflow.wide, JSON.stringify(overflow.elements)).toBe(false);
+  const smallText = await page.locator('.quality3d-panel').evaluate(element => [...element.querySelectorAll('button, p, label, small, legend, summary, .quality3d-local-tag, .quality3d-section-heading > span')]
+    .filter(child => child.getClientRects().length && parseFloat(getComputedStyle(child).fontSize) < 14).map(child => child.textContent));
+  expect(smallText).toEqual([]);
+}
 
 describe('Quality3DPanel UI (mocked native boundary)', () => {
+  it('keeps TripoSR as the default and omits engine and seed from legacy requests even with engine capabilities', async () => {
+    await mount({status: trellisStatus()});
+    await uiExpect(triposrEngine()).toHaveAttribute('aria-pressed', 'true');
+    await uiExpect(trellisEngine()).toHaveAttribute('aria-pressed', 'false');
+    await uiExpect(page.getByLabel('생성 시드', {exact: true})).toHaveCount(0);
+    await submitButton().click();
+    expect(await requests()).toEqual([{assetIds: ['png'], name: 'Fixture png 3D', quality: 'high', heightMeters: 1,
+      maxTriangles: 10000, textureResolution: 1024, preserveMaterials: true}]);
+  });
+
+  it('submits an explicitly selected prepared local TRELLIS runtime without TripoSR setup or image upload', async () => {
+    await mount({status: trellisStatus({}, {installed: false, state: 'missing'})});
+    await trellisEngine().click();
+    await uiExpect(page.locator('.quality3d-state')).toHaveText('실험적');
+    await uiExpect(page.getByText('로컬 실행 환경 연결 · 실행 전 모델 해시 검사 · 실제 생성 미검증', {exact: true})).toBeVisible();
+    await uiExpect(page.getByLabel('생성 시드', {exact: true})).toHaveValue('0');
+    await uiExpect(consent()).toHaveCount(0);
+    await uiExpect(page.getByRole('checkbox', {name: /업로드|외부 전송/})).toHaveCount(0);
+    await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toHaveCount(0);
+    await uiExpect(submitButton()).toBeEnabled();
+    await submitButton().click();
+    expect(await requests()).toEqual([{assetIds: ['png'], name: 'Fixture png 3D', quality: 'high', heightMeters: 1,
+      maxTriangles: 10000, textureResolution: 1024, preserveMaterials: true, engine: 'trellis2_local', seed: 0}]);
+    expect(await commands()).toEqual([{action: 'quality3d_status'}]);
+  });
+
+  it.each(['unsupported', 'requires_setup', 'experimental'] as const)('blocks an unavailable TRELLIS runtime in %s state and keeps the CPU path usable', async state => {
+    const reason = 'UI 모형: GPU VRAM 4 GB. 로컬 TRELLIS.2에는 최소 24 GB가 필요합니다.';
+    await mount({status: trellisStatus({available: false, state, reason, vramMb: 4096, runtimeRoot: null})});
+    await trellisEngine().click();
+    await uiExpect(page.locator('.quality3d-runtime-message')).toHaveText(reason);
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(page.getByRole('button', {name: '로컬 런타임 연결', exact: true})).toHaveCount(0);
+    await uiExpect(page.getByLabel('Linux 실행 환경 폴더', {exact: true})).toHaveCount(0);
+    await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+    expect(await requests()).toEqual([]);
+    expect(await commands()).toEqual([{action: 'quality3d_status'}]);
+    await triposrEngine().click();
+    await uiExpect(submitButton()).toBeEnabled();
+  });
+
+  it('requires measured 24 GiB VRAM and the app 32 GiB system-memory floor even if a capability flag is inconsistent', async () => {
+    await mount({status: trellisStatus({available: true, vramMb: 4096}, {memoryMb: 8192, minimumMemoryMb: 8192})});
+    await trellisEngine().click();
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(page.getByText(/앱 작업 예산 때문에 시스템 메모리 32 GB 이상이 필요합니다/).first()).toBeVisible();
+    await page.evaluate(() => {window.__QUALITY3D_UI_FIXTURE__.status.memoryMb = 32768;});
+    await page.getByRole('button', {name: '준비 상태 다시 확인', exact: true}).click();
+    await uiExpect(submitButton()).toBeDisabled();
+    await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+    expect(await requests()).toEqual([]);
+  });
+
+  it('allows TRELLIS only one image while preserving an over-limit selection until the user removes it', async () => {
+    await mount({status: trellisStatus()}, {selectedIds: ['png', 'jpeg']});
+    await trellisEngine().click();
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(page.getByText(/TRELLIS.2는 한 번에 이미지 1개를 처리합니다/)).toBeVisible();
+    await uiExpect(page.getByRole('group', {name: '선택한 입력'}).getByRole('button')).toHaveCount(2);
+    await page.getByRole('button', {name: 'Fixture jpeg 선택 해제', exact: true}).click();
+    await uiExpect(submitButton()).toBeEnabled();
+    await uiExpect(page.getByRole('button', {name: 'Fixture webp 선택', exact: true})).toBeDisabled();
+    await triposrEngine().click();
+    await uiExpect(page.getByRole('button', {name: 'Fixture webp 선택', exact: true})).toBeEnabled();
+  });
+
+  it('requires a bounded integer seed only for the selected TRELLIS engine', async () => {
+    await mount({status: trellisStatus()});
+    await trellisEngine().click();
+    const seed = page.getByLabel('생성 시드', {exact: true});
+    for (const value of ['', '-1', '0.5', '2147483648']) {
+      await seed.fill(value);
+      await uiExpect(submitButton()).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+    }
+    expect(await requests()).toEqual([]);
+    await seed.fill('2147483647');
+    await submitButton().click();
+    expect((await requests())[0]).toMatchObject({engine: 'trellis2_local', seed: 2147483647});
+    await seed.fill('-1');
+    await triposrEngine().click();
+    await uiExpect(submitButton()).toBeEnabled();
+  });
+
+  it.each([{memoryMb: 8192, blenderReady: true}, {memoryMb: 16384, blenderReady: true}, {memoryMb: 32768, blenderReady: false}])('requires physical memory and Blender for TRELLIS finishing: %j', async environment => {
+    await mount({status: trellisStatus({}, {memoryMb: environment.memoryMb})}, {blenderReady: environment.blenderReady});
+    await trellisEngine().click();
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(consent()).toHaveCount(0);
+    await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+    expect(await requests()).toEqual([]);
+    expect(await commands()).toEqual([{action: 'quality3d_status'}]);
+  });
+
+  it.each([{memoryMb: 16384, allowed: false}, {memoryMb: 32767, allowed: false}, {memoryMb: 32768, allowed: true}])('matches the app TRELLIS job admission threshold while preserving TripoSR at 16 GiB: %j', async environment => {
+    await mount({status: trellisStatus({}, {memoryMb: environment.memoryMb})});
+    await uiExpect(submitButton()).toBeEnabled();
+    await trellisEngine().click();
+    if (environment.allowed) await uiExpect(submitButton()).toBeEnabled();
+    else {
+      await uiExpect(submitButton()).toBeDisabled();
+      await uiExpect(page.getByText(/앱 작업 예산 때문에 시스템 메모리 32 GB 이상이 필요합니다/).first()).toBeVisible();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})));
+      expect(await requests()).toEqual([]);
+    }
+  });
+
+  it('connects a preprepared WSL runtime only on eligible hardware using reviewed directory fields', async () => {
+    await mount({status: trellisStatus({state: 'requires_setup', available: false, runtimeRoot: null})});
+    await trellisEngine().click();
+    const connect = page.getByRole('button', {name: '로컬 런타임 연결', exact: true});
+    await uiExpect(connect).toBeDisabled();
+    await page.getByLabel('Linux 실행 환경 폴더', {exact: true}).fill('https://example.invalid/runtime');
+    await uiExpect(connect).toBeDisabled();
+    await page.getByLabel('Linux 실행 환경 폴더', {exact: true}).fill('  /home/fixture/trellis2-runtime  ');
+    await page.getByLabel('WSL 배포판', {exact: true}).fill('  Ubuntu  ');
+    await uiExpect(connect).toBeEnabled();
+    await connect.click();
+    await uiExpect.poll(commands).toEqual([{action: 'quality3d_status'}, {action: 'quality3d_trellis_configure', runtimeRoot: '/home/fixture/trellis2-runtime', distribution: 'Ubuntu'}]);
+    await uiExpect(page.locator('.quality3d-state')).toHaveText('실험적');
+    await uiExpect(submitButton()).toBeEnabled();
+    expect(await requests()).toEqual([]);
+  });
+
+  it('sanitizes failed runtime connections and prevents submission until the next status read', async () => {
+    await mount({failConfigure: true, status: trellisStatus({state: 'requires_setup', available: false})});
+    await trellisEngine().click();
+    await page.getByRole('button', {name: '로컬 런타임 연결', exact: true}).click();
+    await uiExpect(page.getByRole('alert')).toContainText('실행 환경 연결을 확인하지 못했습니다');
+    await uiExpect(submitButton()).toBeDisabled();
+    await uiExpect(page.locator('body')).not.toContainText('UI-secret-must-not-render');
+    await page.evaluate(() => {window.__QUALITY3D_UI_FIXTURE__.status = window.__QUALITY3D_UI_FIXTURE__.configureStatus;});
+    await page.getByRole('button', {name: '준비 상태 다시 확인', exact: true}).click();
+    await uiExpect(submitButton()).toBeEnabled();
+  });
+
+  it('keeps existing GLB finishing independent of a previously selected TRELLIS engine', async () => {
+    await mount({status: trellisStatus()});
+    await trellisEngine().click();
+    await page.getByRole('button', {name: /모델다듬기 기존 GLB/}).click();
+    await page.getByRole('button', {name: 'Fixture model 선택', exact: true}).click();
+    await uiExpect(page.getByRole('group', {name: '이미지→3D 엔진 선택'})).toHaveCount(0);
+    await modelSubmit().click();
+    expect((await requests())[0]).toMatchObject({assetIds: ['model']});
+    expect((await requests())[0]).not.toHaveProperty('engine');
+    expect((await requests())[0]).not.toHaveProperty('seed');
+  });
+
   it('labels preserved high geometry instead of showing the reduced game triangle count', async () => {
     const project = snapshot();
     const original = project.project.assets.find(item => item.id === 'model')!;
@@ -550,18 +730,18 @@ describe('Quality3DPanel UI (mocked native boundary)', () => {
     await page.setViewportSize({width: 390, height: 844});
     await mount({status: status({state: 'missing', installed: false, message: 'UI 모형: Windows x64 로컬 모델 준비 필요', download: windowsDownload()})});
     await page.locator('.quality3d-download-info summary').click();
-    const overflow = await page.locator('.quality3d-panel').evaluate(element => {
-      const bounds = element.getBoundingClientRect();
-      return {wide: element.scrollWidth > element.clientWidth, elements: [...element.querySelectorAll('*')]
-        .filter(child => child.getClientRects().length && child.getBoundingClientRect().right > bounds.right + 1)
-        .map(child => ({className: child.className, text: child.textContent?.slice(0, 90)}))};
-    });
-    expect(overflow.wide, JSON.stringify(overflow.elements)).toBe(false);
-    const smallText = await page.locator('.quality3d-panel').evaluate(element => [...element.querySelectorAll('button, p, label, small, legend, summary, .quality3d-local-tag, .quality3d-section-heading > span')]
-      .filter(child => child.getClientRects().length && parseFloat(getComputedStyle(child).fontSize) < 14).map(child => child.textContent));
-    expect(smallText).toEqual([]);
+    await expectReadablePanel();
     await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeDisabled();
     await consent().check();
     await uiExpect(page.getByRole('button', {name: '로컬 모델 준비', exact: true})).toBeEnabled();
+  });
+
+  it('keeps local TRELLIS selection, seed and WSL connection controls readable at 390px', async () => {
+    await page.setViewportSize({width: 390, height: 844});
+    await mount({status: trellisStatus({state: 'requires_setup', available: false})});
+    await trellisEngine().click();
+    await expectReadablePanel();
+    await uiExpect(page.getByLabel('생성 시드', {exact: true})).toBeVisible();
+    await uiExpect(page.getByRole('button', {name: '로컬 런타임 연결', exact: true})).toBeEnabled();
   });
 });

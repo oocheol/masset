@@ -41,6 +41,22 @@ Use `init --workspace /absolute/assets-workspace` for an empty project. `command
 
 Import accepts validated raster images or self-contained GLB, preserving originals. `quality3d` refines an imported GLB or reconstructs an image if the local model is ready. Snapshot output contains actual assets, versions, artifacts and jobs. `model` accepts trusted procedural recipes, not generated Python. `production_manifest` and `game_connect` are local planning/scan commands. GPT commands additionally require `--allow-gpt`. Use `prepare --needs-3d --consent-downloads` for missing local prerequisites; no app screen is required.
 
+## Local TRELLIS.2 in development builds
+
+Do not assume the published 0.1.13 CLI archive contains this optional engine. Check the actual binary's `doctor.local3D.engines` first. Windows WSL2 and a measured NVIDIA GPU with at least 24 GiB VRAM are required; macOS/CPU execution is unsupported. It never uploads images, downloads a runtime automatically or falls back to another model.
+
+Connect only a separately prepared and license-reviewed runtime. `runtimeRoot` is an absolute Linux path; Python is fixed to its `venv/bin/python`. The preparation probe remains experimental and does not certify inference or full weight hashing. Every actual run verifies the pinned source and all model hashes. See the bundled TRELLIS worker README for the manifest and separate dependency terms.
+
+```json
+{"action":"quality3d_trellis_configure","runtimeRoot":"/home/user/trellis2-runtime","distribution":"Ubuntu"}
+```
+
+```json
+{"action":"quality3d","assetIds":["TRANSPARENT_IMAGE_ID"],"name":"LocalTrellisProp","quality":"standard","heightMeters":1,"maxTriangles":10000,"textureResolution":1024,"preserveMaterials":true,"engine":"trellis2_local","seed":42}
+```
+
+Select one pre-masked image. Actual results carry model/weight/input/output provenance and PBR-preserving Blender finishing. High-spec inference and WSL cancellation need native validation on suitable hardware; the development Windows host has only 4 GiB VRAM. Omitting `engine` keeps TripoSR.
+
 ## Recovery
 
 Default wait limit is 24 hours; `--timeout 1..86400` controls the bound. A timeout/failure exits nonzero and preserves the workspace, originals and received outputs. Interruption after remote submission can leave `external_unknown`; it never triggers an automatic repeat. Inspect the JSON error/job status, then reuse the same UUID and unchanged manifest to resume safe pending jobs. New UUIDs mean new remote requests. To explicitly release an unknown capacity reservation, use the app's documented continuation action or a `production_continue` request with `acknowledgeUnconfirmedRequests=true`; this does not resend the unknown request. Local retry uses `production_retry` with the run/item IDs and preserves any succeeded concept image.

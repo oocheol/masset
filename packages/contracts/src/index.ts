@@ -53,15 +53,30 @@ export interface Local3DStatus {
   message: string; stage: string; modelId: string; modelRevision: string;
   device: 'cpu'; pythonVersion: string | null; weightBytes: number;
   memoryMb: number; minimumMemoryMb: number; blenderReady: boolean;
+  engines?: Image3DEngineCapability[];
   download?: {
     totalBytes: number; runtime: string; sources: string[];
     licenses: string[]; manifestUrl: string; modelSha256: string;
   } | null;
 }
+export type Image3DEngine = 'triposr' | 'trellis2_local';
+export interface Image3DEngineCapability {
+  id: Image3DEngine; name: string; execution: 'local';
+  available: boolean; requiresImageUpload: boolean; requestedModel: string;
+  state: 'ready' | 'requires_setup' | 'experimental' | 'unsupported';
+  reason: string; localMinimumVramMb: number | null;
+  localMinimumMemoryMb?: number;
+  vramMb?: number | null; gpuName?: string | null;
+  runtimeRoot?: string | null; distribution?: string | null;
+  hashesVerified?: boolean; inferenceVerified?: boolean;
+}
 export interface Quality3DRequest {
   assetIds: string[]; name: string; quality: 'draft' | 'standard' | 'high';
   heightMeters: number; maxTriangles: number; textureResolution: 512 | 1024 | 2048;
   preserveMaterials: boolean;
+  /** Omitted keeps the existing local TripoSR path. No automatic model fallback. */
+  engine?: Image3DEngine;
+  seed?: number;
 }
 export interface ProviderConnection {
   available: boolean; authenticated: boolean; ready: boolean; runtimeVersion: string | null;

@@ -17,6 +17,14 @@
 .quality3d-modes > button > span { flex: 1; min-width: 0; }
 .quality3d-modes strong { display: block; font-size: 16px; }
 .quality3d-modes small { display: block; color: var(--muted); font-size: 14px; margin-top: 3px; line-height: 1.55; }
+.quality3d-engine-section { margin-bottom: 22px; }
+.quality3d-engines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 11px; }
+.quality3d-engines > button { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; min-width: 0; min-height: 98px; padding: 13px 16px; text-align: left; color: var(--paper); background: var(--ink); border: 1px solid var(--edge); border-radius: 2px; }
+.quality3d-engines > button[aria-pressed='true'] { border-color: var(--cyan); }
+.quality3d-engines > button > span { min-width: 0; }
+.quality3d-engines > button > svg { flex: none; color: var(--cyan); margin-top: 3px; }
+.quality3d-engines strong { display: block; font-size: 16px; font-weight: 600; }
+.quality3d-engines small { display: block; color: var(--muted); font-size: 14px; line-height: 1.6; margin-top: 5px; }
 .quality3d-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
 .quality3d-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .quality3d-section-heading h4 { font-size: 15px; }
@@ -50,6 +58,8 @@
 .quality3d-check { display: flex; align-items: flex-start; gap: 9px; color: var(--paper); font-size: 14px; line-height: 1.65; }
 .quality3d-panel input[type='checkbox'] { width: 17px; height: 17px; margin: 3px 0 0; accent-color: var(--cyan); flex: none; }
 .quality3d-runtime { border: 1px solid var(--edge); border-radius: 2px; background: var(--ink); padding: 15px 18px; margin-top: 22px; }
+.quality3d-runtime-configuration { min-width: 0; margin: 16px 0; border: 0; border-top: 1px solid var(--edge); padding: 14px 0 0; }
+.quality3d-runtime-configuration legend { padding: 0 8px 0 0; font-size: 15px; font-weight: 600; }
 .quality3d-section-heading .quality3d-state { display: inline-flex; border: 1px solid var(--edge); border-radius: 2px; padding: 2px 7px; }
 .quality3d-section-heading .quality3d-state.ready { color: var(--cyan); border-color: var(--cyan); }
 .quality3d-panel .quality3d-runtime-message { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 10px 0; }
@@ -82,7 +92,7 @@
   .quality3d-modes > button { padding: 12px; gap: 9px; }
 }
 @media (max-width: 460px) {
-  .quality3d-modes { grid-template-columns: minmax(0, 1fr); }
+  .quality3d-modes, .quality3d-engines { grid-template-columns: minmax(0, 1fr); }
   .quality3d-input-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .quality3d-settings-pair { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .quality3d-runtime { padding: 13px; }

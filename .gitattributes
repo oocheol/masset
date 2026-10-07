@@ -18,3 +18,5 @@ integrations/npm/** text eol=lf
 scripts/prepare-skill-npm.mjs text eol=lf
 scripts/verify-skill-npm-package.mjs text eol=lf
 tests/npm-skill/** text eol=lf
+# Keep the offline worker and pinned manifest stable across platform checkouts.
+workers/trellis2/** text eol=lf

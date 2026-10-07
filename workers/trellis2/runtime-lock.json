@@ -1,0 +1,797 @@
+{
+  "downloadAllowed": false,
+  "schemaVersion": 1,
+  "codeFiles": [
+    {
+      "digest": "263b753ebc61659e08715a9c329c1449a28769f9",
+      "algorithm": "gitBlobSha1",
+      "bytes": 84,
+      "path": "o-voxel/o_voxel/__init__.py"
+    },
+    {
+      "digest": "f7b6d8c01e90897af20dbe751527f1854e81ecc1",
+      "algorithm": "gitBlobSha1",
+      "bytes": 63,
+      "path": "o-voxel/o_voxel/convert/__init__.py"
+    },
+    {
+      "digest": "7cf1397e58e42b9d66b2230f5b3d55fee708514d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 14939,
+      "path": "o-voxel/o_voxel/convert/flexible_dual_grid.py"
+    },
+    {
+      "digest": "77c71c1f6ba0176d0286b7906c67279097395511",
+      "algorithm": "gitBlobSha1",
+      "bytes": 30010,
+      "path": "o-voxel/o_voxel/convert/volumetic_attr.py"
+    },
+    {
+      "digest": "f29541bbbf8ef8275a31b45f7b0144d366ba1250",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1336,
+      "path": "o-voxel/o_voxel/io/__init__.py"
+    },
+    {
+      "digest": "900904555061aca9fbc8f941c70112d0a663a804",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1171,
+      "path": "o-voxel/o_voxel/io/npz.py"
+    },
+    {
+      "digest": "c8e7fb82db86760eeb3e524e3f2cce93f9533414",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2232,
+      "path": "o-voxel/o_voxel/io/ply.py"
+    },
+    {
+      "digest": "bc34cda8eeee8633ddb107f79edbcdb4947aa430",
+      "algorithm": "gitBlobSha1",
+      "bytes": 13151,
+      "path": "o-voxel/o_voxel/io/vxz.py"
+    },
+    {
+      "digest": "1ce82271bab56dc757b3cd45ceea4f88d1bea551",
+      "algorithm": "gitBlobSha1",
+      "bytes": 13770,
+      "path": "o-voxel/o_voxel/postprocess.py"
+    },
+    {
+      "digest": "c27134add4ba1935e03308d82a06ee5e77faa5c3",
+      "algorithm": "gitBlobSha1",
+      "bytes": 3535,
+      "path": "o-voxel/o_voxel/rasterize.py"
+    },
+    {
+      "digest": "452b5dc89e082cacabb7b12ed3bd443233e0bf80",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2574,
+      "path": "o-voxel/o_voxel/serialize.py"
+    },
+    {
+      "digest": "20d240afc9c26a21aee76954628b3d4ef9a1ccbd",
+      "algorithm": "gitBlobSha1",
+      "bytes": 141,
+      "path": "trellis2/__init__.py"
+    },
+    {
+      "digest": "b8f7d9487d8d83f085146d037ccd5291bfb9419b",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1697,
+      "path": "trellis2/datasets/__init__.py"
+    },
+    {
+      "digest": "6c593cee959ed91de1c3c11b8930b98ec0967582",
+      "algorithm": "gitBlobSha1",
+      "bytes": 7433,
+      "path": "trellis2/datasets/components.py"
+    },
+    {
+      "digest": "f870d83bfd3d51856943e1dec215bbf7d5b1924b",
+      "algorithm": "gitBlobSha1",
+      "bytes": 6774,
+      "path": "trellis2/datasets/flexi_dual_grid.py"
+    },
+    {
+      "digest": "498e1158c429f0eed723c36f263a56719e9124fa",
+      "algorithm": "gitBlobSha1",
+      "bytes": 5876,
+      "path": "trellis2/datasets/sparse_structure_latent.py"
+    },
+    {
+      "digest": "053cc729678b844b595d68e92305ed055e8bea8e",
+      "algorithm": "gitBlobSha1",
+      "bytes": 11828,
+      "path": "trellis2/datasets/sparse_voxel_pbr.py"
+    },
+    {
+      "digest": "2e18a275830cd331664f5e21bfcd5306d70079a1",
+      "algorithm": "gitBlobSha1",
+      "bytes": 8280,
+      "path": "trellis2/datasets/structured_latent.py"
+    },
+    {
+      "digest": "c58611957b1dcb16b0d9c368a2fa7e88ddb63be5",
+      "algorithm": "gitBlobSha1",
+      "bytes": 3737,
+      "path": "trellis2/datasets/structured_latent_shape.py"
+    },
+    {
+      "digest": "c2a43a87b65deee7091c1506cc3a6c4e24a0a4f8",
+      "algorithm": "gitBlobSha1",
+      "bytes": 12642,
+      "path": "trellis2/datasets/structured_latent_svpbr.py"
+    },
+    {
+      "digest": "d4fed035ed7c1f6352d93e9787f1aaed072876d5",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2836,
+      "path": "trellis2/models/__init__.py"
+    },
+    {
+      "digest": "0209e690ea6f4096dd42a4d137dbc0bee1f51367",
+      "algorithm": "gitBlobSha1",
+      "bytes": 3820,
+      "path": "trellis2/models/sc_vaes/fdg_vae.py"
+    },
+    {
+      "digest": "b9902a155a8a85c5c616a4503be92f43f6fdde27",
+      "algorithm": "gitBlobSha1",
+      "bytes": 19879,
+      "path": "trellis2/models/sc_vaes/sparse_unet_vae.py"
+    },
+    {
+      "digest": "66d204c89bedabc2afd1795cdfc6f5d58a6b1ac0",
+      "algorithm": "gitBlobSha1",
+      "bytes": 882,
+      "path": "trellis2/models/sparse_elastic_mixin.py"
+    },
+    {
+      "digest": "6c976656e389ef31664d1c2327cf159ee6501633",
+      "algorithm": "gitBlobSha1",
+      "bytes": 9973,
+      "path": "trellis2/models/sparse_structure_flow.py"
+    },
+    {
+      "digest": "c3e09136cf294c4c1b47b0f09fa6ee57bad2166d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 9886,
+      "path": "trellis2/models/sparse_structure_vae.py"
+    },
+    {
+      "digest": "9378ff777033ae064d4f1fa5265de41c09c560d5",
+      "algorithm": "gitBlobSha1",
+      "bytes": 7966,
+      "path": "trellis2/models/structured_latent_flow.py"
+    },
+    {
+      "digest": "e90e901f9b942e18aaa5022b3ea167784e52d42a",
+      "algorithm": "gitBlobSha1",
+      "bytes": 68,
+      "path": "trellis2/modules/attention/__init__.py"
+    },
+    {
+      "digest": "a6d5180cfc92d0121aa9edd8b7f07f72c4f7ad9f",
+      "algorithm": "gitBlobSha1",
+      "bytes": 724,
+      "path": "trellis2/modules/attention/config.py"
+    },
+    {
+      "digest": "e2f9b2af8dfb90f43298042f607c16258516df4c",
+      "algorithm": "gitBlobSha1",
+      "bytes": 5389,
+      "path": "trellis2/modules/attention/full_attn.py"
+    },
+    {
+      "digest": "492784c7ba8f572c4820b604f51c924ed564ab00",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4208,
+      "path": "trellis2/modules/attention/modules.py"
+    },
+    {
+      "digest": "1cf6c5b321c2417443ffad3804df97ff5fbe6658",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1986,
+      "path": "trellis2/modules/attention/rope.py"
+    },
+    {
+      "digest": "c3cb515ad1152752b09fef9999cc5ff44bd885f7",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4460,
+      "path": "trellis2/modules/image_feature_extractor.py"
+    },
+    {
+      "digest": "78675d0f850d2e34d3c90b5d6bc14db708e5b400",
+      "algorithm": "gitBlobSha1",
+      "bytes": 915,
+      "path": "trellis2/modules/norm.py"
+    },
+    {
+      "digest": "e73f232abc6f31cafeac4172a96150906ba20b7b",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2234,
+      "path": "trellis2/modules/sparse/__init__.py"
+    },
+    {
+      "digest": "18ab3cc0a2c96b430009c3b709db3eb28ce7ccc0",
+      "algorithm": "gitBlobSha1",
+      "bytes": 77,
+      "path": "trellis2/modules/sparse/attention/__init__.py"
+    },
+    {
+      "digest": "4eb74d24c37c1951b579ecce5fabe97c4f0d02bf",
+      "algorithm": "gitBlobSha1",
+      "bytes": 9645,
+      "path": "trellis2/modules/sparse/attention/full_attn.py"
+    },
+    {
+      "digest": "d762b4b2e01335d26d856b3fe82eca31a2735123",
+      "algorithm": "gitBlobSha1",
+      "bytes": 6333,
+      "path": "trellis2/modules/sparse/attention/modules.py"
+    },
+    {
+      "digest": "fb877291f3430f2cff4329a67b3592e0e3c3f137",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2626,
+      "path": "trellis2/modules/sparse/attention/rope.py"
+    },
+    {
+      "digest": "043078899833e52ebf29d3ba1898cbd90e03f1d4",
+      "algorithm": "gitBlobSha1",
+      "bytes": 9227,
+      "path": "trellis2/modules/sparse/attention/windowed_attn.py"
+    },
+    {
+      "digest": "880973b8dd6bdafcfca4ca7c529308d2ef2ad266",
+      "algorithm": "gitBlobSha1",
+      "bytes": 31307,
+      "path": "trellis2/modules/sparse/basic.py"
+    },
+    {
+      "digest": "a5f4d532316efcf989ab70b9b5218ba962bafe07",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1255,
+      "path": "trellis2/modules/sparse/config.py"
+    },
+    {
+      "digest": "a7f5911f2cb266f93e52cfcdea9f63f39be172c6",
+      "algorithm": "gitBlobSha1",
+      "bytes": 73,
+      "path": "trellis2/modules/sparse/conv/__init__.py"
+    },
+    {
+      "digest": "ac0848906703e7811300235e32d14e50ad5aac51",
+      "algorithm": "gitBlobSha1",
+      "bytes": 344,
+      "path": "trellis2/modules/sparse/conv/config.py"
+    },
+    {
+      "digest": "4c7d40707a24e26ba2a11a90c41dbc9eb11e7ab2",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1346,
+      "path": "trellis2/modules/sparse/conv/conv.py"
+    },
+    {
+      "digest": "d25619475e4bf39307f97d47b3828b19c48cd7da",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2681,
+      "path": "trellis2/modules/sparse/conv/conv_flex_gemm.py"
+    },
+    {
+      "digest": "f709708d4f8ee3bb98930c68b28e7f3b897fc591",
+      "algorithm": "gitBlobSha1",
+      "bytes": 3370,
+      "path": "trellis2/modules/sparse/conv/conv_spconv.py"
+    },
+    {
+      "digest": "5234bd15553aa8d71df280672475a898ffe56af7",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1425,
+      "path": "trellis2/modules/sparse/conv/conv_torchsparse.py"
+    },
+    {
+      "digest": "44317709ab16b17fa0132fd48e48519ea0ef9ea9",
+      "algorithm": "gitBlobSha1",
+      "bytes": 387,
+      "path": "trellis2/modules/sparse/linear.py"
+    },
+    {
+      "digest": "950e5c03c997905162e39fec701db49a2640700c",
+      "algorithm": "gitBlobSha1",
+      "bytes": 875,
+      "path": "trellis2/modules/sparse/nonlinearity.py"
+    },
+    {
+      "digest": "95711203f0adbae1c7ea845e2500a3823997d652",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2216,
+      "path": "trellis2/modules/sparse/norm.py"
+    },
+    {
+      "digest": "e27425f165d271fd16a2c6f7b7684d4a81202ebd",
+      "algorithm": "gitBlobSha1",
+      "bytes": 52,
+      "path": "trellis2/modules/sparse/spatial/__init__.py"
+    },
+    {
+      "digest": "eaeb8afefd889d8a94812c579383e528b8b56699",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4279,
+      "path": "trellis2/modules/sparse/spatial/basic.py"
+    },
+    {
+      "digest": "577f36d208726f64422f8774c3556a1d643f1e2d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4417,
+      "path": "trellis2/modules/sparse/spatial/spatial2channel.py"
+    },
+    {
+      "digest": "b08b0d4e5bc24060a2cdc8df75d06dce122972bd",
+      "algorithm": "gitBlobSha1",
+      "bytes": 46,
+      "path": "trellis2/modules/sparse/transformer/__init__.py"
+    },
+    {
+      "digest": "9d1ec600404fba490894872109d44be6b6477186",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4848,
+      "path": "trellis2/modules/sparse/transformer/blocks.py"
+    },
+    {
+      "digest": "e616932ef7714f0ec8ae3add655411971978eb54",
+      "algorithm": "gitBlobSha1",
+      "bytes": 6147,
+      "path": "trellis2/modules/sparse/transformer/modulated.py"
+    },
+    {
+      "digest": "79e268d36c2ba49b0275744022a1a1e19983dae3",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1763,
+      "path": "trellis2/modules/spatial.py"
+    },
+    {
+      "digest": "b08b0d4e5bc24060a2cdc8df75d06dce122972bd",
+      "algorithm": "gitBlobSha1",
+      "bytes": 46,
+      "path": "trellis2/modules/transformer/__init__.py"
+    },
+    {
+      "digest": "fb6f5eb5462fec62aa5edc062104f643fca03bfa",
+      "algorithm": "gitBlobSha1",
+      "bytes": 6287,
+      "path": "trellis2/modules/transformer/blocks.py"
+    },
+    {
+      "digest": "0d71e584a4e137e88010023981271b2906efa30f",
+      "algorithm": "gitBlobSha1",
+      "bytes": 6287,
+      "path": "trellis2/modules/transformer/modulated.py"
+    },
+    {
+      "digest": "5d92d7d5b0ab07972fb6e0397c9c8e525e196211",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1918,
+      "path": "trellis2/modules/utils.py"
+    },
+    {
+      "digest": "9bb68352304f064cf21feb22b2aa9e39b1db396d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1581,
+      "path": "trellis2/pipelines/__init__.py"
+    },
+    {
+      "digest": "331e1ed979b47b23ef1d45c8851658df5d49fb69",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2068,
+      "path": "trellis2/pipelines/base.py"
+    },
+    {
+      "digest": "c71a99274823aefe6f18ab921a5beb074177de18",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1270,
+      "path": "trellis2/pipelines/rembg/BiRefNet.py"
+    },
+    {
+      "digest": "fc1eed1ba0c962478fc48132432f2e649fe03411",
+      "algorithm": "gitBlobSha1",
+      "bytes": 24,
+      "path": "trellis2/pipelines/rembg/__init__.py"
+    },
+    {
+      "digest": "4a69b95e5963c6d3a837518ed9c3cf6972235d60",
+      "algorithm": "gitBlobSha1",
+      "bytes": 138,
+      "path": "trellis2/pipelines/samplers/__init__.py"
+    },
+    {
+      "digest": "1966ce787009a5ee0c1ed06dce491525ff1dbcbf",
+      "algorithm": "gitBlobSha1",
+      "bytes": 286,
+      "path": "trellis2/pipelines/samplers/base.py"
+    },
+    {
+      "digest": "8c7a4da4c1324bed5319f89916b532a159471d84",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1373,
+      "path": "trellis2/pipelines/samplers/classifier_free_guidance_mixin.py"
+    },
+    {
+      "digest": "5ff72b84221f210f6cb06684bdf13aedc6cf20c3",
+      "algorithm": "gitBlobSha1",
+      "bytes": 7501,
+      "path": "trellis2/pipelines/samplers/flow_euler.py"
+    },
+    {
+      "digest": "3f57869a17d1626f5b2c58eb3c477127bf464abf",
+      "algorithm": "gitBlobSha1",
+      "bytes": 543,
+      "path": "trellis2/pipelines/samplers/guidance_interval_mixin.py"
+    },
+    {
+      "digest": "a7b84b988f996875d895432c27848dfa0ad08a6c",
+      "algorithm": "gitBlobSha1",
+      "bytes": 24143,
+      "path": "trellis2/pipelines/trellis2_image_to_3d.py"
+    },
+    {
+      "digest": "c184b5e73ab49d5f29256e16ff900abc92be73be",
+      "algorithm": "gitBlobSha1",
+      "bytes": 16203,
+      "path": "trellis2/pipelines/trellis2_texturing.py"
+    },
+    {
+      "digest": "de3203d1bb16065f912bff039e431f609911782d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 976,
+      "path": "trellis2/renderers/__init__.py"
+    },
+    {
+      "digest": "e20efc59c26fadcbd9c11cbafa2e31b78eec395c",
+      "algorithm": "gitBlobSha1",
+      "bytes": 24183,
+      "path": "trellis2/renderers/mesh_renderer.py"
+    },
+    {
+      "digest": "b3b465532cb15ec69c651a3814cd9b42dfb3171e",
+      "algorithm": "gitBlobSha1",
+      "bytes": 22451,
+      "path": "trellis2/renderers/pbr_mesh_renderer.py"
+    },
+    {
+      "digest": "dfe28ad8d341ed62c1d7a5ab739fed6cace30a5f",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2096,
+      "path": "trellis2/renderers/voxel_renderer.py"
+    },
+    {
+      "digest": "0e7d9299f866c344e81e27f748f837e5ce81ed8b",
+      "algorithm": "gitBlobSha1",
+      "bytes": 866,
+      "path": "trellis2/representations/__init__.py"
+    },
+    {
+      "digest": "aff4c99a97f764a7c695d87d6a60bd03d61e2106",
+      "algorithm": "gitBlobSha1",
+      "bytes": 128,
+      "path": "trellis2/representations/mesh/__init__.py"
+    },
+    {
+      "digest": "b70e4cca19d65b47d07f297894b831d3506be5ff",
+      "algorithm": "gitBlobSha1",
+      "bytes": 7919,
+      "path": "trellis2/representations/mesh/base.py"
+    },
+    {
+      "digest": "b5792ea14b2371a96c4130371eb976f0aff4b5dd",
+      "algorithm": "gitBlobSha1",
+      "bytes": 30,
+      "path": "trellis2/representations/voxel/__init__.py"
+    },
+    {
+      "digest": "9317ab22db61c5da96514ca46a780378392f3cc8",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1532,
+      "path": "trellis2/representations/voxel/voxel_model.py"
+    },
+    {
+      "digest": "8f25130f045b255496364d0f4b95d66ef8cddaab",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2476,
+      "path": "trellis2/trainers/__init__.py"
+    },
+    {
+      "digest": "c8e4b4c56247e33a0a73917ea010acf684e6d700",
+      "algorithm": "gitBlobSha1",
+      "bytes": 40108,
+      "path": "trellis2/trainers/basic.py"
+    },
+    {
+      "digest": "7b4390e0fd5bb611f407887db0f3586b15ac741c",
+      "algorithm": "gitBlobSha1",
+      "bytes": 13631,
+      "path": "trellis2/trainers/flow_matching/flow_matching.py"
+    },
+    {
+      "digest": "548e007bbf3122d818fe05041fba171665d7e450",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2349,
+      "path": "trellis2/trainers/flow_matching/mixins/classifier_free_guidance.py"
+    },
+    {
+      "digest": "13b932eb714084ad7fc4ac56d3136d5c90db4350",
+      "algorithm": "gitBlobSha1",
+      "bytes": 8906,
+      "path": "trellis2/trainers/flow_matching/mixins/image_conditioned.py"
+    },
+    {
+      "digest": "85f1dcf2582c07edd9b629c07181265f24a90134",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2449,
+      "path": "trellis2/trainers/flow_matching/mixins/text_conditioned.py"
+    },
+    {
+      "digest": "c6735d08740ef4548116e46f0d594724e07def6d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 13504,
+      "path": "trellis2/trainers/flow_matching/sparse_flow_matching.py"
+    },
+    {
+      "digest": "23e4286d02b6fc102c364d2ef7571ef97c9fcd41",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2724,
+      "path": "trellis2/trainers/utils.py"
+    },
+    {
+      "digest": "552723652714a7bc0fc9eeec7620992d4d07a2b5",
+      "algorithm": "gitBlobSha1",
+      "bytes": 11480,
+      "path": "trellis2/trainers/vae/pbr_vae.py"
+    },
+    {
+      "digest": "f9441fabd0d9629f69e540f9b627e67950e56f48",
+      "algorithm": "gitBlobSha1",
+      "bytes": 11359,
+      "path": "trellis2/trainers/vae/shape_vae.py"
+    },
+    {
+      "digest": "5563641c2423b578a487fe98e22f09abf2524202",
+      "algorithm": "gitBlobSha1",
+      "bytes": 4939,
+      "path": "trellis2/trainers/vae/sparse_structure_vae.py"
+    },
+    {
+      "digest": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "algorithm": "gitBlobSha1",
+      "bytes": 0,
+      "path": "trellis2/utils/__init__.py"
+    },
+    {
+      "digest": "805b6cc118106857e7ef767ab4bfd133dbd78e6f",
+      "algorithm": "gitBlobSha1",
+      "bytes": 8887,
+      "path": "trellis2/utils/data_utils.py"
+    },
+    {
+      "digest": "348799c064804ed3ae1a98144249bd9b6bfb9915",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2533,
+      "path": "trellis2/utils/dist_utils.py"
+    },
+    {
+      "digest": "cba3cf83836e5b58f5bc3333e809ffc932375a04",
+      "algorithm": "gitBlobSha1",
+      "bytes": 8022,
+      "path": "trellis2/utils/elastic_utils.py"
+    },
+    {
+      "digest": "589c103de8a777aea9994a899f97431cbab5447a",
+      "algorithm": "gitBlobSha1",
+      "bytes": 13486,
+      "path": "trellis2/utils/general_utils.py"
+    },
+    {
+      "digest": "990a4352e24fc73bf732d8eb0f8ca9a07365b49e",
+      "algorithm": "gitBlobSha1",
+      "bytes": 3285,
+      "path": "trellis2/utils/grad_clip_utils.py"
+    },
+    {
+      "digest": "52049f69543f2700bc5525b09cbf2fb25c08aa9e",
+      "algorithm": "gitBlobSha1",
+      "bytes": 2983,
+      "path": "trellis2/utils/loss_utils.py"
+    },
+    {
+      "digest": "a9f1451ebd8b89879eee79cc61a6f4161136f245",
+      "algorithm": "gitBlobSha1",
+      "bytes": 9776,
+      "path": "trellis2/utils/mesh_utils.py"
+    },
+    {
+      "digest": "5b668c277b51f4930991912a80573adc79364028",
+      "algorithm": "gitBlobSha1",
+      "bytes": 867,
+      "path": "trellis2/utils/random_utils.py"
+    },
+    {
+      "digest": "d6fb3e9c3b0d826f77ff56d65ccf4adbc247cf0d",
+      "algorithm": "gitBlobSha1",
+      "bytes": 5981,
+      "path": "trellis2/utils/render_utils.py"
+    },
+    {
+      "digest": "0e5f58e564aea50e4d80b0265220ee3fb382cd69",
+      "algorithm": "gitBlobSha1",
+      "bytes": 1297,
+      "path": "trellis2/utils/vis_utils.py"
+    }
+  ],
+  "licenses": {
+    "dino": "DINOv3 custom license and manual gate",
+    "cudaExport": "NVIDIA Source Code License dependencies require review",
+    "backgroundRemoval": "disabled; no BRIA model used",
+    "core": "MIT"
+  },
+  "pins": {
+    "codeRevision": "75fbf0183001ed9876c8dbb35de6b68552ee08bd",
+    "dinoRevision": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+    "modelRevision": "af44b45f2e35a493886929c6d786e563ec68364d",
+    "sparseRevision": "25e0d31ffbebe4b5a97464dd851910efc3002d96"
+  },
+  "modelFiles": [
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/shape_dec_next_dc_f16c32_fp16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "e46164e905de0e68328f5f4b1f128b8dac608d97",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 678
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/shape_dec_next_dc_f16c32_fp16.safetensors",
+      "algorithm": "sha256",
+      "digest": "e3b718d3e43e4f8780e9a24ac6fff231811a67e3b058e336e10fe654c911d581",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 948490494
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "cfd8d761e89aad595e97ec0cfe4b8469c9053583",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 458
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.safetensors",
+      "algorithm": "sha256",
+      "digest": "07cd0596f634c5adc1890023d16023afc5eed02fb84b22bb23aff5bf0030fbbd",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 2584574424
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "6e39aacbf7bd43d16d3dad35c95d43c0b17d6a4f",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 458
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.safetensors",
+      "algorithm": "sha256",
+      "digest": "ec5e0917ef9b7e25ad51dffc7d19687a42019871f94239f2fa7f86264c55b70f",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 2584574424
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "d949ce887c62645f6a927ee66bba2a0df56e383e",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 458
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.safetensors",
+      "algorithm": "sha256",
+      "digest": "580401269059a339b8318ab9ced459a13ba63391721c83a6c383198c29e77686",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 2584672728
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_imgshape2tex_dit_1_3B_512_bf16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "b260bbc6cce80ccd7b61e32a40474225522b2043",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 458
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/slat_flow_imgshape2tex_dit_1_3B_512_bf16.safetensors",
+      "algorithm": "sha256",
+      "digest": "8371aa1c5d13be79dcd5ddfd2cf3835e902e204dc34427169a1c702828e1a94d",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 2584672728
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/ss_flow_img_dit_1_3B_64_bf16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "f71c87cda44a9a940fa3a2d250a0944d606d2245",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 467
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/ss_flow_img_dit_1_3B_64_bf16.safetensors",
+      "algorithm": "sha256",
+      "digest": "ca01377c485bec418076d38ee80166d32dc776d744f2553b835cba1e97a7abf6",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 2584426920
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/tex_dec_next_dc_f16c32_fp16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "e17107bef522e2aded7b3bc22ef421b57e16e779",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 705
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/ckpts/tex_dec_next_dc_f16c32_fp16.safetensors",
+      "algorithm": "sha256",
+      "digest": "97ea69addea2ecd9312910f5f548234665eef51c088386180b7cd5b258645e3c",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 948458812
+    },
+    {
+      "revision": "af44b45f2e35a493886929c6d786e563ec68364d",
+      "path": "models/trellis2/pipeline.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "f5ec14c7f71b3d7f2cb0221c5f568a6871dc5e90",
+      "repository": "microsoft/TRELLIS.2-4B",
+      "bytes": 4186
+    },
+    {
+      "revision": "25e0d31ffbebe4b5a97464dd851910efc3002d96",
+      "path": "models/sparse-structure/ckpts/ss_dec_conv3d_16l8_fp16.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "9f3affaf13ab29fe48105229da9fab72ea8de716",
+      "repository": "microsoft/TRELLIS-image-large",
+      "bytes": 245
+    },
+    {
+      "revision": "25e0d31ffbebe4b5a97464dd851910efc3002d96",
+      "path": "models/sparse-structure/ckpts/ss_dec_conv3d_16l8_fp16.safetensors",
+      "algorithm": "sha256",
+      "digest": "1c76d4a40519aa2d711cc263a8404105231ac26db31d946bed48b84fee79009a",
+      "repository": "microsoft/TRELLIS-image-large",
+      "bytes": 147591972
+    },
+    {
+      "revision": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+      "path": "models/dinov3/config.json",
+      "algorithm": "gitBlobSha1",
+      "digest": "ab2a8b183fd4fd5213e9898a7f499c7c857b1a86",
+      "repository": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "bytes": 745
+    },
+    {
+      "revision": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+      "path": "models/dinov3/model.safetensors",
+      "algorithm": "sha256",
+      "digest": "****************************************************************",
+      "repository": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "bytes": 1212559808
+    }
+  ],
+  "requestedModel": "TRELLIS.2-4B"
+}

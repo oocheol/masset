@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-07T06:37:47.6262459Z",
+  "scope": "Native Windows Blender material finishing with direct synthetic GLB inputs; separate preview and independent native reopening",
+  "nativePlatform": "Windows x64",
+  "blenderVersion": "5.2.1 LTS",
+  "runtimeSources": [
+    {
+      "path": "workers/blender-quality/worker.py",
+      "sha256": "f23af0d231abf446ffe340312a56d810584e2f90be5ccb22ef9d2bbb386630d8"
+    },
+    {
+      "path": "workers/blender-quality/audit.py",
+      "sha256": "cde21434c28f4df36ec59311f8c9e4bf4c3dd63e532add61e989bd7460f7303a"
+    },
+    {
+      "path": "workers/blender-quality/quality_metrics.py",
+      "sha256": "14baebdb5f46634830f7eecb60829db22e82fdfb86d1c26f914c942fd327848e"
+    },
+    {
+      "path": "workers/blender-quality/preview_worker.py",
+      "sha256": "9dce00678445756f49bb3eb901514e913e51e4777096ee3ccfe14ec46c6da905"
+    },
+    {
+      "path": "workers/blender-quality/verify_native.py",
+      "sha256": "51d051994977bd06a3efc34c1523a719a772f12489f3f0bdf1ce7c32daa551d8"
+    },
+    {
+      "path": "workers/blender-quality/tests/native_material_fixtures.py",
+      "sha256": "a27dfbdd5dda4c127f743bb8375d10e5e8f59bc90591ab04cbbd5d6ebba1b13e"
+    },
+    {
+      "path": "workers/blender-quality/tests/test_audit.py",
+      "sha256": "49906b559dd8a6109cd747ccfaa4e62abeb1dc87f0bc41ee3820bc60d3de9608"
+    }
+  ],
+  "sourceOriginalsPreserved": true,
+  "newDownloads": false,
+  "paidProviderRequests": 0,
+  "reconstructionInferenceExecuted": false,
+  "macNativeTested": false,
+  "nativeMaterialCases": [
+    {
+      "name": "mixed-render-ao",
+      "sourceSha256": "4085bf7cf61788c5303fbc6b04da99735b535ce93be78e31df0f4722c2012c2d",
+      "triangleCounts": {
+        "original": 6,
+        "highDetail": 6,
+        "game": 6,
+        "lod1": 6
+      },
+      "materialSlots": 3,
+      "coreSeconds": 2.135,
+      "independentChecks": 48,
+      "flagsAndAO": [
+        {
+          "artifact": "game-ready.model.glb",
+          "partsReopened": 3,
+          "maximumAOError": 6.318092346191406E-06,
+          "maximumAlphaError": 5.9604644775390625E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        },
+        {
+          "artifact": "lod1.glb",
+          "partsReopened": 3,
+          "maximumAOError": 6.318092346191406E-06,
+          "maximumAlphaError": 5.9604644775390625E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        }
+      ]
+    },
+    {
+      "name": "low-opacity-blend",
+      "sourceSha256": "21def9b26094c3d5a2a6ba6e605fb28e4ca0b353619b96751ba5aa63bffb5944",
+      "triangleCounts": {
+        "original": 2,
+        "highDetail": 2,
+        "game": 2,
+        "lod1": 2
+      },
+      "materialSlots": 1,
+      "coreSeconds": 2.513,
+      "independentChecks": 48,
+      "flagsAndAO": [
+        {
+          "artifact": "game-ready.model.glb",
+          "partsReopened": 1,
+          "maximumAOError": 3.2782554626464844E-06,
+          "maximumAlphaError": 4.604458808898926E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        },
+        {
+          "artifact": "lod1.glb",
+          "partsReopened": 1,
+          "maximumAOError": 3.2782554626464844E-06,
+          "maximumAlphaError": 4.604458808898926E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        }
+      ]
+    },
+    {
+      "name": "opaque-low-alpha",
+      "sourceSha256": "250998c0732824b9b5e6105218b0d0b8c27368ff243045f89d73807b8ef23aa4",
+      "triangleCounts": {
+        "original": 2,
+        "highDetail": 2,
+        "game": 2,
+        "lod1": 2
+      },
+      "materialSlots": 1,
+      "coreSeconds": 1.653,
+      "independentChecks": 48,
+      "flagsAndAO": [
+        {
+          "artifact": "game-ready.model.glb",
+          "partsReopened": 1,
+          "maximumAOError": 0.0,
+          "maximumAlphaError": 0,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": null
+        },
+        {
+          "artifact": "lod1.glb",
+          "partsReopened": 1,
+          "maximumAOError": 0.0,
+          "maximumAlphaError": 0,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": null
+        }
+      ]
+    },
+    {
+      "name": "touching-render-parts",
+      "sourceSha256": "1ff6968820302dc8c03052eeb08c2e1290d3d58d78dc459aee8cf45fdd40d4ec",
+      "triangleCounts": {
+        "original": 2400,
+        "highDetail": 2400,
+        "game": 980,
+        "lod1": 480
+      },
+      "materialSlots": 3,
+      "coreSeconds": 6.889,
+      "independentChecks": 47,
+      "flagsAndAO": [
+        {
+          "artifact": "game-ready.model.glb",
+          "partsReopened": 3,
+          "maximumAOError": 0.009851068258285522,
+          "maximumAlphaError": 0.017597123980522156,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        },
+        {
+          "artifact": "lod1.glb",
+          "partsReopened": 3,
+          "maximumAOError": 0.009851068258285522,
+          "maximumAlphaError": 0.017596229910850525,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        }
+      ]
+    },
+    {
+      "name": "mixed-default-material",
+      "sourceSha256": "c846504de68cf8b3833f67beebb3ce10dffa8ba309e90d45b26aac01e1127f42",
+      "triangleCounts": {
+        "original": 6,
+        "highDetail": 6,
+        "game": 6,
+        "lod1": 6
+      },
+      "materialSlots": 3,
+      "coreSeconds": 2.227,
+      "independentChecks": 48,
+      "flagsAndAO": [
+        {
+          "artifact": "game-ready.model.glb",
+          "partsReopened": 3,
+          "maximumAOError": 5.7220458984375E-06,
+          "maximumAlphaError": 3.933906555175781E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        },
+        {
+          "artifact": "lod1.glb",
+          "partsReopened": 3,
+          "maximumAOError": 5.7220458984375E-06,
+          "maximumAlphaError": 3.933906555175781E-06,
+          "flagsAndAssignmentsPreserved": true,
+          "AOImageBytesMatchStandalone": true
+        }
+      ]
+    }
+  ],
+  "independentNativeChecks": 239,
+  "boundaryTests": 11,
+  "windowsPathTests": 9,
+  "nativeMeasurementRegressionCases": 8,
+  "previewReceiptRegressionCases": 17,
+  "previewSecurityCases": 6,
+  "windowsLongPathNativeReopenVerified": true,
+  "preview": {
+    "visualReview": "Actual thumbnail inspected: opaque, cutout and blended cards are visible with distinct opacity",
+    "valid": true,
+    "engine": "BLENDER_EEVEE",
+    "sourcePreserved": true,
+    "seconds": 21.308,
+    "files": [
+      "thumbnail.png",
+      "turntable-00.png",
+      "turntable-01.png",
+      "turntable-02.png",
+      "turntable-03.png"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\mixed-render-ao-result\\validation.json",
+      "bytes": 34235,
+      "sha256": "c4463234097d5033e80da2433a7195997fd4a15ffb20c5da542c06d6be1f9c0a"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\mixed-render-ao-independent.json",
+      "bytes": 17570,
+      "sha256": "7406bdab6f8b7c7f745a8d3ecc8a9b7c465729fe48e35cf548c8e015e5f3142e"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\low-opacity-blend-result\\validation.json",
+      "bytes": 32704,
+      "sha256": "69fb3a11c74cfbf50e76629d60ed20db235767015967f36db87c5f3b52ab8bc7"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\low-opacity-blend-independent.json",
+      "bytes": 17532,
+      "sha256": "2d52a61dc29187ca9fd421b5c1f3ac306eca2109934a59638265c594ff63dc15"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\opaque-low-alpha-result\\validation.json",
+      "bytes": 32089,
+      "sha256": "1ae63ee69ac248286407ac53c85167579c1976c3e981bfd75ed82342173c6321"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\opaque-low-alpha-independent.json",
+      "bytes": 17228,
+      "sha256": "4838826c48959fb6eb56e04f84f260731473a8d371c4149eaf087ef1c089c6fd"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\touching-render-parts-result\\validation.json",
+      "bytes": 35782,
+      "sha256": "e338c7a85c25de61367f8c596691c9488b009e970ef1f3c45c0527bc92d312e8"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\touching-render-parts-independent.json",
+      "bytes": 17424,
+      "sha256": "9a93d615a984f9fd9de8e209f0f6e68c3c365a7f8225068f09e8b62d1bd0032c"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\mixed-default-material-result\\validation.json",
+      "bytes": 34267,
+      "sha256": "1345908569028d78e90ff6c7f978664ed7e7d10fc8ba0d5907a0c244d15ed5ff"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\mixed-default-material-independent.json",
+      "bytes": 17577,
+      "sha256": "8834c2a0a3c54591dc072c70b131d07f8acdfbde31ea3b9e9e09584d2897510e"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\material-regression-evidence-final.json",
+      "bytes": 3562,
+      "sha256": "3279ff33cfd164215bfadb3a74799aa352681c96f09c1db99e656a28c9800c33"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\material-preview-result\\preview-validation.json",
+      "bytes": 5985,
+      "sha256": "357efb1f65d50b9fa2dbb623142dc83656b048dde683cb2123f58538c9fffaa1"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\receipt-regression\\receipt-regression.json",
+      "bytes": 4592,
+      "sha256": "b65951727c8f97d3958ab391d18dc2ae146103524ea68dd5b445b0a9d3d9ea7b"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\native-preview-security.json",
+      "bytes": 404,
+      "sha256": "8c94f54c080f495784ccf15c35fb496bc5b058630507ed050befe1d52ead9b10"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\native-quality-regression.json",
+      "bytes": 16709,
+      "sha256": "533a365da004dbe03f6eb197c18c48be5ea687d556d5071e0859f37bad601edc"
+    },
+    {
+      "path": "C:\\masset\\workers\\blender-quality\\output\\material-q-20261007-d898eb79\\windows-io\\native-io-independent-reopen.json",
+      "bytes": 6596,
+      "sha256": "20d2cb2743ce76cc37304af7493e64bcd13134aa83b7df321530bbe609848aa9"
+    }
+  ],
+  "limitations": [
+    "Synthetic material/UV/opacity regressions do not prove reconstruction accuracy, unseen geometry, rigs, colliders or engine deployment",
+    "AO is transferred only from an authored source occlusion graph; no AO is inferred",
+    "Single atlas retains separate source render slots, which can increase draw calls compared with the former single merged material",
+    "LOD deliberately omits the game tangent normal texture; no new LOD normal strategy was added",
+    "Windows native worker evidence is separate from packaged desktop integration and macOS validation"
+  ]
+}

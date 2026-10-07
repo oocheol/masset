@@ -51,10 +51,18 @@ a game copy that welds coincident importer seam vertices at a scale-relative
 recomputes game shading with sharp edges, centers the derived mesh at its
 bottom-center pivot, smart-projects a new atlas UV, and performs
 CPU Cycles emission bakes of **actual source base-color/vertex-color graphs**.
-With material preservation enabled it bakes source roughness/metallic into
-`orm.png` (R=1 is neutral, not invented AO), and source emission when present.
-Alpha is baked from the source when needed. A selected high-to-low tangent
-normal bake is included only when sampled projection and variation checks pass.
+With material preservation enabled it bakes authored source occlusion, including
+its strength, into `orm.png` R, roughness into G, and metallic into B. R=1 is the
+neutral value only when the source has no authored AO; the finisher does not
+infer AO from a color image. Source emission is baked when present.
+Alpha is baked from the source when needed. Atlas textures remain shared across
+material slots, while game and LOD retain each source slot's OPAQUE, MASK
+(including cutoff), BLEND, and double-sided settings. These render boundaries
+are protected during derived mesh welding and decimation. Preserving the slots
+can increase draw calls compared with the previous single-material output;
+this trades some rendering performance for faithful opacity and face visibility.
+A selected high-to-low tangent normal bake is included only when sampled
+projection and variation checks pass.
 It is labeled **mesh-derived normal**, never PBR inferred from a color image.
 If projection fails, base/PBR colors are baked from the decimated mesh's
 interpolated original attributes, explicitly reported; normal output is omitted.
@@ -187,6 +195,18 @@ The worker reports independent reopen as unperformed; only a separate successful
 verifier run establishes that proof. Native platform evidence is scoped to the
 actual fixtures and runtime versions recorded below.
 
+## Native Windows material evidence (2026-10-07)
+
+[Material preservation proof](tests/native-proof-materials-windows.json)
+records source and evidence hashes for five direct synthetic GLB fixtures.
+Separate Blender 5.2.1 LTS processes passed 239 independent reopen checks for
+source AO and strength, per-part opacity, material flags, and assignments in
+game and LOD exports. The touching-material fixture reduced 2400 triangles to
+980 and 480 while preserving render boundaries. The fixtures include low-alpha
+BLEND, low-alpha OPAQUE, MASK cutoff, and an implicit default material.
+This verifies Windows material finishing; it does not establish new neural
+reconstruction quality or a new Mac native result.
+
 ## Native Windows evidence (2026-10-06)
 
 [Recorded hashes and measurements](tests/native-proof-quality-v2-windows.json)
@@ -263,8 +283,9 @@ blender-native-weld-20261004T104701Z/reference; the final corrected thumbnail is
 blender-native-final-20261004T110700Z/artifacts/thumbnail.png. Final game and LOD
 have zero loose edges. Texture PNG bytes exactly match embedded material images.
 Actual UV pixel centers are rasterized independently; reported surface coverage
-excludes padding. A white bake measures interior projection hits. ORM R=1 is
-explicit neutral AO, not inferred AO; uniform PBR channels retain source factors.
+excludes padding. A white bake measures interior projection hits. These earlier
+fixtures have no authored occlusion, so ORM R=1 is neutral AO; uniform PBR
+channels retain source factors.
 Normal projections opposed by more than 60 degrees are omitted locally, and
 maps with at least two percent unreliable interior texels are rejected.
 Eight adversarial boundary tests, including mutation tables, pass.

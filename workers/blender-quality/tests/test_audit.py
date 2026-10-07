@@ -157,6 +157,23 @@ class BoundaryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 GLB(container(doc,altered))
 
+    def test_material_render_boundary(self):
+        doc,binary=fixture()
+        doc["meshes"][0]["primitives"][0]["material"]=0
+        for material in ({}, {"alphaMode":"MASK","alphaCutoff":0.37,"doubleSided":True},
+                         {"alphaMode":"BLEND","doubleSided":False}):
+            doc["materials"]=[material]
+            self.assertEqual(GLB(container(doc,binary)).scene_triangles,1)
+        invalid=({"alphaMode":"CLIP"}, {"alphaMode":[]}, {"alphaCutoff":True},
+                 {"alphaCutoff":-0.1}, {"doubleSided":"yes"},
+                 {"occlusionTexture":{"index":0,"strength":1.01}},
+                 {"occlusionTexture":{"index":0,"strength":True}})
+        doc["textures"]=[{"source":0}]
+        for material in invalid:
+            doc["materials"]=[material]
+            with self.subTest(material=material),self.assertRaises(ValueError):
+                GLB(container(doc,binary))
+
     def test_no_reuse_or_original_overwrite(self):
         destination=self.root/"output"
         destination.mkdir()

@@ -6,6 +6,7 @@
 pub mod installer;
 pub mod local_prerequisites;
 pub mod runtime;
+pub mod trellis2;
 
 pub use asset_core::models::{CancellationMode, ProviderCapability, ProviderStatus};
 use serde::{Deserialize, Serialize};

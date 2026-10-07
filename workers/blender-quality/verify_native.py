@@ -259,6 +259,19 @@ def run(directory,evidence,log=None):
             check("high-original-image-bytes",{i["sha256"] for i in source.images}<={i["sha256"] for i in glb.images},
                   "Original embedded source images survive high-detail export")
         else:
+            source_render = {
+                (m.get("alphaMode", "OPAQUE"), round(m.get("alphaCutoff", 0.5), 6) if m.get("alphaMode") == "MASK" else None,
+                 m.get("doubleSided", False), "occlusionTexture" in m and job["preserveMaterials"])
+                for m in source.doc.get("materials", [])}
+            if any(p.get("material") is None for m in source.doc.get("meshes", []) for p in m.get("primitives", [])):
+                source_render.add(("OPAQUE", None, False, False))
+            actual_render = {
+                (m.get("alphaMode", "OPAQUE"), round(m.get("alphaCutoff", 0.5), 6) if m.get("alphaMode") == "MASK" else None,
+                 m.get("doubleSided", False), "occlusionTexture" in m)
+                for m in glb.doc.get("materials", [])}
+            if "sourceRenderSlots" in report.get("materialPreservation", {}):
+                check(role+"-source-render-flags",bool(actual_render) and actual_render <= source_render,
+                      "Actual exported alpha modes, MASK cutoff, backface flags and authored-AO presence match source semantics")
             check(role+"-uv",info["uvFinite"] and info["uvTriangles"]==info["triangles"] and info["degenerateUVTriangles"]==0,
                   "Actual imported UVs give every triangle finite nonzero area")
             budget=job["maxTriangles"] if role=="game" else report.get("lod1Reduction",{}).get("budget",min(job["maxTriangles"]//2,counts["game"]//2))
@@ -328,7 +341,11 @@ def run(directory,evidence,log=None):
             variation=float(np.std(colors[:,:2],axis=0).max())
             check("normal-meaningful",variation>0.003,"Decoded high-to-low normal texture contains real variation",variation)
         if basename=="orm.png":
-            check("orm-neutral-ao",bool(np.all(np.abs(colors[:,0]-1)<0.001)),"ORM R is explicitly neutral one, not fabricated AO")
+            if job["preserveMaterials"] and any("occlusionTexture" in m for m in source.doc.get("materials", [])):
+                check("orm-authored-ao-range",bool(np.all((colors[:,0]>=0)&(colors[:,0]<=1))),
+                      "Authored occlusion is bounded data; source-surface fidelity requires the material fixture test")
+            else:
+                check("orm-neutral-ao",bool(np.all(np.abs(colors[:,0]-1)<0.001)),"Without authored AO the ORM R channel remains neutral one")
             if all("metallicRoughnessTexture" not in m.get("pbrMetallicRoughness",{}) for m in source.doc.get("materials",[])):
                 errors=[float(np.linalg.norm(colors[:,1:3]-np.asarray([m.get("pbrMetallicRoughness",{}).get("roughnessFactor",1),
                                                                       m.get("pbrMetallicRoughness",{}).get("metallicFactor",1)]),axis=1).min())

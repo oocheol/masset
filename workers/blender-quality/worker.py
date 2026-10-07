@@ -18,6 +18,7 @@ from pathlib import Path
 import sys
 import time
 import traceback
+from contextlib import contextmanager
 from datetime import datetime, timezone
 
 # Bounded CPU work even when the caller forgets a library-level thread setting.
@@ -147,7 +148,103 @@ def cpu_scene():
     return scene
 
 
-def import_snapshot(data, output, height, name, neutral_image3d=False):
+@contextmanager
+def capture_source_materials():
+    """Tag imported material identity through Blender's trusted glTF hook.
+
+    Names can be duplicated/truncated and one source material can produce both
+    vertex-color and non-vertex-color variants. Neither names nor slot order is
+    a reliable source index. The input bytes remain unchanged during import.
+    """
+    import io_scene_gltf2
+    previous = getattr(io_scene_gltf2, "glTF2ImportUserExtension", None)
+    identities = {}
+
+    class SourceMaterialIdentity:
+        def gather_import_material_after_hook(self, pymat, vertex_color, mat, gltf):
+            index = next((i for i, value in enumerate(gltf.data.materials or []) if value is pymat), None)
+            if index is None:
+                raise ValueError("Imported material identity does not match its source table")
+            identities[mat.as_pointer()] = index
+
+    io_scene_gltf2.glTF2ImportUserExtension = SourceMaterialIdentity
+    try:
+        yield identities
+    finally:
+        if previous is None:
+            del io_scene_gltf2.glTF2ImportUserExtension
+        else:
+            io_scene_gltf2.glTF2ImportUserExtension = previous
+
+
+def active_source_materials(source):
+    pending = list(source.doc["scenes"][source.doc.get("scene", 0)]["nodes"])
+    indices, default_used = set(), False
+    while pending:
+        node = source.doc["nodes"][pending.pop()]
+        pending.extend(node.get("children", []))
+        if "mesh" in node:
+            for primitive in source.doc["meshes"][node["mesh"]]["primitives"]:
+                if "material" in primitive:
+                    indices.add(primitive["material"])
+                else:
+                    default_used = True
+    return indices, default_used
+
+
+def material_semantics(materials, source):
+    _, default_used = active_source_materials(source)
+    values = []
+    for slot, material in enumerate(materials):
+        index = material.get("assetStudioSourceMaterialIndex")
+        if index is None:
+            # Only glTF primitives without a material use the importer default.
+            # Authored materials must be identified by the actual import hook.
+            if not default_used:
+                raise ValueError("Source material identity was not captured by the native importer")
+            original = {}
+        else:
+            if type(index) is not int or not 0 <= index < len(source.doc.get("materials", [])):
+                raise ValueError("Imported source material index is invalid")
+            original = source.doc["materials"][index]
+        mode = original.get("alphaMode", "OPAQUE")
+        cutoff = original.get("alphaCutoff", 0.5) if mode == "MASK" else None
+        occlusion = original.get("occlusionTexture")
+        values.append({"slot": slot, "sourceMaterialIndex": index, "alphaMode": mode,
+                       "alphaCutoff": cutoff, "doubleSided": original.get("doubleSided", False),
+                       "authoredOcclusion": occlusion is not None,
+                       "sourceOcclusionStrength": occlusion.get("strength", 1.0) if occlusion else None})
+    return values
+
+
+def occlusion_socket(material):
+    if material.use_nodes:
+        for node in material.node_tree.nodes:
+            if node.type == "GROUP" and node.node_tree and node.node_tree.name.startswith(("glTF Material Output", "glTF Settings")):
+                socket = node.inputs.get("Occlusion")
+                if socket is not None:
+                    return socket
+    return None
+
+
+def unclipped_alpha(socket):
+    """Bake the continuous source alpha before the final MASK cutoff.
+
+    Blender imports a glTF MASK as 1 - (alpha < cutoff). Baking that binary
+    result would destroy subpixel coverage before the atlas is filtered again.
+    """
+    if not socket.is_linked:
+        return socket
+    node = socket.links[0].from_node
+    if node.type == "MATH" and node.operation == "SUBTRACT" and not node.inputs[0].is_linked and node.inputs[0].default_value == 1:
+        if node.inputs[1].is_linked:
+            clip = node.inputs[1].links[0].from_node
+            if clip.type == "MATH" and clip.operation == "LESS_THAN" and not clip.inputs[1].is_linked:
+                return clip.inputs[0]
+    return socket
+
+
+def import_snapshot(data, output, height, name, neutral_image3d=False, source=None):
     # Import exactly the hash-checked bytes, rather than reopening a mutable
     # user original between verification and import. Remove only our snapshot.
     snapshot = output / ".verified-input.glb"
@@ -156,13 +253,28 @@ def import_snapshot(data, output, height, name, neutral_image3d=False):
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     try:
-        bpy.ops.import_scene.gltf(filepath=blender_filename(snapshot), import_pack_images=True,
-                                  import_shading="NORMALS", merge_vertices=False)
+        with capture_source_materials() as identities:
+            bpy.ops.import_scene.gltf(filepath=blender_filename(snapshot), import_pack_images=True,
+                                      import_shading="NORMALS", merge_vertices=False)
     finally:
         snapshot.unlink()
     meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     if not meshes or len(meshes) > 1024:
         raise ValueError("Imported scene does not contain bounded static mesh objects")
+    source = source or GLB(data)
+    required, default_used = active_source_materials(source)
+    imported_materials = {material.as_pointer(): material for obj in meshes for material in obj.data.materials if material is not None}
+    if not required <= {identities[pointer] for pointer in imported_materials if pointer in identities}:
+        raise ValueError("Native import did not capture every active authored material identity")
+    for pointer, material in imported_materials.items():
+        if pointer in identities:
+            material["assetStudioSourceMaterialIndex"] = identities[pointer]
+        else:
+            if not default_used:
+                raise ValueError("Native import contains an unidentified authored material")
+            # User extras are data, not authority for source-slot identity.
+            if "assetStudioSourceMaterialIndex" in material:
+                del material["assetStudioSourceMaterialIndex"]
     original_triangles = sum(triangles(obj) for obj in meshes)
     # Bake world transforms before dropping imported parent/camera/light nodes.
     for obj in meshes:
@@ -229,14 +341,35 @@ def duplicate(obj, name, role):
     return copy
 
 
-def clean_game_geometry(obj, weld=False):
+def clean_game_geometry(obj, weld=False, render_semantics=None):
     """Repair importer seam splits only on the derived mesh, never high detail."""
     before = mesh_inspection(obj)
     epsilon = max(obj.dimensions) * 1e-7
     bm = bmesh.new()
     bm.from_mesh(obj.data)
+    boundary_splits = 0
+    weld_groups = 1
     if weld:
-        bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=epsilon)
+        keys = [(value["alphaMode"], value["alphaCutoff"], value["doubleSided"])
+                for value in render_semantics] if render_semantics else []
+        if len(set(keys)) > 1:
+            # A collapse must not cross an opaque/cutout/blended render seam.
+            # Split shared boundaries on the derived copy, then weld only
+            # vertices whose incident faces share the same render semantics.
+            boundaries = [edge for edge in bm.edges if len({keys[face.material_index] for face in edge.link_faces}) > 1]
+            boundary_splits = len(boundaries)
+            if boundaries:
+                bmesh.ops.split_edges(bm, edges=boundaries)
+            groups = {}
+            for vertex in bm.verts:
+                incident = {keys[face.material_index] for face in vertex.link_faces}
+                if len(incident) == 1:
+                    groups.setdefault(next(iter(incident)), []).append(vertex)
+            weld_groups = len(groups)
+            for vertices in groups.values():
+                bmesh.ops.remove_doubles(bm, verts=vertices, dist=epsilon)
+        else:
+            bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=epsilon)
     # Collapse numerical slivers on the derived copy before atlas projection.
     # A reconstructed face can have finite positions but sub-micron altitude,
     # yielding zero UV area after decimation. The high-detail input is untouched.
@@ -262,6 +395,8 @@ def clean_game_geometry(obj, weld=False):
         raise ValueError("Derived game mesh still contains loose geometry")
     return {"weld": weld, "weldToleranceMeters": epsilon, "degenerateDissolveToleranceMeters": epsilon, "before": before,
             "after": after, "highDetailModified": False,
+            "renderBoundaryEdgesSplit": boundary_splits, "renderSemanticWeldGroups": weld_groups,
+            "renderBoundaryPolicy": "Derived welding/decimation cannot merge distinct alpha modes, MASK cutoffs or backface flags",
             "shading": "Recomputed game normals with 45-degree sharp edges; original high-detail normals retained"}
 
 
@@ -420,7 +555,12 @@ def emission_material(original, mode):
         if source_socket.is_linked:
             tree.links.new(source_socket.links[0].from_socket, target_socket)
         else:
-            target_socket.default_value = source_socket.default_value
+            value = source_socket.default_value
+            # Blender links scalar sockets to color sockets by broadcasting,
+            # but assigning the default requires an explicit RGBA vector.
+            if isinstance(value, (int, float)) and target_socket.type == "RGBA":
+                value = (value, value, value, 1.0)
+            target_socket.default_value = value
     if mode == "basecolor":
         if shader:
             transfer(shader.inputs["Base Color"], emission.inputs["Color"])
@@ -434,13 +574,19 @@ def emission_material(original, mode):
         else:
             combined = tree.nodes.new("ShaderNodeCombineColor")
             combined.mode = "RGB"
-            combined.inputs["Red"].default_value = 1.0  # Neutral AO, not inferred AO.
+            authored_ao = occlusion_socket(mat)
+            if authored_ao is not None:
+                # The imported glTF group includes texture UV and strength.
+                # This transfers authored AO; no geometry AO is synthesized.
+                transfer(authored_ao, combined.inputs["Red"])
+            else:
+                combined.inputs["Red"].default_value = 1.0
             transfer(shader.inputs["Roughness"], combined.inputs["Green"])
             transfer(shader.inputs["Metallic"], combined.inputs["Blue"])
             tree.links.new(combined.outputs[0], emission.inputs["Color"])
     elif mode == "alpha":
         if shader:
-            transfer(shader.inputs["Alpha"], emission.inputs["Color"])
+            transfer(unclipped_alpha(shader.inputs["Alpha"]), emission.inputs["Color"])
         else:
             emission.inputs["Color"].default_value = (1, 1, 1, 1)
     elif mode == "coverage":
@@ -464,9 +610,10 @@ def pixels(image):
 
 def texture_stats(image, uv_mask=None):
     rgba = pixels(image)
-    covered = rgba[:, 3] > 0.5
-    if uv_mask is not None:
-        covered &= uv_mask
+    # Material opacity is not bake coverage: a glass atlas can have alpha 0.2
+    # everywhere and still be a valid, fully covered texture. White-projection
+    # coverage is validated separately before authored opacity is applied.
+    covered = uv_mask if uv_mask is not None else rgba[:, 3] > 0.5
     colors = rgba[covered, :3]
     if not len(colors) or not np.isfinite(rgba).all():
         raise ValueError("Bake produced no covered texture pixels")
@@ -477,7 +624,8 @@ def texture_stats(image, uv_mask=None):
         interior &= uv_mask
     return {"resolution": list(image.size), "coveredPixels": int(covered.sum()),
             "coverageFraction": float(covered.mean()), "finite": bool(np.isfinite(rgba).all()),
-            "coverageDefinition": "Rasterized UV triangle pixel centers with bake alpha > 0.5" if uv_mask is not None else "Bake alpha > 0.5; includes dilated padding",
+            "coverageDefinition": "Rasterized UV triangle pixel centers, independent of authored opacity" if uv_mask is not None else "Bake alpha > 0.5; includes dilated padding",
+            "opacityAboveHalfFraction": float((rgba[covered, 3] > 0.5).mean()),
             "interiorPixels": int(interior.sum()),
             "paddingPixels": int(((rgba[:, 3] > 0.5) & ~uv_mask).sum()) if uv_mask is not None else None,
             "minimumRGBLinear": colors.min(axis=0).tolist(),
@@ -655,10 +803,10 @@ def promote(temporary, final):
     temporary.unlink()
 
 
-def game_material(base, normal, orm, emission, emission_strength, transparent, double_sided, neutral_roughness=0.55):
+def game_material(base, normal, orm, emission, emission_strength, semantics, neutral_roughness=0.55):
     mat = bpy.data.materials.new("Baked source PBR atlas")
     mat.use_nodes = True
-    mat.use_backface_culling = not double_sided
+    mat.use_backface_culling = not semantics["doubleSided"]
     tree = mat.node_tree
     shader = tree.nodes.get("Principled BSDF")
     uv = tree.nodes.new("ShaderNodeUVMap")
@@ -672,8 +820,19 @@ def game_material(base, normal, orm, emission, emission_strength, transparent, d
         return node
     tex = texture(base, "Source base color (baked, not invented)")
     tree.links.new(tex.outputs["Color"], shader.inputs["Base Color"])
-    if transparent:
+    if semantics["alphaMode"] == "BLEND":
         tree.links.new(tex.outputs["Alpha"], shader.inputs["Alpha"])
+        mat.surface_render_method = "BLENDED"
+    elif semantics["alphaMode"] == "MASK":
+        less = tree.nodes.new("ShaderNodeMath")
+        less.operation = "LESS_THAN"
+        less.inputs[1].default_value = semantics["alphaCutoff"]
+        tree.links.new(tex.outputs["Alpha"], less.inputs[0])
+        clipped = tree.nodes.new("ShaderNodeMath")
+        clipped.operation = "SUBTRACT"
+        clipped.inputs[0].default_value = 1.0
+        tree.links.new(less.outputs[0], clipped.inputs[1])
+        tree.links.new(clipped.outputs[0], shader.inputs["Alpha"])
         mat.surface_render_method = "DITHERED"
     if normal:
         tex = texture(normal, "Mesh-derived normal (high detail to game)")
@@ -683,12 +842,24 @@ def game_material(base, normal, orm, emission, emission_strength, transparent, d
         tree.links.new(tex.outputs["Color"], node.inputs["Color"])
         tree.links.new(node.outputs["Normal"], shader.inputs["Normal"])
     if orm:
-        tex = texture(orm, "Source roughness/metallic; R is neutral AO")
+        tex = texture(orm, "Source occlusion/roughness/metallic atlas")
         node = tree.nodes.new("ShaderNodeSeparateColor")
         node.mode = "RGB"
         tree.links.new(tex.outputs["Color"], node.inputs["Color"])
         tree.links.new(node.outputs["Green"], shader.inputs["Roughness"])
         tree.links.new(node.outputs["Blue"], shader.inputs["Metallic"])
+        if semantics["authoredOcclusion"]:
+            # This official glTF socket writes an actual occlusionTexture.
+            # Source strength is baked into R, so exported strength is one.
+            group = bpy.data.node_groups.get("glTF Material Output")
+            if group is None:
+                group = bpy.data.node_groups.new("glTF Material Output", "ShaderNodeTree")
+                group.interface.new_socket(name="Occlusion", in_out="INPUT", socket_type="NodeSocketFloat")
+            settings = tree.nodes.new("ShaderNodeGroup")
+            settings.node_tree = group
+            if settings.inputs.get("Occlusion") is None:
+                raise ValueError("Native glTF output node lacks its occlusion socket")
+            tree.links.new(node.outputs["Red"], settings.inputs["Occlusion"])
     else:
         shader.inputs["Roughness"].default_value = neutral_roughness
         shader.inputs["Metallic"].default_value = 0.0
@@ -697,6 +868,39 @@ def game_material(base, normal, orm, emission, emission_strength, transparent, d
         tree.links.new(tex.outputs["Color"], shader.inputs["Emission Color"])
         shader.inputs["Emission Strength"].default_value = emission_strength
     return mat
+
+
+def assign_atlas_materials(obj, base, normal, orm, emission, strength, semantics, neutral_roughness, role):
+    indices = [p.material_index for p in obj.data.polygons]
+    obj.data.materials.clear()
+    for value in semantics:
+        mat = game_material(base, normal, orm, emission, strength, value, neutral_roughness)
+        mat.name = "Asset Studio " + role + " source slot " + str(value["slot"])
+        obj.data.materials.append(mat)
+    for poly, index in zip(obj.data.polygons, indices):
+        if not 0 <= index < len(semantics):
+            raise ValueError("Derived mesh lost its source material assignment")
+        poly.material_index = index
+
+
+def verify_exported_material_semantics(glb, obj, semantics):
+    expected = {obj.data.materials[p.material_index].name: semantics[p.material_index]
+                for p in obj.data.polygons}
+    seen = set()
+    for material in glb.doc.get("materials", []):
+        name = material.get("name")
+        value = expected.get(name)
+        if value is None:
+            raise ValueError("Exported material does not bind a source render slot")
+        if material.get("alphaMode", "OPAQUE") != value["alphaMode"] or material.get("doubleSided", False) != value["doubleSided"]:
+            raise ValueError("Export changed the source alpha or backface rendering semantics")
+        if value["alphaMode"] == "MASK" and abs(material.get("alphaCutoff", 0.5) - value["alphaCutoff"]) > 1e-6:
+            raise ValueError("Export changed the source alpha cutoff")
+        if value["authoredOcclusion"] and "occlusionTexture" not in material:
+            raise ValueError("Export lost the authored source occlusion texture")
+        seen.add(name)
+    if seen != expected.keys():
+        raise ValueError("Export lost one or more source render material slots")
 
 
 def remove_source_attributes(low):
@@ -878,16 +1082,18 @@ def execute(input_path, output_dir):
     if neutral_image3d:
         warnings.append("Neural vertex-color source has no authored PBR material. Neutral display defaults metallic=0 and roughness=0.6 apply to high/game meshes; vertex colors retain standard glTF linear interpretation. These PBR defaults are not inferred from the image.")
     stage("import-high-detail")
-    high, original_triangles = import_snapshot(data, output, job["heightMeters"], job["name"], neutral_image3d)
+    high, original_triangles = import_snapshot(data, output, job["heightMeters"], job["name"], neutral_image3d, source)
     if original_triangles != source.scene_triangles:
         raise ValueError("Imported triangle count differs from preflight")
     del data
     high_info = mesh_inspection(high)
+    source_materials = list(high.data.materials)
+    source_semantics = material_semantics(source_materials, source)
     stage("export-high-detail")
     high_glb = export_glb(high, output, "high-detail.glb")
     stage("decimate-game-mesh", originalTriangles=original_triangles, budget=job["maxTriangles"])
     game = duplicate(high, job["name"] + " Game ready", "game")
-    seam_repair = clean_game_geometry(game, weld=True)
+    seam_repair = clean_game_geometry(game, weld=True, render_semantics=source_semantics)
     reduction = decimate(game, job["maxTriangles"])
     game_cleanup = clean_game_geometry(game)
     game_centering = center_game(game, job["heightMeters"])
@@ -913,12 +1119,17 @@ def execute(input_path, output_dir):
         warnings.append("Game UV texel density varies more than fourfold between the measured p10 and p90 triangles.")
     if uv_info["uvExportPrecisionRepairFaces"]:
         warnings.append("Sub-texel UV faces received separate texel-sized islands before baking to preserve nonzero area through glTF float32 V conversion. Source geometry and source UVs were preserved.")
-    source_materials = list(high.data.materials)
+    game_semantics = [dict(value, authoredOcclusion=value["authoredOcclusion"] and job["preserveMaterials"])
+                      for value in source_semantics]
+    for material, value in zip(source_materials, source_semantics):
+        if value["authoredOcclusion"] and occlusion_socket(material) is None:
+            raise ValueError("Native import did not retain the authored source occlusion graph")
     fallback_materials = source_uv_bind(source_materials, high)
     projection = projection_settings(high, game, job["heightMeters"])
     if not projection["robust"]:
         warnings.append("High-detail projection did not pass the sampled ray check; base/PBR bake uses interpolated source attributes on the decimated mesh. Normal map omitted.")
-    transparent = any(m.get("alphaMode", "OPAQUE") != "OPAQUE" or m.get("pbrMetallicRoughness", {}).get("baseColorFactor", [1, 1, 1, 1])[3] < 1 for m in source.doc.get("materials", []))
+    transparent = any(value["alphaMode"] != "OPAQUE" for value in source_semantics)
+    authored_ao = any(value["authoredOcclusion"] for value in source_semantics) and job["preserveMaterials"]
     emissive = any(any(m.get("emissiveFactor", [0, 0, 0])) or "emissiveTexture" in m for m in source.doc.get("materials", []))
     stage("bake-basecolor", source="imported material/vertex color graph", projection=projection)
     mask = bake_image(high, game, "coverage", job["textureResolution"], projection, source_materials, fallback_materials)
@@ -955,8 +1166,9 @@ def execute(input_path, output_dir):
         orm = bake_image(high, game, "orm", job["textureResolution"], projection, source_materials, fallback_materials)
         apply_coverage(orm, coverage)
         orm_pixels = pixels(orm)
-        orm_pixels[:, 0] = 1.0  # Neutral AO everywhere, including padding.
-        orm_pixels[:, 1:3] = np.clip(orm_pixels[:, 1:3], 0, 1)
+        orm_pixels[:, :3] = np.clip(orm_pixels[:, :3], 0, 1)
+        if not authored_ao:
+            orm_pixels[:, 0] = 1.0  # Neutral only when the source has no authored AO.
         # Uniform source PBR factors are exact data, not inferred PBR. Keep
         # their known values in the padding too, rather than dark bake borders.
         for channel, key, default in ((1, "roughnessFactor", 1.0), (2, "metallicFactor", 1.0)):
@@ -1033,12 +1245,8 @@ def execute(input_path, output_dir):
             warnings.append(normal_reason)
     elif not projection["robust"]:
         normal_reason = "High-detail ray projection failed robustness threshold"
-    mat = game_material(base, normal, orm, emission, emission_strength, transparent,
-                        any(not m.use_backface_culling for m in source_materials), 0.6 if neutral_image3d else 0.55)
-    game.data.materials.clear()
-    game.data.materials.append(mat)
-    for poly in game.data.polygons:
-        poly.material_index = 0
+    assign_atlas_materials(game, base, normal, orm, emission, emission_strength, game_semantics,
+                           0.6 if neutral_image3d else 0.55, "game")
     remove_source_attributes(game)
     game_info = mesh_inspection(game)
     stage("build-lod1")
@@ -1102,13 +1310,8 @@ def execute(input_path, output_dir):
     # A game tangent-space normal texture is tied to the game mesh's tangents.
     # Its UV name surviving a collapse is not evidence of LOD shading validity.
     # Retain source color/PBR and deliberately use measured LOD mesh normals.
-    lod_material = game_material(base, None, orm, emission, emission_strength, transparent,
-                                 any(not m.use_backface_culling for m in source_materials), 0.6 if neutral_image3d else 0.55)
-    lod_material.name = "LOD source color and geometric normals"
-    lod.data.materials.clear()
-    lod.data.materials.append(lod_material)
-    for poly in lod.data.polygons:
-        poly.material_index = 0
+    assign_atlas_materials(lod, base, None, orm, emission, emission_strength, game_semantics,
+                           0.6 if neutral_image3d else 0.55, "lod1")
     lod_normal_policy = {"gameNormalIncluded": normal is not None, "lodNormalTextureIncluded": False,
                          "gameNormalTextureReused": False, "separateNormalRebake": False,
                          "reason": "Game tangent-space normal reuse is not independently validated for LOD; its material uses its own measured corner normals",
@@ -1121,12 +1324,14 @@ def execute(input_path, output_dir):
     warnings.append("LOD1 inherits source-color/PBR atlas UVs but omits the game tangent normal texture; geometric normal deviation is measured separately. No separate LOD high-detail normal rebake is claimed.")
     warnings.append("Collapse decimation is not retopology. Watertight volume, CAD/manufacturing suitability, rigging and unseen image geometry are not certified.")
     if source.doc.get("extensionsUsed"):
-        warnings.append("Optional source glTF extensions are recorded; the game shader bakes core color, alpha, roughness, metallic, emission and geometry normals only.")
+        warnings.append("Optional source glTF extensions are recorded; the game shader bakes core color, alpha, source occlusion, roughness, metallic, emission and geometry normals only.")
     if high_info["nonManifoldEdges"]:
         warnings.append("Source contains boundary/non-manifold edges; original high-detail geometry is retained without topology repair.")
     stage("export-game-and-lod")
     game_glb = export_glb(game, output, "game-ready.model.glb")
     lod_glb = export_glb(lod, output, "lod1.glb")
+    verify_exported_material_semantics(game_glb, game, game_semantics)
+    verify_exported_material_semantics(lod_glb, lod, game_semantics)
     for glb in (game_glb, lod_glb):
         if not {"NORMAL", "TEXCOORD_0"} <= glb.attributes or not glb.images:
             raise ValueError("Game/LOD GLB is missing real embedded textures, UVs or normals")
@@ -1230,7 +1435,12 @@ def execute(input_path, output_dir):
             for info in (high_info, game_info, lod_info)) else "fail",
          "message": "High/game/LOD measured bounds have bottom-center pivots in meter units"},
         {"code": "standalone-embedded-textures", "status": "pass",
-         "message": "Actual embedded source-color/PBR textures match standalone PNGs; normal texture is game-only"},
+          "message": "Actual embedded source-color/PBR textures match standalone PNGs; normal texture is game-only"},
+        {"code": "source-render-semantics", "status": "pass",
+         "message": "Actual game/LOD material slots preserve source alphaMode, MASK cutoff and doubleSided independently"},
+        {"code": "source-occlusion", "status": "pass",
+         "message": "Authored source occlusion and strength are baked into ORM R and referenced by occlusionTexture" if authored_ao else
+                    "No source AO transfer requested; neutral AO retained without synthesis"},
         {"code": "source-color-uv-bake", "status": "pass", "measured": base_stats["sampleDistinctRGB8"]},
         {"code": "embedded-pbr-basecolor", "status": "pass", "measured": len(game_glb.images)},
         {"code": "normal-map", "status": "pass" if normal else "warn", "message": normal_reason},
@@ -1268,8 +1478,12 @@ def execute(input_path, output_dir):
               "textures": {"basecolor": base_stats, "orm": orm_stats, "emission": emission_stats,
                            "normal": {"included": normal is not None, "reason": normal_reason, "stats": normal_stats}},
               "bakeProjection": projection, "materialPreservation": {"highDetail": "original imported colors with explicitly recorded neutral neural display defaults" if neutral_image3d else "original imported material graphs/colors/textures",
-                  "game": "source color/alpha and mesh normals; core roughness/metallic/emission baked" if job["preserveMaterials"] else "source color/alpha with neutral roughness/metallic",
-                  "ambientOcclusion": "not baked/inferred; ORM R=1", "unseenDetailInvented": False},
+                  "game": "source color/alpha and mesh normals; core occlusion/roughness/metallic/emission baked" if job["preserveMaterials"] else "source color/alpha with neutral roughness/metallic",
+                  "ambientOcclusion": "authored source graph including strength baked; no inferred AO" if authored_ao else "not baked/inferred; neutral ORM R=1 when present",
+                  "sourceRenderSlots": source_semantics, "gameRenderSlots": game_semantics,
+                  "sharedAtlas": True, "materialAssignmentsPreserved": True,
+                  "occlusionStrengthPolicy": "Source strength baked into R; exported strength=1 for authored-AO slots",
+                  "unseenDetailInvented": False},
               "neuralMaterialDefaults": {"applied": neutral_image3d,
                   "eligibility": "sourceKind=image3d, COLOR_0, no glTF material and no embedded images",
                   "metallic": 0.0 if neutral_image3d else None, "roughness": 0.6 if neutral_image3d else None,

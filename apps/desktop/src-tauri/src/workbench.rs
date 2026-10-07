@@ -28,6 +28,7 @@ mod provider;
 mod python_windows;
 mod quality3d;
 mod quality3d_preview;
+mod trellis2;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -61,6 +62,7 @@ struct Inner {
     codex_installer: asset_providers::installer::CodexInstaller,
     planning_cancel: Mutex<Option<Arc<AtomicBool>>>,
     quality3d_setup: quality3d::SetupState,
+    trellis_status: Mutex<Option<(Instant, Value)>>,
 }
 struct Runner {
     cancel: Arc<AtomicBool>,
@@ -137,6 +139,7 @@ impl Backend {
                 codex_installer,
                 planning_cancel: Mutex::new(None),
                 quality3d_setup: quality3d::SetupState::default(),
+                trellis_status: Mutex::new(None),
             }),
         }
     }
@@ -527,6 +530,7 @@ impl Backend {
                 | "quality3d_cancel_setup"
                 | "quality3d_open_download_info"
                 | "quality3d_open_runtime_guide"
+                | "quality3d_trellis_configure"
         ) {
             if self.inner.stop.load(Ordering::SeqCst) {
                 bail!("작업 백엔드가 종료되었습니다.");
@@ -2179,6 +2183,7 @@ mod lifecycle_tests {
                     ),
                     planning_cancel: Mutex::new(None),
                     quality3d_setup: quality3d::SetupState::default(),
+                    trellis_status: Mutex::new(None),
                 }),
             };
             backend

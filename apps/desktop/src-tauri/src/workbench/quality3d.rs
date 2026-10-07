@@ -70,6 +70,14 @@ struct Request {
     max_triangles: u64,
     texture_resolution: u32,
     preserve_materials: bool,
+    #[serde(default = "default_engine")]
+    engine: String,
+    #[serde(default)]
+    seed: u32,
+}
+
+fn default_engine() -> String {
+    "triposr".into()
 }
 
 fn physical_memory_mb() -> u64 {
@@ -136,8 +144,13 @@ fn validate_request(request: &Request) -> Result<()> {
         || !(0.03..=100.).contains(&request.height_meters)
         || !(1000..=100000).contains(&request.max_triangles)
         || ![512, 1024, 2048].contains(&request.texture_resolution)
+        || !["triposr", "trellis2_local"].contains(&request.engine.as_str())
+        || request.seed > i32::MAX as u32
     {
         bail!("정밀 3D 입력 1~5개와 높이·폴리곤·텍스처 설정을 확인해 주세요.");
+    }
+    if request.engine == "trellis2_local" && request.asset_ids.len() != 1 {
+        bail!("TRELLIS.2 로컬 경로는 GPU 메모리를 고려해 한 번에 이미지 한 장만 요청합니다.");
     }
     let name = request.name.trim();
     if name.is_empty()
@@ -153,7 +166,7 @@ fn validate_request(request: &Request) -> Result<()> {
     Ok(())
 }
 
-fn process_environment(command: &mut Command) {
+pub(super) fn process_environment(command: &mut Command) {
     command.env_clear();
     for key in [
         "SystemRoot",
@@ -262,7 +275,7 @@ fn worker_failure(path: &Path) -> Option<&'static str> {
     file.take(32768).read_to_end(&mut bytes).ok()?;
     String::from_utf8_lossy(&bytes).lines().filter_map(|line| {
         let value: Value = serde_json::from_str(line).ok()?;
-        if value["type"] != "failed" { return None; }
+        if value["type"] != "failed" && value["event"] != "failed" { return None; }
         match value["code"].as_str()? {
             "unsupported_background" => Some("배경이 투명한 PNG·WebP가 필요합니다. 2D 편집기에서 배경을 제거하고 PNG로 저장한 뒤 다시 선택하세요."),
             "multiple_objects" => Some("한 이미지에 분리된 물체가 여러 개 있습니다. 물체별로 자르거나 배경 마스크를 수정한 뒤 다시 선택하세요."),
@@ -270,6 +283,9 @@ fn worker_failure(path: &Path) -> Option<&'static str> {
             "source_changed" => Some("참고 이미지의 해시가 변경됐습니다. 새 사본을 가져온 뒤 다시 선택하세요."),
             "python_unsupported" => Some("로컬 모델의 Python 실행 환경이 맞지 않습니다. Windows에서는 앱 전용 Python을 준비하고, Mac에서는 CPython 3.9를 확인해 주세요."),
             "runtime_integrity" => Some("로컬 모델 또는 실행 환경의 검증이 실패했습니다. 로컬 모델 준비 상태를 확인해 주세요."),
+            "hardware_blocked" => Some("TRELLIS.2 실행에는 NVIDIA GPU 메모리 24 GiB 이상이 필요합니다. 다른 모델로 전환하지 않았습니다."),
+            "network_blocked" => Some("로컬 TRELLIS.2에서 네트워크 접근이 차단됐습니다. 준비한 로컬 파일을 확인해 주세요."),
+            "runtime_unprepared" | "licensing_unacknowledged" => Some("TRELLIS.2 런타임의 고정 파일·의존성·라이선스 준비를 확인해 주세요."),
             "invalid_image" => Some("이미지는 16~8192px, 최대 1,600만 픽셀·64MiB의 단일 PNG·JPEG·WebP여야 합니다."),
             _ => None,
         }
@@ -309,6 +325,8 @@ impl Backend {
             ("image3d", "image3d_adapter.py"),
             ("image3d", "glb_color.py"),
             ("image3d", runtime_lock_name()),
+            ("trellis2", "worker.py"),
+            ("trellis2", "runtime-lock.json"),
         ] {
             digest.update(folder.as_bytes());
             digest.update(name.as_bytes());
@@ -523,6 +541,13 @@ impl Backend {
             "pythonVersion":ready.as_ref().and_then(|v| v["pythonVersion"].as_str()),
             "weightBytes":1677246742u64,"memoryMb":physical_memory_mb(),"minimumMemoryMb":MINIMUM_MEMORY_MB,
             "blenderReady":self.inner.blender.is_some(),
+            "engines":[
+                {"id":"triposr","name":"TripoSR · 로컬 CPU","execution":"local",
+                    "available":supported && installed,"requiresImageUpload":false,"requestedModel":MODEL_ID,
+                    "state":if !supported {"unsupported"} else if installed {"ready"} else {"requires_setup"},
+                    "reason":"현재 로컬 CPU 경로입니다. 원본 이미지를 외부로 전송하지 않습니다.","localMinimumVramMb":Value::Null},
+                self.quality3d_trellis_status()
+            ],
             "download":if cfg!(windows) { json!({"totalBytes":2034000316u64,
                 "runtime":"CPython 3.12.10 · PyTorch 2.2.2 CPU · TripoSR",
                 "sources":["Python.org","PyTorch CPU","PyPI","GitHub","Hugging Face"],
@@ -535,6 +560,7 @@ impl Backend {
         match text_field(request, "action")? {
             "quality3d_status" => Ok(self.quality3d_status()),
             "quality3d_verify_runtime" => Ok(self.quality3d_verify_runtime()),
+            "quality3d_trellis_configure" => self.quality3d_trellis_configure(request),
             "quality3d_open_download_info" => {
                 let url = if cfg!(windows) {
                     "https://github.com/oocheol/masset/blob/master/workers/image3d/runtime-lock-windows.json"
@@ -701,6 +727,19 @@ impl Backend {
         }
         let mut jobs = Vec::new();
         let pipeline_hash = self.quality3d_pipeline_hash()?;
+        let trellis = request.engine == "trellis2_local";
+        let trellis_config = if trellis {
+            let status = self.quality3d_trellis_status();
+            if status["available"] != true {
+                bail!("TRELLIS.2 로컬 GPU·런타임 준비가 필요합니다. 다른 모델로 자동 전환하지 않았습니다.");
+            }
+            if self.inner.limits.ram_mb < 16 * 1024 {
+                bail!("TRELLIS.2 로컬 작업의 시스템 메모리 예산이 부족합니다.");
+            }
+            Some(self.quality3d_trellis_config()?)
+        } else {
+            None
+        };
         for (index, id) in request.asset_ids.iter().enumerate() {
             let asset = asset_from(&project, id)?;
             let version = asset
@@ -709,6 +748,9 @@ impl Backend {
                 .find(|v| v.id == asset.active_version_id)
                 .context("활성 버전이 없습니다.")?;
             let model = asset.kind == AssetKind::Model;
+            if model && trellis {
+                bail!("TRELLIS.2는 투명 배경 이미지 한 장에서 새 모델을 만듭니다. 기존 GLB에는 모델 다듬기를 사용해 주세요.");
+            }
             // Refining a previous result must retain detail that was removed
             // from its game mesh. Only a verified source GLB is eligible.
             let high_id = version
@@ -754,16 +796,19 @@ impl Backend {
             if model {
                 glb::inspect(&path)?;
             } else {
-                let status = self.quality3d_status();
-                if status["supported"] != true || status["installed"] != true {
-                    bail!(
-                        "로컬 TripoSR 모델을 먼저 준비해 주세요. 다른 항목도 제출하지 않았습니다."
-                    );
+                if !trellis {
+                    let status = self.quality3d_status();
+                    if status["supported"] != true || status["installed"] != true {
+                        bail!("로컬 TripoSR 모델을 먼저 준비해 주세요. 다른 항목도 제출하지 않았습니다.");
+                    }
                 }
                 if self.inner.limits.ram_mb < IMAGE_MEMORY_MB {
                     bail!("로컬 이미지→3D 메모리 예산이 부족합니다.");
                 }
-                raster::inspect(&path)?;
+                let image = raster::inspect(&path)?;
+                if trellis && (!image.has_alpha || !image.non_empty) {
+                    bail!("TRELLIS.2에는 보이는 물체가 있는 투명 배경 PNG·WebP가 필요합니다. 원본을 보존하고 배경 제거한 새 이미지를 선택해 주세요.");
+                }
             }
             let name = if request.asset_ids.len() > 1 {
                 format!("{} {:02}", request.name.trim(), index + 1)
@@ -771,11 +816,13 @@ impl Backend {
                 request.name.trim().to_owned()
             };
             let payload = json!({"source":source.path,"sourceSha256":source.sha256,"sourceAssetId":asset.id,"sourceVersionId":version.id,
-                "pipelineSha256":pipeline_hash,"modelId":MODEL_ID,"modelRevision":MODEL_REVISION,"toolVersion":self.inner.blender_version,
+                "pipelineSha256":pipeline_hash,"modelId":if trellis {asset_providers::trellis2::MODEL_ID} else {MODEL_ID},
+                "modelRevision":if trellis {asset_providers::trellis2::MODEL_REVISION} else {MODEL_REVISION},"toolVersion":self.inner.blender_version,
+                "engine":request.engine,"seed":request.seed,"trellisRuntime":trellis_config,
                 "name":name,"quality":request.quality,"heightMeters":request.height_meters,"maxTriangles":request.max_triangles,
                 "textureResolution":request.texture_resolution,"preserveMaterials":request.preserve_materials,"sourceKind":if model { "model" } else { "image3d" },
                 "spec":project.spec,"workerSha256":asset_core::sha256_file(&self.quality3d_worker("blender-quality", "worker.py")?)?.0,
-                "resources":{"ramMb":if model { 2048 } else { IMAGE_MEMORY_MB },"cpuThreads":2,"diskWeight":2}});
+                "resources":{"ramMb":if model { 2048 } else if trellis {16 * 1024} else { IMAGE_MEMORY_MB },"cpuThreads":2,"diskWeight":2}});
             let mut task = job(
                 &project,
                 "quality3d",
@@ -814,13 +861,33 @@ impl Backend {
         let mut previous = String::new();
         loop {
             if cancel.load(Ordering::SeqCst) || self.inner.stop.load(Ordering::SeqCst) {
+                if log.file_name().and_then(|v| v.to_str()) == Some("trellis2.log") {
+                    let _ = asset_providers::trellis2::request_cancel(
+                        &log.parent()
+                            .context("작업 폴더가 없습니다.")?
+                            .join("reconstruction"),
+                    );
+                }
                 let _ = child.kill();
                 let _ = child.wait();
+                if log.file_name().and_then(|v| v.to_str()) == Some("trellis2.log") {
+                    bail!("TRELLIS.2 취소를 요청했습니다. WSL 프로세스 종료는 확인하지 못했으며 원본과 중간 파일은 보존했습니다.");
+                }
                 bail!("정밀 3D 작업을 취소했습니다. 원본과 완료된 중간 파일은 보존했습니다.");
             }
             if start.elapsed() > Duration::from_secs(timeout) {
+                if log.file_name().and_then(|v| v.to_str()) == Some("trellis2.log") {
+                    let _ = asset_providers::trellis2::request_cancel(
+                        &log.parent()
+                            .context("작업 폴더가 없습니다.")?
+                            .join("reconstruction"),
+                    );
+                }
                 let _ = child.kill();
                 let _ = child.wait();
+                if log.file_name().and_then(|v| v.to_str()) == Some("trellis2.log") {
+                    bail!("TRELLIS.2 시간 제한을 초과해 취소를 요청했습니다. WSL 프로세스 종료는 확인하지 못했습니다.");
+                }
                 bail!("{label} 시간 제한을 초과했습니다. 더 낮은 품질로 새 작업을 제출해 주세요.");
             }
             let stage = last_stage(log).unwrap_or_else(|| label.to_owned());
@@ -850,14 +917,65 @@ impl Backend {
         cancel: &AtomicBool,
     ) -> Result<()> {
         let payload = serde_json::to_value(&task.payload)?;
+        if task.payload.get("engine").is_some()
+            && task.payload["pipelineSha256"] != self.quality3d_pipeline_hash()?
+        {
+            bail!(
+                "제출 후 3D 작업자 코드가 변경됐습니다. 원본을 보존하고 새 작업을 요청해 주세요."
+            );
+        }
         let source = resolve_artifact(root, text_field(&payload, "source")?)?;
         if asset_core::sha256_file(&source)?.0 != text_field(&payload, "sourceSha256")? {
             bail!("참고 자료의 해시가 변경됐습니다.");
         }
         let image = task.payload["sourceKind"] == "image3d";
+        let trellis = task.payload.get("engine").and_then(Value::as_str) == Some("trellis2_local");
+        if task
+            .payload
+            .get("engine")
+            .and_then(Value::as_str)
+            .is_some_and(|engine| !["triposr", "trellis2_local"].contains(&engine))
+        {
+            bail!("지원하지 않는 3D 엔진입니다. 다른 모델로 전환하지 않았습니다.");
+        }
         let mut model = source.clone();
         let mut generation = Value::Null;
-        if image {
+        if image && trellis {
+            let config: asset_providers::trellis2::Trellis2RuntimeConfig =
+                serde_json::from_value(task.payload["trellisRuntime"].clone())?;
+            let input = work.join("trellis2-input.json");
+            fs::write(
+                &input,
+                serde_json::to_vec(&json!({
+                    "name":task.payload["name"],
+                    "sourcePath":asset_providers::trellis2::windows_to_wsl(&source)?,
+                    "sourceSha256":task.payload["sourceSha256"], "quality":task.payload["quality"],
+                    "seed":task.payload["seed"], "textureResolution":task.payload["textureResolution"].as_u64().unwrap_or(1024).max(1024),
+                    "maxTriangles":300000
+                }))?,
+            )?;
+            let raw = work.join("reconstruction");
+            let command = asset_providers::trellis2::worker_command(
+                &config,
+                &self.quality3d_worker("trellis2", "worker.py")?,
+                &input,
+                &raw,
+            )?;
+            self.quality3d_process(
+                root,
+                task,
+                command,
+                &work.join("trellis2.log"),
+                "로컬 TRELLIS.2 형상·PBR 생성",
+                1800,
+                cancel,
+            )?;
+            model = raw.join("mesh.glb");
+            glb::inspect(&model)?;
+            raster::inspect(&raw.join("prepared-input.png"))?;
+            generation =
+                self.quality3d_trellis_receipt(&raw, text_field(&payload, "sourceSha256")?)?;
+        } else if image {
             let ready = self
                 .quality3d_ready()
                 .context("로컬 3D 모델 준비를 확인해 주세요.")?;
@@ -899,7 +1017,8 @@ impl Backend {
             serde_json::to_vec(
                 &json!({"sourcePath":model,"sourceSha256":asset_core::sha256_file(&model)?.0,"name":task.payload["name"],
             "heightMeters":task.payload["heightMeters"],"maxTriangles":task.payload["maxTriangles"],"textureResolution":task.payload["textureResolution"],
-            "sourceKind":task.payload["sourceKind"],"preserveMaterials":task.payload["preserveMaterials"],
+            "sourceKind":if trellis {json!("model")} else {task.payload["sourceKind"].clone()},
+            "preserveMaterials":task.payload["preserveMaterials"],
             "previewMode":if cfg!(windows) { "deferred" } else { "cycles" }}),
             )?,
         )?;
@@ -1040,11 +1159,25 @@ impl Backend {
             Some(validation),
             settings,
         );
-        asset.versions[0].provider_version =
-            Some("local image3d + Blender quality worker v2".into());
+        asset.versions[0].provider_version = Some(
+            if trellis {
+                "local TRELLIS.2 / Windows WSL2 + Blender quality worker v3"
+            } else {
+                "local image3d + Blender quality worker v3"
+            }
+            .into(),
+        );
         if image {
-            asset.versions[0].requested_model = Some(MODEL_ID.into());
-            asset.versions[0].confirmed_model = Some(format!("{MODEL_ID}@{MODEL_REVISION}"));
+            let (model_id, revision) = if trellis {
+                (
+                    asset_providers::trellis2::MODEL_ID,
+                    asset_providers::trellis2::MODEL_REVISION,
+                )
+            } else {
+                (MODEL_ID, MODEL_REVISION)
+            };
+            asset.versions[0].requested_model = Some(model_id.into());
+            asset.versions[0].confirmed_model = Some(format!("{model_id}@{revision}"));
         }
         record_generated(&mut repo, asset, task)?;
         if cfg!(windows) {
@@ -1071,7 +1204,10 @@ mod tests {
         let environment: std::collections::HashMap<_, _> = command.get_envs().collect();
         for key in ["PROCESSOR_ARCHITECTURE", "PROCESSOR_ARCHITEW6432"] {
             if let Some(value) = std::env::var_os(key) {
-                assert_eq!(environment.get(std::ffi::OsStr::new(key)), Some(&Some(value.as_os_str())));
+                assert_eq!(
+                    environment.get(std::ffi::OsStr::new(key)),
+                    Some(&Some(value.as_os_str()))
+                );
             }
         }
         assert!(std::env::var_os("PROCESSOR_ARCHITECTURE").is_some());
