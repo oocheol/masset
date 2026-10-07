@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowDownToLine, ArrowUpRight, BookOpen, Box, Check, ChevronDown, Copy, Expand, FileImage, FolderOpen, Github, Layers, Mail, Monitor, ShieldCheck, Terminal, Workflow, X } from 'lucide-react';
 import { macInstallCommand, macReleases, release } from './release';
-import { faqs, models, npmInstallCommand, skillDownloadUrl, skillInstallCommand, skillPackageVersion, skillUpdateCommand, skillVersion, sourceUrl, statuses } from './content';
+import { faqs, models, npmInstallCommand, projectFacts, skillDownloadUrl, skillInstallCommand, skillPackageVersion, skillUpdateCommand, skillVersion, sourceUrl, statuses } from './content';
 
 const releaseUrl = sourceUrl + '/releases/tag/v' + release.version;
 const latestReleaseUrl = sourceUrl + '/releases/latest';
@@ -10,7 +10,7 @@ const portableUrl = sourceUrl + '/releases/download/v' + release.version + '/' +
 const mac = macReleases[0];
 type Preview = { title: string; src: string; alt: string; caption: string; kind: 'render' | 'screen' };
 
-function TreesetMark({ className = '' }: { className?: string }) {
+export function TreesetMark({ className = '' }: { className?: string }) {
   return <svg className={className} viewBox="0 0 44 44" fill="none" aria-hidden="true">
     <path d="M22 37V22M22 22 9 14M22 22l13-8M9 14V7m26 7V7M22 22V7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     <path d="m4 10 5-3 5 3M30 10l5-3 5 3M17 10l5-3 5 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -75,7 +75,7 @@ export default function App() {
     <a className="skip-link" href="#main">본문으로 이동</a>
     <header className="site-header"><div className="page-width header-inner">
       <a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a>
-      <nav className="main-nav" aria-label="주요 메뉴"><a href="#product">Asset Studio</a><a href="#outputs">결과 예시</a><a href="#guide">사용 가이드</a></nav>
+      <nav className="main-nav" aria-label="주요 메뉴"><a href="#product">Asset Studio</a><a href="#outputs">결과 예시</a><a href="#guide">사용 가이드</a><a href="#about">Treeset 소개</a><a href="/about/" lang="en">Project overview</a></nav>
       <a className="header-start" href="#start">시작하기<ArrowDownToLine size={17} aria-hidden="true" /></a>
     </div></header>
 
@@ -83,11 +83,13 @@ export default function App() {
       <section id="top" className="hero page-width" aria-labelledby="hero-title">
         <div className="hero-copy">
           <p className="product-name"><span className="product-symbol"><Layers size={21} aria-hidden="true" /></span>Asset Studio</p>
-          <h1 id="hero-title">만들고 싶은 세계에,<br />필요한 에셋을.</h1>
-          <p className="hero-description">게임의 설명에서 이미지와 3D 모델까지.<br className="wide-break" /> Codex와 함께 만들거나, 나의 작업대에서 직접 다듬으세요.</p>
+          <h1 id="hero-title">게임 에셋 제작,<br />이미지에서 3D까지.</h1>
+          <p className="hero-description">인디 게임 개발자와 소규모 제작팀을 위한 작업대입니다. Codex로 이미지를 만들고, 로컬에서 3D 모델·스프라이트를 다듬어 내보내세요.</p>
+          <p className="hero-english" lang="en">A local-first game asset workspace for indie developers and small teams.</p>
           <div className="hero-actions"><a className="button button-primary" href="#download-skill"><Terminal size={19} aria-hidden="true" />Codex에서 시작</a><a className="button button-secondary" href="#desktop"><ArrowDownToLine size={19} aria-hidden="true" />앱 다운로드</a></div>
           <p className="hero-platforms">Windows x64 / Apple Silicon Mac</p>
           <div className="hero-principle"><ShieldCheck size={18} aria-hidden="true" /><span>원본은 그대로. 결과는 새 버전으로.</span></div>
+          <div className="hero-evidence"><SourceLink href="#outputs">실제 결과 보기</SourceLink><SourceLink href={releaseUrl}>공개 릴리스 {release.version}</SourceLink></div>
         </div>
         <figure className="hero-artifact">
           <div className="artifact-topline"><span><Box size={17} aria-hidden="true" />로컬 제작 예시</span><span>Blender 렌더</span></div>
@@ -169,10 +171,10 @@ export default function App() {
 
       <section className="faq-section section-space page-width" aria-labelledby="faq-title"><div><h2 id="faq-title">궁금한 점이 있나요?</h2><p>설치, 계정 연결과 결과 파일에 대해.</p><a className="contact-link" href="mailto:oocheol@treeset.win"><Mail size={18} aria-hidden="true" />oocheol@treeset.win</a></div><div className="faq-list">{faqs.map(item => <details key={item.question}><summary>{item.question}<span className="faq-indicator" aria-hidden="true" /></summary><div className="faq-answer"><p>{item.answer}</p>{item.link && <SourceLink href={item.link}>{item.label}</SourceLink>}</div></details>)}</div></section>
 
-      <section id="about" className="about-section" aria-labelledby="about-title"><div className="page-width about-layout"><div className="about-brand"><TreesetMark /><h2 id="about-title">Treeset</h2><p>아이디어가 자라나는 제작 도구.</p></div><div className="about-copy"><p>Treeset은 창작자가 자신의 프로젝트에서 결과를 만들고 다듬을 수 있도록 도구를 만드는 독립 프로젝트입니다. 첫 제품 Asset Studio는 로컬 작업 공간과 Codex 스킬로 게임 에셋 제작을 연결합니다.</p><p className="about-english" lang="en">Treeset is an independent creative tools project. Our first product, Asset Studio, connects game asset creation with a local workspace and a Codex skill. Source code, real outputs, and verification records are open on GitHub.</p><div className="about-links"><SourceLink href={sourceUrl}>소스와 제작 구조</SourceLink><a className="text-link" href="mailto:oocheol@treeset.win">프로젝트에 연락하기<Mail size={18} aria-hidden="true" /></a></div></div></div></section>
+      <section id="about" className="about-section" aria-labelledby="about-title"><div className="page-width about-layout"><div className="about-brand"><TreesetMark /><h2 id="about-title">Treeset</h2><p>게임을 만드는 사람을 위한<br />제작 도구를 만듭니다.</p><SourceLink href="/about/">Project overview (English)</SourceLink></div><div className="about-copy"><p>Treeset은 인디 게임 개발자와 소규모 제작팀을 위한 독립 개발 프로젝트입니다. 첫 제품 Asset Studio는 게임에 필요한 에셋 목록을 정리하고, 이미지·3D를 제작·검수·내보내는 흐름을 연결합니다.</p><dl className="project-facts">{projectFacts.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.href ? <a href={item.href}>{item.value}<ArrowUpRight size={16} aria-hidden="true" /></a> : item.value}</dd></div>)}</dl><p className="project-facts-note">2026년 10월은 프로젝트 시작 시점이며, 법인 설립일을 의미하지 않습니다.</p><div className="about-evidence" aria-label="공개 프로젝트 자료"><SourceLink href={sourceUrl}>소스와 제작 구조</SourceLink><SourceLink href={sourceUrl + '/tree/master/examples/procedural'}>실제 제작 파일</SourceLink><SourceLink href={latestReleaseUrl}>공개 릴리스</SourceLink></div><div className="claude-plan"><div><h3>Claude 연동 계획</h3><span className="status-label limited">개발 계획</span></div><p>현재 공개 버전은 Codex/GPT와 로컬 제작 도구를 사용합니다. Claude 연동은 아직 구현하지 않았으며, 게임 기획 정리·도구 작업 순서 설계·결과 검수에 활용하는 기능을 계획하고 있습니다.</p><SourceLink href="/about/#claude-plan">Read the integration plan</SourceLink></div><div className="about-links"><a className="text-link" href="https://github.com/oocheol"><Github size={18} aria-hidden="true" />개발자 oocheol</a><a className="text-link" href="mailto:oocheol@treeset.win"><Mail size={18} aria-hidden="true" />oocheol@treeset.win</a></div></div></div></section>
     </main>
 
-    <footer className="site-footer"><div className="page-width footer-inner"><a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a><p>Asset Studio / Windows · Apple Silicon Mac · Codex</p><nav aria-label="프로젝트 링크"><a href={sourceUrl}><Github size={17} aria-hidden="true" />GitHub</a><a href={latestReleaseUrl}>릴리스</a><a href={sourceUrl + '/issues'}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></nav></div></footer>
+    <footer className="site-footer"><div className="page-width footer-inner"><a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a><p>Asset Studio / Windows · Apple Silicon Mac · Codex</p><nav aria-label="프로젝트 링크"><a href="#about">프로젝트·개발자</a><a href="/about/" lang="en">Project overview</a><a href={sourceUrl}><Github size={17} aria-hidden="true" />GitHub</a><a href={latestReleaseUrl}>릴리스</a><a href={sourceUrl + '/issues'}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></nav></div></footer>
 
     <dialog className={'preview-dialog' + (preview?.kind === 'render' ? ' render-dialog' : '')} ref={previewDialog} aria-labelledby="preview-title" onClose={() => { setPreview(null); previewTrigger.current?.focus(); }} onClick={event => { if (event.target === event.currentTarget) previewDialog.current?.close(); }}><div className="dialog-header"><h2 id="preview-title">{preview?.title}</h2><button type="button" autoFocus aria-label="확대 화면 닫기" onClick={() => previewDialog.current?.close()}><X size={23} aria-hidden="true" /></button></div>{preview && <img src={preview.src} alt={preview.alt} width={preview.kind === 'render' ? '512' : '1500'} height={preview.kind === 'render' ? '512' : '960'} />}<p>{preview?.caption}</p></dialog>
   </>;

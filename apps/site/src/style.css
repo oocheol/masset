@@ -57,6 +57,7 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
 .product-symbol { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--control-line); border-radius: 7px; color: var(--cyan); }
 .hero h1 { font-size: clamp(39px, 4.1vw, 59px); line-height: 1.38; letter-spacing: -.065em; font-weight: 600; margin-top: 27px; }
 .hero-description { font-size: 18px; line-height: 1.85; color: var(--silver); max-width: 480px; margin-top: 26px; word-break: keep-all; }
+.hero-english { font-size: 15px; line-height: 1.65; color: var(--muted); max-width: 455px; margin-top: 15px; }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 11px; min-height: 52px; padding: 12px 21px; border: 1px solid transparent; border-radius: 6px; font-weight: 600; font-size: 16px; line-height: 1.6; transition: background .16s, border-color .16s; }
 .button-primary { background: var(--cyan); color: var(--ink); }
@@ -66,6 +67,8 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
 .hero-platforms { font-size: 14px; color: var(--muted); margin-top: 17px; }
 .hero-principle { display: flex; align-items: center; gap: 9px; font-size: 15px; color: var(--silver); margin-top: 34px; }
 .hero-principle svg { color: var(--cyan); }
+.hero-evidence { display: flex; gap: 10px 23px; flex-wrap: wrap; margin-top: 14px; }
+.hero-evidence > a { font-size: 14px; }
 .hero-artifact { min-width: 0; }
 .artifact-topline { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 15px; font-size: 14px; color: var(--silver); }
 .artifact-topline > span:first-child { display: flex; align-items: center; gap: 8px; }
@@ -246,15 +249,29 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
 .about-brand > svg { width: 58px; height: 58px; color: var(--cyan); margin-bottom: 20px; }
 .about-brand h2 { font: 500 43px/1.2 var(--display); letter-spacing: -.025em; }
 .about-brand > p { font-size: 17px; color: var(--silver); margin-top: 15px; }
+.about-brand > .text-link { margin-top: 23px; font-size: 15px; }
 .about-copy > p { color: var(--silver); font-size: 17px; max-width: 650px; line-height: 1.9; }
-.about-copy > .about-english { margin-top: 23px; color: var(--muted); font-size: 15px; line-height: 1.8; }
+.project-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; padding-block: 24px; margin: 24px 0 0; border-block: 1px solid var(--line); }
+.project-facts > div { min-width: 0; }
+.project-facts dt { color: var(--muted); font-size: 14px; }
+.project-facts dd { margin: 4px 0 0; color: var(--paper); font-size: 16px; word-break: keep-all; }
+.project-facts dd > a { display: inline-flex; align-items: center; gap: 7px; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: var(--control-line); }
+.project-facts dd > a:hover { color: var(--cyan); }
+.about-copy > .project-facts-note { color: var(--muted); font-size: 14px; margin-top: 13px; line-height: 1.75; }
+.about-evidence { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 21px; }
+.about-evidence > a { font-size: 15px; }
+.claude-plan { margin-top: 31px; padding-left: 20px; border-left: 2px solid var(--violet); }
+.claude-plan > div { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 14px; }
+.claude-plan h3 { font-size: 20px; }
+.claude-plan > p { color: var(--silver); font-size: 16px; line-height: 1.85; max-width: 650px; margin-top: 11px; }
+.claude-plan > a { font-size: 14px; margin-top: 10px; }
 .about-links { display: flex; gap: 18px 26px; flex-wrap: wrap; margin-top: 25px; }
 .site-footer { padding-block: 29px; }
 .footer-inner { display: flex; gap: 25px; align-items: center; flex-wrap: wrap; }
 .footer-inner > .wordmark { font-size: 23px; }
 .footer-inner .wordmark svg { width: 31px; height: 31px; }
 .footer-inner > p { font-size: 13px; color: var(--muted); }
-.footer-inner > nav { display: flex; align-items: center; gap: 22px; margin-left: auto; color: var(--silver); font-size: 14px; }
+.footer-inner > nav { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 22px; margin-left: auto; color: var(--silver); font-size: 14px; }
 .footer-inner nav a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; }
 .footer-inner nav a:hover { color: var(--cyan); }
 .preview-dialog { width: min(1400px, calc(100% - 48px)); max-height: calc(100dvh - 48px); padding: 0; color: var(--paper); background: var(--ink); border: 1px solid var(--control-line); border-radius: 11px; }
@@ -271,6 +288,9 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
 @media (min-width: 1600px) { .hero { min-height: 755px; } }
 @media (max-width: 1100px) {
   .page-width { width: calc(100% - 64px); }
+  .header-inner { flex-wrap: wrap; gap: 12px 26px; padding-block: 18px; }
+  .header-start { margin-left: auto; }
+  .main-nav { width: 100%; order: 3; margin-left: 0; gap: 10px 26px; flex-wrap: wrap; }
   .hero { gap: 36px; min-height: 655px; padding-block: 53px; }
   .hero h1 { font-size: 44px; }
   .hero-description { font-size: 17px; }
@@ -301,17 +321,19 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
   .wordmark { font-size: 26px; }
   .wordmark svg { width: 34px; height: 34px; }
   .header-start { margin-left: auto; min-height: 43px; padding-inline: 13px; font-size: 14px; }
-  .main-nav { width: 100%; order: 3; margin-left: 0; justify-content: space-between; gap: 20px; font-size: 14px; margin-top: 4px; }
+  .main-nav { justify-content: flex-start; gap: 2px 19px; font-size: 14px; margin-top: 4px; }
   .main-nav a { padding-block: 5px; }
   .hero { grid-template-columns: 1fr; gap: 40px; padding-block: 38px 39px; min-height: 0; }
   .product-name { font-size: 21px; }
   .hero h1 { font-size: clamp(33px, 6.7vw, 46px); line-height: 1.4; margin-top: 23px; letter-spacing: -.06em; }
   .hero-description { font-size: 17px; margin-top: 23px; }
+  .hero-english { font-size: 15px; margin-top: 14px; }
   .hero-actions { margin-top: 26px; flex-wrap: nowrap; }
   .hero-actions .button { flex: 1; min-height: 53px; font-size: 14px; padding-inline: 11px; gap: 7px; }
   .hero-actions svg { width: 17px; }
   .hero-platforms { font-size: 13px; margin-top: 14px; }
   .hero-principle { font-size: 14px; margin-top: 24px; }
+  .hero-evidence { gap: 6px 20px; margin-top: 12px; }
   .hero-artifact { width: min(480px, 100%); margin-inline: auto; }
   .artifact-topline { font-size: 13px; padding-bottom: 11px; }
   .artifact-stage { padding: 21px 30px 24px; }
@@ -404,7 +426,11 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
   .about-brand > svg { width: 46px; height: 46px; margin-bottom: 15px; }
   .about-brand h2 { font-size: 39px; }
   .about-copy > p { font-size: 16px; }
-  .about-copy > .about-english { font-size: 15px; margin-top: 20px; }
+  .project-facts { gap: 20px 19px; padding-block: 21px; margin-top: 22px; }
+  .project-facts dd { font-size: 15px; }
+  .about-evidence { gap: 6px 21px; margin-top: 17px; }
+  .claude-plan { margin-top: 26px; padding-left: 16px; }
+  .claude-plan h3 { font-size: 19px; }
   .about-links { gap: 6px 21px; margin-top: 20px; }
   .footer-inner { flex-direction: column; align-items: flex-start; gap: 13px; }
   .footer-inner > p { font-size: 13px; }

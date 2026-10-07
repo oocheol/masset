@@ -5,6 +5,14 @@ export const skillInstallCommand = 'npx --yes https://github.com/oocheol/masset/
 export const npmInstallCommand = 'npx @oocheol/asset-studio@latest install';
 export const skillUpdateCommand = 'npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update';
 export const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos-cli13.zip`;
+export const projectContact = 'oocheol@treeset.win';
+
+export const projectFacts = [
+  { label: '개발자', value: 'oocheol', labelEn: 'Maintainer', valueEn: 'oocheol', href: 'https://github.com/oocheol' },
+  { label: '프로젝트 시작', value: '2026년 10월', labelEn: 'Project started', valueEn: 'October 2026' },
+  { label: '개발 단계', value: '독립 개발 프로젝트 · 사업자등록 전', labelEn: 'Current stage', valueEn: 'Independent project, pre-incorporation (not yet registered)' },
+  { label: '투자', value: '외부 투자 미유치', labelEn: 'Funding', valueEn: 'No external investment' },
+];
 
 export const models = [
   { name: '상자', type: 'Crate', src: '/media/crate.png', description: '판재와 프레임으로 만든 기본 수납 상자.', file: 'crate', material: '패널 + 프레임' },
@@ -47,6 +55,11 @@ export const statuses = [
 
 export const faqs = [
   {
+    question: 'Treeset과 Asset Studio는 어떤 관계인가요?',
+    answer: 'Treeset은 창작 도구를 만드는 독립 개발 프로젝트의 이름이고, Asset Studio는 첫 제품입니다. 인디 게임 개발자와 소규모 제작팀이 이미지·3D 에셋을 만들고 검수하는 작업을 연결합니다. 개발자, 제품 구조와 공개 결과는 프로젝트 소개에서 확인할 수 있습니다.',
+    link: '/about/', label: 'Project overview (English)',
+  },
+  {
     question: '스킬만 설치하면 Asset Studio 앱 없이 사용할 수 있나요?',
     answer: '네. 새 Codex 작업에서 $asset-studio로 요청하면 처리용 CLI가 에셋을 만듭니다. 데스크톱 앱을 설치하거나 열 필요가 없습니다. 공식 Codex 로그인은 재사용하고, 필요한 CLI는 첫 사용 시 다운로드 동의를 받아 준비합니다. 3D를 요청할 때만 Blender·Python·로컬 모델을 추가로 준비합니다.',
     link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '스킬로 시작하는 방법',
@@ -59,6 +72,11 @@ export const faqs = [
   {
     question: 'AI 계정이나 유료 API 키가 꼭 필요한가요?',
     answer: '로컬 이미지 편집, 스프라이트·아틀라스, Blender 기본 소품에는 외부 AI 계정이 필요하지 않습니다. GPT 이미지 제작에는 공식 Codex 로그인과 계정의 모델 이용 권한이 필요합니다. 구독 사용량 제한이 적용될 수 있으며 유료 API로 자동 대체하지 않습니다. Codex가 없으면 앱의 구독 연결에서 공식 배포본 준비부터 진행할 수 있습니다.',
+  },
+  {
+    question: 'Claude도 연결해서 사용할 수 있나요?',
+    answer: 'Claude 연동은 아직 구현하지 않았습니다. 현재 공개 버전의 AI 제작은 공식 Codex/GPT 경로를 사용하며, 편집과 3D 처리에는 로컬 도구를 사용합니다. 게임 기획 정리, 도구 작업 순서 설계와 결과 검수에 Claude를 활용하는 기능은 개발 계획입니다.',
+    link: '/about/#claude-plan', label: 'Claude integration plan (English)',
   },
   {
     question: '이미지→3D 결과를 바로 게임에 넣어도 되나요?',

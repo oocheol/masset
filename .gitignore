@@ -26,6 +26,7 @@ artifacts/native-import-acceptance/
 workers/blender/path-regression-*/
 .vercel/
 apps/site/dist/
+apps/site/.ssr-build/
 __pycache__/
 *.pyc
 tests/core/process-guard-proof-*/
