@@ -2,6 +2,8 @@ import { ArrowDownToLine, ArrowUpRight, Github, Mail, Terminal } from 'lucide-re
 import { TreesetMark } from './App';
 import { projectContact, projectFacts, sourceUrl } from './content';
 import { macReleases, release } from './release';
+import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
+import LocalWorkflowCase from './LocalWorkflowCase';
 
 const windowsDownload = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
 
@@ -10,11 +12,12 @@ function EvidenceLink({ href, children }: { href: string; children: React.ReactN
 }
 
 export default function ProjectOverview() {
+  const claudeStatus = claudePublicationStatus();
   return <div className="project-overview" lang="en">
     <a className="skip-link" href="#overview-main">Skip to content</a>
     <header className="overview-header page-width">
       <a className="wordmark" href="/" aria-label="Treeset home"><TreesetMark /><span>Treeset</span></a>
-      <nav aria-label="Project navigation"><a href="#project">Project</a><a href="#evidence">Real outputs</a><a href="#claude-plan">Roadmap</a><a href="/" lang="ko">한국어</a></nav>
+      <nav aria-label="Project navigation"><a href="#project">Project</a><a href="#developer">Developer</a><a href="#evidence">Real outputs</a><a href={claudeWorkflowPath}>Claude prototype</a><a href="/" lang="ko">한국어</a></nav>
     </header>
     <main id="overview-main">
       <section className="overview-hero page-width" aria-labelledby="overview-title" itemScope itemType="https://schema.org/SoftwareApplication">
@@ -31,6 +34,11 @@ export default function ProjectOverview() {
           <img src="/media/crate.png" width="512" height="512" alt="A wooden crate rendered from a real procedural Blender mesh" fetchPriority="high" />
           <figcaption>A real procedural Blender output.<br />Editable .blend source and GLB are public.</figcaption>
         </figure>
+      </section>
+
+      <section id="developer" className="overview-section page-width overview-developer" aria-labelledby="developer-title">
+        <div><p className="overview-product">Developer / maintainer</p><h2 id="developer-title">JEONG WOOCHEOL</h2><p className="overview-developer-background">Java developer in his fifth year.</p><EvidenceLink href="https://github.com/oocheol"><Github size={18} aria-hidden="true" />Public GitHub profile: oocheol</EvidenceLink></div>
+        <div><p>I develop and maintain Treeset and Asset Studio. My current public work connects asset planning, local processing, version review and export in a game-development workflow.</p><p>You can inspect the source, downloadable releases and example artifacts. Each verification record identifies the platform and what was actually checked.</p><div className="overview-proof-links"><EvidenceLink href={sourceUrl}>Inspect Asset Studio</EvidenceLink><EvidenceLink href={`mailto:${projectContact}`}>Contact the developer</EvidenceLink></div></div>
       </section>
 
       <section id="project" className="overview-section page-width overview-project" aria-labelledby="project-title">
@@ -59,9 +67,11 @@ export default function ProjectOverview() {
         </div>
       </div></section>
 
+      <LocalWorkflowCase />
+
       <section id="claude-plan" className="overview-section page-width overview-roadmap" aria-labelledby="claude-plan-title">
-        <div><h2 id="claude-plan-title">Where Claude could help next.</h2><p className="overview-plan-state">Planned integration — not available in the current product.</p><p>We are exploring Claude for structured asset briefs, tool-workflow planning and review checklists that help a creator keep outputs consistent with the project’s art direction.</p><p>The intended flow is brief → reviewable asset plan → specialized tools → consistency review → user approval. Claude support is not implemented or verified. Released AI image requests currently use official Codex; local processing does not require a Claude account.</p></div>
-        <aside className="overview-roadmap-note"><h3>Development priorities</h3><ul><li>Keep the creator’s review in the workflow.</li><li>Connect model suggestions to inspectable files.</li><li>Make output quality and provider limits visible.</li></ul><EvidenceLink href={`${sourceUrl}/issues`}>Follow development</EvidenceLink></aside>
+        <div><h2 id="claude-plan-title">{claudeStatus.titleEn}</h2><p className="overview-plan-state">{claudeStatus.statusEn}</p><p>{claudeStatus.detailEn}</p><p>Source development is separate from the published product: 0.1.13 installers do not include Claude planning. The intended flow is brief → reviewable asset instructions → creator approval → specialized tools. Claude planning does not generate images or 3D models and never starts production automatically.</p><EvidenceLink href={claudeWorkflowPath}>Inspect the Claude planning prototype</EvidenceLink></div>
+        <aside className="overview-roadmap-note"><h3>Development priorities</h3><ul><li>Keep the creator’s review in the workflow.</li><li>Connect instructions to inspectable files.</li><li>Make provider availability and limits visible.</li></ul><EvidenceLink href={`${sourceUrl}/issues`}>Follow development</EvidenceLink></aside>
       </section>
 
       <section className="overview-connect page-width" aria-labelledby="overview-contact-title"><div><h2 id="overview-contact-title">Build, try, or get in touch.</h2><p>Download an early release, inspect the examples or share a workflow you want to improve.</p></div><a className="button button-primary" href={`mailto:${projectContact}`}><Mail size={20} aria-hidden="true" />{projectContact}</a></section>

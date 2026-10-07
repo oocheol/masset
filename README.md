@@ -25,6 +25,10 @@
 
 Treeset이 만드는 오픈소스 게임 에셋 제작 도구입니다. 공식 사이트는 [treeset.win](https://treeset.win/), 문의는 [oocheol@treeset.win](mailto:oocheol@treeset.win)입니다.
 
+Maintained by **JEONG WOOCHEOL**, a Java developer in his fifth year: [GitHub profile](https://github.com/oocheol). Treeset is an independent project that has not yet been incorporated. Inspect the [English project overview and real local workflow](https://treeset.win/about/#local-workflow).
+
+**Claude asset planning is a source prototype, with live verification pending.** The desktop panel and native CLI adapter accept an explicit brief and return reviewable per-asset instructions. The maintainer has no Pro/Max subscription, so no actual Claude request or generated plan is claimed. Published 0.1.13 downloads do not include this prototype. See the [implementation specification](docs/claude-asset-planning.md) and [public verification record](https://treeset.win/workflows/claude-asset-brief/).
+
 Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.13과 Apple Silicon Mac 0.1.13에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
 
 **Windows·Mac 앱과 독립 CLI는 모두 0.1.13입니다. GitHub 공용 설치 기능은 0.1.14이며 양쪽 CLI 0.1.13을 준비합니다. npm 레지스트리 게시는 인증 준비 중입니다.** 검증된 원시 3D 캐시, 단계별 자원 배분, 형태를 보존하는 LOD와 UV 개선을 Mac에도 반영했습니다. 완성된 모델은 선택 미리보기보다 먼저 저장하며, 미리보기 오류가 모델 제작을 실패로 바꾸지 않습니다. 두 플랫폼의 앱 없는 Codex 스킬은 기존 공식 로그인을 재사용하고, 필요한 도구는 동의 후 사용자 전용 공간에 준비합니다. Apple Silicon Mac 앱·DMG·서명된 업데이트·독립 CLI를 추가 빌드했습니다. [게임 제작 흐름](docs/game-production.md) · [Windows 0.1.13 검증](docs/releases/v0.1.13-windows.md) · [Mac 0.1.13 검증 범위](docs/releases/v0.1.13-macos.md)

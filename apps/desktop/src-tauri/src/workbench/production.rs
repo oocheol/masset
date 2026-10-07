@@ -1841,6 +1841,7 @@ mod tests {
                         directory.join("unused-installer"),
                     ),
                     planning_cancel: Mutex::new(None),
+                    claude_cancel: Mutex::new(None),
                     quality3d_setup: quality3d::SetupState::default(),
                     trellis_status: Mutex::new(None),
                 }),

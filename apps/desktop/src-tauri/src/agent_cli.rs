@@ -22,11 +22,11 @@ use std::{
 use uuid::Uuid;
 
 const HELP: &str = "Asset Studio CLI\n\
-  asset-cli doctor [--check-gpt] [--data-dir PATH]\n\
+  asset-cli doctor [--check-gpt] [--check-claude] [--data-dir PATH]\n\
   asset-cli prepare [--consent-downloads] [--needs-3d] [--login-if-needed] [--local-only] [--data-dir PATH]\n\
   asset-cli install-codex [--destination PATH]\n\
   asset-cli init --workspace PATH [--name NAME]\n\
-  asset-cli command --workspace PATH --json FILE [--allow-gpt] [--timeout SECONDS]\n\
+  asset-cli command --workspace PATH --json FILE [--allow-gpt] [--allow-claude] [--timeout SECONDS]\n\
   asset-cli produce --game-root PATH --manifest FILE --request-id UUID --allow-gpt [--workspace PATH] [--timeout SECONDS]\n\
   asset-cli status --workspace PATH\n\
 Options: --resources PATH for a development checkout/resource directory.\n\
@@ -68,6 +68,8 @@ impl Args {
         let flags = [
             "--allow-gpt",
             "--check-gpt",
+            "--allow-claude",
+            "--check-claude",
             "--consent-downloads",
             "--needs-3d",
             "--login-if-needed",
@@ -125,6 +127,12 @@ impl Args {
     fn allow_gpt(&self) -> Result<()> {
         if self.get("--allow-gpt") != Some("true") {
             bail!("GPT transmission requires --allow-gpt for the authorized brief and selected references.");
+        }
+        Ok(())
+    }
+    fn allow_claude(&self) -> Result<()> {
+        if self.get("--allow-claude") != Some("true") {
+            bail!("Claude text transmission requires --allow-claude and transmissionApproved:true in the JSON request. No paid API fallback.");
         }
         Ok(())
     }
@@ -304,6 +312,9 @@ pub fn run(values: &[String]) -> Result<()> {
             value["gptChecked"] = json!(true);
             value["gpt"] = json!({"available":connection["available"],"authenticated":connection["authenticated"],"ready":connection["ready"],"reasoningModel":connection["reasoningModel"],"requestedModel":connection["requestedModel"],"confirmedModel":connection["confirmedModel"]});
         }
+        if args.get("--check-claude") == Some("true") {
+            value["claude"] = backend.request(json!({"action":"claude_status"}))?;
+        }
         return emit(&value);
     }
     let root = workspace.as_ref().unwrap();
@@ -349,6 +360,9 @@ pub fn run(values: &[String]) -> Result<()> {
         "production_cancel",
         "generate",
         "plan_assets",
+        "claude_status",
+        "claude_plan",
+        "claude_cancel",
         "generate_bundle",
         "export",
         "reuse",
@@ -358,6 +372,9 @@ pub fn run(values: &[String]) -> Result<()> {
     ];
     if !allowed.contains(&action.as_str()) {
         bail!("Action is not exposed by the agent CLI");
+    }
+    if action == "claude_plan" {
+        args.allow_claude()?;
     }
     if is_gpt(&action) {
         args.allow_gpt()?;
@@ -439,5 +456,14 @@ mod tests {
         assert!(args.allow_gpt().is_err());
         assert!(absolute("../game").is_err());
         assert!(absolute("/game/../other").is_err());
+    }
+    #[test]
+    fn claude_transmission_is_separately_authorized() {
+        let gpt_only = Args::parse(&["command".into(), "--allow-gpt".into()]).unwrap();
+        assert!(gpt_only.allow_claude().is_err());
+        let claude_only = Args::parse(&["command".into(), "--allow-claude".into()]).unwrap();
+        assert!(claude_only.allow_claude().is_ok());
+        assert!(claude_only.allow_gpt().is_err());
+        assert!(!is_gpt("claude_plan"));
     }
 }

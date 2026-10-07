@@ -13,6 +13,7 @@ export default function UsageGuide() {
       <li><h3>결과 파일 내보내기</h3><p><strong>내보내기</strong>에서 대상 프로그램과 이미지 형식을 고르세요. 선택한 에셋 또는 전체 에셋을 결과 파일과 JSON 명세로 저장합니다. 단축키는 {shortcutModifier()} E입니다.</p></li>
       <li><h3>구독 이미지 연결하기</h3><p><strong>구독 연결</strong>에서 <strong>Codex 준비 → 공식 계정 연결 → 연결 확인</strong> 순서로 진행하세요. Codex가 없으면 출처·용량·라이선스를 확인하고 다운로드에 동의하면 됩니다. Node.js나 Rust는 필요 없습니다. 로그인은 OpenAI 공식 페이지에서 진행합니다.</p><p><strong>이미지 제작</strong>은 개별 에셋 구성안 검토가 기본입니다. 동일한 아이템을 여러 모습으로 만들려면 <strong>동일 에셋의 여러 변형</strong>을 직접 선택하세요. 계획과 이미지 요청에는 외부 구독 사용량이 발생할 수 있습니다. 추론 모델과 실제 이미지 응답 모델은 연결 패널에서 확인하고, 수신 파일·검증 결과와 별도로 기록합니다. 응답에 모델 ID가 없으면 확인되지 않았다고 표시합니다.</p></li>
       <li><h3>새 버전으로 업데이트</h3><p><strong>앱 업데이트</strong>에서 GitHub 출처, 버전, 파일 크기, SHA-256과 소스 라이선스를 확인한 뒤 <strong>지금 업데이트</strong>를 누르세요. 작업이 실행 중이면 완료를 기다려야 합니다. 기존 0.1.0 portable 사용자는 새 NSIS 설치형을 한 번 직접 설치해야 합니다.</p></li>
+      <li><h3>Claude 제작 계획 · 개발 중</h3><p><strong>구독 연결 → Claude 계획 기능 열기</strong>에서 공식 Claude Code 인증 상태를 확인할 수 있습니다. Pro 또는 Max 계정 인증을 직접 완료한 뒤 게임 설명과 아트 방향을 입력하고 전송을 승인하세요. 개별 에셋 지침과 검수 목록을 JSON으로 복사해 제작에 사용합니다. 프로젝트 파일과 이미지는 전송하지 않으며, 계획으로 코드를 실행하거나 에셋을 자동 제작하지 않습니다. 실제 Claude 실행 검증은 현재 보류 중입니다.</p></li>
     </ol>
     <p className="guide-shortcuts">{shortcutModifier()} F 검색 · {shortcutModifier()} A 표시된 에셋 전체 선택 · Esc 창 닫기</p>
   </div>;

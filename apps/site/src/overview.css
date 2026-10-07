@@ -27,6 +27,11 @@
 .overview-project-record dd { margin: 5px 0 0; font-size: 18px; line-height: 1.7; }
 .overview-project-record dd a { display: inline-flex; gap: 9px; align-items: center; color: var(--cyan); }
 .overview-contact { display: flex; align-items: center; gap: 11px; margin-top: 24px; overflow-wrap: anywhere; color: var(--cyan); }
+.overview-developer { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 65px; }
+.overview-developer h2 { margin-top: 12px; }
+.overview-developer .overview-developer-background { margin-block: 16px 17px; color: var(--paper); }
+.overview-developer p + p { margin-top: 19px; }
+.overview-developer .overview-proof-links { margin-top: 15px; }
 .overview-section-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 65px; margin-bottom: 35px; }
 .overview-workflow { list-style: none; padding: 0; margin: 0 0 27px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; counter-reset: work; }
 .overview-workflow li { counter-increment: work; border-top: 2px solid var(--line); padding-top: 20px; }
@@ -56,8 +61,78 @@
 .overview-connect p { color: var(--muted); margin-top: 12px; max-width: 650px; }
 .overview-connect .button { flex-shrink: 0; }
 .overview-footer { display: flex; justify-content: space-between; gap: 25px; padding-block: 27px 36px; border-top: 1px solid var(--line); font-size: 15px; color: var(--muted); }
+.overview-footer nav a { display: inline-flex; align-items: center; gap: 7px; }
+.overview-local-layout { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); align-items: start; gap: 55px; }
+.overview-local-layout figure img { width: 100%; height: auto; }
+.overview-local-layout figcaption { font-size: 15px; color: var(--muted); margin-top: 9px; }
+.overview-local-steps { margin: 0; padding: 0; list-style: none; counter-reset: local-step; }
+.overview-local-steps > li { counter-increment: local-step; border-top: 1px solid var(--line); padding-top: 19px; }
+.overview-local-steps > li + li { margin-top: 26px; }
+.overview-local-steps h3::before { content: counter(local-step) '. '; color: var(--cyan); }
+.overview-local-steps p { margin-block: 13px 9px; font-size: 17px; }
+.overview-local-outputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 27px; margin-block: 32px; }
+.overview-local-outputs article { min-width: 0; border-top: 1px solid var(--line); padding-top: 12px; }
+.overview-local-outputs img { width: 100%; height: auto; }
+.overview-local-outputs h3 { margin-top: 12px; }
+.overview-local-outputs p { font-size: 16px; margin-top: 10px; }
+.overview-local-outputs .overview-proof-links { gap: 8px 16px; }
+.workflow-file-hashes { margin-top: 13px; color: var(--silver); font-size: 14px; }
+.workflow-file-hashes summary { cursor: pointer; }
+.workflow-file-hashes p { font-size: 14px; }
+.workflow-file-hashes code { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.workflow-case-hero { padding-block: 64px 63px; }
+.workflow-case-hero h1 { font: 600 clamp(38px, 4.5vw, 58px)/1.15 var(--display); margin-block: 23px; }
+.workflow-case-hero .overview-lead { max-width: 860px; }
+.workflow-case-status { color: var(--cyan); font-size: 17px; font-weight: 600; margin-top: 25px; }
+.workflow-release-scope, .workflow-demo-label { color: var(--muted); font-size: 15px; margin-top: 12px; max-width: 850px; }
+.workflow-case-hero .workflow-release-scope { color: var(--silver); }
+.workflow-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px; }
+.workflow-input-grid article { min-width: 0; padding-top: 23px; border-top: 1px solid var(--line); }
+.workflow-input-grid h3 { margin-bottom: 16px; font-size: 22px; }
+.overview-section .workflow-input-label { color: var(--muted); font-size: 15px; margin-block: -8px 22px; }
+.workflow-input-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.workflow-pending { border-left: 2px solid var(--violet); padding-left: 24px; max-width: 900px; }
+.workflow-pending h3 { font-size: 23px; }
+.workflow-pending p { margin-top: 15px; }
+.workflow-pending .text-link { margin-top: 14px; }
+.workflow-asset-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; }
+.workflow-asset-list > li { min-width: 0; border-top: 1px solid var(--line); padding-top: 20px; }
+.workflow-asset-heading { display: flex; align-items: baseline; gap: 15px; flex-wrap: wrap; }
+.workflow-asset-heading h3 { font-size: 23px; }
+.workflow-asset-heading span { color: var(--cyan); font-size: 14px; }
+.workflow-asset-list article > p { font-size: 17px; margin-block: 13px; }
+.workflow-asset-list details { font-size: 16px; color: var(--silver); }
+.workflow-asset-list summary { color: var(--cyan); cursor: pointer; min-height: 44px; }
+.workflow-asset-list details p { margin-block: 10px 17px; }
+.workflow-asset-list h4 { color: var(--paper); font-size: 16px; margin-block: 12px; }
+.workflow-asset-list ul { padding-left: 22px; }
+.workflow-asset-list ul li + li { margin-top: 8px; }
+.workflow-review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; border-top: 1px solid var(--line); margin-top: 43px; padding-top: 27px; }
+.workflow-review-grid h3 { font-size: 23px; }
+.workflow-review-grid ul { margin-block: 17px 0; padding-left: 22px; color: var(--silver); }
+.workflow-review-grid li + li { margin-top: 10px; }
+.workflow-review-grid p { margin-top: 17px; font-size: 17px; }
+.workflow-run-facts { display: flex; flex-wrap: wrap; gap: 25px 45px; margin-block: 0 35px; padding-block: 20px; border-block: 1px solid var(--line); }
+.workflow-run-facts > div { min-width: 0; }
+.workflow-run-facts dt { color: var(--muted); font-size: 14px; }
+.workflow-run-facts dd { margin: 7px 0 0; font-size: 17px; overflow-wrap: anywhere; }
+.workflow-check-list { margin-top: 27px; }
+.workflow-check-list article { padding-block: 20px; border-bottom: 1px solid var(--line); }
+.workflow-check-list article > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 20px; }
+.workflow-check-list h3 { font-size: 21px; }
+.workflow-check-list p { font-size: 16px; margin-top: 12px; }
+.workflow-artifacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 33px; }
+.workflow-artifacts article { min-width: 0; border: 1px solid var(--line); padding: 18px 22px; border-radius: 7px; }
+.workflow-artifacts p { margin-top: 9px; font-size: 13px; }
+.workflow-artifacts code { color: var(--muted); font-size: 12px; display: block; line-height: 1.85; overflow-wrap: anywhere; margin-top: 5px; }
+.workflow-scope-note { margin-top: 35px; border-left: 2px solid var(--violet); padding-left: 23px; }
+.workflow-scope-note h3 { font-size: 22px; }
+.workflow-scope-note ul { padding-left: 21px; color: var(--silver); font-size: 16px; margin-block: 18px 0; }
+.workflow-scope-note li + li { margin-top: 11px; }
+.workflow-next { padding-top: 50px; }
+.workflow-next .overview-proof-links { margin-top: 23px; }
 @media (max-width: 1000px) {
-  .overview-hero, .overview-project, .overview-section-heading, .overview-roadmap { gap: 35px; }
+  .overview-hero, .overview-project, .overview-section-heading, .overview-roadmap, .overview-developer { gap: 35px; }
   .overview-actions .button { font-size: 16px; }
   .overview-workflow { gap: 24px; }
   .overview-connect { align-items: flex-start; flex-direction: column; }
@@ -65,7 +140,7 @@
 @media (max-width: 760px) {
   .overview-header { align-items: flex-start; flex-direction: column; padding-block: 22px; gap: 18px; }
   .overview-header nav { gap: 10px 24px; }
-  .overview-hero, .overview-project, .overview-section-heading, .overview-roadmap, .overview-workflow, .overview-proof-list { grid-template-columns: minmax(0, 1fr); }
+  .overview-hero, .overview-project, .overview-section-heading, .overview-roadmap, .overview-workflow, .overview-proof-list, .overview-developer, .overview-local-layout, .overview-local-outputs, .workflow-input-grid, .workflow-asset-list, .workflow-review-grid, .workflow-artifacts { grid-template-columns: minmax(0, 1fr); }
   .overview-hero { padding-block: 43px 50px; }
   .overview-hero h1 { font-size: clamp(37px, 8vw, 53px); }
   .overview-lead { font-size: 18px; }
@@ -78,4 +153,14 @@
   .overview-footer { flex-direction: column; }
   .overview-footer nav { font-size: 15px; gap: 12px 22px; }
   .overview-connect .button { min-width: 0; font-size: 16px; padding-inline: 17px; }
+  .overview-local-layout { gap: 28px; }
+  .overview-local-layout figure, .overview-local-outputs figure { max-width: 420px; margin-inline: auto; }
+  .overview-local-outputs { gap: 30px; }
+  .workflow-case-hero { padding-block: 43px 44px; }
+  .workflow-case-hero h1 { font-size: clamp(36px, 8vw, 51px); }
+  .workflow-pending { padding-left: 20px; }
+  .workflow-input-grid { gap: 25px; }
+  .workflow-run-facts { gap: 20px 26px; }
+  .workflow-artifacts { gap: 15px; }
+  .workflow-artifacts article { padding-inline: 18px; }
 }

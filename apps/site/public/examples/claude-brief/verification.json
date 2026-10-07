@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-07T15:04:25.079Z",
+  "platform": "Windows x64",
+  "cliSha256": "b201f5a215d98fc6597c3e891ef834e2fc9d7751eccb18bf7b4e0c9feb04758f",
+  "provider": "claude-code",
+  "cliVersion": "2.1.217",
+  "authStatus": "subscription-unavailable",
+  "nativeStatus": {
+    "authentication": "notLoggedIn",
+    "cliVersion": "2.1.217",
+    "generationAttempted": false,
+    "planningAvailable": false,
+    "provider": "claude-code",
+    "reason": "Claude Code is not signed in. Use its official Pro/Max subscription login before planning; no model request was submitted."
+  },
+  "generationAttempted": false,
+  "paidApiFallback": false,
+  "developerWrittenInput": true,
+  "inputTransmitted": false,
+  "checks": [
+    {
+      "label": "Official CLI observed",
+      "result": "passed",
+      "detail": "The native Windows CLI observed Claude Code 2.1.217. It ran version/help/auth-status probes only."
+    },
+    {
+      "label": "Explicit transmission gate",
+      "result": "passed",
+      "detail": "Missing --allow-claude and transmissionApproved:false were independently rejected before a provider request."
+    },
+    {
+      "label": "Live Claude execution",
+      "result": "limited",
+      "detail": "The account has no Pro or Max subscription. The user deferred execution; no planning request, generated plan or paid API fallback was used."
+    }
+  ],
+  "commands": [
+    {
+      "command": "doctor",
+      "exitCode": 0
+    },
+    {
+      "command": "init",
+      "exitCode": 0
+    },
+    {
+      "command": "command",
+      "exitCode": 1
+    },
+    {
+      "command": "command",
+      "exitCode": 1
+    }
+  ]
+}

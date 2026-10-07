@@ -1,0 +1,15 @@
+.dialog-claude{width:min(820px,94vw)}
+.claude-brief{font-size:15px;line-height:1.65}
+.claude-brief .field>span,.claude-brief .field input,.claude-brief .field textarea,.claude-brief .field small{font-size:14px}
+.claude-brief-status{border:1px solid var(--edge);border-radius:10px;padding:16px;margin:18px 0;background:var(--panel)}
+.claude-brief-status>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.claude-brief-status p{overflow-wrap:anywhere}
+.claude-brief-message{padding:12px;border:1px solid var(--edge);border-radius:8px;overflow-wrap:anywhere}
+.claude-brief-message.error{color:var(--danger)}
+.claude-brief-result{border-top:1px solid var(--edge);margin-top:22px;padding-top:16px}
+.claude-brief-result-title{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.claude-brief-result h3{font-size:17px;margin:8px 0}.claude-brief-result h4{font-size:16px;margin:0}
+.claude-brief-result>ol{padding-left:24px}.claude-brief-result>ol>li{margin:18px 0;padding:12px;background:var(--panel);border-radius:8px}
+.claude-brief-result h4 span{font-size:13px;color:var(--muted);font-weight:400}
+.claude-brief-prompt{white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid var(--edge);padding-left:12px}
+.claude-brief li{overflow-wrap:anywhere}

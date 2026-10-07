@@ -1,3 +1,5 @@
+import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
+
 export const sourceUrl = 'https://github.com/oocheol/masset';
 export const skillVersion = '0.1.13';
 export const skillPackageVersion = '0.1.14';
@@ -8,7 +10,8 @@ export const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}
 export const projectContact = 'oocheol@treeset.win';
 
 export const projectFacts = [
-  { label: '개발자', value: 'oocheol', labelEn: 'Maintainer', valueEn: 'oocheol', href: 'https://github.com/oocheol' },
+  { label: '개발자', value: 'JEONG WOOCHEOL (oocheol)', labelEn: 'Developer / maintainer', valueEn: 'JEONG WOOCHEOL (oocheol)', href: 'https://github.com/oocheol' },
+  { label: '개발 경력', value: 'Java 개발 경력 5년 차', labelEn: 'Developer background', valueEn: 'Java developer in his fifth year' },
   { label: '프로젝트 시작', value: '2026년 10월', labelEn: 'Project started', valueEn: 'October 2026' },
   { label: '개발 단계', value: '독립 개발 프로젝트 · 사업자등록 전', labelEn: 'Current stage', valueEn: 'Independent project, pre-incorporation (not yet registered)' },
   { label: '투자', value: '외부 투자 미유치', labelEn: 'Funding', valueEn: 'No external investment' },
@@ -75,8 +78,8 @@ export const faqs = [
   },
   {
     question: 'Claude도 연결해서 사용할 수 있나요?',
-    answer: 'Claude 연동은 아직 구현하지 않았습니다. 현재 공개 버전의 AI 제작은 공식 Codex/GPT 경로를 사용하며, 편집과 3D 처리에는 로컬 도구를 사용합니다. 게임 기획 정리, 도구 작업 순서 설계와 결과 검수에 Claude를 활용하는 기능은 개발 계획입니다.',
-    link: '/about/#claude-plan', label: 'Claude integration plan (English)',
+    answer: `${claudePublicationStatus().detailKo} 이 기능은 소스 개발 단계이며 현재 공개된 0.1.13 설치 파일에는 포함되지 않습니다. 공개 버전의 AI 제작은 공식 Codex/GPT 경로, 편집과 3D 처리는 로컬 도구를 사용합니다.`,
+    link: claudeWorkflowPath, label: 'Claude asset planning (English)',
   },
   {
     question: '이미지→3D 결과를 바로 게임에 넣어도 되나요?',

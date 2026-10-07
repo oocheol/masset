@@ -1,6 +1,6 @@
 import {invoke, convertFileSrc} from '@tauri-apps/api/core';
 import {open} from '@tauri-apps/plugin-dialog';
-import type {Artifact, ProjectSnapshot, EnvironmentInfo, ProviderConnection, GameBundlePlan} from '@local-assets/contracts';
+import type {Artifact, ProjectSnapshot, EnvironmentInfo, ProviderConnection, GameBundlePlan, ClaudeBriefRequest, ClaudeBriefResult, ClaudeBriefStatus} from '@local-assets/contracts';
 import {bootstrapBrowser, browserCommand, getBrowserArtifactUrl, importBrowserFiles} from './browser';
 
 export const isNative = '__TAURI_INTERNALS__' in window;
@@ -22,6 +22,18 @@ export function providerStatus():Promise<ProviderConnection> {
 }
 export function providerLogin():Promise<ProviderConnection> {
   return command<ProviderConnection>({action:'provider_login'});
+}
+export function claudeStatus():Promise<ClaudeBriefStatus> {
+  if (!isNative) return Promise.resolve({provider:'claude-code',cliVersion:null,authentication:'unavailable',planningAvailable:false,generationAttempted:false,reason:'Claude 계획 기능은 데스크톱의 공식 Claude Code에서 연결 상태를 확인합니다. 실제 요청 검증은 보류 중입니다.'});
+  return command<ClaudeBriefStatus>({action:'claude_status'});
+}
+export function claudePlan(request:ClaudeBriefRequest & {transmissionApproved:boolean}):Promise<ClaudeBriefResult> {
+  if (!isNative) return Promise.reject(new Error('Claude 계획 요청은 데스크톱의 공식 구독 인증이 필요합니다.'));
+  return command<ClaudeBriefResult>({...request,action:'claude_plan'});
+}
+export function claudeCancel():Promise<{cancelRequested:boolean;automaticRetry:false}> {
+  if (!isNative) return Promise.reject(new Error('데스크톱에서 실행 중인 Claude 요청만 취소할 수 있습니다.'));
+  return command({action:'claude_cancel'});
 }
 export function planAssets(request: {action: 'plan_assets'; brief: string; output: GameBundlePlan['output']; mode: GameBundlePlan['mode']; count?: number; referenceAssetIds: string[]; referenceUploadApproved: boolean}):Promise<GameBundlePlan> {
   if (!isNative) return Promise.reject(new Error('게임 에셋 구성안은 데스크톱의 GPT 구독 연결에서 만들 수 있습니다.'));

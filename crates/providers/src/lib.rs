@@ -3,6 +3,7 @@
 //! The user selected the documented native GPT Image 2 route. Runtime support
 //! and actual model evidence remain separate; no paid or alternate fallback.
 
+pub mod claude;
 pub mod installer;
 pub mod local_prerequisites;
 pub mod runtime;

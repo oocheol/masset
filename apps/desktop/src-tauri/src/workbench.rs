@@ -19,6 +19,7 @@ use std::{
 };
 use uuid::Uuid;
 mod bundle;
+mod claude;
 mod commit;
 mod glb;
 mod production;
@@ -61,6 +62,7 @@ struct Inner {
     provider_connection: Mutex<Value>,
     codex_installer: asset_providers::installer::CodexInstaller,
     planning_cancel: Mutex<Option<Arc<AtomicBool>>>,
+    claude_cancel: Mutex<Option<Arc<AtomicBool>>>,
     quality3d_setup: quality3d::SetupState,
     trellis_status: Mutex<Option<(Instant, Value)>>,
 }
@@ -138,6 +140,7 @@ impl Backend {
                 )),
                 codex_installer,
                 planning_cancel: Mutex::new(None),
+                claude_cancel: Mutex::new(None),
                 quality3d_setup: quality3d::SetupState::default(),
                 trellis_status: Mutex::new(None),
             }),
@@ -333,6 +336,9 @@ impl Backend {
         if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
             cancel.store(true, Ordering::SeqCst);
         }
+        if let Some(cancel) = self.inner.claude_cancel.lock().unwrap().as_ref() {
+            cancel.store(true, Ordering::SeqCst);
+        }
         {
             let _request = self.inner.requests.lock().unwrap();
             // A preparation already admitted under this mutex must be observed
@@ -491,6 +497,7 @@ impl Backend {
             action,
             "snapshot"
                 | "provider_status"
+                | "claude_status"
                 | "provider_setup_status"
                 | "quality3d_status"
                 | "production_state"
@@ -498,6 +505,9 @@ impl Backend {
                 | "update_status"
         );
         let _wake = DispatchWakeOnDrop((!read_only).then_some(self));
+        if matches!(action, "claude_status" | "claude_plan" | "claude_cancel") {
+            return self.claude_request(&request);
+        }
         if action == "cancel_plan" {
             if let Some(cancel) = self.inner.planning_cancel.lock().unwrap().as_ref() {
                 cancel.store(true, Ordering::SeqCst);
@@ -2182,6 +2192,7 @@ mod lifecycle_tests {
                         directory.join("appdata/codex-runtimes"),
                     ),
                     planning_cancel: Mutex::new(None),
+                    claude_cancel: Mutex::new(None),
                     quality3d_setup: quality3d::SetupState::default(),
                     trellis_status: Mutex::new(None),
                 }),

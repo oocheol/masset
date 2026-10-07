@@ -17,19 +17,38 @@ if (template.split(rootSlot).length !== 2) throw new Error('Static render requir
 const home = template.replace(rootSlot, () => `<div id="root">${render('/')}</div>`);
 await fs.writeFile(path.join(dist, 'index.html'), home);
 
-const aboutTitle = 'Treeset — Asset Studio | Project overview';
-const aboutDescription = 'Treeset is an independent, pre-incorporation creative-tools project developing Asset Studio, an open-source game asset workbench. Meet the maintainer, inspect real outputs, download releases and read the Claude integration roadmap.';
-let about = template
-  .replace('<html lang="ko">', '<html lang="en">')
-  .replace(/<title>[^<]*<\/title>/, `<title>${aboutTitle}</title>`)
-  .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${aboutDescription}$2`)
-  .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, '$1https://treeset.win/about/$2')
-  .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, '$1https://treeset.win/about/$2')
-  .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, '$1en_US$2')
-  .replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*("\s*\/?>)/g, `$1${aboutTitle}$2`)
-  .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*("\s*\/?>)/g, `$1${aboutDescription}$2`)
-  .replace(rootSlot, () => `<div id="root">${render('/about/')}</div>`);
-if (!about.includes('id="claude-plan"') || !home.includes('oocheol@treeset.win')) throw new Error('Public project content missing from static render');
-await fs.mkdir(path.join(dist, 'about'), { recursive: true });
-await fs.writeFile(path.join(dist, 'about/index.html'), about);
-console.log(JSON.stringify({ staticPages: ['/', '/about/'], providerRequests: 0, serverBundlePublic: false, htmlBytes: { home: Buffer.byteLength(home), about: Buffer.byteLength(about) } }));
+const pages = [
+  {
+    pathname: '/about/',
+    title: 'Treeset — Asset Studio | Project overview',
+    description: 'Meet JEONG WOOCHEOL, a Java developer in his fifth year maintaining Treeset and Asset Studio. Inspect real local outputs, published releases and the Claude asset-planning source prototype.',
+    requiredContent: ['id="claude-plan"', 'id="developer"', 'id="local-workflow"'],
+  },
+  {
+    pathname: '/workflows/claude-asset-brief/',
+    title: 'Treeset — Asset Studio | Claude asset-planning prototype',
+    description: 'Inspect the Asset Studio source prototype for game briefs, individual asset instructions and review checks. Its development status and provider verification scope are separate from published 0.1.13 installers.',
+    requiredContent: ['id="workflow-main"', 'id="input"', 'id="scope"', 'Published 0.1.13 installers do not include'],
+  },
+];
+const htmlBytes = { '/': Buffer.byteLength(home) };
+for (const page of pages) {
+  const canonical = `https://treeset.win${page.pathname}`;
+  const html = template
+    .replace('<html lang="ko">', '<html lang="en">')
+    .replace(/<title>[^<]*<\/title>/, `<title>${page.title}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${page.description}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonical}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonical}$2`)
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, '$1en_US$2')
+    .replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*("\s*\/?>)/g, `$1${page.title}$2`)
+    .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*("\s*\/?>)/g, `$1${page.description}$2`)
+    .replace(rootSlot, () => `<div id="root">${render(page.pathname)}</div>`);
+  if (page.requiredContent.some(content => !html.includes(content))) throw new Error(`Public content missing from static render: ${page.pathname}`);
+  const outputDirectory = path.join(dist, page.pathname.slice(1));
+  await fs.mkdir(outputDirectory, { recursive: true });
+  await fs.writeFile(path.join(outputDirectory, 'index.html'), html);
+  htmlBytes[page.pathname] = Buffer.byteLength(html);
+}
+if (!home.includes('oocheol@treeset.win')) throw new Error('Public contact missing from static home render');
+console.log(JSON.stringify({ staticPages: ['/', ...pages.map(page => page.pathname)], providerRequests: 0, serverBundlePublic: false, htmlBytes }));

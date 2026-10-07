@@ -107,6 +107,19 @@ export type ImageOperation =
   | {type: 'background'; color: string; tolerance: number}
   | {type: 'mask'; points: [number,number][]; radius: number; mode: 'erase' | 'restore'};
 export interface ModelParameters {template: 'crate' | 'table' | 'shelf' | 'sword' | 'rifle' | 'spaceship' | 'barrel' | 'rock' | 'tree'; name: string; width: number; depth: number; height: number; color: string; bevel: number;}
+export interface ClaudeBriefRequest {brief: string; artDirection: string; assetCount: number;}
+export interface ClaudeBriefStatus {
+  provider: 'claude-code'; cliVersion: string | null;
+  authentication: 'subscriptionOAuth' | 'notLoggedIn' | 'apiKey' | 'unsupportedProvider' | 'managedSubscriptionBlocked' | 'unknown' | 'unavailable';
+  planningAvailable: boolean; generationAttempted: false; reason: string;
+}
+export interface ClaudeBriefAsset {
+  name: string; kind: AssetKind; purpose: string; prompt: string; acceptanceChecks: string[];
+}
+export interface ClaudeBriefResult {
+  schemaVersion: 1; provider: 'claude-code'; cliVersion: string; model: string | null; durationMs: number;
+  plan: {summary: string; artDirection: string; assets: ClaudeBriefAsset[]; reviewChecklist: string[]; warnings: string[]};
+}
 export interface GameBundleReference {
   assetId: string; versionId: string; name: string; kind: AssetKind;
   width: number | null; height: number | null; mesh: Asset['mesh'];

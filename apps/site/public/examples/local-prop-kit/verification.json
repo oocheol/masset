@@ -1,0 +1,541 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-07T15:03:01.945Z",
+  "platform": "Windows x64",
+  "runtime": "Blender 5.2.1 LTS · Asset Studio native CLI",
+  "cliSha256": "02aaaab6f7fdd96d5ad44e1fcb9fe12d4917bc51200d56aba2a24e9de9261ea7",
+  "nativeCli": true,
+  "guiStarted": false,
+  "providerGenerationRequested": false,
+  "developerSelectedRecipes": true,
+  "reopenedInSeparateProcess": true,
+  "records": [
+    {
+      "name": "Workshop storage crate",
+      "template": "crate",
+      "parameters": {
+        "template": "crate",
+        "name": "Workshop storage crate",
+        "width": 0.8,
+        "depth": 0.65,
+        "height": 0.7,
+        "color": "#799993",
+        "bevel": 0.025
+      },
+      "mesh": {
+        "dimensions": [
+          0.8,
+          0.7,
+          0.65
+        ],
+        "triangles": 1620,
+        "unit": "m",
+        "vertices": 3240
+      },
+      "validation": {
+        "artifactId": "9c90e2c7-0f79-4900-a13c-88969efca405",
+        "checks": [
+          {
+            "code": "real-mesh",
+            "measured": 840,
+            "message": "Non-planar procedural vertices and indexed faces",
+            "status": "pass"
+          },
+          {
+            "code": "triangle-budget",
+            "measured": 1620,
+            "message": "Below the 10000-triangle worker ceiling",
+            "status": "pass"
+          },
+          {
+            "code": "dimensions-m",
+            "message": "Requested meter dimensions within relative tolerance 1e-5",
+            "status": "pass"
+          },
+          {
+            "code": "closed-components",
+            "measured": 0,
+            "message": "Every component edge has two adjacent faces",
+            "status": "pass"
+          },
+          {
+            "code": "uv-normals-materials",
+            "message": "GLB contains UV, normals and material references",
+            "status": "pass"
+          },
+          {
+            "code": "pivot-axis",
+            "message": "Bottom-center origin; .blend Z-up, GLB Y-up, meters",
+            "status": "pass"
+          },
+          {
+            "code": "assembly-not-cad",
+            "message": "Overlapping solid components form a visualization mesh, not a manufacturing CAD solid",
+            "status": "warn"
+          },
+          {
+            "code": "approved-style-render",
+            "message": "Approved style palette, supported camera and soft-studio lights applied; explicit primary color preserved",
+            "status": "pass"
+          },
+          {
+            "code": "style-scope",
+            "message": "Line weight, semantic detail and exact pixel margin are recorded but not applied; reference ids are provenance only",
+            "status": "warn"
+          }
+        ],
+        "createdAt": "2026-10-07T15:02:11.985Z",
+        "id": "31bb2159-52a5-490f-8021-d46d4609561d",
+        "valid": true
+      },
+      "files": {
+        "model.glb": {
+          "sha256": "fd5ee84a7617c54c254528230c48f1c0e69e0c17743fe540e939623bef717a06",
+          "bytes": 117024
+        },
+        "source.blend": {
+          "sha256": "3d84990dcfd3f2b6aa7a5cefa6e615d05c1122125fd1c18394015e15a90aba10",
+          "bytes": 131316
+        },
+        "thumbnail.png": {
+          "sha256": "c87d88cf5f9f57e3fc0b266b8298bc8c11204a481d53c0b54b2997cace868c0d",
+          "bytes": 294961
+        }
+      },
+      "roundTrips": [
+        {
+          "type": "roundtrip",
+          "mode": "glb",
+          "blenderVersion": "5.2.1 LTS",
+          "binary": {
+            "vertices": 3240,
+            "triangles": 1620,
+            "boundsMin": [
+              -0.4000000059604645,
+              0,
+              -0.32499998807907104
+            ],
+            "boundsMax": [
+              0.4000000059604645,
+              0.7000000476837158,
+              0.32499998807907104
+            ],
+            "dimensions": [
+              0.800000011920929,
+              0.7000000476837158,
+              0.6499999761581421
+            ],
+            "materials": 3
+          },
+          "scene": {
+            "vertices": 3240,
+            "triangles": 1620,
+            "dimensions": [
+              0.800000011920929,
+              0.6499999761581421,
+              0.7000000476837158
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": 0
+          },
+          "valid": true
+        },
+        {
+          "type": "roundtrip",
+          "mode": "blend",
+          "blenderVersion": "5.2.1 LTS",
+          "scene": {
+            "vertices": 840,
+            "triangles": 1620,
+            "dimensions": [
+              0.800000011920929,
+              0.6499999761581421,
+              0.7000000476837158
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": 0
+          },
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "Woodland workbench",
+      "template": "table",
+      "parameters": {
+        "template": "table",
+        "name": "Woodland workbench",
+        "width": 1.4,
+        "depth": 0.7,
+        "height": 0.85,
+        "color": "#d4bd8a",
+        "bevel": 0.02
+      },
+      "mesh": {
+        "dimensions": [
+          1.4,
+          0.85,
+          0.7
+        ],
+        "triangles": 972,
+        "unit": "m",
+        "vertices": 1944
+      },
+      "validation": {
+        "artifactId": "f4fb7480-0708-41ed-b6da-f43048e872d1",
+        "checks": [
+          {
+            "code": "real-mesh",
+            "measured": 504,
+            "message": "Non-planar procedural vertices and indexed faces",
+            "status": "pass"
+          },
+          {
+            "code": "triangle-budget",
+            "measured": 972,
+            "message": "Below the 10000-triangle worker ceiling",
+            "status": "pass"
+          },
+          {
+            "code": "dimensions-m",
+            "message": "Requested meter dimensions within relative tolerance 1e-5",
+            "status": "pass"
+          },
+          {
+            "code": "closed-components",
+            "measured": 0,
+            "message": "Every component edge has two adjacent faces",
+            "status": "pass"
+          },
+          {
+            "code": "uv-normals-materials",
+            "message": "GLB contains UV, normals and material references",
+            "status": "pass"
+          },
+          {
+            "code": "pivot-axis",
+            "message": "Bottom-center origin; .blend Z-up, GLB Y-up, meters",
+            "status": "pass"
+          },
+          {
+            "code": "assembly-not-cad",
+            "message": "Overlapping solid components form a visualization mesh, not a manufacturing CAD solid",
+            "status": "warn"
+          },
+          {
+            "code": "approved-style-render",
+            "message": "Approved style palette, supported camera and soft-studio lights applied; explicit primary color preserved",
+            "status": "pass"
+          },
+          {
+            "code": "style-scope",
+            "message": "Line weight, semantic detail and exact pixel margin are recorded but not applied; reference ids are provenance only",
+            "status": "warn"
+          }
+        ],
+        "createdAt": "2026-10-07T15:02:27.139Z",
+        "id": "5a811028-a6fd-45a5-a629-2525dc3e15e8",
+        "valid": true
+      },
+      "files": {
+        "model.glb": {
+          "sha256": "d065dc4b27691fb27fcc4c4484e32beae95e3e77d52fab4f310789caddeba9da",
+          "bytes": 68912
+        },
+        "source.blend": {
+          "sha256": "e415ce9ae9d3e604ba1072b0cd36b26bff1c42a33c255e708b12c793de69e6e4",
+          "bytes": 120397
+        },
+        "thumbnail.png": {
+          "sha256": "d848d455b17410a50265ea89fdfe606961222484242d660205d95a59d0845925",
+          "bytes": 277717
+        }
+      },
+      "roundTrips": [
+        {
+          "type": "roundtrip",
+          "mode": "glb",
+          "blenderVersion": "5.2.1 LTS",
+          "binary": {
+            "vertices": 1944,
+            "triangles": 972,
+            "boundsMin": [
+              -0.699999988079071,
+              0,
+              -0.3499999940395355
+            ],
+            "boundsMax": [
+              0.699999988079071,
+              0.8500000238418579,
+              0.3499999940395355
+            ],
+            "dimensions": [
+              1.399999976158142,
+              0.8500000238418579,
+              0.699999988079071
+            ],
+            "materials": 3
+          },
+          "scene": {
+            "vertices": 1944,
+            "triangles": 972,
+            "dimensions": [
+              1.399999976158142,
+              0.699999988079071,
+              0.8500000238418579
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": 0
+          },
+          "valid": true
+        },
+        {
+          "type": "roundtrip",
+          "mode": "blend",
+          "blenderVersion": "5.2.1 LTS",
+          "scene": {
+            "vertices": 504,
+            "triangles": 972,
+            "dimensions": [
+              1.399999976158142,
+              0.699999988079071,
+              0.8500000238418579
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": 0
+          },
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "Workshop display shelf",
+      "template": "shelf",
+      "parameters": {
+        "template": "shelf",
+        "name": "Workshop display shelf",
+        "width": 1.1,
+        "depth": 0.45,
+        "height": 1.6,
+        "color": "#799993",
+        "bevel": 0.02
+      },
+      "mesh": {
+        "dimensions": [
+          1.1,
+          1.6,
+          0.45
+        ],
+        "triangles": 756,
+        "unit": "m",
+        "vertices": 1512
+      },
+      "validation": {
+        "artifactId": "6de637db-3e19-458c-ab39-10d67a6ec836",
+        "checks": [
+          {
+            "code": "real-mesh",
+            "measured": 392,
+            "message": "Non-planar procedural vertices and indexed faces",
+            "status": "pass"
+          },
+          {
+            "code": "triangle-budget",
+            "measured": 756,
+            "message": "Below the 10000-triangle worker ceiling",
+            "status": "pass"
+          },
+          {
+            "code": "dimensions-m",
+            "message": "Requested meter dimensions within relative tolerance 1e-5",
+            "status": "pass"
+          },
+          {
+            "code": "closed-components",
+            "measured": 0,
+            "message": "Every component edge has two adjacent faces",
+            "status": "pass"
+          },
+          {
+            "code": "uv-normals-materials",
+            "message": "GLB contains UV, normals and material references",
+            "status": "pass"
+          },
+          {
+            "code": "pivot-axis",
+            "message": "Bottom-center origin; .blend Z-up, GLB Y-up, meters",
+            "status": "pass"
+          },
+          {
+            "code": "assembly-not-cad",
+            "message": "Overlapping solid components form a visualization mesh, not a manufacturing CAD solid",
+            "status": "warn"
+          },
+          {
+            "code": "approved-style-render",
+            "message": "Approved style palette, supported camera and soft-studio lights applied; explicit primary color preserved",
+            "status": "pass"
+          },
+          {
+            "code": "style-scope",
+            "message": "Line weight, semantic detail and exact pixel margin are recorded but not applied; reference ids are provenance only",
+            "status": "warn"
+          }
+        ],
+        "createdAt": "2026-10-07T15:02:43.325Z",
+        "id": "0d435e03-77f3-4600-bca4-ec9612ca8c5b",
+        "valid": true
+      },
+      "files": {
+        "model.glb": {
+          "sha256": "14eb7351a009262b36c423510c026cb76a459523f6ea50cbd62722d0f4b8f2ff",
+          "bytes": 56524
+        },
+        "source.blend": {
+          "sha256": "39c01c525a5efb7d7024fd609b7a25e17211eab56a7fb515a4e742b21b7019a3",
+          "bytes": 116387
+        },
+        "thumbnail.png": {
+          "sha256": "3bc064be0268654fc02da4d89e2c2436b915e008b6c3ecd5c5d95845148c88b9",
+          "bytes": 291006
+        }
+      },
+      "roundTrips": [
+        {
+          "type": "roundtrip",
+          "mode": "glb",
+          "blenderVersion": "5.2.1 LTS",
+          "binary": {
+            "vertices": 1512,
+            "triangles": 756,
+            "boundsMin": [
+              -0.550000011920929,
+              -5.960464477539063e-8,
+              -0.22499999403953552
+            ],
+            "boundsMax": [
+              0.5499999523162842,
+              1.600000023841858,
+              0.22499999403953552
+            ],
+            "dimensions": [
+              1.0999999642372131,
+              1.6000000834465027,
+              0.44999998807907104
+            ],
+            "materials": 3
+          },
+          "scene": {
+            "vertices": 1512,
+            "triangles": 756,
+            "dimensions": [
+              1.0999999642372131,
+              0.44999998807907104,
+              1.6000000834465027
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": -5.960464477539063e-8
+          },
+          "valid": true
+        },
+        {
+          "type": "roundtrip",
+          "mode": "blend",
+          "blenderVersion": "5.2.1 LTS",
+          "scene": {
+            "vertices": 392,
+            "triangles": 756,
+            "dimensions": [
+              1.0999999642372131,
+              0.44999998807907104,
+              1.6000000834465027
+            ],
+            "uvLayers": 1,
+            "materials": 3,
+            "origin": [
+              0,
+              0,
+              0
+            ],
+            "minimumZ": -5.960464477539063e-8
+          },
+          "valid": true
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "label": "Three native model jobs",
+      "result": "passed",
+      "detail": "The Windows native CLI and production scheduler made three distinct parameterized Blender models. No GUI or provider request was involved."
+    },
+    {
+      "label": "Independent file reopening",
+      "result": "passed",
+      "detail": "Each GLB and editable .blend source was reopened in its own Blender process with script auto-execution disabled; dimensions, pivot, UVs, normals and material assignments passed."
+    },
+    {
+      "label": "Portable export integrity",
+      "result": "passed",
+      "detail": "The native export contained the same model, editable source and preview bytes; SHA-256 and file sizes matched the saved inventory."
+    },
+    {
+      "label": "Visual and game quality",
+      "result": "limited",
+      "detail": "These are existing procedural recipes with simple materials. They are not Claude-generated shapes, baked textures, runtime performance measurements or a customer case study."
+    }
+  ],
+  "commands": [
+    {
+      "command": "doctor",
+      "exitCode": 0
+    },
+    {
+      "command": "init",
+      "exitCode": 0
+    },
+    {
+      "command": "command",
+      "exitCode": 0
+    },
+    {
+      "command": "command",
+      "exitCode": 0
+    },
+    {
+      "command": "command",
+      "exitCode": 0
+    }
+  ]
+}

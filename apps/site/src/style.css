@@ -251,6 +251,7 @@ h3 { font-size: 23px; line-height: 1.5; letter-spacing: -.04em; font-weight: 600
 .about-brand > p { font-size: 17px; color: var(--silver); margin-top: 15px; }
 .about-brand > .text-link { margin-top: 23px; font-size: 15px; }
 .about-copy > p { color: var(--silver); font-size: 17px; max-width: 650px; line-height: 1.9; }
+.about-copy > .about-developer { margin-top: 19px; }
 .project-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; padding-block: 24px; margin: 24px 0 0; border-block: 1px solid var(--line); }
 .project-facts > div { min-width: 0; }
 .project-facts dt { color: var(--muted); font-size: 14px; }
