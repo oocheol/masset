@@ -1,205 +1,179 @@
-import { useRef, useState } from 'react';
-import { ArrowDownToLine, ArrowRight, ArrowUpRight, Box, Check, Copy, Expand, FileImage, FolderOpen, Github, Layers, ShieldCheck, Sparkles, Terminal, X } from 'lucide-react';
-
+import { useEffect, useId, useRef, useState } from 'react';
+import { ArrowDownToLine, ArrowUpRight, BookOpen, Box, Check, ChevronDown, Copy, Expand, FileImage, FolderOpen, Github, Layers, Mail, Monitor, ShieldCheck, Terminal, Workflow, X } from 'lucide-react';
 import { macInstallCommand, macReleases, release } from './release';
+import { faqs, models, npmInstallCommand, skillDownloadUrl, skillInstallCommand, skillPackageVersion, skillUpdateCommand, skillVersion, sourceUrl, statuses } from './content';
 
-const sourceUrl = 'https://github.com/oocheol/masset';
-const releaseUrl = `${sourceUrl}/releases/tag/v${release.version}`;
-const latestReleaseUrl = `${sourceUrl}/releases/latest`;
-const downloadUrl = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
-const portableUrl = `${sourceUrl}/releases/download/v${release.version}/${release.portableFilename}`;
-const sizeMiB = (release.bytes / 1_048_576).toFixed(2);
-const hasMacRelease = macReleases.length > 0;
-const skillVersion = '0.1.13';
-const skillDownloadUrl = `${sourceUrl}/releases/download/v${skillVersion}/AssetStudio_${skillVersion}_codex-plugin-windows-macos-cli13.zip`;
-const skillInstallCommand = 'npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz install';
+const releaseUrl = sourceUrl + '/releases/tag/v' + release.version;
+const latestReleaseUrl = sourceUrl + '/releases/latest';
+const downloadUrl = sourceUrl + '/releases/download/v' + release.version + '/' + release.filename;
+const portableUrl = sourceUrl + '/releases/download/v' + release.version + '/' + release.portableFilename;
+const mac = macReleases[0];
+type Preview = { title: string; src: string; alt: string; caption: string; kind: 'render' | 'screen' };
 
-function Mark() {
-  return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="m7 13 13-7 13 7v15l-13 7-13-7V13Z M7 13l13 7 13-7 M20 20v15 M13.5 9.5l13 7" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>;
+function TreesetMark({ className = '' }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <path d="M22 37V22M22 22 9 14M22 22l13-8M9 14V7m26 7V7M22 22V7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="m4 10 5-3 5 3M30 10l5-3 5 3M17 10l5-3 5 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="m15 37 7 4 7-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>;
 }
 
-function DownloadLink({ secondary = false }: { secondary?: boolean }) {
-  return <a className={`button ${secondary ? 'button-light' : 'button-primary'}`} href={downloadUrl}>
-    <ArrowDownToLine size={19} aria-hidden="true" /> Windows 다운로드
-  </a>;
+function CopyText({ text, label, compact = false }: { text: string; label: string; compact?: boolean }) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const content = useRef<HTMLElement>(null);
+  const statusId = useId();
+  async function copy() {
+    try { await navigator.clipboard.writeText(text); setState('copied'); }
+    catch {
+      if (content.current) {
+        const range = document.createRange();
+        range.selectNodeContents(content.current);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+      setState('failed');
+    }
+  }
+  return <div className={'copy-block' + (compact ? ' copy-block-compact' : '')}>
+    <div className="copy-heading"><span>{label}</span><button type="button" onClick={copy} aria-label={label + ' 복사'} aria-describedby={statusId}>
+      {state === 'copied' ? <Check size={17} aria-hidden="true" /> : <Copy size={17} aria-hidden="true" />}
+      {state === 'copied' ? '복사됨' : '복사'}
+    </button></div>
+    <pre><code ref={content}>{text}</code></pre>
+    <p id={statusId} className="copy-status" role="status" aria-live="polite">{state === 'copied' ? '복사했습니다. 터미널이나 검증 도구에 붙여 넣으세요.' : state === 'failed' ? '텍스트를 선택했습니다. Ctrl+C 또는 ⌘C로 직접 복사하세요.' : ''}</p>
+  </div>;
 }
 
-function MacDownloadLink() {
-  const mac = macReleases[0];
-  return mac ? <a className="button button-primary" href={mac.downloadUrl} aria-label={`Mac 다운로드 · Apple Silicon v${mac.version}`}>
-    <ArrowDownToLine size={19} aria-hidden="true" /> Mac 다운로드
-  </a> : null;
+function SourceLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return <a className="text-link" href={href}>{children}<ArrowUpRight size={17} aria-hidden="true" /></a>;
 }
-
-const models = [
-  { name: '상자', type: 'Crate', filename: 'crate.png', src: '/media/crate.png', text: '판재와 테두리의 형태를 갖춘 기본 상자.' },
-  { name: '테이블', type: 'Table', filename: 'table.png', src: '/media/table.png', text: '상판과 네 다리를 갖춘 기본 테이블.' },
-  { name: '선반', type: 'Shelf', filename: 'shelf.png', src: '/media/shelf.png', text: '여러 층으로 구성한 기본 수납 선반.' },
-];
-
-const statuses = [
-  { feature: 'Windows 0.1.13 · 제작 속도와 3D 다듬기 개선', status: 'Windows CLI 실제 확인', tone: 'verified', detail: '검증된 원시 3D 캐시와 단계별 자원 배분을 추가했습니다. 실제 CPU 예제에서 첫 제작 80.9초, 같은 원시 모델을 재사용한 제작 31.2초를 확인했습니다. UV 공간 활용과 형태를 보존하는 LOD를 개선하고 완성된 모델 다음에 별도 미리보기를 만듭니다. 실제 GLB·.blend 재열기, 저장·별도 프로세스 재열기·내보내기를 검증했습니다. 단일 예제의 관측값이며 새로운 GPT 요청은 보내지 않았습니다.' },
-  { feature: 'Mac 0.1.13 · Windows와 같은 제작 처리', status: '빌드·CLI 산출물 검사', tone: 'experimental', detail: 'Windows 0.1.13의 원시 3D 캐시·UV·LOD 개선과 별도 미리보기를 Mac에도 반영했습니다. 앱·DMG·서명된 업데이트와 독립 CLI를 제공합니다. Mac CLI의 실제 이미지 처리·재열기·내보내기와 패키지 무결성을 확인했으며, 잠금 상태의 앱 화면·설치·업데이트 교체와 새 3D 성능 측정은 생략했습니다. Windows 측정값은 Mac의 성능 수치가 아닙니다.' },
-  { feature: '로컬 이미지 편집·스프라이트·아틀라스', status: 'Windows 실제 확인', tone: 'verified', detail: '원본 보존과 새 버전 저장, 출력 이미지와 JSON을 확인했습니다.' },
-  { feature: 'Blender 기본 소품 생성·3D 미리보기', status: 'Windows 실제 확인', tone: 'verified', detail: '네이티브 앱에서 생성과 렌더를 확인하고, 새 Blender 프로세스에서 산출물을 4회 다시 열어 검사했습니다.' },
-  { feature: 'Mac 0.1.6 게임 에셋 묶음', status: 'Mac 백엔드 제작 확인', tone: 'experimental', detail: 'GPT-5.5에 텍스트 구성안을 요청하고, 개별 이름·설명·참고 자료와 포함 여부를 수정해 한 번에 큐에 제출하는 흐름입니다. Mac 네이티브 백엔드에서 개별 PNG 5장과 모델 2개의 제작·저장·재열기·독립 내보내기를 확인했습니다.' },
-  { feature: 'Mac Blender 게임 소품 작업자', status: '작업자·산출물 확인', tone: 'verified', detail: '검·소총·우주선·배럴·바위·나무를 실제 생성하고 GLB·.blend를 별도 Blender 프로세스에서 다시 열었습니다. Mac 작업자 검사이며, 게임 묶음의 데스크톱 전체 흐름과 구분합니다.' },
-  { feature: 'Windows·Mac · 로컬 이미지 → 3D', status: 'CPU 산출물 확인', tone: 'experimental', detail: '이미지마다 독립 메시를 만들고 기존 GLB는 원본을 보존해 다듬습니다. 게임용·고해상도·LOD, UV 텍스처·Blender 원본·턴테이블을 저장합니다. 최소 16GB RAM과 Blender가 필요합니다. Windows CPython 3.12.10은 앱이 준비하며 Mac은 CPython 3.9를 사용합니다. 한 장으로 추정한 형상의 정확도는 입력에 따라 달라집니다.' },
-  { feature: '밝기 기반 노멀맵', status: '실험 기능', tone: 'experimental', detail: '이미지 밝기에서 표면 방향을 근사합니다. 실제 표면 구조를 복원하는 기능은 아닙니다.' },
-  { feature: 'GPT-6.1 Sol 추론·GPT Image2 구독 요청', status: 'Windows·Mac 실제 수신 확인', tone: 'verified', detail: 'Windows 0.1.2와 Mac 0.1.5 구현에서 각각 새 PNG 한 장의 수신·저장·재열기·독립 내보내기를 확인했습니다. 실제 이미지 모델 ID와 다른 계정의 권한은 미확인입니다.' },
-  { feature: 'Codex가 없는 기기의 관리형 준비', status: 'Mac 공식 패키지 준비 확인', tone: 'verified', detail: 'Apple Silicon 공식 패키지의 크기·해시·OpenAI 서명·실행 권한·등록을 실제 확인했습니다. 다운로드 동의·취소·압축 경로 검사도 통과했습니다. Windows의 신규 다운로드 실증은 별도 기록합니다.' },
-  { feature: 'macOS 로컬 2D·구독 연결·앱 내부 업데이트', status: 'Apple Silicon 실제 확인', tone: 'verified', detail: '0.1.6은 게임 에셋 묶음과 개별 이미지·모델 제작을 추가합니다. GPT 구독 연결과 공식 Codex 준비를 지원합니다. 0.1.4부터 서명·버전을 검증해 앱을 교체하고 재실행합니다. 프로젝트·원본을 보존합니다. Mac 3D 작업자와 네이티브 백엔드의 게임 묶음 제작을 확인했습니다.' },
-];
-
-const faqs = [
-  { question: 'Windows와 Mac의 npm 패키지는 따로인가요?', answer: '@oocheol/asset-studio 하나를 두 운영체제에서 사용합니다. 스킬이 Windows x64 또는 Apple Silicon Mac에 맞는 실행 도구를 선택합니다. GitHub 공용 설치 패키지 0.1.14는 Windows·Mac CLI 0.1.13을 준비합니다. npm 레지스트리의 latest는 아직 0.1.13이며 새 게시 인증을 준비 중입니다. 현재 화면의 설치 명령은 검증된 GitHub 패키지를 직접 사용합니다. 이미 공개한 npm 0.1.13은 그대로 보존합니다. 플랫폼별 런타임 버전은 독립적으로 관리하므로 Windows를 업데이트해도 Mac 실행 도구가 바뀌지 않습니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '공용 설치와 플랫폼별 버전' },
-  { question: '0.1.13에서는 속도와 3D 품질이 어떻게 달라졌나요?', answer: 'Windows에서는 동일 입력의 검증된 원시 3D 모델을 재사용하고, 원격 이미지 응답을 기다리는 동안 CPU·디스크 자원을 다른 제작에 돌려줍니다. UV 간격과 작은 메시의 펼치기를 개선하고, LOD의 형태 손실을 검사합니다. 모델·텍스처는 미리보기보다 먼저 저장합니다. 실제 CPU 예제의 첫 제작은 80.9초, 캐시 재사용은 31.2초였습니다. 입력에 따른 결과 차이와 한 장에서 보이지 않는 형상의 한계는 남습니다.', link: `${sourceUrl}/blob/master/docs/releases/v0.1.13-windows.md`, label: '실제 측정과 검증 범위' },
-  { question: 'npm으로 설치하면 Asset Studio 앱 없이 Codex에서 쓸 수 있나요?', answer: '네. npm으로 Codex 스킬을 설치하면 Asset Studio 앱을 설치하거나 열지 않고 사용할 수 있습니다. Codex가 필요하며 npm 설치에는 Node.js 22.20 이상을 사용하세요. 설치 후 새 Codex 작업에서 $asset-studio로 요청합니다. 기존 공식 Codex 로그인을 재사용하고, 처리용 CLI는 첫 사용 시 다운로드 동의를 받아 준비합니다. 3D를 요청할 때만 Blender·Python·모델을 추가로 준비합니다. Windows x64와 Apple Silicon Mac을 지원합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '앱 없이 시작하기' },
-  { question: 'npm 전역 설치 후에는 무엇을 실행하나요?', answer: '전역으로 설치했다면 asset-studio-skill install을 한 번 실행해 Codex 스킬을 등록하세요. Mac CLI 0.1.13을 준비하려면 설치 안내의 GitHub 0.1.14 패키지를 사용하세요. 그다음 새 Codex 작업을 열면 됩니다. 상단 npx 명령은 설치와 스킬 등록을 함께 진행합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: 'npm 설치·스킬 등록 안내' },
-  { question: 'npm으로 설치한 스킬은 어떻게 업데이트하나요?', answer: '터미널에서 npx --yes https://github.com/oocheol/masset/releases/download/v0.1.13/oocheol-asset-studio-0.1.14.tgz update를 실행하세요. 이전 스킬은 별도 폴더에 백업하며, 같은 버전의 파일이 온전하면 그대로 유지합니다. npm 설치 기능 버전과 Windows·Mac 실행 도구 버전은 별도로 관리합니다.', link: `${sourceUrl}/blob/master/docs/skill-first-setup.md`, label: '스킬 설치·업데이트 안내' },
-  { question: 'Codex가 게임을 만들면서 에셋도 제작할 수 있나요?', answer: '스킬을 설치하고 $asset-studio 게임을 만들어줘라고 요청하세요. Codex가 필요한 개별 에셋을 제작해 게임 엔진에 반영하고 실행·검증하는 흐름입니다. 별도 MCP 서버나 유료 API 키는 필요하지 않습니다. 스킬 자체는 지침과 설치 진입점이며 실제 에셋 처리는 자동 준비한 CLI가 수행합니다. 게임 완성은 엔진에서 실행해 확인해야 합니다.', link: `${sourceUrl}/blob/master/docs/codex-integration.md`, label: 'Codex 연동 안내' },
-  { question: '개발 도구를 설치해야 하나요?', answer: 'Node.js나 Rust는 앱 사용과 스킬 ZIP 설치에 필요하지 않습니다. npx로 스킬을 설치하려면 Node.js 22.20 이상이 필요합니다. Windows 앱에는 WebView2 Runtime이 필요하며 자동 다운로드하지 않습니다. 3D 소품을 만들 때는 Blender 5.2.1을 별도로 설치해 주세요.' },
-  { question: '기존 버전은 어떻게 업데이트하나요?', answer: 'Windows 설치 사용자는 앱에서 0.1.13로 업데이트하세요. Mac 0.1.4 이상은 앱에서 0.1.13로 업데이트하세요. Mac 0.1.3 이하와 Windows 초기 포터블은 최신 설치본을 한 번 직접 설치하세요. 업데이트 패널에서 승인하면 서명·버전·크기·SHA-256 검사 후 설치하고 재실행합니다. 프로젝트와 원본은 보존합니다.' },
-  { question: 'Codex를 설치하지 않았는데 구독 연결을 할 수 있나요?', answer: 'Windows 0.1.13과 Apple Silicon Mac 0.1.13의 구독 연결 화면에서 Codex 준비 → 공식 계정 연결 → 연결 확인 순서로 진행하세요. 플랫폼에 맞는 공식 Codex 0.160.0 배포본의 출처·용량·SHA-256·라이선스를 확인하고 동의하면 앱 전용 공간에 준비합니다. OpenAI 서명이 유효한 기존 Codex가 있으면 재사용하고, 로그인은 OpenAI 공식 페이지에서 진행합니다.' },
-  { question: 'AI 계정 없이도 사용할 수 있나요?', answer: '네. 로컬 이미지 편집, 스프라이트·아틀라스 제작, Blender 기본 소품 생성에는 외부 AI 계정이 필요하지 않습니다. GPT Image2 구독 연결은 별도 기능이며 0.1.2에서 Windows 새 이미지 한 장의 수신부터 재열기까지 확인했습니다. 공식 Codex 로그인과 계정 이용 권한이 필요하며 유료 API로 자동 대체하지 않습니다.' },
-  { question: '원본 파일이나 이전 결과가 덮어써지나요?', answer: '입력한 원본을 보존하고 처리 결과를 새 버전으로 저장합니다. 프로젝트에서 버전을 비교하고 원하는 결과를 내보낼 수 있습니다. 중요한 프로젝트는 일반 파일과 마찬가지로 별도 백업을 권장합니다.' },
-  { question: '게임 설명과 프로젝트 폴더로 에셋을 만들 수 있나요?', answer: 'Windows 0.1.13과 Mac 0.1.13은 게임 에셋 제작 → 게임 프로젝트 루트 연결 → 게임 설명 → 필요한 에셋 분석 → 필요한 에셋 모두 제작 → 결과 검수가 기본 흐름입니다. 상대 파일 목록과 누락 참조를 참고하고 소스 코드 내용은 GPT에 전송하지 않습니다. Windows와 Apple Silicon Mac에서 개별 이미지와 이미지 기반 3D를 제작합니다. 기존 파일을 보존하고 새 결과 폴더에 저장합니다. 한 계획은 최대 120개 시각 에셋이며 생략한 요구 사항은 경고로 표시합니다.', link: `${sourceUrl}/blob/master/docs/game-production.md`, label: '프로젝트에서 제작하는 흐름' },
-  { question: '구성안 모델과 이미지 제작 모델은 같은가요?', answer: 'GPT-5.5는 텍스트 제작 목록을 계획하고, GPT-6.1 Sol이 공식 구독 경로의 GPT Image 2 요청을 담당합니다. Mac 0.1.13의 3D 항목은 개별 참고 이미지 → 로컬 TripoSR → Blender 변환과 검증으로 이어집니다. 실제 메시를 직접 GPT에서 받는 기능은 아닙니다. 이전 0.1.6의 묶음 모델은 기존 Blender 고정 레시피를 사용합니다. 응답에 실제 이미지 모델 ID가 없으면 미확인으로 기록합니다.' },
-  { question: '요청 이미지 수는 모델까지 합친 수인가요?', answer: '요청 이미지 수는 이미지·스프라이트·텍스처 행의 정확한 수이며, 혼합 구성의 모델 행은 별도로 셉니다. 2D 행마다 이름과 설명이 다른 오브젝트 하나를 개별 PNG로 요청합니다. 구성안에서 행을 추가·삭제하거나 제외한 뒤에는 포함한 이미지·모델 행 수가 실제 제출 수입니다.' },
-  { question: '참고 이미지나 GLB는 어떻게 사용하나요?', answer: 'PNG·JPEG·WebP와 검증 가능한 GLB를 합쳐 최대 5개를 직접 선택하고, 이미지·미리보기·메타데이터의 외부 전송에 동의합니다. GLB는 측정한 메시 치수·정점 수·삼각형 수와 이미 있는 썸네일로 참고합니다. 임의 모델의 형상을 재구성·편집하거나 원본 메시를 코드로 실행하는 기능은 제공하지 않습니다.' },
-  { question: '어떤 3D 결과물을 받을 수 있나요?', answer: 'Windows 0.1.13과 Mac 0.1.13은 제작 목록의 3D 항목마다 GPT 참고 이미지를 만들고 로컬 모델로 변환합니다. 게임용 GLB·LOD·텍스처는 새 프로젝트 결과 폴더에 저장하고, 고해상도 형상·편집 가능한 .blend·미리보기는 로컬 보관함에도 남깁니다. 기존 이미지·GLB를 최대 5개씩 다듬는 별도 도구도 제공합니다.', link: `${sourceUrl}/blob/master/docs/model-quality.md`, label: '이미지에서 3D·모델 다듬기 안내' },
-  { question: '현재 Tripo Studio와 같은 모델인가요?', answer: '구형 오픈 모델 TripoSR을 사용합니다. 한 장에서 보이지 않는 뒷면을 추정하고 얇거나 각진 물체는 형태가 흐려질 수 있습니다. 8K·자동 리깅·쿼드 리토폴로지는 제공하지 않습니다. Windows는 최초 동의 후 Python·CPU 라이브러리·모델을 약 1.89GiB 내려받습니다. 준비 후 Windows·Mac CPU에서 로컬 실행하며 입력 이미지를 외부에 전송하거나 유료 API로 대체하지 않습니다.' },
-  { question: 'Windows에서 실행 경고가 나면 어떻게 하나요?', answer: 'Windows Authenticode 코드 서명이 없는 초기 공개 빌드여서 SmartScreen 경고가 나타날 수 있습니다. 업데이트 파일의 암호학적 서명과 Windows 코드 서명은 다릅니다. GitHub 공식 릴리스와 다운로드 섹션의 SHA-256을 확인해 주세요.' },
-  { question: 'Mac에는 어떻게 설치하나요?', answer: '아래 Mac 다운로드의 터미널 명령을 사용하면 스크립트와 DMG를 검증하고 사용자 Applications에 새 앱을 설치합니다. Apple 계정이나 관리자 암호는 필요하지 않습니다. 브라우저로 DMG를 받은 경우에는 앱을 복사한 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기로 최초 실행을 허용하세요. Apple 공증은 없으며 업데이트 파일의 서명과는 별개입니다.' },
-  { question: 'Mac에서도 구독 연결과 3D를 사용할 수 있나요?', answer: 'Apple Silicon Mac 0.1.13은 GPT 구독 연결과 공식 Codex 준비를 지원합니다. 앱 내부 업데이트는 0.1.4부터 지원합니다. 과거 Mac 릴리스에서는 게임 레시피 작업자와 개별 PNG 5장·모델 2개의 제작·저장·재열기·내보내기를 확인했습니다. 0.1.13은 빌드와 CLI 이미지 처리를 확인했으며 새 GPT·3D 제작과 앱 화면 실행 검증은 생략했습니다.' },
-  { question: '오류를 제보하거나 소스를 볼 수 있나요?', answer: '소스 코드와 검증 기록을 GitHub에 공개합니다. 문제가 생기면 운영체제, 앱 버전, 작업 종류와 재현 순서를 이슈에 남겨 주세요. 계정 토큰이나 개인 원본 파일은 포함하지 마세요.', link: `${sourceUrl}/issues`, label: 'GitHub 이슈 열기' },
-];
 
 export default function App() {
-  const [inspectedModel, setInspectedModel] = useState(0);
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const [installCopyState, setInstallCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const [skillCopyState, setSkillCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const installCommandElement = useRef<HTMLElement>(null);
-  const skillCommandElement = useRef<HTMLElement>(null);
-  const screenshotDialog = useRef<HTMLDialogElement>(null);
-  const screenshotTrigger = useRef<HTMLButtonElement>(null);
-  const checksumElement = useRef<HTMLElement>(null);
-  const specimen = models[inspectedModel];
+  const [activeModel, setActiveModel] = useState(0);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const previewDialog = useRef<HTMLDialogElement>(null);
+  const previewTrigger = useRef<HTMLButtonElement | null>(null);
+  const model = models[activeModel];
 
-  async function copyChecksum() {
-    try {
-      await navigator.clipboard.writeText(release.sha256);
-      setCopyState('copied');
-    } catch {
-      const node = checksumElement.current;
-      if (node) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      }
-      setCopyState('failed');
-    }
+  useEffect(() => {
+    if (preview && previewDialog.current && !previewDialog.current.open) previewDialog.current.showModal();
+    document.body.classList.toggle('modal-open', Boolean(preview));
+    return () => document.body.classList.remove('modal-open');
+  }, [preview]);
+
+  function openPreview(item: Preview, trigger: HTMLButtonElement) {
+    previewTrigger.current = trigger;
+    setPreview(item);
   }
-
-  async function copyMacInstall() {
-    try { await navigator.clipboard.writeText(macInstallCommand); setInstallCopyState('copied'); }
-    catch {
-      if (installCommandElement.current) {
-        const range = document.createRange(); range.selectNodeContents(installCommandElement.current);
-        const selection = window.getSelection(); selection?.removeAllRanges(); selection?.addRange(range);
-      }
-      setInstallCopyState('failed');
-    }
-  }
-
-  async function copySkillInstall() {
-    try {
-      await navigator.clipboard.writeText(skillInstallCommand);
-      setSkillCopyState('copied');
-    } catch {
-      if (skillCommandElement.current) {
-        const range = document.createRange();
-        range.selectNodeContents(skillCommandElement.current);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      }
-      setSkillCopyState('failed');
-    }
+  function renderPreview(index: number): Preview {
+    const item = models[index];
+    return { title: item.name + ' / ' + item.type, src: item.src, alt: item.name + '를 Blender 절차형 작업자로 제작한 실제 3D 렌더', caption: '고정 레시피로 만든 실제 GLB·Blender 원본의 렌더입니다. GPT 생성이나 이미지→3D 결과 예시가 아닙니다.', kind: 'render' };
   }
 
   return <>
     <a className="skip-link" href="#main">본문으로 이동</a>
-    <header className="site-header">
-      <div className="header-inner page-width">
-        <a href="#" className="wordmark" aria-label="Asset Studio 첫 화면"><Mark /><span>Asset Studio</span></a>
-        <nav aria-label="주요 메뉴"><a href="#workbench">사용 흐름</a><a href="#outputs">결과 예시</a><a href="#download" className="header-start">시작하기 <ArrowRight size={15} aria-hidden="true"/></a></nav>
-        <a className="header-source" href={sourceUrl} aria-label="GitHub 소스 코드"><Github size={19} aria-hidden="true"/></a>
-      </div>
-    </header>
+    <header className="site-header"><div className="page-width header-inner">
+      <a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a>
+      <nav className="main-nav" aria-label="주요 메뉴"><a href="#product">Asset Studio</a><a href="#outputs">결과 예시</a><a href="#guide">사용 가이드</a></nav>
+      <a className="header-start" href="#start">시작하기<ArrowDownToLine size={17} aria-hidden="true" /></a>
+    </div></header>
+
     <main id="main">
-      <section className="hero page-width" aria-labelledby="hero-title">
+      <section id="top" className="hero page-width" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow"><span className="eyebrow-dot"/> 게임 개발자를 위한 에셋 제작</p>
-          <h1 id="hero-title">게임의 아이디어를,<br/><span>쓸 수 있는 에셋으로.</span></h1>
-          <p className="hero-description">어떤 게임을 만들고 있나요?<br/>게임 설명과 참고 자료에서 필요한 2D 이미지와 3D 모델을<br className="desktop-break"/> 개별 파일로 제작하고, 결과를 확인하세요.</p>
-          <div className="hero-actions"><a className="button button-primary" href="#download-skill"><Sparkles size={19} aria-hidden="true"/>Codex에서 시작하기 <ArrowRight size={18} aria-hidden="true"/></a><a className="button button-light" href="#download">앱 다운로드 <ArrowDownToLine size={18} aria-hidden="true"/></a></div>
-          <p className="hero-platforms">Codex 스킬 · Windows · Apple Silicon Mac</p>
-          <div className="hero-promise"><ShieldCheck size={18} aria-hidden="true"/><span>원본은 보존하고, 제작 결과는 새 파일로.</span></div>
+          <p className="product-name"><span className="product-symbol"><Layers size={21} aria-hidden="true" /></span>Asset Studio</p>
+          <h1 id="hero-title">만들고 싶은 세계에,<br />필요한 에셋을.</h1>
+          <p className="hero-description">게임의 설명에서 이미지와 3D 모델까지.<br className="wide-break" /> Codex와 함께 만들거나, 나의 작업대에서 직접 다듬으세요.</p>
+          <div className="hero-actions"><a className="button button-primary" href="#download-skill"><Terminal size={19} aria-hidden="true" />Codex에서 시작</a><a className="button button-secondary" href="#desktop"><ArrowDownToLine size={19} aria-hidden="true" />앱 다운로드</a></div>
+          <p className="hero-platforms">Windows x64 / Apple Silicon Mac</p>
+          <div className="hero-principle"><ShieldCheck size={18} aria-hidden="true" /><span>원본은 그대로. 결과는 새 버전으로.</span></div>
         </div>
-        <figure className="hero-specimens">
-          <div className="inspection-header"><span><Box size={16} aria-hidden="true"/> 소품 라이브러리</span><span className="sample-label">실제 Blender 렌더</span></div>
-          <div className="inspection-stage"><img src={specimen.src} alt={`${specimen.name} 템플릿으로 실제 생성한 Blender 3D 렌더`} width="512" height="512"/><div className="specimen-label"><strong>{specimen.name}</strong><span>{specimen.filename} · 512 × 512</span></div></div>
-          <div className="specimen-picker" role="group" aria-label="3D 렌더 선택">{models.map((model,index)=><button key={model.type} type="button" aria-pressed={inspectedModel===index} aria-label={`${model.name} 렌더 보기`} onClick={()=>setInspectedModel(index)}><img src={model.src} alt="" width="40" height="40"/><span>{model.name}</span>{inspectedModel===index&&<Check size={15} aria-hidden="true"/>}</button>)}</div>
-          <figcaption>Asset Studio의 로컬 Blender 작업자로 만든 기본 소품 예시</figcaption>
+        <figure className="hero-artifact">
+          <div className="artifact-topline"><span><Box size={17} aria-hidden="true" />로컬 제작 예시</span><span>Blender 렌더</span></div>
+          <div className="artifact-stage">
+            <svg className="artifact-routes" viewBox="0 0 500 390" fill="none" aria-hidden="true"><path d="M250 12v38m0 292v34M26 196h42m364 0h42M80 64h54M366 64h54M80 328h54M366 328h54" stroke="currentColor" strokeWidth="1" /><path d="m24 92 38-22h68m240 0h68l38 22M24 292l38 22h68m240 0h68l38-22" stroke="currentColor" strokeWidth="1" /><circle cx="250" cy="16" r="4" /><circle cx="250" cy="374" r="4" /></svg>
+            <img src={model.src} width="512" height="512" alt={model.name + '의 실제 Blender 작업자 3D 렌더'} fetchPriority="high" />
+            <div className="artifact-coordinate"><span>{model.type}</span><span>{model.material}</span></div>
+          </div>
+          <div className="artifact-output"><span><Check size={16} aria-hidden="true" />산출물</span><span>model.glb</span><span>source.blend</span></div>
+          <div className="artifact-picker" role="group" aria-label="실제 렌더 예시 선택">{models.map((item, index) => <button key={item.type} type="button" aria-pressed={index === activeModel} onClick={() => setActiveModel(index)}><img src={item.src} width="38" height="38" alt="" /><span>{item.name}</span>{index === activeModel && <Check size={16} aria-hidden="true" />}</button>)}</div>
+          <figcaption>절차형 소품 작업자의 실제 결과. 입력 이미지 기반 3D 예시와 구분합니다.</figcaption>
         </figure>
       </section>
-      <div className="value-strip"><div className="page-width"><p><FileImage size={19} aria-hidden="true"/> 에셋마다 독립 파일</p><p><Layers size={19} aria-hidden="true"/> 2D 이미지 + 3D 모델</p><p><FolderOpen size={19} aria-hidden="true"/> 게임 프로젝트와 연결</p><p><ShieldCheck size={19} aria-hidden="true"/> 로컬 저장 · 원본 보존</p></div></div>
 
-      <section id="workbench" className="workbench-section section-space page-width" aria-labelledby="workbench-title">
-        <div className="section-heading"><div><p className="eyebrow">설명 → 제작 → 검수</p><h2 id="workbench-title">직접 그리는 시간은 줄이고,<br/>게임을 만드는 데 집중하세요.</h2></div><p>Codex에 에셋 제작을 연결하거나,<br/>앱에서 제작 목록과 결과를 한눈에 확인하세요.</p></div>
+      <div className="capability-strip"><div className="page-width"><p><FileImage size={20} aria-hidden="true" />2D 이미지</p><p><Box size={20} aria-hidden="true" />3D 모델</p><p><Workflow size={20} aria-hidden="true" />개별 제작·작업 큐</p><p><FolderOpen size={20} aria-hidden="true" />내 프로젝트에 저장</p></div></div>
+
+      <section id="product" className="product-section section-space page-width" aria-labelledby="product-title">
+        <div className="section-heading"><div><h2 id="product-title">제작에서 검수까지,<br />한 작업대에서.</h2></div><p>무엇이 필요한지 정하고, 결과를 살펴보고,<br className="wide-break" /> 마음에 드는 파일을 프로젝트에 남기세요.</p></div>
+        <figure className="workspace-figure">
+          <div className="workspace-bar"><span><Layers size={19} aria-hidden="true" />Asset Studio 작업 공간</span><span>브라우저 UI 미리보기</span></div>
+          <button className="workspace-preview" type="button" aria-label="Asset Studio 작업 공간 화면 확대" onClick={event => openPreview({ title: 'Asset Studio 작업 공간', src: '/media/workstation-browser-013.png', alt: '에셋 라이브러리와 편집 도구, 개별 결과와 작업 큐가 보이는 Asset Studio 브라우저 미리보기', caption: '브라우저 UI 미리보기입니다. 네이티브 앱의 실행·생성 검증은 플랫폼별 기록에서 확인하세요.', kind: 'screen' }, event.currentTarget)}>
+            <img src="/media/workstation-browser-013.png" width="1500" height="960" alt="Asset Studio 브라우저 UI 미리보기. 에셋 라이브러리, 이미지 캔버스, 3D 뷰포트, 버전 비교와 작업 큐." loading="lazy" />
+            <span className="expand-label"><Expand size={17} aria-hidden="true" />화면 확대</span>
+          </button>
+          <figcaption><span>라이브러리, 편집 도구, 버전 비교와 제작 큐를 연결합니다.</span><a href="#verification">실제 검증 범위<ChevronDown size={16} aria-hidden="true" /></a></figcaption>
+        </figure>
+        <div className="product-tools">
+          <article><FileImage size={25} aria-hidden="true" /><h3>이미지에서 게임 에셋으로</h3><p>로컬 편집부터 스프라이트·아틀라스까지. 각 이미지와 메타데이터를 독립 파일로 내보냅니다.</p><span>PNG / 스프라이트 / 아틀라스</span></article>
+          <article><Box size={25} aria-hidden="true" /><h3>이미지에서 입체로</h3><p>로컬 이미지→3D와 Blender 소품 제작. 형태와 UV를 다듬고 게임 엔진에서 사용할 결과를 검수합니다.</p><span>GLB / LOD / .blend / 텍스처</span></article>
+          <article><Layers size={25} aria-hidden="true" /><h3>하나씩 만들고, 함께 관리</h3><p>작업 큐에서 개별 에셋의 진행과 결과를 확인합니다. 이전 결과를 보존하고 필요한 항목을 다시 제작합니다.</p><span>작업 큐 / 버전 비교 / 개별 내보내기</span></article>
+        </div>
+      </section>
+
+      <section className="workflow-section" aria-labelledby="workflow-title"><div className="page-width workflow-layout">
+        <div><Workflow size={28} className="section-icon" aria-hidden="true" /><h2 id="workflow-title">설명은 하나.<br />결과는 에셋마다.</h2><p>게임 프로젝트에서 필요한 파일을 정리하고, 제작 목록을 확인한 뒤 시작합니다.</p><SourceLink href={sourceUrl + '/blob/master/docs/game-production.md'}>프로젝트 제작 흐름</SourceLink></div>
         <ol className="workflow-steps">
-          <li><span className="step-number">01</span><FolderOpen size={22} aria-hidden="true"/><h3>게임과 프로젝트를 연결</h3><p>장르, 배경, 스타일을 설명하세요. 프로젝트의 에셋 목록과 누락 참조를 함께 살펴봅니다.</p></li>
-          <li><span className="step-number">02</span><Sparkles size={22} aria-hidden="true"/><h3>필요한 에셋을 개별 제작</h3><p>제작 목록을 확인한 뒤 한 번에 요청하세요. 각 이미지와 3D 모델은 독립 결과로 저장합니다.</p></li>
-          <li><span className="step-number">03</span><Check size={22} aria-hidden="true"/><h3>결과를 확인하고 개선</h3><p>완료한 에셋을 검수하고, 필요한 결과만 다시 제작하세요. 기존 파일과 이전 버전은 보존합니다.</p></li>
+          <li><span className="step-number">1</span><div><h3>프로젝트와 방향을 연결</h3><p>게임 폴더, 장르, 배경, 스타일과 참고 자료를 정합니다.</p></div></li>
+          <li><span className="step-number">2</span><div><h3>필요한 제작 목록을 검수</h3><p>이름과 설명이 다른 개별 이미지·3D 모델을 확인하고 작업 큐에 제출합니다.</p></div></li>
+          <li><span className="step-number">3</span><div><h3>결과를 확인하고 내보내기</h3><p>형태·텍스처·크기를 검수하고 필요한 파일만 저장합니다. 원본은 보존합니다.</p></div></li>
         </ol>
-        <figure className="workstation-figure">
-          <div className="workstation-title"><span><Sparkles size={17} aria-hidden="true"/> 제작부터 결과 확인까지</span><span className="preview-label">개선된 제작 홈 · 브라우저 미리보기</span></div>
-          <button ref={screenshotTrigger} className="screenshot-button" aria-label="Asset Studio 브라우저 미리보기 화면 크게 보기" onClick={()=>screenshotDialog.current?.showModal()}><img src="/media/production-home-browser-011.jpg" alt="개선된 제작 홈의 브라우저 미리보기. 프로젝트 연결, 게임 설명, 제작할 에셋을 단계별로 확인하는 화면." width="1500" height="960" loading="lazy"/><span className="expand-label"><Expand size={16} aria-hidden="true"/>크게 보기</span></button>
-          <figcaption><span>최신 디자인의 브라우저 화면입니다. 분석·생성은 데스크톱 앱에서 사용합니다.</span><a href="#verification">플랫폼별 검증 범위 <ArrowUpRight size={14} aria-hidden="true"/></a></figcaption>
-        </figure>
-      </section>
-
-      <section id="outputs" className="outputs-section section-space" aria-labelledby="outputs-title"><div className="page-width">
-        <div className="section-heading"><div><p className="eyebrow">내 게임에 남는 결과물</p><h2 id="outputs-title">미리보기 다음에는,<br/>실제로 쓸 파일.</h2></div><a className="text-link" href={`${sourceUrl}/tree/master/examples/procedural`}>예제 산출물 보기 <ArrowUpRight size={16} aria-hidden="true"/></a></div>
-        <div className="model-gallery">{models.map(model=><figure className="model-specimen" key={model.type}><div className="model-file"><Box size={15} aria-hidden="true"/><span>{model.filename}</span><span>로컬 생성 예시</span></div><img src={model.src} alt={`${model.name} 템플릿으로 실제 생성한 Blender 3D 렌더`} width="512" height="512" loading="lazy"/><figcaption><h3>{model.name}<span>{model.type}</span></h3><p>{model.text}</p></figcaption></figure>)}</div>
-        <div className="output-note"><Layers size={22} aria-hidden="true"/><div><strong>개별 이미지 · GLB 모델 · Blender 원본</strong><p>3D 제작에는 Blender와 로컬 모델 준비가 필요합니다. 이미지 한 장에서 추정한 형상과 텍스처는 결과를 검수해 주세요.</p></div><a className="text-link" href={`${sourceUrl}/blob/master/docs/image-to-3d-research.md`}>3D 제작 안내 <ArrowUpRight size={16} aria-hidden="true"/></a></div>
       </div></section>
 
-      <section id="download" className="download-section section-space page-width" aria-labelledby="download-title">
-        <div className="section-heading"><div><p className="eyebrow">나에게 맞는 방식으로 시작</p><h2 id="download-title">Codex와 함께, 또는 앱에서.</h2></div><p>기존 공식 Codex 로그인을 사용합니다.<br/>유료 API로 자동 대체하지 않습니다.</p></div>
-        <nav className="platform-picker" aria-label="사용 방법별 다운로드"><a href="#download-skill">Codex 스킬</a><a href="#download-windows">Windows 앱</a><a href="#download-mac">Mac 앱</a></nav>
-        <section id="download-skill" className="skill-download" aria-labelledby="skill-download-title">
-          <div className="skill-download-copy"><span className="download-kicker"><Terminal size={17} aria-hidden="true"/> CODEX SKILL</span><h3 id="skill-download-title">게임을 만드는 흐름에,<br/>에셋 제작을 더하세요.</h3><p>Asset Studio 앱 없이 Codex에서 사용할 수 있습니다.<br/>스킬을 설치하고 새 Codex 작업에서 <code>$asset-studio</code>로 요청하세요.</p><p className="skill-requirements">Codex · Node.js 22.20 이상<br/>Windows x64 · Apple Silicon Mac</p></div>
-          <div className="skill-download-command"><div className="command-heading"><span>터미널에서 설치</span><button type="button" aria-label="Codex 스킬 설치 명령 복사" onClick={copySkillInstall}>{skillCopyState==='copied'?<Check size={16} aria-hidden="true"/>:<Copy size={16} aria-hidden="true"/>}{skillCopyState==='copied'?'복사됨':'명령 복사'}</button></div><pre><code ref={skillCommandElement}>{skillInstallCommand}</code></pre><p className="copy-result" role="status" aria-live="polite">{skillCopyState==='copied'?'설치 명령을 복사했습니다. 터미널에 붙여 넣으세요.':skillCopyState==='failed'?'명령을 선택했습니다. 직접 복사해 주세요.':'필요한 처리 도구는 첫 사용 시 다운로드 동의를 받아 준비합니다.'}</p><div className="skill-links"><a href={`${sourceUrl}/blob/master/docs/skill-first-setup.md`}>설치·요청 안내 <ArrowUpRight size={14} aria-hidden="true"/></a><a href="https://www.npmjs.com/package/@oocheol/asset-studio">npm 패키지 <ArrowUpRight size={14} aria-hidden="true"/></a><a href={skillDownloadUrl}><ArrowDownToLine size={15} aria-hidden="true"/> 스킬 ZIP · v{skillVersion}</a></div><p className="skill-zip-note">Node.js 없이 설치하려면 ZIP의 skills/asset-studio를 ~/.agents/skills에 넣으세요. 3D를 요청할 때만 Blender·Python·모델을 추가로 준비합니다.</p></div>
-        </section>
-        <div className="desktop-downloads">
-          <section id="download-windows" className="desktop-download-card" aria-labelledby="windows-download-title"><div className="download-card-header"><Box size={22} aria-hidden="true"/><span>Windows x64 · v{release.version}</span></div><h3 id="windows-download-title">Windows에서 제작</h3><p>Microsoft WebView2 Runtime이 필요합니다.<br/>3D 제작은 메모리 16 GB 이상과 Blender를 준비하세요.</p><DownloadLink/><a className="portable-link" href={portableUrl}>설치 없이 쓰는 포터블 ZIP <ArrowUpRight size={14} aria-hidden="true"/></a><p className="download-warning">Windows 코드 서명이 없어 실행 경고가 나타날 수 있습니다. 공식 릴리스와 파일 해시를 확인하세요.</p>
-            <details className="installation-details"><summary>설치 조건과 파일 검증</summary><div id="requirements"><dl className="download-properties"><div><dt>앱 실행</dt><dd>Microsoft WebView2 Runtime</dd></div><div><dt>이미지 → 3D</dt><dd>16GB RAM · Blender 5.2.1 · Visual C++ x64 런타임</dd></div><div><dt>첫 3D 준비</dt><dd>동의 후 약 1.89GiB 다운로드 · Python 자동 준비</dd></div><div><dt>업데이트</dt><dd>앱 내부 서명 검증 · 설치 · 재실행</dd></div><div><dt>파일 크기</dt><dd>{release.bytes.toLocaleString('en-US')} bytes · {sizeMiB} MiB</dd></div></dl><div className="checksum-row"><div className="command-heading"><span>설치 파일 SHA-256</span><button type="button" onClick={copyChecksum}>{copyState==='copied'?<Check size={15} aria-hidden="true"/>:<Copy size={15} aria-hidden="true"/>}{copyState==='copied'?'복사됨':'해시 복사'}</button></div><code ref={checksumElement}>{release.sha256}</code><p role="status" aria-live="polite">{copyState==='copied'?'해시를 복사했습니다.':copyState==='failed'?'해시를 선택했습니다. 직접 복사해 주세요.':''}</p></div><a className="text-link" href={releaseUrl}>릴리스 기록 <ArrowUpRight size={14} aria-hidden="true"/></a></div></details>
-          </section>
-          <section id="download-mac" className="desktop-download-card" aria-labelledby="mac-download-title"><div className="download-card-header"><Box size={22} aria-hidden="true"/><span>Apple Silicon · v{macReleases[0]?.version}</span></div><h3 id="mac-download-title">Mac에서 제작</h3><p>M 시리즈 Mac용 정식 배포입니다.<br/>GPT 구독 연결 · 개별 2D·3D 제작 · 앱 내부 업데이트</p><MacDownloadLink/><a className="portable-link" href={`${sourceUrl}/blob/master/docs/macos-quickstart.md`}>Mac 설치·업데이트 안내 <ArrowUpRight size={14} aria-hidden="true"/></a><p className="download-warning">Apple 공증이 없어 첫 실행 경고가 나타날 수 있습니다. 아래 설치 안내를 확인해 주세요.</p>
-            <details className="installation-details"><summary>Mac 설치 방법과 파일 검증</summary><div className="mac-install-guide"><h4>DMG로 설치</h4><ol><li>홈 폴더의 Applications 안에 Asset Studio {macReleases[0]?.version} 폴더를 만듭니다.</li><li>DMG를 열고 앱을 해당 폴더에 복사합니다. DMG 안에서 직접 실행하지 마세요.</li><li>확인 경고를 닫은 뒤 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기 → 열기를 선택합니다.</li></ol><p>macOS 12는 설정상 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. 3D 제작은 메모리 16 GB 이상과 Blender가 필요합니다.</p><h4>터미널로 설치</h4><p>기존 앱을 닫고 아래 명령을 실행하세요. 파일 검증과 설치 위치를 확인하고 y를 입력하면 새 사본을 설치합니다. 기존 앱·프로젝트를 보존하며 관리자 암호가 필요하지 않습니다.</p><div className="mac-terminal-install"><div className="command-heading"><span>Mac 설치 명령</span><button type="button" onClick={copyMacInstall}><Copy size={15} aria-hidden="true"/>{installCopyState==='copied'?'복사됨':'설치 명령 복사'}</button></div><pre><code ref={installCommandElement}>{macInstallCommand}</code></pre><p role="status" aria-live="polite">{installCopyState==='copied'?'설치 명령을 복사했습니다. 터미널에 붙여 넣으세요.':installCopyState==='failed'?'명령을 선택했습니다. 직접 복사해 주세요.':'설치 안내를 읽고 y를 입력하면 진행합니다.'}</p></div><h4>다음 버전부터는 앱에서 업데이트</h4><p>Mac 0.1.4 이상은 앱에서 출처·버전·크기·해시를 확인하고 업데이트하세요. 다운로드·검증·설치 후 재실행하며 이전 앱을 백업합니다. 0.1.3 이하는 최신 설치본을 한 번 설치하세요. 업데이트 서명은 Apple 공증과 별개이며, 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p>{hasMacRelease&&macReleases.map(item=><dl className="download-properties" key={item.architecture}><div><dt>파일</dt><dd>{item.filename}</dd></div><div><dt>용량</dt><dd>{item.bytes.toLocaleString('en-US')} bytes · {(item.bytes/1_048_576).toFixed(2)} MiB</dd></div><div><dt>SHA-256</dt><dd><code>{item.sha256}</code></dd></div></dl>)}</div></details>
-          </section>
-        </div>
+      <section id="outputs" className="outputs-section section-space page-width" aria-labelledby="outputs-title">
+        <div className="section-heading"><div><h2 id="outputs-title">파일로 남는 결과.</h2><p className="heading-description">실제 Blender 작업자가 만든 기본 소품을 살펴보세요.</p></div><SourceLink href={sourceUrl + '/tree/master/examples/procedural'}>원본·GLB·검증 기록</SourceLink></div>
+        <div className="model-gallery">{models.map((item, index) => <figure key={item.type}>
+          <button className="model-preview" type="button" aria-label={item.name + ' 3D 렌더 확대'} onClick={event => openPreview(renderPreview(index), event.currentTarget)}><img src={item.src} alt={item.name + '의 실제 절차형 Blender 렌더'} width="512" height="512" loading="lazy" /><span><Expand size={18} aria-hidden="true" /></span></button>
+          <figcaption><div><h3>{item.name}</h3><span>{item.type}</span></div><p>{item.description}</p><span className="output-format">GLB + .blend</span></figcaption>
+        </figure>)}</div>
+        <div className="output-context"><ShieldCheck size={22} aria-hidden="true" /><p>세 예시는 고정 레시피로 만든 소품입니다. 이미지→3D는 한 장에서 형태를 추정하며, 게임에서의 최종 검수가 필요합니다.</p><SourceLink href={sourceUrl + '/blob/master/docs/model-quality.md'}>3D 결과 안내</SourceLink></div>
       </section>
 
-      <section id="verification" className="verification-section page-width" aria-labelledby="verification-title"><div><ShieldCheck size={24} aria-hidden="true"/><h2 id="verification-title">확인한 범위를 투명하게.</h2><p>기능별 산출물 검사와 네이티브 실행 검증을 구분해 기록합니다.</p></div><details className="verification-details"><summary>플랫폼별 기능·검증 기록 보기</summary><dl className="status-list">{statuses.map(item=><div key={item.feature} className="status-item"><dt>{item.feature}<span className={`status-label ${item.tone}`}>{item.tone==='verified'&&<Check size={13} aria-hidden="true"/>}{item.status}</span></dt><dd>{item.detail}</dd></div>)}</dl><a className="text-link" href={`${sourceUrl}/blob/master/docs/verification.md`}>전체 검증 기록 <ArrowUpRight size={16} aria-hidden="true"/></a></details></section>
-      <section className="faq-section section-space page-width" aria-labelledby="faq-title"><div><p className="eyebrow">자주 묻는 질문</p><h2 id="faq-title">시작하기 전에.</h2><p className="faq-intro">설치와 연결, 원본 보존까지.</p></div><div className="faq-list">{faqs.map(faq=><details key={faq.question}><summary>{faq.question}<span className="faq-indicator" aria-hidden="true"/></summary><div className="faq-answer"><p>{faq.answer}</p>{faq.link&&<a className="text-link" href={faq.link}>{faq.label}<ArrowUpRight size={15} aria-hidden="true"/></a>}</div></details>)}</div></section>
+      <section id="start" className="start-section section-space" aria-labelledby="start-title"><div className="page-width">
+        <div className="section-heading"><div><h2 id="start-title">작업하는 방식으로 시작하세요.</h2><p className="heading-description">Codex 스킬로 연결하거나, 데스크톱 앱을 열어 직접 제작하세요.</p></div><nav className="start-nav" aria-label="시작 방법"><a href="#download-skill">Codex 스킬</a><a href="#download-windows">Windows</a><a href="#download-mac">Mac</a></nav></div>
+        <section id="download-skill" className="skill-panel" aria-labelledby="skill-title">
+          <div className="skill-intro"><Terminal size={30} aria-hidden="true" /><h3 id="skill-title">Codex에 제작 도구를 더하세요.</h3><p>스킬만 설치해도 사용할 수 있습니다.<br />Asset Studio 앱을 따로 설치하거나 열 필요가 없습니다.</p><p className="skill-requirements">Codex / Node.js 22.20 이상<br />Windows x64 / Apple Silicon Mac</p></div>
+          <div className="skill-command"><CopyText label="최신 양쪽 CLI를 위한 설치 명령" text={skillInstallCommand} /><p className="command-description">GitHub 공용 설치 패키지 {skillPackageVersion}이 Windows·Mac CLI {skillVersion}을 준비합니다. 첫 도구 다운로드는 동의를 받습니다.</p><div className="skill-links"><SourceLink href={sourceUrl + '/blob/master/docs/skill-first-setup.md'}>설치·요청 안내</SourceLink><SourceLink href="https://www.npmjs.com/package/@oocheol/asset-studio">npm 패키지</SourceLink><a className="text-link" href={skillDownloadUrl}><ArrowDownToLine size={16} aria-hidden="true" />스킬 ZIP {skillVersion}</a></div></div>
+          <div className="skill-first-request"><span>설치한 뒤, 새 Codex 작업에서</span><code>$asset-studio 숲을 탐험하는 게임에 쓸 소품을 만들어줘.</code></div>
+          <details className="skill-alternatives"><summary>npm의 짧은 설치 명령·업데이트·ZIP 설치</summary><div className="alternative-grid"><div><CopyText label="npm 레지스트리에서 설치" text={npmInstallCommand} compact /><p>현재 npm latest는 0.1.13입니다. 최신 Mac CLI까지 사용하려면 위의 GitHub 설치 패키지를 사용하세요.</p><p>전역 설치는 <code>npm install -g @oocheol/asset-studio</code> 후 <code>asset-studio-skill install</code>로 등록합니다.</p></div><div><CopyText label="설치한 스킬 업데이트" text={skillUpdateCommand} compact /><p>Node.js 없이 시작하려면 ZIP의 <code>skills/asset-studio</code> 폴더를 <code>~/.agents/skills</code>에 넣고 새 Codex 작업을 여세요.</p></div></div></details>
+        </section>
+
+        <div id="desktop" className="desktop-downloads">
+          <section id="download-windows" className="desktop-platform" aria-labelledby="windows-title">
+            <div className="platform-heading"><Monitor size={25} aria-hidden="true" /><span>Windows x64</span><span className="version-pill">v{release.version}</span></div><h3 id="windows-title">나의 Windows 작업대.</h3><p>제작 목록과 결과를 직접 다루는 데스크톱 앱.<br />Microsoft WebView2 Runtime이 필요합니다.</p><a className="button button-primary platform-download" href={downloadUrl}><ArrowDownToLine size={20} aria-hidden="true" />Windows 설치 파일</a><a className="portable-link" href={portableUrl}>포터블 ZIP<ArrowUpRight size={16} aria-hidden="true" /></a><p className="platform-caution">Windows 코드 서명이 없어 첫 실행 경고가 나타날 수 있습니다.</p>
+            <details className="installation-details"><summary>설치 조건·용량·파일 검증<ChevronDown size={18} aria-hidden="true" /></summary><dl className="download-properties"><div><dt>앱 실행</dt><dd>Windows x64 / WebView2 Runtime</dd></div><div><dt>이미지→3D</dt><dd>16GB RAM / Blender 5.2.1 / Visual C++ x64 런타임</dd></div><div><dt>첫 3D 준비</dt><dd>동의 후 약 1.89GiB / Python 자동 준비</dd></div><div><dt>설치 파일</dt><dd>{release.filename}</dd></div><div><dt>용량</dt><dd>{release.bytes.toLocaleString('en-US')} bytes / {(release.bytes / 1_048_576).toFixed(2)} MiB</dd></div><div><dt>포터블</dt><dd>{release.portableBytes.toLocaleString('en-US')} bytes / {(release.portableBytes / 1_048_576).toFixed(2)} MiB</dd></div></dl><CopyText label="Windows 설치 파일 SHA-256" text={release.sha256} compact /><CopyText label="Windows 포터블 SHA-256" text={release.portableSha256} compact /><SourceLink href={releaseUrl}>공식 릴리스 기록</SourceLink></details>
+          </section>
+          {mac && <section id="download-mac" className="desktop-platform" aria-labelledby="mac-title">
+            <div className="platform-heading"><Monitor size={25} aria-hidden="true" /><span>Apple Silicon Mac</span><span className="version-pill">v{mac.version}</span></div><h3 id="mac-title">나의 Mac 작업대.</h3><p>M 시리즈 Mac용 앱과 독립 CLI를 제공합니다.<br />Intel Mac 패키지는 제공하지 않습니다.</p><a className="button button-primary platform-download" href={mac.downloadUrl}><ArrowDownToLine size={20} aria-hidden="true" />Mac DMG 다운로드</a><a className="portable-link" href={sourceUrl + '/blob/master/docs/macos-quickstart.md'}>Mac 설치 안내<ArrowUpRight size={16} aria-hidden="true" /></a><p className="platform-caution">Apple 공증이 없어 최초 실행 허용이 필요합니다.</p>
+            <details className="installation-details"><summary>Mac 설치 방법·터미널 설치·파일 검증<ChevronDown size={18} aria-hidden="true" /></summary><div className="mac-install-guide"><h4>DMG로 설치</h4><ol><li>홈 폴더의 Applications 안에 Asset Studio {mac.version} 폴더를 만드세요.</li><li>DMG를 열고 앱을 해당 폴더에 복사하세요. DMG 안에서 직접 실행하지 마세요.</li><li>첫 실행 경고를 닫고 시스템 설정 → 개인정보 보호 및 보안 → 확인 없이 열기를 선택하세요.</li></ol><p>macOS 12는 앱 설정의 최소값입니다. GPT 연결은 공식 Codex의 운영체제 요구 사항도 따릅니다. 3D에는 메모리 16GB 이상과 Blender가 필요합니다.</p><h4>검증하고 터미널에서 설치</h4><p>기존 앱을 닫고 명령을 실행하세요. 스크립트와 DMG를 검증한 뒤 <code>y</code>로 동의하면 사용자 Applications에 새 사본을 설치합니다. 기존 앱·프로젝트를 보존하고 관리자 암호를 요청하지 않습니다.</p><CopyText label="Mac 설치 명령" text={macInstallCommand} compact /><h4>다음 버전부터 앱에서 업데이트</h4><p>Mac 0.1.4 이상은 앱에서 출처·버전·크기·해시를 확인한 뒤 업데이트합니다. 이전 앱은 백업합니다. 0.1.3 이하는 최신 설치본을 한 번 설치하세요. 시스템 전체 Gatekeeper를 끌 필요는 없습니다.</p><dl className="download-properties"><div><dt>파일</dt><dd>{mac.filename}</dd></div><div><dt>용량</dt><dd>{mac.bytes.toLocaleString('en-US')} bytes / {(mac.bytes / 1_048_576).toFixed(2)} MiB</dd></div></dl><CopyText label="Mac DMG SHA-256" text={mac.sha256} compact /><SourceLink href={sourceUrl + '/blob/master/docs/releases/v' + mac.version + '-macos.md'}>Mac 배포·검증 기록</SourceLink></div></details>
+          </section>}
+        </div>
+      </div></section>
+
+      <section id="guide" className="guide-section section-space page-width" aria-labelledby="guide-title"><div className="section-heading"><div><BookOpen size={28} className="section-icon" aria-hidden="true" /><h2 id="guide-title">처음 시작한다면.</h2></div><SourceLink href={sourceUrl + '/blob/master/docs/skill-first-setup.md'}>전체 사용 가이드</SourceLink></div>
+        <div className="guide-columns"><article><h3>Codex에서 시작</h3><ol><li><strong>스킬을 설치하세요.</strong><span>위 명령을 터미널에 붙여 넣거나 ZIP으로 설치합니다.</span></li><li><strong>새 Codex 작업을 여세요.</strong><span>공식 Codex의 기존 로그인을 그대로 사용합니다.</span></li><li><strong><code>$asset-studio</code>로 요청하세요.</strong><span>제작 도구는 다운로드 동의를 받은 뒤 준비합니다.</span></li></ol></article><article><h3>앱에서 시작</h3><ol><li><strong>플랫폼에 맞는 앱을 설치하세요.</strong><span>공식 릴리스에서 파일을 받고 설치 안내를 확인합니다.</span></li><li><strong>프로젝트를 만들고 방향을 정하세요.</strong><span>게임 폴더와 설명, 스타일, 참고 자료를 연결합니다.</span></li><li><strong>제작 목록과 결과를 검수하세요.</strong><span>GPT 제작은 구독 연결이 필요합니다. 로컬 편집은 계정 없이 사용합니다.</span></li></ol></article></div>
+        <div className="guide-note"><Box size={23} aria-hidden="true" /><div><strong>3D는 필요한 때 준비합니다.</strong><p>Blender와 로컬 이미지→3D 모델은 첫 3D 사용 시 준비합니다. 16GB RAM 이상이 필요하며, 다운로드 출처·용량·라이선스를 확인하고 동의할 수 있습니다.</p></div></div>
+      </section>
+
+      <section id="verification" className="verification-section page-width" aria-labelledby="verification-title"><div><ShieldCheck size={26} aria-hidden="true" /><h2 id="verification-title">무엇을 확인했는지 기록합니다.</h2><p>브라우저 UI, 실제 제작 파일, 네이티브 실행은 각각 확인합니다.</p></div><details className="verification-details"><summary>플랫폼별 기능·검증 범위 보기<ChevronDown size={20} aria-hidden="true" /></summary><dl className="status-list">{statuses.map(item => <div className="status-item" key={item.feature}><dt><strong>{item.feature}</strong><span className={'status-label ' + item.tone}>{item.tone === 'verified' && <Check size={14} aria-hidden="true" />}{item.status}</span></dt><dd><p>{item.detail}</p><SourceLink href={item.link}>검증 기록</SourceLink></dd></div>)}</dl></details></section>
+
+      <section className="faq-section section-space page-width" aria-labelledby="faq-title"><div><h2 id="faq-title">궁금한 점이 있나요?</h2><p>설치, 계정 연결과 결과 파일에 대해.</p><a className="contact-link" href="mailto:oocheol@treeset.win"><Mail size={18} aria-hidden="true" />oocheol@treeset.win</a></div><div className="faq-list">{faqs.map(item => <details key={item.question}><summary>{item.question}<span className="faq-indicator" aria-hidden="true" /></summary><div className="faq-answer"><p>{item.answer}</p>{item.link && <SourceLink href={item.link}>{item.label}</SourceLink>}</div></details>)}</div></section>
+
+      <section id="about" className="about-section" aria-labelledby="about-title"><div className="page-width about-layout"><div className="about-brand"><TreesetMark /><h2 id="about-title">Treeset</h2><p>아이디어가 자라나는 제작 도구.</p></div><div className="about-copy"><p>Treeset은 창작자가 자신의 프로젝트에서 결과를 만들고 다듬을 수 있도록 도구를 만드는 독립 프로젝트입니다. 첫 제품 Asset Studio는 로컬 작업 공간과 Codex 스킬로 게임 에셋 제작을 연결합니다.</p><p className="about-english" lang="en">Treeset is an independent creative tools project. Our first product, Asset Studio, connects game asset creation with a local workspace and a Codex skill. Source code, real outputs, and verification records are open on GitHub.</p><div className="about-links"><SourceLink href={sourceUrl}>소스와 제작 구조</SourceLink><a className="text-link" href="mailto:oocheol@treeset.win">프로젝트에 연락하기<Mail size={18} aria-hidden="true" /></a></div></div></div></section>
     </main>
-    <footer className="site-footer"><div className="page-width footer-inner"><div><a className="wordmark" href="#" aria-label="Asset Studio 첫 화면"><Mark/><span>Asset Studio</span></a><p>아이디어는 게임으로. 결과는 내 프로젝트에.</p></div><div className="footer-links"><a href={sourceUrl}>GitHub 소스</a><a href={latestReleaseUrl}>릴리스</a><a href={`${sourceUrl}/issues`}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></div></div></footer>
-    <dialog className="screenshot-dialog" ref={screenshotDialog} aria-labelledby="screenshot-dialog-title" onClose={()=>screenshotTrigger.current?.focus()} onClick={event=>{if(event.target===event.currentTarget)screenshotDialog.current?.close();}}><div className="dialog-header"><h2 id="screenshot-dialog-title">Asset Studio 제작 홈 · 브라우저 미리보기</h2><button type="button" aria-label="화면 닫기" onClick={()=>screenshotDialog.current?.close()}><X size={22} aria-hidden="true"/></button></div><img src="/media/production-home-browser-011.jpg" alt="확대한 제작 홈의 브라우저 미리보기" width="1500" height="960"/><p>브라우저 미리보기 화면입니다. Windows·Mac 네이티브 검증 범위는 플랫폼별 기록을 확인해 주세요.</p></dialog>
+
+    <footer className="site-footer"><div className="page-width footer-inner"><a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a><p>Asset Studio / Windows · Apple Silicon Mac · Codex</p><nav aria-label="프로젝트 링크"><a href={sourceUrl}><Github size={17} aria-hidden="true" />GitHub</a><a href={latestReleaseUrl}>릴리스</a><a href={sourceUrl + '/issues'}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></nav></div></footer>
+
+    <dialog className={'preview-dialog' + (preview?.kind === 'render' ? ' render-dialog' : '')} ref={previewDialog} aria-labelledby="preview-title" onClose={() => { setPreview(null); previewTrigger.current?.focus(); }} onClick={event => { if (event.target === event.currentTarget) previewDialog.current?.close(); }}><div className="dialog-header"><h2 id="preview-title">{preview?.title}</h2><button type="button" autoFocus aria-label="확대 화면 닫기" onClick={() => previewDialog.current?.close()}><X size={23} aria-hidden="true" /></button></div>{preview && <img src={preview.src} alt={preview.alt} width={preview.kind === 'render' ? '512' : '1500'} height={preview.kind === 'render' ? '512' : '960'} />}<p>{preview?.caption}</p></dialog>
   </>;
 }

@@ -4,6 +4,20 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run site:build",
   "outputDirectory": "apps/site/dist",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "masset-nu.vercel.app" }],
+      "destination": "https://treeset.win/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.treeset.win" }],
+      "destination": "https://treeset.win/:path*",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

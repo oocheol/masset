@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#071c2a"/>
+  <path d="M40 116h1120M40 560h1120" fill="none" stroke="#345165"/>
+  <g transform="translate(57 40)" fill="none" stroke="#66daff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 37V22M22 22 9 14M22 22l13-8M9 14V7m26 7V7M22 22V7"/>
+    <path d="m4 10 5-3 5 3M30 10l5-3 5 3M17 10l5-3 5 3m-12 27 7 4 7-4"/>
+  </g>
+  <g font-family="Bahnschrift,Arial,sans-serif">
+    <text x="113" y="73" fill="#f1f6fc" font-size="32" font-weight="600">Treeset</text>
+    <text x="58" y="226" fill="#f1f6fc" font-size="64" font-weight="500">Asset Studio</text>
+    <text x="60" y="284" fill="#c6d1d8" font-size="27">Build the assets for your world.</text>
+    <text x="60" y="360" fill="#a8bccb" font-size="22">A local workspace.</text>
+    <text x="60" y="399" fill="#a8bccb" font-size="22">A Codex skill.</text>
+    <text x="60" y="491" fill="#66daff" font-size="21">Windows / Apple Silicon Mac</text>
+    <text x="60" y="598" fill="#c6d1d8" font-size="21">treeset.win</text>
+    <text x="884" y="598" fill="#a8bccb" font-size="18">Create. Review. Export.</text>
+  </g>
+  <g fill="none" stroke="#668599" stroke-width="2">
+    <path d="M687 323h48m0 0v-120h105m-105 120h105m-105 0v120h105"/>
+    <circle cx="735" cy="323" r="6" fill="#66daff" stroke="#66daff"/>
+  </g>
+  <g fill="#102d44" stroke="#345165" stroke-width="1.5">
+    <rect x="589" y="267" width="98" height="112" rx="8"/>
+    <rect x="839" y="154" width="285" height="98" rx="10"/>
+    <rect x="839" y="274" width="285" height="98" rx="10"/>
+    <rect x="839" y="394" width="285" height="98" rx="10"/>
+  </g>
+  <g fill="none" stroke="#66daff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m611 306 27-16 27 16v32l-27 16-27-16Zm0 0 27 16 27-16m-27 16v32"/>
+    <rect x="866" y="181" width="40" height="40" rx="3"/><path d="m869 216 11-12 8 6 8-9 7 7"/><circle cx="895" cy="192" r="3"/>
+    <path d="m866 311 20-12 20 12v24l-20 12-20-12Zm0 0 20 12 20-12m-20 12v24"/>
+    <path d="m866 443 20-12 20 12-20 12Zm0 9 20 12 20-12m-40 9 20 12 20-12"/>
+  </g>
+  <g font-family="Bahnschrift,Arial,sans-serif" fill="#f1f6fc" font-size="25">
+    <text x="931" y="212">2D image</text><text x="931" y="332">3D model</text><text x="931" y="452">Blender source</text>
+  </g>
+</svg>

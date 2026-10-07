@@ -37,7 +37,7 @@ npx @oocheol/asset-studio@latest update
 npx @oocheol/asset-studio@latest status
 ```
 
-Asset Studio 앱 설치는 선택입니다. Node.js 22.20 이상으로 스킬을 등록한 뒤 새 Codex 작업에서 `$asset-studio`로 요청합니다. 기존 공식 Codex 인증을 재사용하며 필요한 실행 도구·3D 모델은 승인한 범위에서 준비합니다. [소개 사이트](https://masset-nu.vercel.app/)와 [Windows 0.1.13 다운로드](https://github.com/oocheol/masset/releases/tag/v0.1.13)에도 같은 플랫폼별 버전을 표시합니다.
+Asset Studio 앱 설치는 선택입니다. Node.js 22.20 이상으로 스킬을 등록한 뒤 새 Codex 작업에서 `$asset-studio`로 요청합니다. 기존 공식 Codex 인증을 재사용하며 필요한 실행 도구·3D 모델은 승인한 범위에서 준비합니다. [Treeset 소개 사이트](https://treeset.win/)와 [Windows 0.1.13 다운로드](https://github.com/oocheol/masset/releases/tag/v0.1.13)에도 같은 플랫폼별 버전을 표시합니다.
 
 ## 0.1.12 공개 확인 · 2026-10-06
 

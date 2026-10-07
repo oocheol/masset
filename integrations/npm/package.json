@@ -12,7 +12,7 @@
   "cpu": ["x64", "arm64"],
   "license": "Apache-2.0",
   "repository": { "type": "git", "url": "git+https://github.com/oocheol/masset.git", "directory": "integrations/npm" },
-  "homepage": "https://masset-nu.vercel.app/",
+  "homepage": "https://treeset.win/",
   "bugs": { "url": "https://github.com/oocheol/masset/issues" },
   "keywords": ["codex", "skill", "asset-studio", "game-assets"],
   "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" }

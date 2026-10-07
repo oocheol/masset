@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/site/public/media/asset-studio-share.png" alt="Asset Studio — 게임의 아이디어를 2D·3D 에셋으로" width="100%">
+  <img src="apps/site/public/media/treeset-share.png" alt="Treeset — Asset Studio 게임 에셋 제작 도구" width="100%">
 </p>
 
 <h1 align="center">Asset Studio</h1>
@@ -17,11 +17,13 @@
 </p>
 
 <p align="center">
-  <a href="https://masset-nu.vercel.app/"><strong>기능 소개 사이트</strong></a> ·
+  <a href="https://treeset.win/"><strong>Treeset · 기능 소개 사이트</strong></a> ·
   <a href="https://github.com/oocheol/masset/releases/tag/v0.1.13"><strong>다운로드</strong></a> ·
   <a href="#project-structure">프로젝트 구조</a> ·
   <a href="docs/windows-quickstart.md">사용 가이드</a>
 </p>
+
+Treeset이 만드는 오픈소스 게임 에셋 제작 도구입니다. 공식 사이트는 [treeset.win](https://treeset.win/), 문의는 [oocheol@treeset.win](mailto:oocheol@treeset.win)입니다.
 
 Tauri 2 + Rust + React/TypeScript로 만든 오픈소스 게임 에셋 제작 도구입니다. **게임 설명 + 프로젝트 루트 연결 → 필요한 에셋 분석 → 개별 제작 → 결과 검수**를 기본 화면으로 제공합니다. Windows 0.1.13과 Apple Silicon Mac 0.1.13에서 GPT 참고 이미지를 로컬 TripoSR와 Blender로 3D로 제작할 수 있습니다. 기존 GLB 다듬기와 기본 소품 제작은 **편집 도구**로 이용하세요.
 
@@ -300,4 +302,4 @@ NSIS 설치 파일은 승인·해시 검증한 캐시 도구와 저장소 밖의
 
 코어 소스는 [Apache-2.0](LICENSE), Blender 작업자 코드는 별도 [GPL-3.0-or-later](workers/blender/LICENSE)입니다. Blender 실행 파일은 앱에 포함되지 않습니다. 예제 에셋의 권리와 외부 서비스 생성물·사용자 입력의 권리는 별도로 다룹니다. 외부 AI 서비스가 무료 또는 오픈소스라는 의미는 아닙니다.
 
-이미지 기반 3D·제조용 CAD·임의 코드 플러그인 실행은 현재 지원 범위에 포함되지 않습니다.
+이미지 기반 3D는 로컬 TripoSR을 사용하는 실험 기능이며 [품질과 지원 범위](docs/model-quality.md)를 따릅니다. 제조용 CAD와 임의 코드 플러그인 실행은 지원하지 않습니다.
