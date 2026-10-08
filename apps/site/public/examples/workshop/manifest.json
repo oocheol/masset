@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "title": "Treeset developer workshop example",
+  "publishedDate": "2026-10-08",
+  "providerRequests": 0,
+  "externalUserCase": false,
+  "files": [
+    {
+      "file": "scene.json",
+      "bytes": 975,
+      "sha256": "ebf313b9f610147a586c4b46447eefa2389b5b010ebf8382c5cae35450b31edc"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1932,
+      "sha256": "9677cd97f5d5c8306ffc79d1905eac54c453d4f85d7ed5a5a949752d2fdb9e88"
+    },
+    {
+      "file": "models/crate/model.glb",
+      "bytes": 117024,
+      "sha256": "fd5ee84a7617c54c254528230c48f1c0e69e0c17743fe540e939623bef717a06"
+    },
+    {
+      "file": "models/crate/source.blend",
+      "bytes": 131316,
+      "sha256": "3d84990dcfd3f2b6aa7a5cefa6e615d05c1122125fd1c18394015e15a90aba10"
+    },
+    {
+      "file": "models/crate/thumbnail.png",
+      "bytes": 294961,
+      "sha256": "c87d88cf5f9f57e3fc0b266b8298bc8c11204a481d53c0b54b2997cace868c0d"
+    },
+    {
+      "file": "models/table/model.glb",
+      "bytes": 68912,
+      "sha256": "d065dc4b27691fb27fcc4c4484e32beae95e3e77d52fab4f310789caddeba9da"
+    },
+    {
+      "file": "models/table/source.blend",
+      "bytes": 120397,
+      "sha256": "e415ce9ae9d3e604ba1072b0cd36b26bff1c42a33c255e708b12c793de69e6e4"
+    },
+    {
+      "file": "models/table/thumbnail.png",
+      "bytes": 277717,
+      "sha256": "d848d455b17410a50265ea89fdfe606961222484242d660205d95a59d0845925"
+    },
+    {
+      "file": "models/shelf/model.glb",
+      "bytes": 56524,
+      "sha256": "14eb7351a009262b36c423510c026cb76a459523f6ea50cbd62722d0f4b8f2ff"
+    },
+    {
+      "file": "models/shelf/source.blend",
+      "bytes": 116387,
+      "sha256": "39c01c525a5efb7d7024fd609b7a25e17211eab56a7fb515a4e742b21b7019a3"
+    },
+    {
+      "file": "models/shelf/thumbnail.png",
+      "bytes": 291006,
+      "sha256": "3bc064be0268654fc02da4d89e2c2436b915e008b6c3ecd5c5d95845148c88b9"
+    },
+    {
+      "file": "production/input.json",
+      "bytes": 881,
+      "sha256": "a37d68f7aead814fb74aca3978300f93b91d4a448167e5d28bacd375b09a39d8"
+    },
+    {
+      "file": "production/verification.json",
+      "bytes": 15691,
+      "sha256": "c8e9087e53ec7e5d615c78071daecf478cdfed7fa1cdae96ef33af4a39884f29"
+    },
+    {
+      "file": "LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+.workshop-page { font-size: 17px; }
+.workshop-page button { color: var(--paper); background: #18394b; border: 1px solid #648597; border-radius: 6px; min-height: 46px; padding: 9px 15px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.workshop-page button:disabled { opacity: .55; cursor: default; }
+.workshop-page button:not(:disabled):hover { border-color: #bee5e8; background: #24475a; }
+.workshop-page button[aria-pressed='true'] { background: #2d5d69; border-color: #9edee4; }
+.workshop-page .button-primary { background: var(--cyan); color: var(--ink); }
+.workshop-header { display: flex; align-items: center; justify-content: space-between; min-height: 90px; gap: 30px; border-bottom: 1px solid var(--line); }
+.workshop-header nav { display: flex; flex-wrap: wrap; gap: 26px; font-size: 16px; color: var(--silver); }
+.workshop-intro { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, .55fr); gap: 60px; padding-block: 52px 37px; align-items: end; }
+.workshop-intro h1 { font: 600 clamp(33px, 3.7vw, 51px)/1.3 var(--display); letter-spacing: -.045em; white-space: pre-line; }
+.workshop-intro p { max-width: 720px; margin-top: 19px; color: var(--silver); font-size: 18px; }
+.workshop-entry { border-left: 2px solid #598798; padding-left: 25px; }
+.workshop-entry p { font-size: 16px; margin-top: 0; }
+.workshop-entry .text-link { font-size: 16px; margin-top: 17px; }
+.workshop-console { border: 1px solid #577887; border-radius: 12px; overflow: hidden; background: #10293b; }
+.workshop-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 15px 19px; background: #0f2839; }
+.workshop-toolbar > div { display: flex; gap: 9px; }
+.workshop-stage { position: relative; height: 570px; overflow: hidden; outline-offset: -4px; }
+.workshop-canvas { width: 100%; height: 100%; }
+.workshop-canvas canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.workshop-launch { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 48px; padding: 35px; background: #102d44; }
+.workshop-launch img { width: min(30%, 280px); height: auto; border-radius: 7px; }
+.workshop-launch h2 { font-size: 26px; max-width: 530px; }
+.workshop-launch p { color: var(--silver); margin-block: 17px 25px; }
+.workshop-mission { position: absolute; top: 19px; left: 23px; right: 23px; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.workshop-mission p { color: #e2eeee; background: #143447; border: 1px solid #537685; border-radius: 6px; padding: 8px 14px; font-size: 16px; }
+.workshop-mission strong { color: #ffda91; background: #143447; border-radius: 6px; padding: 8px 15px; font-size: 22px; }
+.workshop-guide { position: absolute; bottom: 19px; left: 23px; }
+.workshop-finish { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: min(490px, calc(100% - 36px)); padding: 24px; background: #113449; border: 1px solid #d6c58f; border-radius: 9px; text-align: center; }
+.workshop-finish > svg { color: #ffda91; }
+.workshop-finish h2 { font-size: 26px; margin-top: 9px; }
+.workshop-finish p { font-size: 16px; color: var(--silver); margin-block: 10px 18px; }
+.workshop-bottom { padding: 18px 23px; display: flex; align-items: center; justify-content: space-between; gap: 22px; border-top: 1px solid var(--line); }
+.workshop-notice { font-size: 18px; }
+.workshop-ready { font-size: 15px; color: #aac9cd; margin-top: 6px; }
+.workshop-pad { display: flex; gap: 18px; align-items: center; flex-shrink: 0; }
+.workshop-directions { display: grid; grid-template-columns: repeat(3, 43px); grid-template-rows: repeat(2, 41px); gap: 5px; }
+.workshop-directions button { min-height: 0; padding: 5px; touch-action: none; }
+.workshop-directions button:first-child { grid-column: 2; }
+.workshop-directions button:nth-child(2) { grid-column: 1; grid-row: 2; }
+.workshop-directions button:nth-child(3) { grid-column: 2; grid-row: 2; }
+.workshop-directions button:nth-child(4) { grid-column: 3; grid-row: 2; }
+.workshop-action { min-width: 136px; flex-direction: column; }
+.workshop-action small { font-size: 13px; color: var(--silver); }
+.workshop-editor { padding: 19px 23px 23px; border-top: 1px solid var(--line); }
+.workshop-picker { display: flex; gap: 12px; flex-wrap: wrap; }
+.workshop-picker img { width: 48px; height: 48px; border-radius: 4px; }
+.workshop-edit-actions { display: flex; gap: 12px; margin-top: 15px; }
+.workshop-editor > p { font-size: 15px; color: var(--silver); margin-top: 15px; }
+.workshop-file-actions { display: flex; gap: 10px; flex-wrap: wrap; padding: 17px 23px; background: #0f2839; border-top: 1px solid var(--line); }
+.workshop-file-actions button { font-size: 15px; }
+.workshop-ready-download { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 9px 14px; border: 1px solid var(--cyan); border-radius: 6px; color: var(--cyan); font-size: 15px; }
+.workshop-file-actions > span { align-self: center; color: var(--silver); font-size: 15px; }
+.workshop-file-input { display: none; }
+.workshop-notes { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 65px; padding-block: 65px; }
+.workshop-notes h2, .workshop-downloads h2 { font-size: 29px; }
+.workshop-notes ul { padding-left: 21px; margin-top: 18px; color: var(--silver); }
+.workshop-notes li + li { margin-top: 12px; }
+.workshop-notes p { color: var(--silver); margin-top: 18px; line-height: 1.9; }
+.workshop-links { display: flex; gap: 12px 24px; flex-wrap: wrap; margin-top: 21px; color: var(--cyan); font-size: 16px; }
+.workshop-downloads { border-top: 1px solid var(--line); padding-block: 38px 55px; }
+.workshop-download-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px; margin-top: 27px; }
+.workshop-download-list h3 { font-size: 21px; }
+.workshop-download-list p { color: var(--muted); font-size: 15px; margin-block: 9px; }
+.workshop-download-list a { display: inline-flex; align-items: center; gap: 8px; color: var(--cyan); margin-right: 17px; min-height: 44px; font-size: 16px; }
+.workshop-footer { border-top: 1px solid var(--line); display: flex; gap: 18px 30px; flex-wrap: wrap; padding-block: 27px 38px; font-size: 16px; color: var(--silver); }
+.workshop-footer a { display: inline-flex; align-items: center; gap: 8px; }
+.workshop-teaser { padding-block: 65px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 60px; align-items: center; }
+.workshop-teaser p { color: var(--silver); font-size: 18px; margin-block: 23px; }
+.workshop-teaser .workshop-teaser-links { display: flex; align-items: center; gap: 14px 25px; flex-wrap: wrap; }
+.workshop-teaser figure { min-width: 0; }
+.workshop-teaser img { width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+.workshop-teaser figcaption { font-size: 15px; color: var(--muted); margin-top: 11px; }
+@media (max-width: 1000px) { .workshop-header { gap: 20px; } .workshop-header nav { gap: 17px; } .workshop-intro { gap: 30px; } .workshop-stage { height: 520px; } .workshop-teaser { gap: 35px; } }
+@media (max-width: 760px) {
+  .workshop-header { flex-direction: column; align-items: flex-start; padding-block: 22px; }
+  .workshop-header nav { gap: 12px 24px; }
+  .workshop-intro, .workshop-notes, .workshop-teaser { grid-template-columns: minmax(0, 1fr); gap: 25px; }
+  .workshop-intro { padding-block: 35px 27px; }
+  .workshop-intro h1 { font-size: 35px; }
+  .workshop-intro p { font-size: 17px; }
+  .workshop-entry { padding-left: 18px; }
+  .workshop-toolbar { padding: 12px; align-items: flex-start; gap: 10px; }
+  .workshop-toolbar button { font-size: 14px; padding: 8px 10px; gap: 5px; }
+  .workshop-toolbar > div { gap: 6px; }
+  .workshop-toolbar > button { font-size: 0; }
+  .workshop-toolbar > button svg { width: 20px; }
+  .workshop-stage { height: 395px; }
+  .workshop-launch { flex-direction: column; gap: 18px; padding: 22px; text-align: center; }
+  .workshop-launch img { width: 140px; }
+  .workshop-launch h2 { font-size: 22px; }
+  .workshop-launch p { font-size: 16px; margin-block: 10px 18px; }
+  .workshop-mission { left: 10px; right: 10px; top: 12px; gap: 9px; align-items: flex-start; }
+  .workshop-mission p { padding: 7px 10px; font-size: 14px; max-width: 235px; }
+  .workshop-mission strong { font-size: 18px; padding: 5px 10px; white-space: nowrap; }
+  .workshop-bottom { flex-direction: column; align-items: stretch; padding: 17px 15px; }
+  .workshop-notice { font-size: 16px; }
+  .workshop-pad { justify-content: space-between; }
+  .workshop-editor, .workshop-file-actions { padding-inline: 15px; }
+  .workshop-picker { gap: 7px; }
+  .workshop-picker button { font-size: 14px; padding: 8px; }
+  .workshop-picker img { width: 32px; height: 32px; }
+  .workshop-file-actions button { font-size: 14px; }
+  .workshop-notes, .workshop-teaser { padding-block: 40px; }
+  .workshop-download-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 27px; }
+  .workshop-finish { padding: 17px; }
+  .workshop-finish h2 { font-size: 23px; }
+}
+@media (prefers-reduced-motion: reduce) { .workshop-page { scroll-behavior: auto; } }

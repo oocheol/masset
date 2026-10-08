@@ -1,0 +1,7 @@
+import { ArrowUpRight, Play } from 'lucide-react';
+import './workshop.css';
+
+export default function WorkshopTeaser({ language = 'ko' }: { language?: 'ko' | 'en' }) {
+  const korean = language === 'ko';
+  return <section id="web-example" className="workshop-teaser page-width" aria-labelledby="web-example-title"><div><h2 id="web-example-title">{korean ? <>소품이 모여,<br />플레이하는 장면으로.</> : <>From individual props<br />to a playable scene.</>}</h2><p>{korean ? '로봇을 움직여 작은 작업장에 불을 켜보세요. 소품을 옮기고 장면을 저장할 수 있습니다. 설치 없이 실제 GLB를 체험하는 개발자 예시입니다.' : 'Move the robot, light the workshop, arrange the props and save your scene. A developer-made example that loads the actual GLBs, with no installation.'}</p><div className="workshop-teaser-links"><a className="button button-primary" href={korean ? '/play/workshop/' : '/play/workshop/en/'}><Play size={18} aria-hidden="true" />{korean ? '설치 없이 체험' : 'Play without installing'}</a><a className="text-link" href="/devlog/workshop/">{korean ? '제작 과정과 파일' : 'Production story and files'}<ArrowUpRight size={17} aria-hidden="true" /></a></div></div><figure><img src="/media/workshop-example.jpg" width="1238" height="570" loading="lazy" alt={korean ? '실제 GLB 상자·작업대·선반과 로봇을 배치한 웹 작업장 실행 화면' : 'Actual web workshop with the GLB crate, workbench, shelf and robot'} /><figcaption>{korean ? '실제 웹 실행 화면. 로컬 소품을 사용한 개발자 예시입니다.' : 'Actual browser capture of the developer-made example using local props.'}</figcaption></figure></section>;
+}

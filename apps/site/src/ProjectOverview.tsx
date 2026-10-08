@@ -4,6 +4,7 @@ import { projectContact, projectFacts, sourceUrl } from './content';
 import { macReleases, release } from './release';
 import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
 import LocalWorkflowCase from './LocalWorkflowCase';
+import WorkshopTeaser from './workshop/WorkshopTeaser';
 
 const windowsDownload = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
 
@@ -17,7 +18,7 @@ export default function ProjectOverview() {
     <a className="skip-link" href="#overview-main">Skip to content</a>
     <header className="overview-header page-width">
       <a className="wordmark" href="/" aria-label="Treeset home"><TreesetMark /><span>Treeset</span></a>
-      <nav aria-label="Project navigation"><a href="#project">Project</a><a href="#developer">Developer</a><a href="#evidence">Real outputs</a><a href={claudeWorkflowPath}>Claude prototype</a><a href="/" lang="ko">한국어</a></nav>
+      <nav aria-label="Project navigation"><a href="#project">Project</a><a href="/play/workshop/en/">Play the example</a><a href="#developer">Developer</a><a href={claudeWorkflowPath}>Claude prototype</a><a href="/" lang="ko">한국어</a></nav>
     </header>
     <main id="overview-main">
       <section className="overview-hero page-width" aria-labelledby="overview-title" itemScope itemType="https://schema.org/SoftwareApplication">
@@ -28,7 +29,7 @@ export default function ProjectOverview() {
           <div className="overview-actions"><a className="button button-primary" href="/#download-skill"><Terminal size={19} aria-hidden="true" />Install the Codex skill</a><a className="button button-secondary" href="/#desktop"><ArrowDownToLine size={19} aria-hidden="true" />Download the app</a></div>
           <p className="overview-platforms" itemProp="operatingSystem">Windows x64 and Apple Silicon macOS</p>
           <meta itemProp="applicationCategory" content="DesignApplication" />
-          <a className="text-link overview-source" href={sourceUrl}><Github size={18} aria-hidden="true" />Browse the source<ArrowUpRight size={17} aria-hidden="true" /></a>
+          <div className="overview-proof-links"><a className="text-link overview-source" href="/play/workshop/en/">Play without installing<ArrowUpRight size={17} aria-hidden="true" /></a><a className="text-link overview-source" href={sourceUrl}><Github size={18} aria-hidden="true" />Browse the source<ArrowUpRight size={17} aria-hidden="true" /></a></div>
         </div>
         <figure className="overview-render">
           <img src="/media/crate.png" width="512" height="512" alt="A wooden crate rendered from a real procedural Blender mesh" fetchPriority="high" />
@@ -36,6 +37,7 @@ export default function ProjectOverview() {
         </figure>
       </section>
 
+      <WorkshopTeaser language="en" />
       <section id="developer" className="overview-section page-width overview-developer" aria-labelledby="developer-title">
         <div><p className="overview-product">Developer / maintainer</p><h2 id="developer-title">JEONG WOOCHEOL</h2><p className="overview-developer-background">Java developer in his fifth year.</p><EvidenceLink href="https://github.com/oocheol"><Github size={18} aria-hidden="true" />Public GitHub profile: oocheol</EvidenceLink></div>
         <div><p>I develop and maintain Treeset and Asset Studio. My current public work connects asset planning, local processing, version review and export in a game-development workflow.</p><p>You can inspect the source, downloadable releases and example artifacts. Each verification record identifies the platform and what was actually checked.</p><div className="overview-proof-links"><EvidenceLink href={sourceUrl}>Inspect Asset Studio</EvidenceLink><EvidenceLink href={`mailto:${projectContact}`}>Contact the developer</EvidenceLink></div></div>

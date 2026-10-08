@@ -7,6 +7,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const pages = [
+  { file: 'play/workshop/index.html', language: 'ko', canonical: 'https://treeset.win/play/workshop/', content: ['작은 세계를 켜보세요', '데모 시작', '원본 모델은 그대로', '/devlog/workshop/'] },
+  { file: 'play/workshop/en/index.html', language: 'en', canonical: 'https://treeset.win/play/workshop/en/', content: ['playable world', 'Start the demo', 'not a customer case study', '/examples/workshop-starter.zip'] },
+  { file: 'devlog/workshop/index.html', language: 'en', canonical: 'https://treeset.win/devlog/workshop/', content: ['From three GLBs', '242,460', 'Live Claude execution remains pending', 'no external user feedback'] },
   { file: 'index.html', language: 'ko', canonical: 'https://treeset.win/', content: ['게임 에셋 제작', '사업자등록 전', '2026년 10월', 'JEONG WOOCHEOL', 'Java 개발 경력 5년 차', '0.1.13 설치 파일에는', '/about/'] },
   { file: 'about/index.html', language: 'en', canonical: 'https://treeset.win/about/', content: ['A local workbench', 'October 2026', 'pre-incorporation', 'No external investment', 'JEONG WOOCHEOL', 'Java developer in his fifth year', '0.1.13 installers do not include', 'id="claude-plan"', 'id="developer"', 'id="local-workflow"'] },
   { file: 'workflows/claude-asset-brief/index.html', language: 'en', canonical: 'https://treeset.win/workflows/claude-asset-brief/', content: ['A game brief, ready', 'individual asset instructions', 'Published 0.1.13 installers do not include', 'id="input"', 'id="output"', 'id="scope"', 'no paid API fallback'] },
@@ -20,7 +23,8 @@ for (const page of pages) {
   assert.ok(html.includes(`rel="canonical" href="${page.canonical}"`));
   assert.ok(html.includes('oocheol@treeset.win') && html.includes('https://github.com/oocheol'));
   if (page.file === 'workflows/claude-asset-brief/index.html') assert.ok(html.includes('/about/#local-workflow') && html.includes('/#desktop'));
-  else assert.ok(html.includes('examples/procedural') && html.includes('releases/'));
+  else if (page.file === 'index.html' || page.file === 'about/index.html') assert.ok(html.includes('examples/procedural') && html.includes('releases/'));
+  else assert.ok(html.includes('/examples/local-prop-kit/crate/model.glb'));
   assert.ok(!html.includes('<div id="root"></div>'), 'Body must not depend on JavaScript to appear');
   for (const text of page.content) assert.ok(html.includes(text), `Missing public content: ${text}`);
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {

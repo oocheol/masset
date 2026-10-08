@@ -3,6 +3,7 @@ import { ArrowDownToLine, ArrowUpRight, BookOpen, Box, Check, ChevronDown, Copy,
 import { macInstallCommand, macReleases, release } from './release';
 import { faqs, models, npmInstallCommand, projectFacts, skillDownloadUrl, skillInstallCommand, skillPackageVersion, skillUpdateCommand, skillVersion, sourceUrl, statuses } from './content';
 import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
+import WorkshopTeaser from './workshop/WorkshopTeaser';
 
 const releaseUrl = sourceUrl + '/releases/tag/v' + release.version;
 const latestReleaseUrl = sourceUrl + '/releases/latest';
@@ -77,7 +78,7 @@ export default function App() {
     <a className="skip-link" href="#main">본문으로 이동</a>
     <header className="site-header"><div className="page-width header-inner">
       <a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a>
-      <nav className="main-nav" aria-label="주요 메뉴"><a href="#product">Asset Studio</a><a href="#outputs">결과 예시</a><a href="#guide">사용 가이드</a><a href="#about">Treeset 소개</a><a href="/about/" lang="en">Project overview</a></nav>
+      <nav className="main-nav" aria-label="주요 메뉴"><a href="#product">Asset Studio</a><a href="/play/workshop/">웹 데모</a><a href="#outputs">결과 예시</a><a href="#guide">사용 가이드</a><a href="/about/" lang="en">Project overview</a></nav>
       <a className="header-start" href="#start">시작하기<ArrowDownToLine size={17} aria-hidden="true" /></a>
     </div></header>
 
@@ -91,7 +92,7 @@ export default function App() {
           <div className="hero-actions"><a className="button button-primary" href="#download-skill"><Terminal size={19} aria-hidden="true" />Codex에서 시작</a><a className="button button-secondary" href="#desktop"><ArrowDownToLine size={19} aria-hidden="true" />앱 다운로드</a></div>
           <p className="hero-platforms">Windows x64 / Apple Silicon Mac</p>
           <div className="hero-principle"><ShieldCheck size={18} aria-hidden="true" /><span>원본은 그대로. 결과는 새 버전으로.</span></div>
-          <div className="hero-evidence"><SourceLink href="#outputs">실제 결과 보기</SourceLink><SourceLink href={releaseUrl}>공개 릴리스 {release.version}</SourceLink></div>
+          <div className="hero-evidence"><a className="text-link" href="/play/workshop/">설치 없이 웹 데모 체험<ArrowUpRight size={17} aria-hidden="true" /></a><SourceLink href={releaseUrl}>공개 릴리스 {release.version}</SourceLink></div>
         </div>
         <figure className="hero-artifact">
           <div className="artifact-topline"><span><Box size={17} aria-hidden="true" />로컬 제작 예시</span><span>Blender 렌더</span></div>
@@ -106,6 +107,7 @@ export default function App() {
         </figure>
       </section>
 
+      <WorkshopTeaser />
       <div className="capability-strip"><div className="page-width"><p><FileImage size={20} aria-hidden="true" />2D 이미지</p><p><Box size={20} aria-hidden="true" />3D 모델</p><p><Workflow size={20} aria-hidden="true" />개별 제작·작업 큐</p><p><FolderOpen size={20} aria-hidden="true" />내 프로젝트에 저장</p></div></div>
 
       <section id="product" className="product-section section-space page-width" aria-labelledby="product-title">

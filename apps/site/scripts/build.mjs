@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { build } from 'vite';
+import './package-workshop.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
@@ -18,6 +19,9 @@ const home = template.replace(rootSlot, () => `<div id="root">${render('/')}</di
 await fs.writeFile(path.join(dist, 'index.html'), home);
 
 const pages = [
+  { pathname: '/play/workshop/', language: 'ko', title: 'Treeset — Asset Studio | 작은 작업장 웹 데모', description: '실제 로컬 GLB로 만든 작은 작업장을 설치 없이 체험하세요. 이동·셀 수집·소품 배치·장면 JSON 저장과 다시 열기.', requiredContent: ['id="workshop-main"', '데모 시작', '/examples/workshop-starter.zip'] },
+  { pathname: '/play/workshop/en/', language: 'en', title: 'Treeset — Asset Studio | Playable workshop example', description: 'Try a developer-made workshop using actual local Blender GLBs. Move, collect cells, arrange props and save an editable scene, with no installation.', requiredContent: ['id="workshop-main"', 'Start the demo', '/examples/workshop-starter.zip'] },
+  { pathname: '/devlog/workshop/', language: 'en', title: 'Treeset — Asset Studio | From GLBs to a playable workshop', description: 'Inspect the developer example: three real local props, a playable web scene, editable layout, original source files and SHA-256 records.', requiredContent: ['id="story-main"', 'From three GLBs', 'Live Claude execution remains pending'] },
   {
     pathname: '/about/',
     title: 'Treeset — Asset Studio | Project overview',
@@ -35,12 +39,12 @@ const htmlBytes = { '/': Buffer.byteLength(home) };
 for (const page of pages) {
   const canonical = `https://treeset.win${page.pathname}`;
   const html = template
-    .replace('<html lang="ko">', '<html lang="en">')
+    .replace('<html lang="ko">', `<html lang="${page.language ?? 'en'}">`)
     .replace(/<title>[^<]*<\/title>/, `<title>${page.title}</title>`)
     .replace(/(<meta name="description" content=")[^"]*("\s*\/?>)/, `$1${page.description}$2`)
     .replace(/(<link rel="canonical" href=")[^"]*("\s*\/?>)/, `$1${canonical}$2`)
     .replace(/(<meta property="og:url" content=")[^"]*("\s*\/?>)/, `$1${canonical}$2`)
-    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, '$1en_US$2')
+    .replace(/(<meta property="og:locale" content=")[^"]*("\s*\/?>)/, `$1${page.language === 'ko' ? 'ko_KR' : 'en_US'}$2`)
     .replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*("\s*\/?>)/g, `$1${page.title}$2`)
     .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*("\s*\/?>)/g, `$1${page.description}$2`)
     .replace(rootSlot, () => `<div id="root">${render(page.pathname)}</div>`);

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "treeset-workshop-scene",
+  "units": "metres",
+  "upAxis": "Y",
+  "provenance": "Developer-made example using local procedural Blender outputs; no AI provider request.",
+  "source": "https://treeset.win/about/#local-workflow",
+  "assets": [
+    {
+      "id": "crate",
+      "x": -2.5,
+      "z": -0.25,
+      "rotation": 0,
+      "source": "/examples/local-prop-kit/crate/model.glb",
+      "sha256": "fd5ee84a7617c54c254528230c48f1c0e69e0c17743fe540e939623bef717a06"
+    },
+    {
+      "id": "table",
+      "x": 0,
+      "z": -1.75,
+      "rotation": 0,
+      "source": "/examples/local-prop-kit/table/model.glb",
+      "sha256": "d065dc4b27691fb27fcc4c4484e32beae95e3e77d52fab4f310789caddeba9da"
+    },
+    {
+      "id": "shelf",
+      "x": 2.5,
+      "z": -0.25,
+      "rotation": 0,
+      "source": "/examples/local-prop-kit/shelf/model.glb",
+      "sha256": "14eb7351a009262b36c423510c026cb76a459523f6ea50cbd62722d0f4b8f2ff"
+    }
+  ]
+}

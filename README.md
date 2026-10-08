@@ -18,6 +18,7 @@
 
 <p align="center">
   <a href="https://treeset.win/"><strong>Treeset · 기능 소개 사이트</strong></a> ·
+  <a href="https://treeset.win/play/workshop/"><strong>설치 없는 웹 예제</strong></a> ·
   <a href="https://github.com/oocheol/masset/releases/tag/v0.1.13"><strong>다운로드</strong></a> ·
   <a href="#project-structure">프로젝트 구조</a> ·
   <a href="docs/windows-quickstart.md">사용 가이드</a>
@@ -26,6 +27,10 @@
 Treeset이 만드는 오픈소스 게임 에셋 제작 도구입니다. 공식 사이트는 [treeset.win](https://treeset.win/), 문의는 [oocheol@treeset.win](mailto:oocheol@treeset.win)입니다.
 
 Maintained by **JEONG WOOCHEOL**, a Java developer in his fifth year: [GitHub profile](https://github.com/oocheol). Treeset is an independent project that has not yet been incorporated. Inspect the [English project overview and real local workflow](https://treeset.win/about/#local-workflow).
+
+[![실제 로컬 GLB를 불러온 Treeset 웹 작업장](apps/site/public/media/workshop-example.jpg)](https://treeset.win/play/workshop/)
+
+**설치 없이 직접 체험:** [한국어 웹 예제](https://treeset.win/play/workshop/) · [English demo](https://treeset.win/play/workshop/en/) · [제작 과정](https://treeset.win/devlog/workshop/) · [GLB·Blender·장면 JSON 묶음](https://treeset.win/examples/workshop-starter.zip). 실제 Windows 로컬 제작 소품 3개로 만든 작은 작업장입니다. 로봇 이동·셀 전달, 소품 배치·회전, 장면 JSON과 PNG 저장을 제공합니다. 개발자 예시이며 외부 사용자 사례나 Claude 생성 결과가 아닙니다. [예제 구조와 검증 범위](docs/web-workshop-example.md)
 
 **Claude asset planning is a source prototype, with live verification pending.** The desktop panel and native CLI adapter accept an explicit brief and return reviewable per-asset instructions. The maintainer has no Pro/Max subscription, so no actual Claude request or generated plan is claimed. Published 0.1.13 downloads do not include this prototype. See the [implementation specification](docs/claude-asset-planning.md) and [public verification record](https://treeset.win/workflows/claude-asset-brief/).
 
