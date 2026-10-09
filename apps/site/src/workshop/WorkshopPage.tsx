@@ -3,6 +3,7 @@ import { ArrowDownToLine, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Box, Camera
 import { assets, defaultPlacements, exportScene, importScene, storageKey, type AssetId, type Notice } from './state';
 import type { Snapshot, Workshop } from './scene';
 import { sourceUrl } from '../content';
+import SiteFooterLinks from '../SiteFooterLinks';
 import './workshop.css';
 
 const copy = {
@@ -99,7 +100,7 @@ export default function WorkshopPage({ language = 'ko' }: { language?: 'ko' | 'e
       <section className="workshop-notes page-width"><article><h2>{text.help}</h2><ul><li>{text.moving}</li><li>{language === 'ko' ? '목표로 이동 버튼이 소품을 피해 길을 찾아줍니다.' : 'The goal button finds a path around the props.'}</li><li>{text.keyboard}</li><li>{text.place}</li><li>{text.storage}</li></ul></article><article><h2>{text.example}</h2><p>{text.exampleText}</p><div className="workshop-links"><a href="/devlog/workshop/">{text.record}</a><a href="/about/#local-workflow">{text.native}</a><a href="/workflows/claude-asset-brief/">{text.claude}</a></div></article></section>
       <section className="workshop-downloads page-width"><h2>{text.files}</h2><div className="workshop-download-list">{assets.map(a => <article key={a.id}><h3>{language === 'ko' ? a.name : a.english}</h3><p>{a.triangles.toLocaleString('en-US')} triangles</p><a href={assetUrlFor(a.id)} download>GLB</a><a href={`/examples/local-prop-kit/${a.id}/source.blend`} download>Blender</a></article>)}<article><h3>{text.kit}</h3><p>GLB · .blend · scene.json · README</p><a href="/examples/workshop-starter.zip" download><ArrowDownToLine size={17} aria-hidden="true" />ZIP</a><a href="/examples/workshop/scene.json" download>Scene JSON</a></article></div></section>
     </main>
-    <footer className="workshop-footer page-width"><a href="/">{text.home}</a><a href={`${sourceUrl}/tree/master/apps/site/src/workshop`}><Github size={17} aria-hidden="true" />{language === 'ko' ? '예제 소스' : 'Example source'}</a><a href={`${sourceUrl}/issues/new`}>{text.contact}</a><a href="mailto:oocheol@treeset.win">oocheol@treeset.win</a></footer>
+    <footer className="workshop-footer page-width"><a href="/">{text.home}</a><SiteFooterLinks language={language} /><a href={`${sourceUrl}/tree/master/apps/site/src/workshop`}><Github size={17} aria-hidden="true" />{language === 'ko' ? '예제 소스' : 'Example source'}</a><a href={`${sourceUrl}/issues/new`}>{text.contact}</a><a href="mailto:oocheol@treeset.win">oocheol@treeset.win</a></footer>
   </div>;
 }
 function assetUrlFor(id: AssetId) { return `/examples/local-prop-kit/${id}/model.glb`; }

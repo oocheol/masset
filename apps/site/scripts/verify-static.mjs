@@ -7,6 +7,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const pages = [
+  { file: 'terms/index.html', language: 'ko', canonical: 'https://treeset.win/terms/', content: ['이용약관', '2026-10-09', '사업자등록 전', 'Apache-2.0', '고의·중대한 과실'] },
+  { file: 'terms/en/index.html', language: 'en', canonical: 'https://treeset.win/terms/en/', content: ['Terms of use', 'pre-incorporation', 'Apache-2.0', 'intentional misconduct or gross negligence'] },
+  { file: 'privacy/index.html', language: 'ko', canonical: 'https://treeset.win/privacy/', content: ['개인정보처리방침', 'treeset.workshop.layout.v1', '현재 확인 중', '처리정지'] },
+  { file: 'privacy/en/index.html', language: 'en', canonical: 'https://treeset.win/privacy/en/', content: ['Privacy notice', 'treeset.workshop.layout.v1', 'still being checked', 'withdrawal of consent'] },
+  { file: 'research/claude-scenarios/index.html', language: 'ko', canonical: 'https://treeset.win/research/claude-scenarios/', content: ['가상 역할과 작성된 예시입니다', 'Claude를 호출하지 않았습니다', 'SIM-01', 'SIM-06', '측정하지 않음', '/examples/synthetic-claude/static-verification.json'] },
+  { file: 'research/claude-scenarios/en/index.html', language: 'en', canonical: 'https://treeset.win/research/claude-scenarios/en/', content: ['Fictional roles and authored examples', 'Claude was not called', 'SIM-01', 'SIM-06', 'not measured', '/examples/synthetic-claude/scenarios.json'] },
   { file: 'play/workshop/index.html', language: 'ko', canonical: 'https://treeset.win/play/workshop/', content: ['작은 세계를 켜보세요', '데모 시작', '원본 모델은 그대로', '/devlog/workshop/'] },
   { file: 'play/workshop/en/index.html', language: 'en', canonical: 'https://treeset.win/play/workshop/en/', content: ['playable world', 'Start the demo', 'not a customer case study', '/examples/workshop-starter.zip'] },
   { file: 'devlog/workshop/index.html', language: 'en', canonical: 'https://treeset.win/devlog/workshop/', content: ['From three GLBs', '242,460', 'Live Claude execution remains pending', 'no external user feedback'] },
@@ -24,7 +30,9 @@ for (const page of pages) {
   assert.ok(html.includes('oocheol@treeset.win') && html.includes('https://github.com/oocheol'));
   if (page.file === 'workflows/claude-asset-brief/index.html') assert.ok(html.includes('/about/#local-workflow') && html.includes('/#desktop'));
   else if (page.file === 'index.html' || page.file === 'about/index.html') assert.ok(html.includes('examples/procedural') && html.includes('releases/'));
-  else assert.ok(html.includes('/examples/local-prop-kit/crate/model.glb'));
+  else if (!/^(terms|privacy|research)\//.test(page.file)) assert.ok(html.includes('/examples/local-prop-kit/crate/model.glb'));
+  const policySuffix = page.language === 'en' ? 'en/' : '';
+  for (const href of [`/terms/${policySuffix}`, `/privacy/${policySuffix}`, `/research/claude-scenarios/${policySuffix}`]) assert.ok(html.includes(`href="${href}"`), `Policy/example navigation missing: ${page.file} ${href}`);
   assert.ok(!html.includes('<div id="root"></div>'), 'Body must not depend on JavaScript to appear');
   for (const text of page.content) assert.ok(html.includes(text), `Missing public content: ${text}`);
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)) {
@@ -43,6 +51,14 @@ for (const page of pages) {
   reports.push({ page: page.canonical, htmlBytes: Buffer.byteLength(html), localResources: resources });
 }
 const { claudeDevelopmentEvidence, claudeProof, claudePrototypeImplemented, localWorkflowProof } = await import(pathToFileURL(path.join(root, '.ssr-build/entry-server.js')).href);
+const syntheticBytes = await fs.readFile(path.join(dist, 'examples/synthetic-claude/scenarios.json'));
+const syntheticReceipt = JSON.parse(await fs.readFile(path.join(dist, 'examples/synthetic-claude/static-verification.json'), 'utf8'));
+assert.equal(syntheticReceipt.sourceSha256, createHash('sha256').update(syntheticBytes).digest('hex'));
+assert.equal(syntheticReceipt.providerExecuted, false);
+assert.equal(syntheticReceipt.realParticipants, 0);
+assert.equal(syntheticReceipt.outputFilesGenerated, 0);
+assert.equal(syntheticReceipt.observedMetrics, null);
+assert.equal(syntheticReceipt.cases.length, 6);
 const artifactReports = [];
 async function verifyArtifact(artifact, prefix) {
   assert.ok(artifact.label && typeof artifact.label === 'string');

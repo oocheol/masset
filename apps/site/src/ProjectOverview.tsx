@@ -5,6 +5,8 @@ import { macReleases, release } from './release';
 import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
 import LocalWorkflowCase from './LocalWorkflowCase';
 import WorkshopTeaser from './workshop/WorkshopTeaser';
+import SiteFooterLinks from './SiteFooterLinks';
+import { ResearchTeaser } from './ResearchExamples';
 
 const windowsDownload = `${sourceUrl}/releases/download/v${release.version}/${release.filename}`;
 
@@ -38,6 +40,7 @@ export default function ProjectOverview() {
       </section>
 
       <WorkshopTeaser language="en" />
+      <ResearchTeaser language="en" />
       <section id="developer" className="overview-section page-width overview-developer" aria-labelledby="developer-title">
         <div><p className="overview-product">Developer / maintainer</p><h2 id="developer-title">JEONG WOOCHEOL</h2><p className="overview-developer-background">Java developer in his fifth year.</p><EvidenceLink href="https://github.com/oocheol"><Github size={18} aria-hidden="true" />Public GitHub profile: oocheol</EvidenceLink></div>
         <div><p>I develop and maintain Treeset and Asset Studio. My current public work connects asset planning, local processing, version review and export in a game-development workflow.</p><p>You can inspect the source, downloadable releases and example artifacts. Each verification record identifies the platform and what was actually checked.</p><div className="overview-proof-links"><EvidenceLink href={sourceUrl}>Inspect Asset Studio</EvidenceLink><EvidenceLink href={`mailto:${projectContact}`}>Contact the developer</EvidenceLink></div></div>
@@ -78,6 +81,6 @@ export default function ProjectOverview() {
 
       <section className="overview-connect page-width" aria-labelledby="overview-contact-title"><div><h2 id="overview-contact-title">Build, try, or get in touch.</h2><p>Download an early release, inspect the examples or share a workflow you want to improve.</p></div><a className="button button-primary" href={`mailto:${projectContact}`}><Mail size={20} aria-hidden="true" />{projectContact}</a></section>
     </main>
-    <footer className="overview-footer page-width"><a href="/">Treeset / Asset Studio</a><nav aria-label="More project links"><a href="/#guide">User guide</a><a href={sourceUrl}>GitHub</a><a href="/third-party-notices.txt">Third-party notices</a><a href="/" lang="ko">한국어 사이트</a></nav></footer>
+    <footer className="overview-footer page-width"><a href="/">Treeset / Asset Studio</a><nav aria-label="More project links"><a href="/#guide">User guide</a><SiteFooterLinks language="en" /><a href={sourceUrl}>GitHub</a><a href="/third-party-notices.txt">Third-party notices</a><a href="/" lang="ko">한국어 사이트</a></nav></footer>
   </div>;
 }

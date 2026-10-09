@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { build } from 'vite';
 import './package-workshop.mjs';
+import './verify-synthetic.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
@@ -19,6 +20,12 @@ const home = template.replace(rootSlot, () => `<div id="root">${render('/')}</di
 await fs.writeFile(path.join(dist, 'index.html'), home);
 
 const pages = [
+  { pathname: '/terms/', language: 'ko', title: 'Treeset — Asset Studio | 이용약관', description: 'Treeset 공개 도구·예제·다운로드의 이용 조건, 라이선스, 외부 서비스와 가상 기록의 범위.', requiredContent: ['id="document-main"', '이용약관', 'JEONG WOOCHEOL'] },
+  { pathname: '/terms/en/', language: 'en', title: 'Treeset — Asset Studio | Terms of use', description: 'Terms for the Treeset public tools, examples and contact channel, with separate software licenses and external-provider conditions.', requiredContent: ['id="document-main"', 'Terms of use', 'JEONG WOOCHEOL'] },
+  { pathname: '/privacy/', language: 'ko', title: 'Treeset — Asset Studio | 개인정보처리방침', description: '브라우저 저장, 문의, 로컬 앱과 외부 제공자에서 처리하는 정보를 구분한 Treeset 개인정보 안내.', requiredContent: ['id="document-main"', '개인정보처리방침', 'treeset.workshop.layout.v1'] },
+  { pathname: '/privacy/en/', language: 'en', title: 'Treeset — Asset Studio | Privacy notice', description: 'How Treeset distinguishes site information, browser storage, contact email, local app data and optional external-provider connections.', requiredContent: ['id="document-main"', 'Privacy notice', 'treeset.workshop.layout.v1'] },
+  { pathname: '/research/claude-scenarios/', language: 'ko', title: 'Treeset — Asset Studio | 가상 테스트 예시', description: '여섯 가상 제작 역할의 요청·작성된 계획·검수 기준. 실제 고객, Claude 실행 또는 실측 성능을 주장하지 않는 개발 예시.', requiredContent: ['id="research-main"', 'Claude를 호출하지 않았습니다', 'SIM-06'] },
+  { pathname: '/research/claude-scenarios/en/', language: 'en', title: 'Treeset — Asset Studio | Synthetic evaluation examples', description: 'Six fictional asset-production roles with authored requests, illustrative plans and evaluation targets. No real participants or Claude execution.', requiredContent: ['id="research-main"', 'Claude was not called', 'SIM-06'] },
   { pathname: '/play/workshop/', language: 'ko', title: 'Treeset — Asset Studio | 작은 작업장 웹 데모', description: '실제 로컬 GLB로 만든 작은 작업장을 설치 없이 체험하세요. 이동·셀 수집·소품 배치·장면 JSON 저장과 다시 열기.', requiredContent: ['id="workshop-main"', '데모 시작', '/examples/workshop-starter.zip'] },
   { pathname: '/play/workshop/en/', language: 'en', title: 'Treeset — Asset Studio | Playable workshop example', description: 'Try a developer-made workshop using actual local Blender GLBs. Move, collect cells, arrange props and save an editable scene, with no installation.', requiredContent: ['id="workshop-main"', 'Start the demo', '/examples/workshop-starter.zip'] },
   { pathname: '/devlog/workshop/', language: 'en', title: 'Treeset — Asset Studio | From GLBs to a playable workshop', description: 'Inspect the developer example: three real local props, a playable web scene, editable layout, original source files and SHA-256 records.', requiredContent: ['id="story-main"', 'From three GLBs', 'Live Claude execution remains pending'] },

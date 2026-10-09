@@ -12,14 +12,24 @@ const requiredPages = [
   ['/', '설치 없이 웹 데모 체험'], ['/about/', 'Play without installing'],
   ['/play/workshop/', '작은 세계를 켜보세요'], ['/play/workshop/en/', 'playable world'],
   ['/devlog/workshop/', 'From three GLBs'], ['/workflows/claude-asset-brief/', 'live verification pending'],
+  ['/terms/', '이용약관'], ['/terms/en/', 'Terms of use'],
+  ['/privacy/', '개인정보처리방침'], ['/privacy/en/', 'Privacy notice'],
+  ['/research/claude-scenarios/', 'Claude를 호출하지 않았습니다'], ['/research/claude-scenarios/en/', 'Claude was not called'],
 ];
 const urls = new Set(['/examples/workshop/scene.json', '/examples/workshop/manifest.json', '/examples/workshop/README.md', '/examples/workshop-starter.zip', '/robots.txt', '/sitemap.xml']);
+for (const file of ['scenarios.json', 'README.md', 'static-verification.json']) urls.add(`/examples/synthetic-claude/${file}`);
 const pages = await Promise.all(requiredPages.map(async ([pathname, text]) => {
   const response = await fetch(new URL(pathname, base), { signal: AbortSignal.timeout(20000) });
   assert.equal(response.status, 200, pathname);
   const html = await response.text(); assert.ok(html.includes(text), pathname);
   assert.ok(html.includes(`rel="canonical" href="https://treeset.win${pathname}"`));
   assert.ok(!html.includes('<div id="root"></div>'));
+  const suffix = ['/about/', '/devlog/workshop/', '/workflows/claude-asset-brief/'].includes(pathname) || pathname.endsWith('/en/') ? 'en/' : '';
+  for (const target of [`/terms/${suffix}`, `/privacy/${suffix}`, `/research/claude-scenarios/${suffix}`]) assert.ok(html.includes(`href="${target}"`), `${pathname} missing ${target}`);
+  if (pathname.startsWith('/research/')) {
+    for (let number = 1; number <= 6; number++) assert.ok(html.includes(`id="SIM-${String(number).padStart(2, '0')}"`));
+    assert.ok(html.includes(pathname.endsWith('/en/') ? 'not measured' : '측정하지 않음'));
+  }
   if (base.protocol === 'https:') assert.ok(response.headers.get('content-security-policy')?.includes("script-src 'self'"), 'Production CSP');
   for (const match of html.matchAll(/\b(?:src|href)="([^"#]+)"/g)) if (/^\/(assets|media|examples)\//.test(match[1])) urls.add(match[1]);
   return { pathname, status: response.status, htmlBytes: Buffer.byteLength(html), canonical: `https://treeset.win${pathname}`, csp: response.headers.get('content-security-policy') };

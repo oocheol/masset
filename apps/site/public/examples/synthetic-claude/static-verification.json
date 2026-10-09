@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "type": "local-synthetic-fixture-verification",
+  "sourceSha256": "86638bd31ebfaefa725f24e03f67784b3ea87694475bbfb84692f275d07c6a71",
+  "scope": "Local checks of authored JSON provenance, bilingual fields, bounded plans, safe proposed filenames and null observations; not a Claude or user evaluation.",
+  "providerExecuted": false,
+  "realParticipants": 0,
+  "outputFilesGenerated": 0,
+  "observedMetrics": null,
+  "cases": [
+    {
+      "id": "SIM-01",
+      "illustrativeAssets": 3,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    },
+    {
+      "id": "SIM-02",
+      "illustrativeAssets": 3,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    },
+    {
+      "id": "SIM-03",
+      "illustrativeAssets": 2,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    },
+    {
+      "id": "SIM-04",
+      "illustrativeAssets": 3,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    },
+    {
+      "id": "SIM-05",
+      "illustrativeAssets": 3,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    },
+    {
+      "id": "SIM-06",
+      "illustrativeAssets": 2,
+      "checked": [
+        "fictional-provenance",
+        "no-observed-results",
+        "bilingual-fields",
+        "bounded-asset-count",
+        "safe-proposed-filenames",
+        "review-criteria-present"
+      ],
+      "fixtureChecksPassed": true
+    }
+  ]
+}

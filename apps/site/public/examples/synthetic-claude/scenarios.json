@@ -1,0 +1,986 @@
+{
+  "schemaVersion": 1,
+  "type": "synthetic-design-evaluation",
+  "synthetic": true,
+  "providerExecuted": false,
+  "authoredOn": "2026-10-09",
+  "author": "Treeset — AI-assisted authored examples",
+  "notice": {
+    "ko": "이 자료는 Treeset이 AI의 도움으로 작성한 가상 설계·평가 예시입니다. 여섯 역할은 실제 참여자가 아니며, 대화와 예상 제작 계획은 작성된 예시입니다. Claude를 호출하지 않았고 실제 사용자 테스트, 인터뷰, 추천사, 생성 결과 또는 성능 측정 기록이 아닙니다. 수치와 검수 항목은 향후 평가의 목표 조건일 뿐 관측 결과가 아닙니다.",
+    "en": "These are fictional design and evaluation examples authored by Treeset with AI assistance. The six roles are not real participants; the dialogue and expected production plans are authored illustrations. Claude was not called. This is not a record of actual user testing, interviews, testimonials, generated outputs, or performance measurements. Numeric constraints and review checks are future evaluation targets, not observed results."
+  },
+  "cases": [
+    {
+      "id": "SIM-01",
+      "title": {
+        "ko": "픽셀 게임의 크기·팔레트 일관성",
+        "en": "Pixel-game size and palette consistency"
+      },
+      "persona": {
+        "role": {
+          "ko": "1인 픽셀 게임 개발자 — 가상 역할",
+          "en": "Solo pixel-game developer — fictional role"
+        },
+        "context": {
+          "ko": "작은 숲 탐험 게임의 첫 제작 묶음을 정리하는 가상 상황입니다. 실제 게임이나 참여자에 관한 기록이 아닙니다.",
+          "en": "A fictional developer is organizing the first asset batch for a small forest exploration game. This does not describe a real game or participant."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "숲 탐험 화면에 필요한 대기 자세 캐릭터, 나무 열매 아이콘, 풀 바닥 타일을 계획해 주세요. 애니메이션은 다음 작업으로 남기고 지금은 정지 이미지만 필요합니다.",
+          "en": "Plan an idle character, a forest berry icon, and a grass floor tile for a forest exploration scene. Leave animation for a later task; only still images are needed now."
+        },
+        "artDirection": {
+          "ko": "탑다운 픽셀 아트, 정해진 12색 팔레트, 오른쪽 위 조명, 외곽선 1픽셀. 확대 시 픽셀 경계를 유지합니다.",
+          "en": "Top-down pixel art with a defined 12-color palette, upper-right lighting, and a one-pixel outline. Preserve pixel edges when enlarged."
+        },
+        "assetLimit": 3
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 캐릭터마다 크기가 달라지지 않게 첫 이미지 묶음을 설계해 주세요.",
+            "en": "Simulated request: Design the first image batch so character scale stays consistent."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: 정지 캐릭터 1개, 열매 아이콘 1개, 반복 가능한 바닥 타일 1개를 별도 PNG로 계획합니다. 픽셀 치수와 팔레트 검수를 각 파일에 붙입니다.",
+            "en": "Authored plan example: Plan one idle character, one berry icon, and one seamless floor tile as separate PNGs, with dimension and palette checks for each file."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 바닥 타일에는 캐릭터와 혼동될 큰 장식을 빼고, 실제 생성 후 최근접 보간 확대에서 확인하고 싶습니다.",
+            "en": "Simulated follow-up: Keep large decorations out of the floor tile and inspect nearest-neighbor enlargement after real generation."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "forest_runner_idle",
+            "kind": "sprite",
+            "purpose": {
+              "ko": "탐험 장면의 플레이어 대기 자세",
+              "en": "Player idle pose for the exploration scene"
+            },
+            "instruction": {
+              "ko": "32×32 픽셀의 투명 배경 정지 캐릭터를 계획합니다. 발 위치를 하단 중앙에 맞추고, 선택한 12색 팔레트와 1픽셀 외곽선을 사용합니다.",
+              "en": "Plan a 32×32 transparent idle character. Align the feet to bottom center and use the chosen 12-color palette with a one-pixel outline."
+            },
+            "format": "PNG",
+            "filename": "forest_runner_idle.png",
+            "acceptanceChecks": [
+              {
+                "ko": "PNG 치수는 32×32이고 배경 알파는 투명해야 합니다.",
+                "en": "The PNG must be 32×32 with a transparent background."
+              },
+              {
+                "ko": "색상 표본을 합의한 팔레트와 비교하고 흐림·반투명 가장자리를 확인합니다.",
+                "en": "Compare color samples with the agreed palette and inspect for blur or semi-transparent edges."
+              },
+              {
+                "ko": "최근접 보간 4배 확대에서 실루엣과 발 기준점을 검수합니다.",
+                "en": "Inspect the silhouette and foot anchor at 4× nearest-neighbor enlargement."
+              }
+            ]
+          },
+          {
+            "name": "forest_berry_icon",
+            "kind": "sprite",
+            "purpose": {
+              "ko": "아이템 목록에서 식별할 열매 아이콘",
+              "en": "Recognizable berry icon for the inventory"
+            },
+            "instruction": {
+              "ko": "16×16 픽셀 투명 PNG에 열매 한 묶음만 배치합니다. 글자를 넣지 않고 캐릭터와 동일한 팔레트·조명 방향을 사용합니다.",
+              "en": "Place a single berry cluster in a 16×16 transparent PNG. Use no text and keep the character's palette and lighting direction."
+            },
+            "format": "PNG",
+            "filename": "forest_berry_icon.png",
+            "acceptanceChecks": [
+              {
+                "ko": "파일 치수는 16×16이고 아이콘이 캔버스 밖으로 잘리지 않아야 합니다.",
+                "en": "The file must be 16×16 without clipping the icon."
+              },
+              {
+                "ko": "실제 크기와 어두운 UI 배경에서 열매 형태를 식별할 수 있는지 사람이 확인합니다.",
+                "en": "A reviewer checks whether the berry remains recognizable at native size on a dark UI background."
+              }
+            ]
+          },
+          {
+            "name": "forest_grass_tile",
+            "kind": "texture",
+            "purpose": {
+              "ko": "탐험 맵의 반복 가능한 바닥",
+              "en": "Repeatable ground for the exploration map"
+            },
+            "instruction": {
+              "ko": "32×32 픽셀의 불투명 풀 바닥 타일을 계획합니다. 가장자리의 밝기와 문양이 반복될 때 이어지도록 하고 큰 오브젝트나 글자는 넣지 않습니다.",
+              "en": "Plan an opaque 32×32 grass floor tile. Match edge brightness and patterns for tiling; omit large objects and text."
+            },
+            "format": "PNG",
+            "filename": "forest_grass_tile.png",
+            "acceptanceChecks": [
+              {
+                "ko": "가로·세로 3×3 반복 보기에서 경계선과 뚜렷한 반복 얼룩을 확인합니다.",
+                "en": "Inspect seams and obvious repeating patches in a 3×3 tiled preview."
+              },
+              {
+                "ko": "캐릭터 외곽선보다 낮은 대비를 유지하는지 실제 합성 화면에서 확인합니다.",
+                "en": "Check that tile contrast stays below the character outline in a real composite scene."
+              }
+            ]
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "전체 파일의 픽셀 치수, 배경 알파, 색상 팔레트를 함께 검수합니다.",
+            "en": "Review dimensions, alpha, and palette across all files."
+          },
+          {
+            "ko": "정지 이미지 계획에 애니메이션 프레임이나 지원되지 않은 기능이 섞이지 않았는지 확인합니다.",
+            "en": "Check that the still-image plan does not promise animation frames or unsupported capabilities."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "이미지 생성기가 픽셀 단위 제약을 정확히 지킨다고 가정하지 않습니다.",
+          "en": "Do not assume an image generator will obey pixel-level constraints exactly."
+        },
+        {
+          "ko": "계획의 수락과 실제 게임 엔진 표시 결과를 구분해야 합니다.",
+          "en": "Keep acceptance of the plan separate from actual display in a game engine."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "세 파일의 크기·팔레트·조명이 서로 모순되지 않는 계획인지 검토합니다.",
+          "en": "Evaluate whether size, palette, and lighting requirements remain consistent across the three files."
+        },
+        {
+          "ko": "생성 후 타일 경계와 알파를 실제 파일로 재검수할 수 있어야 합니다.",
+          "en": "The plan must allow seams and alpha to be rechecked on actual files after generation."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 바닥 대비를 낮추고 최근접 보간 검수를 추가합니다. 수정안은 실제 생성·검증을 거치지 않았습니다.",
+        "en": "Proposed revision: Reduce ground contrast and add a nearest-neighbor review. This revision has not been generated or validated."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    },
+    {
+      "id": "SIM-02",
+      "title": {
+        "ko": "모바일용 로우폴리 소품 예산",
+        "en": "Low-poly prop budgets for mobile"
+      },
+      "persona": {
+        "role": {
+          "ko": "모바일 로우폴리 게임 개발자 — 가상 역할",
+          "en": "Mobile low-poly developer — fictional role"
+        },
+        "context": {
+          "ko": "모바일 카메라에서 읽기 쉬운 작은 배송 게임용 소품을 설계하는 가상 상황입니다.",
+          "en": "A fictional developer is planning readable props for a small mobile delivery game."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "배송 상자, 정차 표지판, 운송 카트 세 가지를 계획해 주세요. 물리 충돌체는 엔진에서 별도로 만들 예정이며 GLB에는 시각 모델만 필요합니다.",
+          "en": "Plan a delivery crate, a stop sign, and a transport cart. Collision shapes will be made separately in the engine; each GLB should contain only the visual model."
+        },
+        "artDirection": {
+          "ko": "낮은 폴리곤 수, 둥근 모서리, 불투명 PBR 단색 재질, 미터 단위, Y-up, 하단 중앙 원점. 작은 화면에서 실루엣을 우선합니다.",
+          "en": "Use low polygon counts, softened corners, opaque solid-color PBR materials, meters, Y-up, and a bottom-center origin. Prioritize silhouettes on small screens."
+        },
+        "assetLimit": 3
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 모바일용 소품이라 폴리곤과 재질 수를 계획부터 제한하고 싶습니다.",
+            "en": "Simulated request: I want polygon and material limits defined at the planning stage for mobile props."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: GLB 소품 3개에 각각 삼각형 상한과 크기를 지정합니다. 충돌체와 프레임 속도는 생성 결과로 주장하지 않고 후속 엔진 검수에 남깁니다.",
+            "en": "Authored plan example: Specify a triangle cap and dimensions for each of three GLB props. Reserve collider and frame-rate checks for later engine validation."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 카트 손잡이는 화면에서 보여야 하지만 바퀴 회전 애니메이션은 이번 범위에서 제외해 주세요.",
+            "en": "Simulated follow-up: Keep the cart handle readable, but leave wheel animation outside this scope."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "delivery_crate",
+            "kind": "model",
+            "purpose": {
+              "ko": "배송 목표물의 실루엣",
+              "en": "Silhouette for the delivery target"
+            },
+            "instruction": {
+              "ko": "0.6×0.5×0.5m 상자를 계획합니다. 불투명 단색 재질 2개 이하, 삼각형 600개 이하, 하단 중앙 원점을 목표로 합니다.",
+              "en": "Plan a 0.6×0.5×0.5m crate with no more than two opaque solid-color materials, at most 600 triangles, and a bottom-center origin."
+            },
+            "format": "GLB",
+            "filename": "delivery_crate.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "실제 내보낸 GLB의 삼각형 수가 600 이하이고 재질 수가 2 이하인지 확인합니다.",
+                "en": "Check that the exported GLB contains at most 600 triangles and two materials."
+              },
+              {
+                "ko": "바운딩 박스·단위·원점과 기본 카메라에서의 실루엣을 확인합니다.",
+                "en": "Check bounds, units, origin, and silhouette from the default camera."
+              }
+            ],
+            "triangleLimit": 600
+          },
+          {
+            "name": "delivery_stop_sign",
+            "kind": "model",
+            "purpose": {
+              "ko": "정차 위치를 표시하는 소품",
+              "en": "Prop marking a delivery stop"
+            },
+            "instruction": {
+              "ko": "높이 1.2m 표지판을 계획합니다. 글자 대신 큰 도형을 사용하며 불투명 재질 2개 이하, 삼각형 450개 이하로 제한합니다.",
+              "en": "Plan a 1.2m sign using a large symbol instead of text, with at most two opaque materials and 450 triangles."
+            },
+            "format": "GLB",
+            "filename": "delivery_stop_sign.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "표지판의 도형이 실제 모바일 미리보기에서 판독 가능한지 검수합니다.",
+                "en": "Review whether the sign symbol is legible in an actual mobile preview."
+              },
+              {
+                "ko": "최종 GLB의 삼각형 상한·재질 상한과 기둥의 바닥 접점을 확인합니다.",
+                "en": "Check the final GLB's triangle and material caps and the pole's ground contact."
+              }
+            ],
+            "triangleLimit": 450
+          },
+          {
+            "name": "delivery_cart",
+            "kind": "model",
+            "purpose": {
+              "ko": "운송 동선을 보여주는 정적 카트",
+              "en": "Static cart illustrating the delivery route"
+            },
+            "instruction": {
+              "ko": "길이 1m의 정적 카트를 계획합니다. 손잡이와 바퀴의 형태를 구분하고, 재질 3개 이하·삼각형 1,200개 이하를 목표로 합니다. 리깅이나 애니메이션은 포함하지 않습니다.",
+              "en": "Plan a static 1m-long cart with distinct handle and wheel shapes, at most three materials and 1,200 triangles. Do not include rigging or animation."
+            },
+            "format": "GLB",
+            "filename": "delivery_cart.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "삼각형 1,200개와 재질 3개라는 목표 상한을 실제 파일에서 확인합니다.",
+                "en": "Verify the target caps of 1,200 triangles and three materials on the actual file."
+              },
+              {
+                "ko": "작은 카메라 뷰에서 손잡이·적재부·바퀴의 실루엣을 구분할 수 있어야 합니다.",
+                "en": "The handle, cargo area, and wheels should have distinct silhouettes in a small camera view."
+              }
+            ],
+            "triangleLimit": 1200
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "모든 소품의 크기·좌표축·원점 규칙을 통일합니다.",
+            "en": "Use consistent scale, axes, and origin rules across all props."
+          },
+          {
+            "ko": "실제 장치에서 재질 호환성과 렌더링 비용을 후속 검수합니다. 이 문서에는 성능 측정이 없습니다.",
+            "en": "Perform later material compatibility and rendering-cost checks on a real device. This document contains no performance measurements."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "삼각형 수만으로 모바일 성능을 보장할 수 없습니다.",
+          "en": "Triangle counts alone cannot guarantee mobile performance."
+        },
+        {
+          "ko": "카트는 정적 시각 모델이며 실제 물리·주행 기능을 제공하지 않습니다.",
+          "en": "The cart is a static visual model, not a physics or driving implementation."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "예산·재질·카메라 가독성을 소품별로 확인할 수 있는 계획인지 평가합니다.",
+          "en": "Evaluate whether budgets, materials, and camera readability can be checked per prop."
+        },
+        {
+          "ko": "수동 엔진 검수와 제작 도구의 기능 범위를 명확히 구분하는지 평가합니다.",
+          "en": "Evaluate whether manual engine review is clearly separated from production-tool capabilities."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 카트 손잡이의 실루엣 검수를 강조하고 바퀴 애니메이션을 제외합니다. 성능 향상은 관측하지 않았습니다.",
+        "en": "Proposed revision: Emphasize the cart handle's silhouette check and exclude wheel animation. No performance improvement has been observed."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    },
+    {
+      "id": "SIM-03",
+      "title": {
+        "ko": "GLB 내보내기 검수와 원본 보존",
+        "en": "GLB export review and source preservation"
+      },
+      "persona": {
+        "role": {
+          "ko": "3D 내보내기를 검수하는 테크니컬 아티스트 — 가상 역할",
+          "en": "Technical artist reviewing 3D exports — fictional role"
+        },
+        "context": {
+          "ko": "작업 중인 소품 원본을 보존하면서 엔진 전달용 내보내기 규칙을 정리하는 가상 상황입니다. 실제 파일에서 결함을 발견했다는 기록이 아닙니다.",
+          "en": "A fictional technical artist is defining engine-handoff rules while preserving prop sources. This is not a record of defects discovered in actual files."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "선반과 작업대의 검수용 GLB 버전을 새 이름으로 계획해 주세요. 음수 스케일, 뒤집힌 면, 외부 텍스처 누락, 원점 위치를 확인하고 원본을 덮어쓰지 않아야 합니다.",
+          "en": "Plan newly named review GLB versions of a shelf and workbench. Check negative scale, flipped faces, missing external textures, and origin position without overwriting sources."
+        },
+        "artDirection": {
+          "ko": "실내용 로우폴리 소품, 미터 단위, Y-up, 불투명 PBR. 높이·접지 위치가 엔진 그리드와 맞아야 합니다.",
+          "en": "Low-poly indoor props using meters, Y-up, and opaque PBR. Height and ground contact must match the engine grid."
+        },
+        "assetLimit": 2
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 기존 GLB가 엔진에서 다르게 보일 수 있어 검수 순서를 정리해 주세요. 원본 수정은 금지합니다.",
+            "en": "Simulated request: Outline a review sequence for possible engine differences in existing GLBs. Do not alter sources."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: 선반과 작업대에 _review_v01 새 파일명을 사용하고, 변환·면 방향·재질·바운딩 박스 검수를 계획합니다. 결함 유무는 실제 파일을 읽은 뒤에만 기록합니다.",
+            "en": "Authored plan example: Use new _review_v01 filenames and plan transform, face orientation, material, and bounds checks. Record defects only after inspecting actual files."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 검수 보고서에는 자동으로 확인된 항목과 사람이 엔진에서 확인해야 하는 항목을 분리해 주세요.",
+            "en": "Simulated follow-up: Separate automatically verified checks from checks a person must perform in the engine."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "indoor_shelf_review_v01",
+            "kind": "model",
+            "purpose": {
+              "ko": "선반의 엔진 전달용 검수 버전",
+              "en": "Engine-handoff review version of the shelf"
+            },
+            "instruction": {
+              "ko": "높이 1.6m 선반의 새 내보내기 버전을 계획합니다. 삼각형 1,000개 이하를 목표로 하고, 변환·면 방향을 검수하며 필요한 리소스는 GLB에 포함합니다.",
+              "en": "Plan a new export version of a 1.6m shelf, targeting at most 1,000 triangles. Review transforms and face orientation and embed required resources in the GLB."
+            },
+            "format": "GLB",
+            "filename": "indoor_shelf_review_v01.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "원본과 다른 경로·파일명인지 확인하고 원본의 변경 여부를 검수합니다.",
+                "en": "Verify a distinct path and filename and check that the source remains unchanged."
+              },
+              {
+                "ko": "GLB 유효성·내장 리소스 참조·삼각형 수·유한한 바운딩 박스를 확인합니다.",
+                "en": "Check GLB validity, embedded resource references, triangle count, and finite bounds."
+              },
+              {
+                "ko": "면 방향과 접지 위치는 실제 뷰어·대상 엔진에서 추가 확인합니다.",
+                "en": "Also inspect face orientation and ground contact in a real viewer and target engine."
+              }
+            ],
+            "triangleLimit": 1000
+          },
+          {
+            "name": "indoor_workbench_review_v01",
+            "kind": "model",
+            "purpose": {
+              "ko": "작업대의 단위·재질 검수 버전",
+              "en": "Workbench version for unit and material review"
+            },
+            "instruction": {
+              "ko": "1.4×0.85×0.7m 작업대의 별도 GLB 버전을 계획합니다. 삼각형 1,200개 이하를 목표로 하고, 불투명 PBR 재질과 미터 단위·하단 중앙 원점을 확인합니다.",
+              "en": "Plan a separate GLB version of a 1.4×0.85×0.7m workbench, targeting at most 1,200 triangles. Review opaque PBR materials, meter units, and a bottom-center origin."
+            },
+            "format": "GLB",
+            "filename": "indoor_workbench_review_v01.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "바운딩 박스가 목표 치수와 맞는지, 음수 스케일이 있는지 확인합니다.",
+                "en": "Check bounds against target dimensions and inspect for negative scale."
+              },
+              {
+                "ko": "새 파일의 재질·알파 모드·리소스 참조를 검사하고 실제 엔진에서 시각 결과를 비교합니다.",
+                "en": "Inspect materials, alpha modes, and resource references, then compare visual results in the actual engine."
+              },
+              {
+                "ko": "진단할 수 없는 항목을 통과로 표시하지 않고 미확인으로 남깁니다.",
+                "en": "Leave undiagnosable checks unverified instead of marking them passed."
+              }
+            ],
+            "triangleLimit": 1200
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "원본 경로, 새 출력 경로, 파일 해시와 검수 상태를 실제 실행 시 기록합니다.",
+            "en": "Record source paths, new output paths, file hashes, and review status during a real run."
+          },
+          {
+            "ko": "Blender를 사용한다면 스크립트 자동 실행을 끄고, 생성된 코드를 에셋 입력으로 실행하지 않습니다.",
+            "en": "If Blender is used, disable script auto-execution and do not execute generated code as an asset input."
+          },
+          {
+            "ko": "자동 구조 검수 결과와 엔진 시각 검수 결과를 별도로 기록합니다.",
+            "en": "Record automated structural checks separately from visual engine checks."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "올바른 GLB 구조만으로 게임 엔진에서의 시각 품질이 보장되지는 않습니다.",
+          "en": "A valid GLB structure does not guarantee visual quality in a game engine."
+        },
+        {
+          "ko": "실제 파일을 읽지 않았으므로 이 예시에는 결함 진단이나 검수 통과 기록이 없습니다.",
+          "en": "No actual files were inspected, so this example contains no defect diagnosis or passed review record."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "원본 보존·출력 버전 관리·미확인 상태 표시를 계획이 지원하는지 평가합니다.",
+          "en": "Evaluate whether the plan supports source preservation, versioned outputs, and unverified states."
+        },
+        {
+          "ko": "구조 검수에서 알 수 있는 사실과 시각 검수가 필요한 판단을 구분하는지 평가합니다.",
+          "en": "Evaluate whether structural facts are separated from judgments requiring visual review."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 검수 상태에 미확인을 포함하고 엔진 확인 항목을 별도 목록으로 분리합니다. 실제 결함을 수정했다는 뜻이 아닙니다.",
+        "en": "Proposed revision: Include an unverified review state and separate engine checks. This does not mean an actual defect was fixed."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    },
+    {
+      "id": "SIM-04",
+      "title": {
+        "ko": "다국어 브리프와 이미지 지시의 분리",
+        "en": "Separating multilingual briefs from image instructions"
+      },
+      "persona": {
+        "role": {
+          "ko": "한국어·영어 콘텐츠 디자이너 — 가상 역할",
+          "en": "Korean/English content designer — fictional role"
+        },
+        "context": {
+          "ko": "한국어 기획 의도를 영어 제작 지시로 옮기되 UI 문구와 이미지 제작 범위를 분리하는 가상 상황입니다.",
+          "en": "A fictional designer is translating Korean design intent into English asset instructions while separating UI copy from image production."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "퀘스트 보드 배경, 지도 아이콘, 제작 재료 아이콘을 한국어·영어로 계획해 주세요. 이미지에는 글자를 넣지 않고 UI 텍스트는 게임의 별도 문자열 자원으로 관리합니다.",
+          "en": "Plan a quest-board background, map icon, and crafting-material icon in Korean and English. Keep text out of images and manage UI copy in separate game string resources."
+        },
+        "artDirection": {
+          "ko": "따뜻한 손그림 풍의 판타지 UI, 청록·모래색 중심, 동일한 외곽선 두께. 의미 전달에 국기·언어별 글자·색상만을 사용하지 않습니다.",
+          "en": "Warm hand-painted fantasy UI with teal and sand colors and consistent outline thickness. Do not rely on flags, language-specific text, or color alone to convey meaning."
+        },
+        "assetLimit": 3
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 한국어 브리프를 영어로 바꿀 때 지도와 재료의 의미가 달라지지 않도록 하고 싶습니다.",
+            "en": "Simulated request: I want map and material meanings preserved when translating the Korean brief into English."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: 언어가 없는 PNG 3개와 대응하는 한국어·영어 지시를 계획합니다. 문구 번역과 문화 적합성은 별도 사람 검수 항목으로 남깁니다.",
+            "en": "Authored plan example: Plan three text-free PNGs with paired Korean/English instructions. Leave copy translation and cultural suitability for separate human review."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 보드 중앙에는 긴 번역문도 올릴 수 있게 비워 두고, 지도 아이콘에 특정 국가 모양을 쓰지 마세요.",
+            "en": "Simulated follow-up: Leave the board center clear for longer translations and avoid a country-specific outline in the map icon."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "quest_board_background",
+            "kind": "image",
+            "purpose": {
+              "ko": "다국어 UI 문구를 얹을 퀘스트 보드 배경",
+              "en": "Quest-board background for multilingual UI copy"
+            },
+            "instruction": {
+              "ko": "1,024×768 PNG의 중앙 60% 영역을 장식 없이 비워 둡니다. 판타지 보드 재질과 테두리만 넣고 글자·기호형 문구는 생성하지 않습니다.",
+              "en": "Plan a 1,024×768 PNG with the central 60% left free of decoration. Include only fantasy board material and borders, with no text or text-like marks."
+            },
+            "format": "PNG",
+            "filename": "quest_board_background.png",
+            "acceptanceChecks": [
+              {
+                "ko": "정해진 치수와 중앙 여백을 실제 출력에서 확인합니다.",
+                "en": "Check the requested dimensions and clear central region on the actual output."
+              },
+              {
+                "ko": "한국어·영어 UI 문자열을 별도 레이어로 얹어 대비와 겹침을 확인합니다.",
+                "en": "Overlay Korean and English UI strings separately to check contrast and overlap."
+              },
+              {
+                "ko": "이미지에 읽을 수 없는 가짜 글자나 워터마크가 없는지 검수합니다.",
+                "en": "Inspect for unreadable pseudo-text or watermarks."
+              }
+            ]
+          },
+          {
+            "name": "quest_map_icon",
+            "kind": "sprite",
+            "purpose": {
+              "ko": "퀘스트 위치 탐색을 나타내는 아이콘",
+              "en": "Icon representing quest navigation"
+            },
+            "instruction": {
+              "ko": "128×128 투명 PNG의 접힌 지도와 위치 핀을 계획합니다. 특정 국가 윤곽과 텍스트를 쓰지 않고 동일한 외곽선 스타일을 유지합니다.",
+              "en": "Plan a folded map and location pin in a 128×128 transparent PNG. Avoid country outlines and text, and keep the shared outline style."
+            },
+            "format": "PNG",
+            "filename": "quest_map_icon.png",
+            "acceptanceChecks": [
+              {
+                "ko": "한국어·영어 지시가 같은 시각적 목적을 설명하는지 대조합니다.",
+                "en": "Compare Korean and English instructions for the same visual intent."
+              },
+              {
+                "ko": "흑백 미리보기에서도 지도와 핀이 식별 가능한지 확인합니다.",
+                "en": "Check whether the map and pin remain recognizable in a grayscale preview."
+              }
+            ]
+          },
+          {
+            "name": "quest_material_bundle",
+            "kind": "sprite",
+            "purpose": {
+              "ko": "제작 재료 목록을 나타내는 아이콘",
+              "en": "Icon representing a crafting-material list"
+            },
+            "instruction": {
+              "ko": "128×128 투명 PNG에 나무와 금속 조각 묶음을 계획합니다. 지도 아이콘과 같은 선 굵기·조명 방향을 쓰고 문자 없이 의미를 전달합니다.",
+              "en": "Plan a wood-and-metal material bundle in a 128×128 transparent PNG. Match the map icon's line weight and lighting and communicate without text."
+            },
+            "format": "PNG",
+            "filename": "quest_material_bundle.png",
+            "acceptanceChecks": [
+              {
+                "ko": "두 언어의 지시에 동일한 재료 목록과 제약이 포함돼야 합니다.",
+                "en": "Both instruction languages must include the same materials and constraints."
+              },
+              {
+                "ko": "지도 아이콘과 나란히 놓아 크기·선 굵기·광원 일관성을 검수합니다.",
+                "en": "Review size, line weight, and lighting consistency beside the map icon."
+              }
+            ]
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "브리프의 재료·치수·금지 요소가 두 언어에서 일치하는지 대조합니다.",
+            "en": "Compare materials, dimensions, and excluded elements across both languages."
+          },
+          {
+            "ko": "문자열 번역, 이미지 의미, 문화 적합성 검수를 구분해 기록합니다.",
+            "en": "Record copy translation, visual meaning, and cultural suitability as separate reviews."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "영어 지시를 작성했다고 번역 품질이나 문화 적합성을 확인한 것은 아닙니다.",
+          "en": "Writing English instructions does not validate translation quality or cultural suitability."
+        },
+        {
+          "ko": "문자 생성 여부와 UI 대비는 실제 이미지·게임 화면에서 확인해야 합니다.",
+          "en": "Text artifacts and UI contrast must be checked on real images and game screens."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "한국어·영어 계획이 같은 제약을 보존하고 글자를 이미지에서 분리하는지 평가합니다.",
+          "en": "Evaluate whether both languages preserve constraints and keep text separate from images."
+        },
+        {
+          "ko": "긴 번역문과 흑백 상태를 후속 검수할 수 있는지 평가합니다.",
+          "en": "Evaluate whether longer translations and grayscale readability can be reviewed later."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 보드 중앙 여백과 국가에 의존하지 않는 지도 표현을 명시합니다. 번역 또는 이미지 출력의 성공을 측정하지 않았습니다.",
+        "en": "Proposed revision: Specify the clear board center and a country-neutral map. No translation or image-output success has been measured."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    },
+    {
+      "id": "SIM-05",
+      "title": {
+        "ko": "게임잼 팀의 범위 축소와 작업 전달",
+        "en": "Scope control and handoff for a game-jam team"
+      },
+      "persona": {
+        "role": {
+          "ko": "소규모 게임잼 팀 — 가상 역할",
+          "en": "Small game-jam team — fictional role"
+        },
+        "context": {
+          "ko": "짧은 제작 일정에서 서로 다른 담당자가 같은 스타일로 필수 소품을 준비하는 가상 상황입니다. 실제 팀의 일정·성과를 기록한 것이 아닙니다.",
+          "en": "A fictional small team is preparing essential props in a shared style under a short production schedule. This is not a record of a real team's schedule or results."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "작은 로봇 배달 장면에서 사용할 적재 상자, 목표 비콘, 바닥 문양만 계획해 주세요. 로봇 캐릭터·리깅·음악은 이번 범위에서 제외하고 세 파일을 독립적으로 전달할 수 있어야 합니다.",
+          "en": "Plan only a cargo crate, a goal beacon, and a floor pattern for a small robot-delivery scene. Exclude the robot, rigging, and music; all three files must support independent handoff."
+        },
+        "artDirection": {
+          "ko": "블록형 SF 소품, 청록 포인트, 회색 바탕, 단순한 실루엣. 모델은 미터 단위·Y-up·하단 중앙 원점이며 바닥 문양에는 텍스트를 넣지 않습니다.",
+          "en": "Blocky sci-fi props with teal accents, gray bases, and simple silhouettes. Models use meters, Y-up, and bottom-center origins; the floor pattern contains no text."
+        },
+        "assetLimit": 3
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 여러 담당자가 나눠 만들어도 마지막에 스타일을 맞출 수 있는 최소 묶음이 필요합니다.",
+            "en": "Simulated request: We need a minimal batch that keeps style consistent across independently assigned work."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: 파일 3개로 범위를 고정하고 공통 색상·단위·이름 규칙을 붙입니다. 독립 작업 가능성은 계획상의 의도이며 실제 병렬 실행 기록은 아닙니다.",
+            "en": "Authored plan example: Fix the scope at three files with shared color, unit, and naming rules. Independent work is a design intention, not a record of a parallel run."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 비콘은 정적인 표시물로 충분합니다. 반짝임이나 승리 연출은 엔진에서 따로 만들게 해 주세요.",
+            "en": "Simulated follow-up: A static beacon is enough. Leave flashing and victory effects for the engine."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "jam_cargo_crate",
+            "kind": "model",
+            "purpose": {
+              "ko": "배달 게임의 이동 대상",
+              "en": "Movable target in the delivery game"
+            },
+            "instruction": {
+              "ko": "0.7m 크기의 블록형 상자를 계획합니다. 공통 청록 포인트와 불투명 재질을 사용하며 삼각형 900개 이하를 목표로 합니다.",
+              "en": "Plan a blocky 0.7m crate using the shared teal accent and opaque materials, targeting at most 900 triangles."
+            },
+            "format": "GLB",
+            "filename": "jam_cargo_crate.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "최종 파일의 단위·원점·삼각형 상한을 확인합니다.",
+                "en": "Check units, origin, and triangle cap on the final file."
+              },
+              {
+                "ko": "비콘과 같은 장면에서 포인트 색상과 실루엣을 비교합니다.",
+                "en": "Compare accent color and silhouette with the beacon in one scene."
+              }
+            ],
+            "triangleLimit": 900
+          },
+          {
+            "name": "jam_goal_beacon",
+            "kind": "model",
+            "purpose": {
+              "ko": "배달 목표를 표시하는 정적 비콘",
+              "en": "Static beacon marking the delivery goal"
+            },
+            "instruction": {
+              "ko": "높이 1.1m의 정적 비콘을 계획합니다. 삼각형 800개 이하, 발광 없이 기본 PBR 색상만으로 목표 실루엣을 표현합니다. 애니메이션은 제외합니다.",
+              "en": "Plan a static 1.1m beacon with at most 800 triangles. Use basic PBR color without emission for the goal silhouette; exclude animation."
+            },
+            "format": "GLB",
+            "filename": "jam_goal_beacon.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "애니메이션·발광 효과를 전제로 하지 않아도 목표 형태가 식별되는지 검수합니다.",
+                "en": "Check that the goal silhouette remains recognizable without animation or emission."
+              },
+              {
+                "ko": "하단 중앙 원점과 바닥 접점을 실제 장면에서 확인합니다.",
+                "en": "Verify bottom-center origin and ground contact in the actual scene."
+              }
+            ],
+            "triangleLimit": 800
+          },
+          {
+            "name": "jam_floor_route",
+            "kind": "texture",
+            "purpose": {
+              "ko": "배달 동선을 암시하는 바닥 문양",
+              "en": "Floor pattern suggesting a delivery route"
+            },
+            "instruction": {
+              "ko": "512×512 불투명 PNG의 단순한 방향 문양을 계획합니다. 텍스트·제품 로고를 넣지 않고 공통 청록·회색 배색을 사용합니다.",
+              "en": "Plan a simple direction pattern as an opaque 512×512 PNG. Use the shared teal-and-gray palette and omit text and product logos."
+            },
+            "format": "PNG",
+            "filename": "jam_floor_route.png",
+            "acceptanceChecks": [
+              {
+                "ko": "파일 치수와 불투명 알파를 확인합니다.",
+                "en": "Check file dimensions and opaque alpha."
+              },
+              {
+                "ko": "원근 카메라에서 동선이 읽히고 소품과 경쟁하지 않는지 검수합니다.",
+                "en": "Review whether the route remains readable from a perspective camera without competing with props."
+              }
+            ]
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "담당자 전달 시 파일명·형식·공통 색상·크기 제약을 함께 전달합니다.",
+            "en": "Include filenames, formats, shared colors, and size constraints in each handoff."
+          },
+          {
+            "ko": "실제 파일 3개를 합친 장면에서 스타일과 배치를 검수합니다.",
+            "en": "Review style and placement in a scene containing all three actual files."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "계획을 나눴다는 사실은 병렬 실행 성공이나 제작 시간 절약의 측정 결과가 아닙니다.",
+          "en": "Splitting a plan is not evidence of successful parallel execution or measured time savings."
+        },
+        {
+          "ko": "런타임 연출과 충돌·상호작용은 시각 에셋과 별도 범위입니다.",
+          "en": "Runtime effects, collision, and interaction remain outside visual-asset scope."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "소품별 독립 지시와 공통 스타일 제약을 동시에 유지하는지 평가합니다.",
+          "en": "Evaluate whether per-prop instructions remain independent while preserving shared style constraints."
+        },
+        {
+          "ko": "필수 3개 파일을 넘는 기능·에셋을 추가하지 않는지 평가합니다.",
+          "en": "Evaluate whether the plan avoids adding features or assets beyond the three essentials."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 비콘을 정적 모델로 명시하고 승리 연출을 후속 엔진 작업으로 분리합니다. 병렬 실행이나 시간 절약은 측정하지 않았습니다.",
+        "en": "Proposed revision: Specify a static beacon and move victory effects to later engine work. Parallel execution and time savings have not been measured."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    },
+    {
+      "id": "SIM-06",
+      "title": {
+        "ko": "교육용 오프라인 제작과 개인정보 경계",
+        "en": "Offline educational production and privacy boundaries"
+      },
+      "persona": {
+        "role": {
+          "ko": "개인정보 보호를 중시하는 교육자 — 가상 역할",
+          "en": "Privacy-conscious educator — fictional role"
+        },
+        "context": {
+          "ko": "수업 자료에 개인정보가 섞일 수 있어 비식별 브리프와 로컬 제작만 사용하는 가상 상황입니다. 실제 학생이나 수업 자료를 사용하지 않습니다.",
+          "en": "A fictional educator is using de-identified briefs and local production because classroom material may contain personal data. No actual students or classroom materials are used."
+        }
+      },
+      "input": {
+        "brief": {
+          "ko": "이름·사진·작품 원본 없이 공유 가능한 실습 묶음을 계획해 주세요. 간단한 블록 표본 GLB와 라벨 없는 팔레트 PNG만 필요하며 입력 자료를 외부 AI 서비스에 전송하지 않습니다.",
+          "en": "Plan a shareable exercise kit without names, photos, or original student work. Only a simple block-sample GLB and unlabeled palette PNG are needed. Do not transmit inputs to an external AI service."
+        },
+        "artDirection": {
+          "ko": "기초 형태·명확한 색상 대비, 로컬 또는 수동 제작. 학생 정보·학교 로고·실제 사진·인물 묘사를 제외하고 색상 외에도 형태를 구분합니다.",
+          "en": "Basic geometry and clear color contrast using local or manual production. Exclude student data, school logos, real photos, and people; use shape as well as color for distinction."
+        },
+        "assetLimit": 2
+      },
+      "dialogue": [
+        {
+          "speaker": "simulated-user",
+          "text": {
+            "ko": "가상 요청: 수업 원본이나 학생 자료를 외부로 보내지 않고 사용할 제작 계획이 필요합니다.",
+            "en": "Simulated request: I need a production plan that does not send classroom sources or student material outside the device."
+          }
+        },
+        {
+          "speaker": "illustrative-plan",
+          "text": {
+            "ko": "작성된 계획 예시: 개인정보가 없는 텍스트 브리프에서 로컬·수동 제작용 파일 2개만 계획합니다. Claude 원격 호출은 이 시나리오에서 실행하지 않으며 원격 기능 선택은 제약과 맞지 않는 것으로 표시합니다.",
+            "en": "Authored plan example: Plan only two local/manual files from a non-personal text brief. Do not run remote Claude calls in this scenario; mark remote features as incompatible with its constraint."
+          }
+        },
+        {
+          "speaker": "simulated-follow-up",
+          "text": {
+            "ko": "가상 후속 요청: 공유 파일에 숨은 작성자명이나 로컬 경로가 남지 않았는지도 실제 내보내기 후 확인하고 싶습니다.",
+            "en": "Simulated follow-up: After a real export, I also want to check for hidden author names or local paths in shared files."
+          }
+        }
+      ],
+      "plan": {
+        "assets": [
+          {
+            "name": "classroom_shape_blocks",
+            "kind": "model",
+            "purpose": {
+              "ko": "개인정보 없이 형태를 비교하는 실습 표본",
+              "en": "Exercise sample for comparing shapes without personal data"
+            },
+            "instruction": {
+              "ko": "0.3m 기본 블록 형태들의 정적 GLB를 로컬·수동 제작하는 계획입니다. 삼각형 600개 이하를 목표로 하며 인물·이름·학교 표시를 넣지 않습니다.",
+              "en": "Plan local/manual creation of a static GLB with basic 0.3m block shapes, targeting at most 600 triangles. Include no people, names, or school identifiers."
+            },
+            "format": "GLB",
+            "filename": "classroom_shape_blocks.glb",
+            "acceptanceChecks": [
+              {
+                "ko": "파일에 개인 이름·학교 식별자·외부 URI·불필요한 작성자 메타데이터가 있는지 검사합니다.",
+                "en": "Inspect for personal names, school identifiers, external URIs, and unnecessary author metadata."
+              },
+              {
+                "ko": "실제 파일의 GLB 구조·삼각형 수·단위·형태 구분을 검수합니다.",
+                "en": "Review GLB structure, triangle count, units, and shape distinction on the actual file."
+              },
+              {
+                "ko": "모든 사용 도구의 네트워크 동작을 확인하기 전에는 오프라인 검증 완료로 표시하지 않습니다.",
+                "en": "Do not mark offline validation complete before checking the network behavior of every tool used."
+              }
+            ],
+            "triangleLimit": 600
+          },
+          {
+            "name": "classroom_palette_tiles",
+            "kind": "texture",
+            "purpose": {
+              "ko": "형태와 함께 색상 대비를 설명하는 실습용 팔레트",
+              "en": "Exercise palette for discussing color contrast alongside shapes"
+            },
+            "instruction": {
+              "ko": "256×256 PNG의 라벨 없는 색상·문양 타일을 로컬 편집기로 계획합니다. 이름·사진·QR·학교 로고를 넣지 않고 색상만으로 정답을 구분하지 않습니다.",
+              "en": "Plan unlabeled color-and-pattern tiles in a 256×256 PNG using a local editor. Include no names, photos, QR codes, or school logos; do not encode answers through color alone."
+            },
+            "format": "PNG",
+            "filename": "classroom_palette_tiles.png",
+            "acceptanceChecks": [
+              {
+                "ko": "치수·문양 구분·흑백 상태의 구분 가능성을 확인합니다.",
+                "en": "Check dimensions, pattern distinction, and readability in grayscale."
+              },
+              {
+                "ko": "배포 전 PNG 텍스트 메타데이터에 개인 정보나 로컬 경로가 없는지 검사합니다.",
+                "en": "Inspect PNG text metadata for personal information or local paths before distribution."
+              }
+            ]
+          }
+        ],
+        "reviewChecklist": [
+          {
+            "ko": "실제 작업 전 입력을 비식별화하고 원본은 보존한 채 새 출력 경로를 사용합니다.",
+            "en": "De-identify inputs before a real run, preserve originals, and use new output paths."
+          },
+          {
+            "ko": "다운로드·업데이트·원격 생성 등 네트워크를 사용하는 작업은 수업 에셋 제작과 구분해 사전 확인합니다.",
+            "en": "Identify network-using operations such as downloads, updates, and remote generation separately before classroom production."
+          },
+          {
+            "ko": "실제 공유 파일의 내용·메타데이터·외부 참조를 확인한 후 배포합니다.",
+            "en": "Inspect contents, metadata, and external references of actual shared files before distribution."
+          }
+        ]
+      },
+      "concerns": [
+        {
+          "ko": "Claude 원격 API 호출은 외부 전송 없는 요구와 맞지 않습니다. 이 예시는 이를 실행하거나 로컬 Claude 실행을 주장하지 않습니다.",
+          "en": "Remote Claude API calls are incompatible with a no-external-transfer requirement. This example neither runs them nor claims local Claude execution."
+        },
+        {
+          "ko": "개인정보 보호 또는 법적 적합성을 이 가상 설계만으로 보증하지 않습니다.",
+          "en": "This fictional design does not certify privacy protection or legal compliance."
+        }
+      ],
+      "evaluationCriteria": [
+        {
+          "ko": "외부 전송 없는 제약이 우선되고 기능 불일치를 명시하는지 평가합니다.",
+          "en": "Evaluate whether the no-external-transfer constraint takes precedence and incompatible features are identified."
+        },
+        {
+          "ko": "파일 내용과 메타데이터를 실제 공유 전에 검수할 수 있는지 평가합니다.",
+          "en": "Evaluate whether file contents and metadata can be reviewed before actual sharing."
+        }
+      ],
+      "revisionNote": {
+        "ko": "제안된 수정: 공유 전 메타데이터 검수와 도구별 네트워크 확인을 추가합니다. 실제 개인정보·전송 로그·수업 결과는 수집하지 않았습니다.",
+        "en": "Proposed revision: Add metadata review and per-tool network checks before sharing. No actual personal data, transfer logs, or classroom outcomes were collected."
+      },
+      "status": "illustrative-not-executed",
+      "observedResults": null,
+      "metrics": null
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import { macInstallCommand, macReleases, release } from './release';
 import { faqs, models, npmInstallCommand, projectFacts, skillDownloadUrl, skillInstallCommand, skillPackageVersion, skillUpdateCommand, skillVersion, sourceUrl, statuses } from './content';
 import { claudePublicationStatus, claudeWorkflowPath } from './claudeProof';
 import WorkshopTeaser from './workshop/WorkshopTeaser';
+import SiteFooterLinks from './SiteFooterLinks';
+import { ResearchTeaser } from './ResearchExamples';
 
 const releaseUrl = sourceUrl + '/releases/tag/v' + release.version;
 const latestReleaseUrl = sourceUrl + '/releases/latest';
@@ -108,6 +110,7 @@ export default function App() {
       </section>
 
       <WorkshopTeaser />
+      <ResearchTeaser />
       <div className="capability-strip"><div className="page-width"><p><FileImage size={20} aria-hidden="true" />2D 이미지</p><p><Box size={20} aria-hidden="true" />3D 모델</p><p><Workflow size={20} aria-hidden="true" />개별 제작·작업 큐</p><p><FolderOpen size={20} aria-hidden="true" />내 프로젝트에 저장</p></div></div>
 
       <section id="product" className="product-section section-space page-width" aria-labelledby="product-title">
@@ -178,7 +181,7 @@ export default function App() {
       <section id="about" className="about-section" aria-labelledby="about-title"><div className="page-width about-layout"><div className="about-brand"><TreesetMark /><h2 id="about-title">Treeset</h2><p>게임을 만드는 사람을 위한<br />제작 도구를 만듭니다.</p><SourceLink href="/about/">Project overview (English)</SourceLink></div><div className="about-copy"><p>Treeset은 인디 게임 개발자와 소규모 제작팀을 위한 독립 개발 프로젝트입니다. 첫 제품 Asset Studio는 게임에 필요한 에셋 목록을 정리하고, 이미지·3D를 제작·검수·내보내는 흐름을 연결합니다.</p><p className="about-developer">개발자 JEONG WOOCHEOL은 Java 개발 경력 5년 차이며, GitHub에서 oocheol로 Asset Studio를 개발·관리합니다. 공개 코드, 릴리스와 예제 파일에서 현재 작업을 확인할 수 있습니다.</p><dl className="project-facts">{projectFacts.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.href ? <a href={item.href}>{item.value}<ArrowUpRight size={16} aria-hidden="true" /></a> : item.value}</dd></div>)}</dl><p className="project-facts-note">2026년 10월은 프로젝트 시작 시점이며, 법인 설립일을 의미하지 않습니다.</p><div className="about-evidence" aria-label="공개 프로젝트 자료"><SourceLink href={sourceUrl}>소스와 제작 구조</SourceLink><SourceLink href="/about/#local-workflow">로컬 에셋 제작 사례</SourceLink><SourceLink href={latestReleaseUrl}>공개 릴리스</SourceLink></div><div className="claude-plan"><div><h3>{claudeStatus.titleKo}</h3><span className="status-label limited">{claudeStatus.statusKo}</span></div><p>{claudeStatus.detailKo} 현재 공개된 0.1.13 설치 파일에는 이 기능이 포함되지 않습니다. Claude는 작업 지시를 정리하며 이미지·3D 제작은 별도 도구에서 검수 후 진행합니다.</p><SourceLink href={claudeWorkflowPath}>Inspect the prototype (English)</SourceLink></div><div className="about-links"><a className="text-link" href="https://github.com/oocheol"><Github size={18} aria-hidden="true" />JEONG WOOCHEOL · oocheol</a><a className="text-link" href="mailto:oocheol@treeset.win"><Mail size={18} aria-hidden="true" />oocheol@treeset.win</a></div></div></div></section>
     </main>
 
-    <footer className="site-footer"><div className="page-width footer-inner"><a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a><p>Asset Studio / Windows · Apple Silicon Mac · Codex</p><nav aria-label="프로젝트 링크"><a href="#about">프로젝트·개발자</a><a href="/about/" lang="en">Project overview</a><a href={sourceUrl}><Github size={17} aria-hidden="true" />GitHub</a><a href={latestReleaseUrl}>릴리스</a><a href={sourceUrl + '/issues'}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></nav></div></footer>
+    <footer className="site-footer"><div className="page-width footer-inner"><a className="wordmark" href="#top" aria-label="Treeset 첫 화면"><TreesetMark /><span>Treeset</span></a><p>Asset Studio / Windows · Apple Silicon Mac · Codex</p><nav aria-label="프로젝트 링크"><a href="#about">프로젝트·개발자</a><a href="/about/" lang="en">Project overview</a><SiteFooterLinks /><a href={sourceUrl}><Github size={17} aria-hidden="true" />GitHub</a><a href={latestReleaseUrl}>릴리스</a><a href={sourceUrl + '/issues'}>오류 제보</a><a href="/third-party-notices.txt">라이선스</a></nav></div></footer>
 
     <dialog className={'preview-dialog' + (preview?.kind === 'render' ? ' render-dialog' : '')} ref={previewDialog} aria-labelledby="preview-title" onClose={() => { setPreview(null); previewTrigger.current?.focus(); }} onClick={event => { if (event.target === event.currentTarget) previewDialog.current?.close(); }}><div className="dialog-header"><h2 id="preview-title">{preview?.title}</h2><button type="button" autoFocus aria-label="확대 화면 닫기" onClick={() => previewDialog.current?.close()}><X size={23} aria-hidden="true" /></button></div>{preview && <img src={preview.src} alt={preview.alt} width={preview.kind === 'render' ? '512' : '1500'} height={preview.kind === 'render' ? '512' : '960'} />}<p>{preview?.caption}</p></dialog>
   </>;

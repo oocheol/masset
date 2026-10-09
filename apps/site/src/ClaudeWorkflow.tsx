@@ -2,6 +2,7 @@ import { ArrowDownToLine, ArrowUpRight, Github, Mail } from 'lucide-react';
 import { TreesetMark } from './App';
 import { claudeDevelopmentEvidence, claudeProof, claudePublicationStatus } from './claudeProof';
 import { projectContact, sourceUrl } from './content';
+import SiteFooterLinks from './SiteFooterLinks';
 
 function EvidenceLink({ href, children }: { href: string; children: React.ReactNode }) {
   return <a className="text-link" href={href}>{children}<ArrowUpRight size={17} aria-hidden="true" /></a>;
@@ -63,6 +64,6 @@ export default function ClaudeWorkflow() {
 
       <section className="overview-connect page-width" aria-labelledby="case-contact-title"><div><h2 id="case-contact-title">Try the tools, or share a workflow.</h2><p>Developed by JEONG WOOCHEOL, a Java developer in his fifth year.</p></div><a className="button button-primary" href={`mailto:${projectContact}`}><Mail size={20} aria-hidden="true" />{projectContact}</a></section>
     </main>
-    <footer className="overview-footer page-width"><a href="/about/">Treeset / Asset Studio</a><nav aria-label="More project links"><a href="https://github.com/oocheol"><Github size={17} aria-hidden="true" />Developer profile</a><a href={sourceUrl}>Source</a><a href="/third-party-notices.txt">Third-party notices</a><a href="/" lang="ko">한국어 사이트</a></nav></footer>
+    <footer className="overview-footer page-width"><a href="/about/">Treeset / Asset Studio</a><nav aria-label="More project links"><a href="https://github.com/oocheol"><Github size={17} aria-hidden="true" />Developer profile</a><SiteFooterLinks language="en" /><a href={sourceUrl}>Source</a><a href="/third-party-notices.txt">Third-party notices</a><a href="/" lang="ko">한국어 사이트</a></nav></footer>
   </div>;
 }
